@@ -77,18 +77,37 @@ const MapView = () => {
   const handleSearch = () => {
     if (!map.current || !searchQuery.trim()) return;
     
-    const office = phaOffices.find(office => 
-      office.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      office.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      office.address.split(',')[1]?.trim().toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const query = searchQuery.toLowerCase().trim();
+    console.log('Searching for:', query);
+    
+    const office = phaOffices.find(office => {
+      const addressLower = office.address.toLowerCase();
+      const nameLower = office.name.toLowerCase();
+      
+      // Extract city and state from address
+      const addressParts = office.address.split(',');
+      const city = addressParts[1]?.trim().toLowerCase() || '';
+      const state = addressParts[2]?.trim().toLowerCase() || '';
+      
+      console.log('Checking office:', office.name, 'City:', city, 'State:', state);
+      
+      return (
+        addressLower.includes(query) ||
+        nameLower.includes(query) ||
+        city.includes(query) ||
+        state.includes(query)
+      );
+    });
     
     if (office) {
+      console.log('Found office:', office.name);
       setSelectedOffice(office);
       map.current.flyTo({
         center: office.coordinates,
         zoom: 12
       });
+    } else {
+      console.log('No office found for query:', query);
     }
   };
 
