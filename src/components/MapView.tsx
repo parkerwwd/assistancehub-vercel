@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -16,6 +15,24 @@ const MapView = () => {
   const [mapboxToken, setMapboxToken] = useState("");
   const [selectedOffice, setSelectedOffice] = useState<PHAOffice | null>(null);
   const [tokenError, setTokenError] = useState("");
+
+  // Load token from localStorage on component mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem('mapbox-token');
+    if (savedToken) {
+      setMapboxToken(savedToken);
+    }
+  }, []);
+
+  // Save token to localStorage whenever it changes
+  const handleTokenChange = (token: string) => {
+    setMapboxToken(token);
+    if (token.trim()) {
+      localStorage.setItem('mapbox-token', token.trim());
+    } else {
+      localStorage.removeItem('mapbox-token');
+    }
+  };
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken.trim()) return;
@@ -155,7 +172,7 @@ const MapView = () => {
                   placeholder="Enter your Mapbox public token (pk.)"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={mapboxToken}
-                  onChange={(e) => setMapboxToken(e.target.value)}
+                  onChange={(e) => handleTokenChange(e.target.value)}
                 />
               </div>
               {tokenError && (
