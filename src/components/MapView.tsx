@@ -2,20 +2,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Key } from "lucide-react";
+import { Key } from "lucide-react";
 import { PHAOffice } from "@/types/phaOffice";
 import { phaOffices } from "@/data/phaOffices";
 import { getWaitlistColor } from "@/utils/mapUtils";
+import { USCity } from "@/data/usCities";
 import OfficeDetailsPanel from "./OfficeDetailsPanel";
+import CitySearch from "./CitySearch";
 
 const MapView = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState("");
   const [selectedOffice, setSelectedOffice] = useState<PHAOffice | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [tokenError, setTokenError] = useState("");
 
   useEffect(() => {
@@ -74,11 +73,37 @@ const MapView = () => {
     }
   }, [mapboxToken]);
 
-  const handleSearch = () => {
-    if (!map.current || !searchQuery.trim()) return;
+  const handleCitySelect = (city: USCity) => {
+    if (!map.current) return;
     
-    const query = searchQuery.toLowerCase().trim();
-    console.log('Searching for:', query);
+    console.log('Selected city:', city.name, city.stateCode);
+    
+    // Fly to the selected city
+    map.current.flyTo({
+      center: [city.longitude, city.latitude],
+      zoom: 10
+    });
+
+    // Look for nearby PHA offices
+    const nearbyOffice = phaOffices.find(office => {
+      const addressLower = office.address.toLowerCase();
+      const cityLower = city.name.toLowerCase();
+      const stateLower = city.state.toLowerCase();
+      
+      return addressLower.includes(cityLower) || addressLower.includes(stateLower);
+    });
+
+    if (nearbyOffice) {
+      setSelectedOffice(nearbyOffice);
+      console.log('Found nearby PHA office:', nearbyOffice.name);
+    }
+  };
+
+  const handleSearch = (query: string) => {
+    if (!map.current || !query.trim()) return;
+    
+    const queryLower = query.toLowerCase().trim();
+    console.log('Searching for:', queryLower);
     
     const office = phaOffices.find(office => {
       const addressLower = office.address.toLowerCase();
@@ -89,13 +114,11 @@ const MapView = () => {
       const city = addressParts[1]?.trim().toLowerCase() || '';
       const state = addressParts[2]?.trim().toLowerCase() || '';
       
-      console.log('Checking office:', office.name, 'City:', city, 'State:', state);
-      
       return (
-        addressLower.includes(query) ||
-        nameLower.includes(query) ||
-        city.includes(query) ||
-        state.includes(query)
+        addressLower.includes(queryLower) ||
+        nameLower.includes(queryLower) ||
+        city.includes(queryLower) ||
+        state.includes(queryLower)
       );
     });
     
@@ -107,13 +130,7 @@ const MapView = () => {
         zoom: 12
       });
     } else {
-      console.log('No office found for query:', query);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
+      console.log('No office found for query:', queryLower);
     }
   };
 
@@ -133,10 +150,10 @@ const MapView = () => {
                 </a>
               </p>
               <div className="flex gap-2">
-                <Input
+                <input
                   type="text"
                   placeholder="Enter your Mapbox public token (pk.)"
-                  className="flex-1"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={mapboxToken}
                   onChange={(e) => setMapboxToken(e.target.value)}
                 />
@@ -149,25 +166,10 @@ const MapView = () => {
         </div>
       )}
 
-      {/* Search Bar */}
+      {/* Enhanced Search Bar */}
       {mapboxToken && (
         <div className="bg-white rounded-lg shadow-md p-4">
-          <div className="flex gap-3">
-            <Input
-              type="text"
-              placeholder="Search by city, state, or PHA name..."
-              className="flex-1 border-blue-200 focus:border-blue-400"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            <Button 
-              onClick={handleSearch}
-              className="bg-blue-600 hover:bg-blue-700 transition-colors"
-            >
-              <Search className="w-4 h-4" />
-            </Button>
-          </div>
+          <CitySearch onCitySelect={handleCitySelect} onSearch={handleSearch} />
         </div>
       )}
 
