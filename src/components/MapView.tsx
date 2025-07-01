@@ -5,7 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Phone, Search } from "lucide-react";
+import { MapPin, Phone, Search, ExternalLink } from "lucide-react";
 
 interface PHAOffice {
   id: number;
@@ -20,8 +20,9 @@ interface PHAOffice {
 const MapView = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState("");
+  const [mapboxToken, setMapboxToken] = useState("pk.eyJ1IjoicG9wb3ZpY2giLCJhIjoiY20zNjd0eG4wMDNmYjJrbjNiZTV2cXZrbCJ9.HLmhNPHJKKG2xBs3YVpCvw");
   const [selectedOffice, setSelectedOffice] = useState<PHAOffice | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Mock data with coordinates
   const phaOffices: PHAOffice[] = [
@@ -60,6 +61,24 @@ const MapView = () => {
       website: "www.miamidade.gov/housing",
       waitlistStatus: "Closed",
       coordinates: [-80.1918, 25.7617]
+    },
+    {
+      id: 5,
+      name: "Houston Housing Authority",
+      address: "2640 Fountain View Dr, Houston, TX 77057",
+      phone: "(713) 260-0300",
+      website: "www.housingforhouston.com",
+      waitlistStatus: "Open",
+      coordinates: [-95.3698, 29.7604]
+    },
+    {
+      id: 6,
+      name: "Phoenix Housing Authority",
+      address: "914 N 1st Ave, Phoenix, AZ 85003",
+      phone: "(602) 262-6251",
+      website: "www.phoenix.gov/pdd/housing",
+      waitlistStatus: "Limited Opening",
+      coordinates: [-112.0740, 33.4484]
     }
   ];
 
@@ -108,13 +127,13 @@ const MapView = () => {
     };
   }, [mapboxToken]);
 
-  const handleSearch = (location: string) => {
-    if (!map.current || !location) return;
+  const handleSearch = () => {
+    if (!map.current || !searchQuery.trim()) return;
     
-    // Simple search - in a real app, you'd use geocoding
     const office = phaOffices.find(office => 
-      office.address.toLowerCase().includes(location.toLowerCase()) ||
-      office.name.toLowerCase().includes(location.toLowerCase())
+      office.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      office.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      office.address.split(',')[1]?.trim().toLowerCase().includes(searchQuery.toLowerCase())
     );
     
     if (office) {
@@ -126,55 +145,30 @@ const MapView = () => {
     }
   };
 
-  if (!mapboxToken) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4">Map Configuration Required</h3>
-        <p className="text-gray-600 mb-4">
-          To use the map functionality, please enter your Mapbox public token. You can get one from{' '}
-          <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-            mapbox.com
-          </a>
-        </p>
-        <div className="flex gap-4">
-          <Input
-            type="text"
-            placeholder="Enter your Mapbox public token..."
-            value={mapboxToken}
-            onChange={(e) => setMapboxToken(e.target.value)}
-            className="flex-1"
-          />
-          <Button onClick={() => setMapboxToken(mapboxToken)}>
-            Connect
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
       {/* Map Container */}
       <div className="lg:col-span-2">
         <div className="bg-white rounded-lg shadow-md overflow-hidden h-full">
-          <div className="p-4 border-b">
-            <div className="flex gap-4">
+          <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-white">
+            <div className="flex gap-3">
               <Input
                 type="text"
                 placeholder="Search by city, state, or PHA name..."
-                className="flex-1"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch((e.target as HTMLInputElement).value);
-                  }
-                }}
+                className="flex-1 border-blue-200 focus:border-blue-400"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
               />
               <Button 
-                onClick={() => {
-                  const input = document.querySelector('input[placeholder*="Search by city"]') as HTMLInputElement;
-                  if (input) handleSearch(input.value);
-                }}
-                className="bg-blue-600 hover:bg-blue-700"
+                onClick={handleSearch}
+                className="bg-blue-600 hover:bg-blue-700 transition-colors"
               >
                 <Search className="w-4 h-4" />
               </Button>
@@ -184,22 +178,22 @@ const MapView = () => {
         </div>
       </div>
 
-      {/* Selected Office Details */}
+      {/* Office Details Panel */}
       <div className="lg:col-span-1">
         {selectedOffice ? (
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="text-lg">{selectedOffice.name}</CardTitle>
-              <CardDescription className="flex items-start">
-                <MapPin className="w-4 h-4 mr-1 mt-0.5 flex-shrink-0" />
+          <Card className="h-full shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg text-gray-900">{selectedOffice.name}</CardTitle>
+              <CardDescription className="flex items-start text-gray-600">
+                <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-blue-600" />
                 {selectedOffice.address}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Waitlist Status:</span>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">Waitlist Status:</span>
                 <span 
-                  className="px-2 py-1 rounded-full text-xs font-medium"
+                  className="px-3 py-1 rounded-full text-xs font-medium"
                   style={{ 
                     backgroundColor: getWaitlistColor(selectedOffice.waitlistStatus) + '20',
                     color: getWaitlistColor(selectedOffice.waitlistStatus)
@@ -209,56 +203,73 @@ const MapView = () => {
                 </span>
               </div>
               
-              <div className="flex items-center">
-                <Phone className="w-4 h-4 mr-2 text-gray-500" />
-                <a 
-                  href={`tel:${selectedOffice.phone}`}
-                  className="text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  {selectedOffice.phone}
-                </a>
-              </div>
-              
-              <div className="flex items-center">
-                <Search className="w-4 h-4 mr-2 text-gray-500" />
-                <a 
-                  href={`https://${selectedOffice.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 transition-colors text-sm"
-                >
-                  {selectedOffice.website}
-                </a>
+              <div className="space-y-3">
+                <div className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                  <Phone className="w-4 h-4 mr-3 text-blue-600" />
+                  <a 
+                    href={`tel:${selectedOffice.phone}`}
+                    className="text-blue-700 hover:text-blue-800 font-medium transition-colors"
+                  >
+                    {selectedOffice.phone}
+                  </a>
+                </div>
+                
+                <div className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                  <ExternalLink className="w-4 h-4 mr-3 text-green-600" />
+                  <a 
+                    href={`https://${selectedOffice.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-700 hover:text-green-800 font-medium transition-colors text-sm"
+                  >
+                    Visit Website
+                  </a>
+                </div>
               </div>
               
               <div className="pt-4 border-t">
-                <p className="text-sm text-gray-600">
-                  <strong>Services:</strong> Section 8 Housing Choice Vouchers, Public Housing, Housing Applications
-                </p>
+                <h4 className="font-medium text-gray-900 mb-2">Available Services</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Section 8 Housing Choice Vouchers</li>
+                  <li>• Public Housing Applications</li>
+                  <li>• Housing Assistance Programs</li>
+                  <li>• Rental Assistance</li>
+                </ul>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <Card className="h-full">
+          <Card className="h-full shadow-lg">
             <CardHeader>
-              <CardTitle className="text-lg">Select a PHA Office</CardTitle>
-              <CardDescription>
-                Click on a marker on the map to view details about that Public Housing Authority office.
+              <CardTitle className="text-lg text-gray-900">Find PHA Offices</CardTitle>
+              <CardDescription className="text-gray-600">
+                Click on a marker on the map or search above to view details about Public Housing Authority offices.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center text-sm">
-                  <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                  <span>Open Waitlist</span>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-3">Waitlist Status Legend</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center text-sm">
+                      <div className="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
+                      <span className="text-gray-700">Open Waitlist</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <div className="w-3 h-3 rounded-full bg-yellow-500 mr-3"></div>
+                      <span className="text-gray-700">Limited Opening</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <div className="w-3 h-3 rounded-full bg-red-500 mr-3"></div>
+                      <span className="text-gray-700">Closed Waitlist</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center text-sm">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
-                  <span>Limited Opening</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
-                  <span>Closed Waitlist</span>
+                
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-gray-600">
+                    <strong>Tip:</strong> Waitlist status can change frequently. Always contact the PHA directly for the most current information.
+                  </p>
                 </div>
               </div>
             </CardContent>
