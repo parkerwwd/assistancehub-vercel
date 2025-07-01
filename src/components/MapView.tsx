@@ -78,9 +78,9 @@ const MapView = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
-      {/* Map Container */}
-      <div className="lg:col-span-2">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[85vh]">
+      {/* Map Container - Takes up 3/4 of the width on large screens */}
+      <div className="lg:col-span-3">
         <div className="bg-white rounded-lg shadow-md overflow-hidden h-full">
           <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-white">
             <div className="flex gap-3">
@@ -104,7 +104,7 @@ const MapView = () => {
         </div>
       </div>
 
-      {/* Office Details Panel */}
+      {/* Office Details Panel - Takes up 1/4 of the width on large screens */}
       <div className="lg:col-span-1">
         <OfficeDetailsPanel selectedOffice={selectedOffice} />
       </div>
