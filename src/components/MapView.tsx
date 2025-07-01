@@ -1,7 +1,9 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Key } from "lucide-react";
+import { Key, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PHAOffice } from "@/types/phaOffice";
 import { phaOffices } from "@/data/phaOffices";
 import { getWaitlistColor } from "@/utils/mapUtils";
@@ -15,6 +17,7 @@ const MapView = () => {
   const [mapboxToken, setMapboxToken] = useState("");
   const [selectedOffice, setSelectedOffice] = useState<PHAOffice | null>(null);
   const [tokenError, setTokenError] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   // Load token from localStorage on component mount
   useEffect(() => {
@@ -152,56 +155,91 @@ const MapView = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Mapbox Token Input */}
+    <div className="h-full flex flex-col">
+      {/* Mapbox Token Input - Compact */}
       {!mapboxToken && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <Key className="w-5 h-5 text-yellow-600 mt-0.5" />
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+          <div className="flex items-center gap-2">
+            <Key className="w-4 h-4 text-yellow-600" />
             <div className="flex-1">
-              <h3 className="font-medium text-yellow-800 mb-2">Mapbox Token Required</h3>
-              <p className="text-sm text-yellow-700 mb-3">
-                To display the map, please enter your Mapbox public token. You can get one free at{' '}
-                <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="underline">
+              <p className="text-sm text-yellow-700 mb-2">
+                Enter your Mapbox token to display the map. Get one free at{' '}
+                <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">
                   mapbox.com
                 </a>
               </p>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Enter your Mapbox public token (pk.)"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter Mapbox token (pk.)"
+                  className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={mapboxToken}
                   onChange={(e) => handleTokenChange(e.target.value)}
                 />
               </div>
               {tokenError && (
-                <p className="text-sm text-red-600 mt-2">{tokenError}</p>
+                <p className="text-xs text-red-600 mt-1">{tokenError}</p>
               )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Enhanced Search Bar */}
+      {/* Compact Search and Filters Row */}
       {mapboxToken && (
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <CitySearch onCitySelect={handleCitySelect} onSearch={handleSearch} />
+        <div className="bg-white rounded-lg shadow-sm border p-3 mb-3">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <CitySearch onCitySelect={handleCitySelect} onSearch={handleSearch} />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              Filters
+            </Button>
+          </div>
+          
+          {showFilters && (
+            <div className="mt-3 pt-3 border-t flex items-center gap-4 text-sm">
+              <span className="text-gray-700 font-medium">Waitlist Status:</span>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-1">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span>Open</span>
+                </label>
+                <label className="flex items-center gap-1">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <span>Limited</span>
+                </label>
+                <label className="flex items-center gap-1">
+                  <input type="checkbox" defaultChecked className="rounded" />
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span>Closed</span>
+                </label>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Main Content Grid */}
+      {/* Main Content - Full Height */}
       {mapboxToken && (
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          {/* Map Container */}
-          <div className="xl:col-span-3">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden h-[70vh] min-h-[500px]">
-              <div ref={mapContainer} className="w-full h-full" />
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-3">
+          {/* Map Container - Takes 2/3 on large screens */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm border overflow-hidden h-full">
+              <div ref={mapContainer} className="w-full h-full min-h-[400px]" />
             </div>
           </div>
 
-          {/* Office Details Panel */}
-          <div className="xl:col-span-1">
+          {/* Office Details Panel - Takes 1/3 on large screens */}
+          <div className="lg:col-span-1">
             <OfficeDetailsPanel selectedOffice={selectedOffice} />
           </div>
         </div>
