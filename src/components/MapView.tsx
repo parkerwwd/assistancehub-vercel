@@ -39,8 +39,10 @@ const MapView = () => {
       // Handle map load errors
       map.current.on('error', (e) => {
         console.error('Map error:', e);
-        if (e.error?.status === 401) {
+        if (e.error && 'status' in e.error && e.error.status === 401) {
           setTokenError("Invalid Mapbox token. Please check your token and try again.");
+        } else {
+          setTokenError("Error loading map. Please check your token and try again.");
         }
       });
 
