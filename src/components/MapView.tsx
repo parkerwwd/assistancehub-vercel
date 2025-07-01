@@ -78,35 +78,40 @@ const MapView = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[85vh]">
-      {/* Map Container - Takes up 3/4 of the width on large screens */}
-      <div className="lg:col-span-3">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden h-full">
-          <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-white">
-            <div className="flex gap-3">
-              <Input
-                type="text"
-                placeholder="Search by city, state, or PHA name..."
-                className="flex-1 border-blue-200 focus:border-blue-400"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleKeyPress}
-              />
-              <Button 
-                onClick={handleSearch}
-                className="bg-blue-600 hover:bg-blue-700 transition-colors"
-              >
-                <Search className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-          <div ref={mapContainer} className="w-full h-[calc(100%-80px)]" />
+    <div className="space-y-6">
+      {/* Search Bar */}
+      <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="flex gap-3">
+          <Input
+            type="text"
+            placeholder="Search by city, state, or PHA name..."
+            className="flex-1 border-blue-200 focus:border-blue-400"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={handleKeyPress}
+          />
+          <Button 
+            onClick={handleSearch}
+            className="bg-blue-600 hover:bg-blue-700 transition-colors"
+          >
+            <Search className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Office Details Panel - Takes up 1/4 of the width on large screens */}
-      <div className="lg:col-span-1">
-        <OfficeDetailsPanel selectedOffice={selectedOffice} />
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        {/* Map Container - Much larger now */}
+        <div className="xl:col-span-3">
+          <div className="bg-white rounded-lg shadow-md overflow-hidden h-[70vh] min-h-[500px]">
+            <div ref={mapContainer} className="w-full h-full" />
+          </div>
+        </div>
+
+        {/* Office Details Panel */}
+        <div className="xl:col-span-1">
+          <OfficeDetailsPanel selectedOffice={selectedOffice} />
+        </div>
       </div>
     </div>
   );
