@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
@@ -53,41 +52,70 @@ export const usePHAData = () => {
       setError(null);
       
       const searchTerm = query.toLowerCase().trim();
-      console.log('Raw search query:', query);
-      console.log('Processed search term:', searchTerm);
+      console.log('Searching for:', searchTerm);
 
-      // First, let's see what data we have
-      const { data: sampleData } = await supabase
-        .from('pha_agencies')
-        .select('name, city, state, address')
-        .limit(5);
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
+      // Use multiple individual searches and combine results
+      const searchPromises = [
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('name', `%${searchTerm}%`),
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('city', `%${searchTerm}%`),
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('state', `%${searchTerm}%`),
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('address', `%${searchTerm}%`)
+      ];
+
+      const results = await Promise.all(searchPromises);
       
-      console.log('Sample data from database:', sampleData);
-
-      // Try a simple direct search first
-      const { data, error: searchError, count } = await supabase
-        .from('pha_agencies')
-        .select('*', { count: 'exact' })
-        .or(`name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`)
-        .order('name')
-        .range(0, 19);
-
-      if (searchError) {
-        console.error('Search error:', searchError);
-        throw searchError;
+      // Check for errors
+      const hasError = results.some(result => result.error);
+      if (hasError) {
+        const firstError = results.find(result => result.error)?.error;
+        throw firstError;
       }
 
-      console.log('Search results:', data);
-      console.log('Search results count:', data?.length || 0);
+      // Combine all results and remove duplicates
+      const allResults: PHAAgency[] = [];
+      results.forEach(result => {
+        if (result.data) {
+          allResults.push(...result.data);
+        }
+      });
+
+      // Remove duplicates by ID
+      const uniqueResults = allResults.filter((item, index, arr) => 
+        arr.findIndex(other => other.id === item.id) === index
+      );
+
+      // Sort by name
+      uniqueResults.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+      // Apply pagination to the combined results
+      const paginatedResults = uniqueResults.slice(from, to + 1);
       
-      setPHAAgencies(data || []);
-      setTotalCount(count || 0);
+      console.log('Search completed. Total unique results:', uniqueResults.length);
+      console.log('Paginated results:', paginatedResults.length);
+      
+      setPHAAgencies(paginatedResults);
+      setTotalCount(uniqueResults.length);
       setCurrentPage(page);
     } catch (err) {
       console.error('Error searching PHA data:', err);
       setError(err instanceof Error ? err.message : 'Failed to search PHA data');
       
-      // Show empty results instead of falling back to all data
+      // Show empty results on error
       setPHAAgencies([]);
       setTotalCount(0);
       setCurrentPage(page);
