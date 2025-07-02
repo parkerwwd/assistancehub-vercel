@@ -8,7 +8,6 @@ import MapFilters from "./MapFilters";
 import MapContainer from "./MapContainer";
 import { useMapLogic } from "@/hooks/useMapLogic";
 import { Database } from "@/integrations/supabase/types";
-import { convertPHAAgencyToPHAOffice } from "@/types/phaOffice";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
@@ -78,7 +77,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
       default:
         return (
           <OfficeDetailsPanel 
-            selectedOffice={selectedOffice ? convertPHAAgencyToPHAOffice(selectedOffice) : null}
+            selectedOffice={selectedOffice}
             onOfficeClick={handleOfficeClick}
             phaAgencies={phaAgencies}
             loading={loading}

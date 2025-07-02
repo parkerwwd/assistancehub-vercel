@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -107,6 +106,7 @@ const OfficeDetailsPanel = ({ selectedOffice, onOfficeClick, phaAgencies, loadin
     );
   }
 
+  
   return (
     <div className="h-full p-4 overflow-y-auto">
       <Card className="h-fit shadow-sm border-0">

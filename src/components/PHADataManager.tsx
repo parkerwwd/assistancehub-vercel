@@ -39,12 +39,12 @@ const PHADataManager: React.FC = () => {
   // Parse CSV data
   const parseCSV = (csvText: string) => {
     const lines = csvText.split('\n');
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const headers = lines[0].split('\t').map(h => h.trim().replace(/"/g, ''));
     const data = [];
 
     for (let i = 1; i < lines.length; i++) {
       if (lines[i].trim()) {
-        const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+        const values = lines[i].split('\t').map(v => v.trim().replace(/"/g, ''));
         const row: any = {};
         headers.forEach((header, index) => {
           row[header] = values[index] || null;
@@ -70,37 +70,42 @@ const PHADataManager: React.FC = () => {
 
       for (const record of csvData) {
         try {
-          // Map CSV fields to database fields
+          // Map comprehensive CSV fields to database fields
           const phaData = {
-            pha_code: record.pha_code || record.code || null,
-            name: record.name || record.pha_name || 'Unknown PHA',
-            address: record.address || record.pha_address || null,
-            city: record.city || record.pha_city || null,
-            state: record.state || record.pha_state?.substring(0, 2) || null,
-            zip: record.zip || record.pha_zip?.substring(0, 10) || null,
-            phone: record.phone || record.pha_phone || null,
-            email: record.email || record.pha_email || null,
-            website: record.website || record.pha_website || null,
-            supports_hcv: record.supports_hcv === 'true' || record.hcv_flag === 'Y' || record.hcv_flag === 'YES' || false,
+            pha_code: record.PARTICIPANT_CODE || record.pha_code || null,
+            name: record.FORMAL_PARTICIPANT_NAME || record.name || 'Unknown PHA',
+            address: record.STD_ADDR || record.address || null,
+            city: record.STD_CITY || record.city || null,
+            state: record.STD_ST?.substring(0, 2) || record.state?.substring(0, 2) || null,
+            zip: record.STD_ZIP5?.substring(0, 10) || record.zip?.substring(0, 10) || null,
+            phone: record.HA_PHN_NUM || record.phone || null,
+            email: record.HA_EMAIL_ADDR_TEXT || record.EXEC_DIR_EMAIL || record.email || null,
+            website: record.website || null,
+            supports_hcv: record.HA_PROGRAM_TYPE?.includes('Section 8') || 
+                         record.SECTION8_UNITS_CNT > 0 || 
+                         record.supports_hcv === 'true' || 
+                         false,
             waitlist_status: record.waitlist_status || 'Unknown',
-            latitude: record.latitude ? parseFloat(record.latitude) : null,
-            longitude: record.longitude ? parseFloat(record.longitude) : null,
+            latitude: record.LAT ? parseFloat(record.LAT) : (record.latitude ? parseFloat(record.latitude) : null),
+            longitude: record.LON ? parseFloat(record.LON) : (record.longitude ? parseFloat(record.longitude) : null),
             last_updated: new Date().toISOString()
           };
 
-          // Upsert the record
-          const { error } = await supabase
-            .from('pha_agencies')
-            .upsert(phaData, { 
-              onConflict: 'pha_code',
-              ignoreDuplicates: false 
-            });
+          // Only process records with valid data
+          if (phaData.name && phaData.name !== 'Unknown PHA') {
+            const { error } = await supabase
+              .from('pha_agencies')
+              .upsert(phaData, { 
+                onConflict: 'pha_code',
+                ignoreDuplicates: false 
+              });
 
-          if (error) {
-            console.error('Error upserting PHA record:', error);
-            errorCount++;
-          } else {
-            processedCount++;
+            if (error) {
+              console.error('Error upserting PHA record:', error);
+              errorCount++;
+            } else {
+              processedCount++;
+            }
           }
         } catch (recordError) {
           console.error('Error processing PHA record:', recordError);
@@ -118,7 +123,7 @@ const PHADataManager: React.FC = () => {
       setLastImport(new Date());
       toast({
         title: "Import Successful",
-        description: `Processed ${processedCount} PHA records`,
+        description: `Processed ${processedCount} PHA records from HUD data`,
       });
       
       await fetchPHACount();
@@ -140,7 +145,7 @@ const PHADataManager: React.FC = () => {
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type === 'text/csv') {
+    if (file && (file.type === 'text/csv' || file.type === 'application/vnd.ms-excel' || file.name.endsWith('.csv'))) {
       importCSVData(file);
     } else {
       toast({
@@ -152,15 +157,15 @@ const PHADataManager: React.FC = () => {
   };
 
   const downloadSampleCSV = () => {
-    const sampleData = `pha_code,name,address,city,state,zip,phone,email,website,supports_hcv,waitlist_status,latitude,longitude
-CA001,Sample Housing Authority,123 Main St,Los Angeles,CA,90210,555-123-4567,info@sample.gov,www.sampleha.gov,true,Open,34.0522,-118.2437
-NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov,www.anotherpha.gov,false,Closed,40.7128,-74.0060`;
+    const sampleData = `PARTICIPANT_CODE,FORMAL_PARTICIPANT_NAME,STD_ADDR,STD_CITY,STD_ST,STD_ZIP5,HA_PHN_NUM,HA_EMAIL_ADDR_TEXT,HA_PROGRAM_TYPE,LAT,LON
+CA001,Sample Housing Authority,123 Main St,Los Angeles,CA,90210,555-123-4567,info@sample.gov,Section 8,34.0522,-118.2437
+NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov,Public Housing,40.7128,-74.0060`;
     
     const blob = new Blob([sampleData], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'pha_sample.csv';
+    a.download = 'hud_pha_sample.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -176,7 +181,7 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Database className="w-5 h-5" />
-          PHA Data Management
+          HUD PHA Data Management
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -198,7 +203,7 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv"
+            accept=".csv,.txt"
             onChange={handleFileSelect}
             className="hidden"
           />
@@ -210,7 +215,7 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
             size="lg"
           >
             <Upload className="w-4 h-4" />
-            {isImporting ? 'Importing CSV Data...' : 'Import CSV File'}
+            {isImporting ? 'Importing HUD Data...' : 'Import HUD CSV File'}
           </Button>
 
           <Button
@@ -219,12 +224,12 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
             className="w-full flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
-            Download Sample CSV Template
+            Download HUD Format Sample
           </Button>
 
           <p className="text-xs text-gray-600 text-center">
-            Upload a CSV file with PHA data. The system will automatically map common field names
-            and update existing records based on PHA codes.
+            Upload HUD PHA Contact Information CSV data. The system automatically maps HUD field names
+            like PARTICIPANT_CODE, FORMAL_PARTICIPANT_NAME, STD_ADDR, LAT/LON, etc.
           </p>
         </div>
 
@@ -265,19 +270,21 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
           </div>
         )}
 
-        {/* CSV Format Information */}
+        {/* HUD Format Information */}
         <div className="p-4 bg-blue-50 rounded-lg">
           <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
             <FileText className="w-4 h-4" />
-            CSV Format Requirements
+            HUD CSV Format Mapping
           </h4>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• <strong>Required:</strong> name (PHA name)</li>
-            <li>• <strong>Optional:</strong> pha_code, address, city, state, zip</li>
-            <li>• <strong>Optional:</strong> phone, email, website</li>
-            <li>• <strong>Optional:</strong> latitude, longitude (for map display)</li>
-            <li>• <strong>Optional:</strong> supports_hcv (true/false), waitlist_status</li>
-            <li>• Field names are flexible - common variations are auto-mapped</li>
+            <li>• <strong>PARTICIPANT_CODE</strong> → PHA Code</li>
+            <li>• <strong>FORMAL_PARTICIPANT_NAME</strong> → PHA Name</li>
+            <li>• <strong>STD_ADDR, STD_CITY, STD_ST, STD_ZIP5</strong> → Address</li>
+            <li>• <strong>HA_PHN_NUM</strong> → Phone Number</li>
+            <li>• <strong>HA_EMAIL_ADDR_TEXT, EXEC_DIR_EMAIL</strong> → Email</li>
+            <li>• <strong>LAT, LON</strong> → Coordinates for mapping</li>
+            <li>• <strong>HA_PROGRAM_TYPE, SECTION8_UNITS_CNT</strong> → Section 8 support</li>
+            <li>• Tab-separated or comma-separated formats supported</li>
           </ul>
         </div>
       </CardContent>
