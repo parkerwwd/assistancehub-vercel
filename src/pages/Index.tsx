@@ -54,13 +54,13 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
               <Link to="/section8">
                 <Button size="lg" className="bg-white text-blue-700 hover:bg-blue-50 hover:text-blue-800 w-full sm:w-auto text-lg px-8 py-4 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 group">
-                  <Home className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                  <Home className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
                   Find Housing
                 </Button>
               </Link>
               <Link to="/snap">
                 <Button size="lg" className="bg-green-600 text-white hover:bg-green-700 w-full sm:w-auto text-lg px-8 py-4 font-semibold shadow-lg hover:shadow-xl transition-all duration-200 group">
-                  <Utensils className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                  <Utensils className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
                   Food Assistance
                 </Button>
               </Link>
