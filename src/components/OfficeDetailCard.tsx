@@ -2,9 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, ArrowRight } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, ArrowRight, Building } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
-import { getWaitlistColor } from "@/utils/mapUtils";
+import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -18,6 +18,8 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
     .filter(Boolean)
     .join(', ');
 
+  const phaType = getPHATypeFromData(office);
+
   return (
     <div className="h-full p-4 overflow-y-auto">
       <Card className="h-fit shadow-sm border-0">
@@ -29,6 +31,23 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* PHA Type Badge */}
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Building className="w-4 h-4" />
+              PHA Type:
+            </span>
+            <span 
+              className="px-3 py-1 rounded-full text-sm font-medium"
+              style={{ 
+                backgroundColor: getPHATypeColor(phaType) + '20',
+                color: getPHATypeColor(phaType)
+              }}
+            >
+              {phaType}
+            </span>
+          </div>
+
           {/* Waitlist Status Badge */}
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <span className="text-sm font-medium text-gray-700 flex items-center gap-2">

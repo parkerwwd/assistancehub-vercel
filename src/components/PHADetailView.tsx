@@ -2,9 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
-import { getWaitlistColor } from "@/utils/mapUtils";
+import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -18,6 +18,8 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
   const fullAddress = [office.address, office.city, office.state, office.zip]
     .filter(Boolean)
     .join(', ');
+
+  const phaType = getPHATypeFromData(office);
 
   return (
     <div className="h-full bg-gray-50">
@@ -50,7 +52,25 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           </CardHeader>
 
           <CardContent className="space-y-4">
-            {/* Waitlist Status - More prominent */}
+            {/* PHA Type - Most prominent */}
+            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Building className="w-4 h-4" />
+                PHA Type
+              </span>
+              <span 
+                className="px-3 py-1 rounded-full text-sm font-medium border"
+                style={{ 
+                  backgroundColor: getPHATypeColor(phaType) + '15',
+                  borderColor: getPHATypeColor(phaType) + '30',
+                  color: getPHATypeColor(phaType)
+                }}
+              >
+                {phaType}
+              </span>
+            </div>
+
+            {/* Waitlist Status */}
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
               <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <Users className="w-4 h-4" />

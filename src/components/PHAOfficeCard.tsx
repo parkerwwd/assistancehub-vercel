@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from "@/components/ui/card";
 import { MapPin, Heart } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
-import { getWaitlistColor } from "@/utils/mapUtils";
+import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -16,6 +16,8 @@ const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
   const fullAddress = [agency.address, agency.city, agency.state, agency.zip]
     .filter(Boolean)
     .join(', ');
+
+  const phaType = getPHATypeFromData(agency);
 
   return (
     <Card 
@@ -37,17 +39,17 @@ const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
               </p>
             )}
             
-            {/* Status badge */}
+            {/* PHA Type badge */}
             <div className="flex items-center">
               <span 
                 className="px-3 py-1 rounded-full text-xs font-medium border inline-block"
                 style={{ 
-                  backgroundColor: getWaitlistColor(agency.waitlist_status || 'Unknown') + '15',
-                  borderColor: getWaitlistColor(agency.waitlist_status || 'Unknown') + '30',
-                  color: getWaitlistColor(agency.waitlist_status || 'Unknown')
+                  backgroundColor: getPHATypeColor(phaType) + '15',
+                  borderColor: getPHATypeColor(phaType) + '30',
+                  color: getPHATypeColor(phaType)
                 }}
               >
-                {agency.waitlist_status || 'Unknown'}
+                {phaType}
               </span>
             </div>
           </div>
