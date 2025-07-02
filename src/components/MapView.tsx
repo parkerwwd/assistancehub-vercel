@@ -74,7 +74,7 @@ const MapView = () => {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-white rounded-lg shadow-sm border">
       {/* Mapbox Token Input */}
       <TokenInput 
         mapboxToken={mapboxToken}
@@ -84,7 +84,7 @@ const MapView = () => {
 
       {/* Search and Filters */}
       {mapboxToken && (
-        <div className="flex-shrink-0 px-4 pb-4">
+        <div className="px-4 pb-4">
           <MapFilters
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters(!showFilters)}
@@ -96,11 +96,11 @@ const MapView = () => {
 
       {/* Main Content - Map and Details Side by Side */}
       {mapboxToken && (
-        <div className="flex-1 min-h-0 px-4 pb-4">
-          <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg overflow-hidden shadow-sm">
+        <div className="flex-1 px-4 pb-4">
+          <ResizablePanelGroup direction="horizontal" className="h-full rounded-lg overflow-hidden">
             {/* Map Panel */}
-            <ResizablePanel defaultSize={70} minSize={50}>
-              <div className="bg-white h-full">
+            <ResizablePanel defaultSize={65} minSize={50}>
+              <div className="bg-gray-100 h-full rounded-l-lg">
                 <MapContainer
                   ref={mapRef}
                   mapboxToken={mapboxToken}
@@ -111,11 +111,11 @@ const MapView = () => {
             </ResizablePanel>
             
             {/* Resize Handle */}
-            <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors" />
+            <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-2" />
             
             {/* Details Panel */}
-            <ResizablePanel defaultSize={30} minSize={25} maxSize={50}>
-              <div className="bg-white h-full overflow-hidden">
+            <ResizablePanel defaultSize={35} minSize={30} maxSize={50}>
+              <div className="bg-white h-full overflow-hidden rounded-r-lg border-l">
                 {renderRightPanel()}
               </div>
             </ResizablePanel>
