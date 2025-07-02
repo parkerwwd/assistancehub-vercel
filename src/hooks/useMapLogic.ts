@@ -43,6 +43,20 @@ export const useMapLogic = () => {
     }
   };
 
+  // Handle search results when they arrive
+  useEffect(() => {
+    if (currentSearchQuery && phaAgencies.length > 0 && !loading) {
+      const selectedResult = phaAgencies[0];
+      setSelectedOffice(selectedResult);
+      
+      if (selectedResult.latitude && selectedResult.longitude && mapRef.current) {
+        mapRef.current.flyTo([selectedResult.longitude, selectedResult.latitude], 12);
+      }
+      
+      console.log('Selected search result:', selectedResult.name);
+    }
+  }, [phaAgencies, currentSearchQuery, loading]);
+
   const handlePageChange = (page: number) => {
     if (currentSearchQuery) {
       searchPHAs(currentSearchQuery, page);
@@ -110,22 +124,12 @@ export const useMapLogic = () => {
     
     console.log('Searching for:', query);
     setCurrentSearchQuery(query);
-    await searchPHAs(query, 1);
     
-    // If we have search results, select the most relevant one
-    if (phaAgencies.length > 0) {
-      const selectedResult = phaAgencies[0];
-      setSelectedOffice(selectedResult);
-      
-      if (selectedResult.latitude && selectedResult.longitude && mapRef.current) {
-        mapRef.current.flyTo([selectedResult.longitude, selectedResult.latitude], 12);
-      }
-      
-      console.log('Selected search result:', selectedResult.name);
-    } else {
-      console.log('No relevant results found for search:', query);
-      setSelectedOffice(null);
-    }
+    // Clear the selected office first to avoid confusion
+    setSelectedOffice(null);
+    
+    // Perform the search - the results will be handled by the effect
+    await searchPHAs(query, 1);
   };
 
   return {
