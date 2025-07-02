@@ -33,8 +33,17 @@ const OfficeDetailsPanel = ({
   searchPerformed = false,
   searchQuery = ""
 }: OfficeDetailsPanelProps) => {
+  console.log('🏢 OfficeDetailsPanel render:', {
+    selectedOffice: selectedOffice?.name || 'none',
+    phaAgenciesCount: phaAgencies.length,
+    loading,
+    searchPerformed,
+    searchQuery
+  });
+
   // If we have a selected office, show detailed view
   if (selectedOffice) {
+    console.log('📋 Showing detail view for:', selectedOffice.name);
     return (
       <OfficeDetailCard 
         office={selectedOffice}
