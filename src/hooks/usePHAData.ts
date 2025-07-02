@@ -51,32 +51,68 @@ export const usePHAData = () => {
       setLoading(true);
       setError(null);
       
-      const searchTerm = query.toLowerCase().trim();
+      const searchTerm = `%${query.toLowerCase().trim()}%`;
       const from = (page - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
       console.log('Searching for:', searchTerm);
       console.log('Query range:', from, 'to', to);
 
-      // Use proper PostgREST or syntax with individual conditions
-      const { data, error: searchError, count } = await supabase
-        .from('pha_agencies')
-        .select('*', { count: 'exact' })
-        .or(`name.ilike.*${searchTerm}*,city.ilike.*${searchTerm}*,state.ilike.*${searchTerm}*,address.ilike.*${searchTerm}*`)
-        .order('name')
-        .range(from, to);
+      // Use individual queries and combine results to avoid PostgREST parsing issues
+      const [nameResults, cityResults, stateResults, addressResults] = await Promise.all([
+        supabase
+          .from('pha_agencies')
+          .select('*', { count: 'exact' })
+          .ilike('name', searchTerm)
+          .order('name')
+          .range(from, to),
+        supabase
+          .from('pha_agencies')
+          .select('*', { count: 'exact' })
+          .ilike('city', searchTerm)
+          .order('name')
+          .range(from, to),
+        supabase
+          .from('pha_agencies')
+          .select('*', { count: 'exact' })
+          .ilike('state', searchTerm)
+          .order('name')
+          .range(from, to),
+        supabase
+          .from('pha_agencies')
+          .select('*', { count: 'exact' })
+          .ilike('address', searchTerm)
+          .order('name')
+          .range(from, to)
+      ]);
 
-      if (searchError) {
-        console.error('Search error:', searchError);
-        throw searchError;
+      // Check for errors
+      const errors = [nameResults.error, cityResults.error, stateResults.error, addressResults.error].filter(Boolean);
+      if (errors.length > 0) {
+        throw errors[0];
       }
 
+      // Combine and deduplicate results
+      const allResults = [
+        ...(nameResults.data || []),
+        ...(cityResults.data || []),
+        ...(stateResults.data || []),
+        ...(addressResults.data || [])
+      ];
+
+      // Remove duplicates by ID
+      const uniqueResults = allResults.filter((item, index, arr) => 
+        arr.findIndex(other => other.id === item.id) === index
+      );
+
+      // Sort by name
+      uniqueResults.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
       console.log('Search query executed successfully');
-      console.log('Search results count:', data?.length || 0);
-      console.log('Total count from DB:', count);
+      console.log('Combined search results count:', uniqueResults.length);
       
-      setPHAAgencies(data || []);
-      setTotalCount(count || 0);
+      setPHAAgencies(uniqueResults);
+      setTotalCount(uniqueResults.length);
       setCurrentPage(page);
     } catch (err) {
       console.error('Error searching PHA data:', err);
