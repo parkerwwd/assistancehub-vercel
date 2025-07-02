@@ -4,9 +4,9 @@ import MapView from "@/components/MapView";
 
 const Section8 = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -26,9 +26,9 @@ const Section8 = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
         {/* Page Header */}
-        <div className="mb-6">
+        <div className="flex-shrink-0 mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Section 8 Housing Search
           </h1>
@@ -38,12 +38,12 @@ const Section8 = () => {
         </div>
 
         {/* Map View */}
-        <div className="h-[calc(100vh-280px)] min-h-[600px]">
+        <div className="flex-1 min-h-0">
           <MapView />
         </div>
 
         {/* Info Section */}
-        <div className="mt-6 bg-blue-50 rounded-lg p-6">
+        <div className="flex-shrink-0 mt-6 bg-blue-50 rounded-lg p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">About Section 8 Housing</h3>
