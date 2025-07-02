@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "./OfficeDetailsPanel";
@@ -39,6 +40,8 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
 
   const [viewState, setViewState] = useState<ViewState>('overview');
   const [detailOffice, setDetailOffice] = useState<PHAAgency | null>(null);
+  const [searchPerformed, setSearchPerformed] = useState(false);
+  const [lastSearchQuery, setLastSearchQuery] = useState('');
 
   const handleOfficeClick = (office: PHAAgency) => {
     setDetailOffice(office);
@@ -57,6 +60,12 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
 
   const handleBackToPHADetail = () => {
     setViewState('pha-detail');
+  };
+
+  const handleSearchWrapper = (query: string) => {
+    setSearchPerformed(true);
+    setLastSearchQuery(query);
+    handleSearch(query);
   };
 
   const renderRightPanel = () => {
@@ -89,6 +98,8 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
             totalPages={totalPages}
             totalCount={totalCount}
             onPageChange={handlePageChange}
+            searchPerformed={searchPerformed}
+            searchQuery={lastSearchQuery}
           />
         );
     }
@@ -115,7 +126,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters(!showFilters)}
             onCitySelect={handleCitySelect}
-            onSearch={handleSearch}
+            onSearch={handleSearchWrapper}
           />
         </div>
       )}
