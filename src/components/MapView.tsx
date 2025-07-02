@@ -100,44 +100,47 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   }
 
   return (
-    <div className="h-full bg-white rounded-lg shadow-sm border overflow-hidden">
-      <ResizablePanelGroup direction="horizontal" className="h-full">
-        {/* Map Panel */}
-        <ResizablePanel defaultSize={65} minSize={50}>
-          <div className="relative h-full bg-gray-100">
-            {/* Search overlay - only show if not hidden */}
-            {!hideSearch && (
-              <div className="absolute top-4 left-4 right-4 z-10">
-                <MapFilters
-                  showFilters={showFilters}
-                  onToggleFilters={() => setShowFilters(!showFilters)}
-                  onCitySelect={handleCitySelect}
-                  onSearch={handleSearch}
-                />
-              </div>
-            )}
-            
-            {/* Map */}
-            <MapContainer
-              ref={mapRef}
-              mapboxToken={mapboxToken}
-              phaAgencies={phaAgencies}
-              onOfficeSelect={setSelectedOffice}
-              onTokenError={setTokenError}
-            />
-          </div>
-        </ResizablePanel>
-        
-        {/* Resize Handle */}
-        <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-1" />
-        
-        {/* Details Panel */}
-        <ResizablePanel defaultSize={35} minSize={30} maxSize={50}>
-          <div className="bg-white h-full overflow-y-auto border-l">
-            {renderRightPanel()}
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+    <div className="h-full bg-white rounded-lg shadow-sm border overflow-hidden flex flex-col">
+      {/* Search bar above the map - only show if not hidden */}
+      {!hideSearch && (
+        <div className="p-4 border-b bg-white">
+          <MapFilters
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            onCitySelect={handleCitySelect}
+            onSearch={handleSearch}
+          />
+        </div>
+      )}
+      
+      {/* Map and details panel */}
+      <div className="flex-1">
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          {/* Map Panel */}
+          <ResizablePanel defaultSize={65} minSize={50}>
+            <div className="relative h-full bg-gray-100">
+              {/* Map */}
+              <MapContainer
+                ref={mapRef}
+                mapboxToken={mapboxToken}
+                phaAgencies={phaAgencies}
+                onOfficeSelect={setSelectedOffice}
+                onTokenError={setTokenError}
+              />
+            </div>
+          </ResizablePanel>
+          
+          {/* Resize Handle */}
+          <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-1" />
+          
+          {/* Details Panel */}
+          <ResizablePanel defaultSize={35} minSize={30} maxSize={50}>
+            <div className="bg-white h-full overflow-y-auto border-l">
+              {renderRightPanel()}
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </div>
   );
 };
