@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Database } from "@/integrations/supabase/types";
 import { USCity } from "@/data/usCities";
@@ -50,60 +51,53 @@ export const useMapLogic = () => {
     }
   };
 
-  const handleCitySelect = (city: USCity) => {
+  const handleCitySelect = async (city: USCity) => {
     console.log('Selected city:', city.name, city.stateCode);
+    
+    // Automatically search for PHAs in the selected city
+    const searchQuery = `${city.name}, ${city.stateCode}`;
+    setCurrentSearchQuery(searchQuery);
+    await searchPHAs(searchQuery, 1);
     
     // Fly to the selected city
     if (mapRef.current) {
       mapRef.current.flyTo([city.longitude, city.latitude], 10);
     }
 
-    // Look for nearby PHA offices with improved matching
-    const nearbyOffices = phaAgencies.filter(office => {
+    // Look for the best matching PHA office from search results
+    const cityLower = city.name.toLowerCase().trim();
+    const stateLower = city.stateCode.toLowerCase().trim();
+    
+    // Find exact city matches first, then closest matches
+    const exactCityMatch = phaAgencies.find(office => {
       if (!office.city || !office.state) return false;
       
       const officeCityLower = office.city.toLowerCase().trim();
       const officeStateLower = office.state.toLowerCase().trim();
-      const cityLower = city.name.toLowerCase().trim();
-      const stateLower = city.stateCode.toLowerCase().trim();
       
-      // Match by city name and state code
-      const cityMatch = officeCityLower === cityLower || 
-                       officeCityLower.includes(cityLower) || 
-                       cityLower.includes(officeCityLower);
-      
-      const stateMatch = officeStateLower === stateLower || 
-                        officeStateLower === city.state.toLowerCase().substring(0, 2);
-      
-      return cityMatch && stateMatch;
+      return officeCityLower === cityLower && 
+             (officeStateLower === stateLower || 
+              officeStateLower === city.state.toLowerCase().substring(0, 2));
     });
 
-    // Sort by distance if we have coordinates
-    if (nearbyOffices.length > 0) {
-      const sortedOffices = nearbyOffices.sort((a, b) => {
-        if (!a.latitude || !a.longitude || !b.latitude || !b.longitude) return 0;
-        
-        const distA = Math.sqrt(
-          Math.pow(city.latitude - a.latitude, 2) + 
-          Math.pow(city.longitude - a.longitude, 2)
-        );
-        const distB = Math.sqrt(
-          Math.pow(city.latitude - b.latitude, 2) + 
-          Math.pow(city.longitude - b.longitude, 2)
-        );
-        
-        return distA - distB;
-      });
-      
-      setSelectedOffice(sortedOffices[0]);
-      console.log('Found nearby PHA office:', sortedOffices[0].name);
+    if (exactCityMatch) {
+      setSelectedOffice(exactCityMatch);
+      console.log('Found exact city match:', exactCityMatch.name);
       
       // Fly to the PHA office if it has coordinates
-      if (sortedOffices[0].latitude && sortedOffices[0].longitude && mapRef.current) {
-        mapRef.current.flyTo([sortedOffices[0].longitude, sortedOffices[0].latitude], 12);
+      if (exactCityMatch.latitude && exactCityMatch.longitude && mapRef.current) {
+        mapRef.current.flyTo([exactCityMatch.longitude, exactCityMatch.latitude], 12);
+      }
+    } else if (phaAgencies.length > 0) {
+      // Select the first result from the search
+      setSelectedOffice(phaAgencies[0]);
+      console.log('Selected first search result:', phaAgencies[0].name);
+      
+      if (phaAgencies[0].latitude && phaAgencies[0].longitude && mapRef.current) {
+        mapRef.current.flyTo([phaAgencies[0].longitude, phaAgencies[0].latitude], 12);
       }
     } else {
-      console.log('No nearby PHA offices found for:', city.name, city.stateCode);
+      console.log('No PHA offices found for:', city.name, city.stateCode);
       setSelectedOffice(null);
     }
   };
@@ -118,48 +112,9 @@ export const useMapLogic = () => {
     setCurrentSearchQuery(query);
     await searchPHAs(query, 1);
     
-    // Parse the search query to extract city and state
-    const queryParts = query.split(',').map(part => part.trim());
-    let searchCity = '';
-    let searchState = '';
-    
-    if (queryParts.length >= 2) {
-      searchCity = queryParts[0].toLowerCase();
-      searchState = queryParts[1].toLowerCase();
-    } else {
-      // Single term search - could be city or state
-      const singleTerm = query.toLowerCase().trim();
-      searchCity = singleTerm;
-      searchState = singleTerm;
-    }
-    
-    // Filter results based on location relevance
-    const filteredResults = phaAgencies.filter(agency => {
-      if (!agency.city && !agency.state && !agency.name) return false;
-      
-      const agencyCity = (agency.city || '').toLowerCase();
-      const agencyState = (agency.state || '').toLowerCase();
-      const agencyName = (agency.name || '').toLowerCase();
-      
-      // Check if search query matches city, state, or name
-      const nameMatch = agencyName.includes(query.toLowerCase());
-      const cityMatch = searchCity && agencyCity.includes(searchCity);
-      const stateMatch = searchState && (
-        agencyState.includes(searchState) || 
-        agencyState === searchState.substring(0, 2)
-      );
-      
-      return nameMatch || cityMatch || stateMatch;
-    });
-    
-    // If we have filtered results, select the most relevant one
-    if (filteredResults.length > 0) {
-      // Prioritize exact city matches, then state matches, then name matches
-      const exactCityMatch = filteredResults.find(agency => 
-        agency.city?.toLowerCase() === searchCity
-      );
-      
-      const selectedResult = exactCityMatch || filteredResults[0];
+    // If we have search results, select the most relevant one
+    if (phaAgencies.length > 0) {
+      const selectedResult = phaAgencies[0];
       setSelectedOffice(selectedResult);
       
       if (selectedResult.latitude && selectedResult.longitude && mapRef.current) {
