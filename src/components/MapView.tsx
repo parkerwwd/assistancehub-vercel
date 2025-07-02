@@ -116,10 +116,9 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
       {/* Map and details panel */}
       <div className="flex-1">
         <ResizablePanelGroup direction="horizontal" className="h-full">
-          {/* Map Panel - Changed from 65% to 50% */}
+          {/* Map Panel */}
           <ResizablePanel defaultSize={50} minSize={35}>
             <div className="relative h-full bg-gray-100">
-              {/* Map */}
               <MapContainer
                 ref={mapRef}
                 mapboxToken={mapboxToken}
@@ -133,7 +132,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
           {/* Resize Handle */}
           <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-1" />
           
-          {/* Details Panel - Changed from 35% to 50% */}
+          {/* Details Panel */}
           <ResizablePanel defaultSize={50} minSize={30} maxSize={65}>
             <div className="bg-white h-full overflow-y-auto border-l">
               {renderRightPanel()}
