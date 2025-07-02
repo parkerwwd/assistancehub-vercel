@@ -19,17 +19,9 @@ const DataAdmin = () => {
                 AssistanceHub
               </Link>
             </div>
-            <nav className="hidden md:flex space-x-6">
-              <Link to="/section8" className="text-gray-700 hover:text-blue-900 transition-colors px-3 py-2 rounded-md hover:bg-gray-50">
-                Section 8
-              </Link>
-              <Link to="/snap" className="text-gray-700 hover:text-blue-900 transition-colors px-3 py-2 rounded-md hover:bg-gray-50">
-                SNAP
-              </Link>
-              <Link to="/data-admin" className="text-blue-900 font-medium px-3 py-2 rounded-md bg-blue-50">
-                Data Admin
-              </Link>
-            </nav>
+            <div className="text-sm text-gray-500 font-medium">
+              Admin Dashboard
+            </div>
           </div>
         </div>
       </header>

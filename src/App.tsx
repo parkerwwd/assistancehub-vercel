@@ -23,7 +23,6 @@ const App = () => (
           <Route path="/section8" element={<Section8 />} />
           <Route path="/snap" element={<SNAP />} />
           <Route path="/data-admin" element={<DataAdmin />} />
-          <Route path="/pha-admin" element={<DataAdmin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
