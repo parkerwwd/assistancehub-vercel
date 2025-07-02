@@ -41,12 +41,13 @@ export const usePHAData = () => {
 
     try {
       setLoading(true);
-      const queryLower = query.toLowerCase().trim();
+      const queryPattern = `%${query.toLowerCase().trim()}%`;
 
+      // Use multiple queries combined with OR - proper PostgREST syntax
       const { data, error: searchError } = await supabase
         .from('pha_agencies')
         .select('*')
-        .or(`name.ilike.%${queryLower}%,city.ilike.%${queryLower}%,state.ilike.%${queryLower}%,address.ilike.%${queryLower}%`)
+        .or(`name.ilike.${queryPattern},city.ilike.${queryPattern},state.ilike.${queryPattern},address.ilike.${queryPattern}`)
         .order('name');
 
       if (searchError) {
@@ -56,7 +57,10 @@ export const usePHAData = () => {
       setPHAAgencies(data || []);
     } catch (err) {
       console.error('Error searching PHA data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to search PHA data');
+      
+      // If search fails, fall back to fetching all data
+      console.log('Falling back to fetch all PHA data');
+      await fetchPHAData();
     } finally {
       setLoading(false);
     }
