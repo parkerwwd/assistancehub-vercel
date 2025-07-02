@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database } from "lucide-react";
+import { Database, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { usePHAImport } from "./PHADataManager/hooks/usePHAImport";
 import { usePHACount } from "./PHADataManager/hooks/usePHACount";
-import { PHAStatusCard } from "./PHADataManager/components/PHAStatusCard";
+import { usePHAStats } from "./PHADataManager/hooks/usePHAStats";
+import { PHAStatsCard } from "./PHADataManager/components/PHAStatsCard";
 import { ImportProgressComponent } from "./PHADataManager/components/ImportProgress";
 import { ImportControls } from "./PHADataManager/components/ImportControls";
 import { ImportResults } from "./PHADataManager/components/ImportResults";
@@ -26,11 +28,26 @@ const PHADataManager: React.FC = () => {
     fetchPHACount 
   } = usePHACount();
 
+  const {
+    importStats,
+    incrementFileUpload,
+    updateImportResults,
+    resetStats
+  } = usePHAStats();
+
   const handleFileImport = async (file: File) => {
     setImportResult(null);
+    incrementFileUpload(file.name);
+    
     try {
-      await importCSVData(file);
+      const result = await importCSVData(file);
       setLastImport(new Date());
+      
+      // Update stats with import results
+      if (result && result.processedCount) {
+        updateImportResults(result.processedCount, result.errorCount || 0);
+      }
+      
       await fetchPHACount();
     } catch (error) {
       console.error('Import failed:', error);
@@ -38,15 +55,30 @@ const PHADataManager: React.FC = () => {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-6xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Database className="w-5 h-5" />
-          HUD PHA Data Management
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Database className="w-5 h-5" />
+            HUD PHA Data Management
+          </CardTitle>
+          <Button
+            onClick={resetStats}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset Stats
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <PHAStatusCard totalPHAs={totalPHAs} lastImport={lastImport} />
+        <PHAStatsCard 
+          totalPHAs={totalPHAs} 
+          lastImport={lastImport}
+          importStats={importStats}
+        />
         
         <ImportProgressComponent 
           importProgress={importProgress} 
