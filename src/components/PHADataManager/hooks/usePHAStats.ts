@@ -1,18 +1,21 @@
 
 import { useState, useEffect } from 'react';
 
-export interface ImportStats {
-  filesUploaded: number;
+export interface FileUploadRecord {
+  fileName: string;
+  uploadDate: string;
   recordsAdded: number;
   recordsEdited: number;
-  lastFileName?: string;
+  totalRecords: number;
+}
+
+export interface ImportStats {
+  fileUploads: FileUploadRecord[];
 }
 
 export const usePHAStats = () => {
   const [importStats, setImportStats] = useState<ImportStats>({
-    filesUploaded: 0,
-    recordsAdded: 0,
-    recordsEdited: 0
+    fileUploads: []
   });
 
   // Load stats from localStorage on mount
@@ -21,48 +24,63 @@ export const usePHAStats = () => {
     if (savedStats) {
       try {
         const parsed = JSON.parse(savedStats);
-        setImportStats(parsed);
+        // Handle legacy format
+        if (parsed.filesUploaded !== undefined) {
+          setImportStats({ fileUploads: [] });
+        } else {
+          setImportStats(parsed);
+        }
       } catch (error) {
         console.error('Error parsing saved stats:', error);
+        setImportStats({ fileUploads: [] });
       }
     }
   }, []);
 
   // Save stats to localStorage whenever they change
-  const updateStats = (newStats: Partial<ImportStats>) => {
-    const updatedStats = { ...importStats, ...newStats };
-    setImportStats(updatedStats);
-    localStorage.setItem('pha_import_stats', JSON.stringify(updatedStats));
+  const updateStats = (newStats: ImportStats) => {
+    setImportStats(newStats);
+    localStorage.setItem('pha_import_stats', JSON.stringify(newStats));
   };
 
-  const incrementFileUpload = (fileName?: string) => {
-    updateStats({
-      filesUploaded: importStats.filesUploaded + 1,
-      lastFileName: fileName
-    });
-  };
+  const addFileUpload = (fileName: string, recordsAdded: number, recordsEdited: number) => {
+    const newUpload: FileUploadRecord = {
+      fileName,
+      uploadDate: new Date().toISOString(),
+      recordsAdded,
+      recordsEdited,
+      totalRecords: recordsAdded + recordsEdited
+    };
 
-  const updateImportResults = (added: number, edited: number) => {
-    updateStats({
-      recordsAdded: importStats.recordsAdded + added,
-      recordsEdited: importStats.recordsEdited + edited
-    });
+    const updatedStats = {
+      fileUploads: [...importStats.fileUploads, newUpload]
+    };
+
+    updateStats(updatedStats);
   };
 
   const resetStats = () => {
-    const emptyStats = {
-      filesUploaded: 0,
-      recordsAdded: 0,
-      recordsEdited: 0
-    };
-    setImportStats(emptyStats);
-    localStorage.setItem('pha_import_stats', JSON.stringify(emptyStats));
+    const emptyStats = { fileUploads: [] };
+    updateStats(emptyStats);
+  };
+
+  // Calculate totals for summary
+  const getTotals = () => {
+    return importStats.fileUploads.reduce(
+      (acc, upload) => ({
+        totalFiles: acc.totalFiles + 1,
+        totalAdded: acc.totalAdded + upload.recordsAdded,
+        totalEdited: acc.totalEdited + upload.recordsEdited,
+        totalRecords: acc.totalRecords + upload.totalRecords
+      }),
+      { totalFiles: 0, totalAdded: 0, totalEdited: 0, totalRecords: 0 }
+    );
   };
 
   return {
     importStats,
-    incrementFileUpload,
-    updateImportResults,
-    resetStats
+    addFileUpload,
+    resetStats,
+    getTotals
   };
 };

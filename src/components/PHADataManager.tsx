@@ -7,6 +7,7 @@ import { usePHAImport } from "./PHADataManager/hooks/usePHAImport";
 import { usePHACount } from "./PHADataManager/hooks/usePHACount";
 import { usePHAStats } from "./PHADataManager/hooks/usePHAStats";
 import { PHAStatsCard } from "./PHADataManager/components/PHAStatsCard";
+import { PHAUploadsTable } from "./PHADataManager/components/PHAUploadsTable";
 import { ImportProgressComponent } from "./PHADataManager/components/ImportProgress";
 import { ImportControls } from "./PHADataManager/components/ImportControls";
 import { ImportResults } from "./PHADataManager/components/ImportResults";
@@ -30,22 +31,23 @@ const PHADataManager: React.FC = () => {
 
   const {
     importStats,
-    incrementFileUpload,
-    updateImportResults,
-    resetStats
+    addFileUpload,
+    resetStats,
+    getTotals
   } = usePHAStats();
 
   const handleFileImport = async (file: File) => {
     setImportResult(null);
-    incrementFileUpload(file.name);
     
     try {
       const result = await importCSVData(file);
       setLastImport(new Date());
       
       // Update stats with import results
-      if (result && result.processedCount) {
-        updateImportResults(result.processedCount, result.errorCount || 0);
+      if (result && result.processedCount !== undefined) {
+        const recordsAdded = result.processedCount || 0;
+        const recordsEdited = result.errorCount || 0;
+        addFileUpload(file.name, recordsAdded, recordsEdited);
       }
       
       await fetchPHACount();
@@ -77,7 +79,7 @@ const PHADataManager: React.FC = () => {
         <PHAStatsCard 
           totalPHAs={totalPHAs} 
           lastImport={lastImport}
-          importStats={importStats}
+          totals={getTotals()}
         />
         
         <ImportProgressComponent 
@@ -92,6 +94,8 @@ const PHADataManager: React.FC = () => {
         />
 
         <ImportResults importResult={importResult} />
+
+        <PHAUploadsTable uploads={importStats.fileUploads} />
 
         <HUDFormatInfo />
       </CardContent>
