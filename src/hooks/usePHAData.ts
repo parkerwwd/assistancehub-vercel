@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
@@ -55,29 +56,59 @@ export const usePHAData = () => {
 
       console.log('Searching for:', searchTerm);
 
-      // Use correct PostgREST syntax - chain multiple or conditions
-      let queryBuilder = supabase
-        .from('pha_agencies')
-        .select('*', { count: 'exact' });
+      // Use multiple separate queries and combine results to avoid PostgREST parsing issues
+      const searchQueries = [
+        supabase
+          .from('pha_agencies')
+          .select('*', { count: 'exact' })
+          .ilike('name', `%${searchTerm}%`)
+          .range(from, to),
+        supabase
+          .from('pha_agencies')
+          .select('*', { count: 'exact' })
+          .ilike('city', `%${searchTerm}%`)
+          .range(from, to),
+        supabase
+          .from('pha_agencies')
+          .select('*', { count: 'exact' })
+          .ilike('state', `%${searchTerm}%`)
+          .range(from, to),
+        supabase
+          .from('pha_agencies')
+          .select('*', { count: 'exact' })
+          .ilike('address', `%${searchTerm}%`)
+          .range(from, to)
+      ];
 
-      // Apply search filters using individual ilike conditions combined with or
-      queryBuilder = queryBuilder.or(
-        `name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`
-      );
-
-      const { data, error: searchError, count } = await queryBuilder
-        .order('name')
-        .range(from, to);
-
-      if (searchError) {
-        console.error('Search error:', searchError);
-        throw searchError;
-      }
-
-      console.log('Search results:', data?.length || 0, 'total count:', count);
+      const results = await Promise.allSettled(searchQueries);
       
-      setPHAAgencies(data || []);
-      setTotalCount(count || 0);
+      // Combine all successful results and remove duplicates
+      const allData: PHAAgency[] = [];
+      const seenIds = new Set<string>();
+      let totalCountResult = 0;
+
+      results.forEach((result) => {
+        if (result.status === 'fulfilled' && result.value.data) {
+          result.value.data.forEach((agency) => {
+            if (!seenIds.has(agency.id)) {
+              seenIds.add(agency.id);
+              allData.push(agency);
+            }
+          });
+          // Use the highest count from all queries
+          if (result.value.count && result.value.count > totalCountResult) {
+            totalCountResult = result.value.count;
+          }
+        }
+      });
+
+      // Sort results by name
+      allData.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+      console.log('Search results:', allData.length, 'total count:', totalCountResult);
+      
+      setPHAAgencies(allData);
+      setTotalCount(totalCountResult);
       setCurrentPage(page);
     } catch (err) {
       console.error('Error searching PHA data:', err);
