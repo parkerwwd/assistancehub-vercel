@@ -78,50 +78,50 @@ export const usePHAData = () => {
       let searchPromises;
       
       if (cityStateMatch) {
-        // Handle city, state format
+        // Handle city, state format - search in name and address since city/state fields are empty
         const city = cityStateMatch[1].trim();
         const state = cityStateMatch[2].trim().toUpperCase();
         
-        // Map state abbreviations to possible formats in database
-        const stateVariants = [state];
-        if (state === 'AZ') {
-          stateVariants.push('03', 'Arizona', 'Az', 'arizona', 'az');
-        } else if (state === 'CA') {
-          stateVariants.push('06', 'California', 'Ca', 'california', 'ca');
-        } else if (state === 'TX') {
-          stateVariants.push('48', 'Texas', 'Tx', 'texas', 'tx');
-        }
-        // Add more state mappings as needed
-        
-        console.log('🏙️ Parsed city/state:', { city, state, stateVariants });
+        console.log('🏙️ Parsed city/state:', { city, state });
         
         searchPromises = [
-          // Exact city and any state variant match
-          ...stateVariants.map(stateVar => 
-            supabase
-              .from('pha_agencies')
-              .select('*')
-              .ilike('city', `%${city}%`)
-              .ilike('state', `%${stateVar}%`)
-              .limit(50)
-          ),
-          
-          // City name search only
-          supabase
-            .from('pha_agencies')
-            .select('*')
-            .ilike('city', `%${city}%`)
-            .limit(100),
-          
-          // Name search containing city
+          // Search for city name in PHA name
           supabase
             .from('pha_agencies')
             .select('*')
             .ilike('name', `%${city}%`)
+            .limit(100),
+          
+          // Search for state in PHA name
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('name', `%${state}%`)
+            .limit(100),
+            
+          // Search for city in address field
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('address', `%${city}%`)
+            .limit(100),
+            
+          // Search for state in address field
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('address', `%${state}%`)
+            .limit(100),
+            
+          // Combined search in name
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .or(`name.ilike.%${city}%,name.ilike.%${state}%`)
             .limit(100)
         ];
       } else {
-        // Regular search for single terms
+        // Regular search for single terms - search name and address
         searchPromises = [
           // Name search
           supabase
@@ -130,18 +130,11 @@ export const usePHAData = () => {
             .ilike('name', `%${searchTerm}%`)
             .limit(100),
 
-          // City search
+          // Address search
           supabase
             .from('pha_agencies')
             .select('*')
-            .ilike('city', `%${searchTerm}%`)
-            .limit(100),
-
-          // State search
-          supabase
-            .from('pha_agencies')
-            .select('*')
-            .ilike('state', `%${searchTerm}%`)
+            .ilike('address', `%${searchTerm}%`)
             .limit(100)
         ];
       }
