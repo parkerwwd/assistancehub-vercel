@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Upload, Database, AlertCircle, CheckCircle, FileText, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,8 +14,15 @@ interface ImportResult {
   error?: string;
 }
 
+interface ImportProgress {
+  current: number;
+  total: number;
+  currentRecord?: string;
+}
+
 const PHADataManager: React.FC = () => {
   const [isImporting, setIsImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState<ImportProgress>({ current: 0, total: 0 });
   const [lastImport, setLastImport] = useState<Date | null>(null);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [totalPHAs, setTotalPHAs] = useState<number>(0);
@@ -76,19 +84,31 @@ const PHADataManager: React.FC = () => {
   const importCSVData = async (file: File) => {
     setIsImporting(true);
     setImportResult(null);
+    setImportProgress({ current: 0, total: 0 });
 
     try {
       const csvText = await file.text();
       const csvData = parseCSV(csvText);
       
       console.log('Total records to process:', csvData.length);
+      setImportProgress({ current: 0, total: csvData.length });
       
       let processedCount = 0;
       let errorCount = 0;
 
-      for (const record of csvData) {
+      for (let i = 0; i < csvData.length; i++) {
+        const record = csvData[i];
+        
         try {
           console.log('Processing record:', record);
+          
+          // Update progress
+          const recordName = record.FORMAL_PARTICIPANT_NAME || record.name || record.PARTICIPANT_NAME || record.PHA_NAME || `Record ${i + 1}`;
+          setImportProgress({ 
+            current: i + 1, 
+            total: csvData.length, 
+            currentRecord: recordName 
+          });
           
           // Map comprehensive CSV fields to database fields with more flexible field mapping
           const phaData = {
@@ -165,6 +185,7 @@ const PHADataManager: React.FC = () => {
       });
     } finally {
       setIsImporting(false);
+      setImportProgress({ current: 0, total: 0 });
     }
   };
 
@@ -201,6 +222,8 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
     fetchPHACount();
   }, []);
 
+  const progressPercentage = importProgress.total > 0 ? (importProgress.current / importProgress.total) * 100 : 0;
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -223,6 +246,22 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
           )}
         </div>
 
+        {/* Import Progress */}
+        {isImporting && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <span>Importing HUD Data...</span>
+              <span>{importProgress.current} of {importProgress.total}</span>
+            </div>
+            <Progress value={progressPercentage} className="w-full" />
+            {importProgress.currentRecord && (
+              <div className="text-xs text-gray-500 truncate">
+                Processing: {importProgress.currentRecord}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* CSV Import Controls */}
         <div className="space-y-4">
           <input
@@ -240,7 +279,7 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
             size="lg"
           >
             <Upload className="w-4 h-4" />
-            {isImporting ? 'Importing HUD Data...' : 'Import HUD CSV File'}
+            {isImporting ? `Importing HUD Data... (${Math.round(progressPercentage)}%)` : 'Import HUD CSV File'}
           </Button>
 
           <Button
