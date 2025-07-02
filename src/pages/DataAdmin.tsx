@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, FileText, Users, Activity } from "lucide-react";
 
 const DataAdmin = () => {
+  console.log('DataAdmin component rendering...');
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

@@ -14,6 +14,8 @@ import { ImportResults } from "./PHADataManager/components/ImportResults";
 import { HUDFormatInfo } from "./PHADataManager/components/HUDFormatInfo";
 
 const PHADataManager: React.FC = () => {
+  console.log('PHADataManager component rendering...');
+  
   const { 
     isImporting, 
     importProgress, 
@@ -36,7 +38,14 @@ const PHADataManager: React.FC = () => {
     getTotals
   } = usePHAStats();
 
+  console.log('PHADataManager state:', { 
+    totalPHAs, 
+    importStats: importStats?.fileUploads?.length || 0,
+    isImporting 
+  });
+
   const handleFileImport = async (file: File) => {
+    console.log('Starting file import:', file.name);
     setImportResult(null);
     
     try {
@@ -55,6 +64,9 @@ const PHADataManager: React.FC = () => {
       console.error('Import failed:', error);
     }
   };
+
+  const totals = getTotals();
+  console.log('Calculated totals:', totals);
 
   return (
     <Card className="w-full max-w-6xl mx-auto">
@@ -77,25 +89,25 @@ const PHADataManager: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         <PHAStatsCard 
-          totalPHAs={totalPHAs} 
+          totalPHAs={totalPHAs || 0} 
           lastImport={lastImport}
-          totals={getTotals()}
+          totals={totals}
         />
         
         <ImportProgressComponent 
-          importProgress={importProgress} 
-          isImporting={isImporting} 
+          importProgress={importProgress || { current: 0, total: 0 }} 
+          isImporting={isImporting || false} 
         />
 
         <ImportControls
-          isImporting={isImporting}
-          importProgress={importProgress}
+          isImporting={isImporting || false}
+          importProgress={importProgress || { current: 0, total: 0 }}
           onFileSelect={handleFileImport}
         />
 
         <ImportResults importResult={importResult} />
 
-        <PHAUploadsTable uploads={importStats.fileUploads} />
+        <PHAUploadsTable uploads={importStats?.fileUploads || []} />
 
         <HUDFormatInfo />
       </CardContent>
