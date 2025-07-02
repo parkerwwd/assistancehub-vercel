@@ -42,7 +42,7 @@ const Section8 = () => {
           <MapView />
         </div>
 
-        {/* Info Section */}
+        {/* Info Section - Restored previous design */}
         <div className="mt-6 bg-blue-50 rounded-lg p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
