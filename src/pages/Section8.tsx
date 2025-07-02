@@ -38,23 +38,23 @@ const Section8 = () => {
         </div>
 
         {/* Map View */}
-        <div className="h-[calc(100vh-200px)]">
+        <div className="h-[calc(100vh-280px)] min-h-[600px]">
           <MapView />
         </div>
 
-        {/* Info Section - Restored previous design */}
+        {/* Info Section */}
         <div className="mt-6 bg-blue-50 rounded-lg p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">About Section 8 Housing</h3>
-              <p className="text-gray-700 mb-3">
+              <p className="text-gray-700 mb-3 leading-relaxed">
                 The Section 8 Housing Choice Voucher program helps low-income families, elderly, and disabled individuals afford decent, safe housing. Participants pay about 30% of their income for rent.
               </p>
               <p className="text-sm text-gray-600">
                 <strong>Note:</strong> Waitlist status can change frequently. Contact the PHA directly for current information.
               </p>
             </div>
-            <div className="flex space-x-4 text-sm ml-8">
+            <div className="flex flex-col space-y-3 text-sm ml-8 flex-shrink-0">
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
                 <span>Open</span>
