@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from "react-router-dom";
 import MapView from "@/components/MapView";
 import MapFilters from "@/components/MapFilters";
@@ -12,13 +12,6 @@ const Section8 = () => {
     handleCitySelect,
     handleSearch
   } = useMapLogic();
-
-  const [searchPerformed, setSearchPerformed] = useState(false);
-
-  const handleSearchWrapper = (query: string) => {
-    setSearchPerformed(true);
-    handleSearch(query);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -38,7 +31,7 @@ const Section8 = () => {
                 showFilters={showFilters}
                 onToggleFilters={() => setShowFilters(!showFilters)}
                 onCitySelect={handleCitySelect}
-                onSearch={handleSearchWrapper}
+                onSearch={handleSearch}
               />
             </div>
             
