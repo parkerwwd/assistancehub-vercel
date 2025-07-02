@@ -8,8 +8,9 @@ import TokenInput from "./TokenInput";
 import MapFilters from "./MapFilters";
 import MapContainer from "./MapContainer";
 import { useMapLogic } from "@/hooks/useMapLogic";
-import { PHAOffice } from "@/types/phaOffice";
+import { Database } from "@/integrations/supabase/types";
 
+type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
 
 interface MapViewProps {
@@ -23,6 +24,8 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
     tokenError,
     showFilters,
     mapRef,
+    phaAgencies,
+    loading,
     setSelectedOffice,
     setTokenError,
     setShowFilters,
@@ -32,14 +35,14 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   } = useMapLogic();
 
   const [viewState, setViewState] = useState<ViewState>('overview');
-  const [detailOffice, setDetailOffice] = useState<PHAOffice | null>(null);
+  const [detailOffice, setDetailOffice] = useState<PHAAgency | null>(null);
 
-  const handleOfficeClick = (office: PHAOffice) => {
+  const handleOfficeClick = (office: PHAAgency) => {
     setDetailOffice(office);
     setViewState('pha-detail');
   };
 
-  const handleViewHousing = (office: PHAOffice) => {
+  const handleViewHousing = (office: PHAAgency) => {
     setDetailOffice(office);
     setViewState('housing-listings');
   };
@@ -73,7 +76,14 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
         ) : null;
       
       default:
-        return <OfficeDetailsPanel selectedOffice={selectedOffice} onOfficeClick={handleOfficeClick} />;
+        return (
+          <OfficeDetailsPanel 
+            selectedOffice={selectedOffice} 
+            onOfficeClick={handleOfficeClick}
+            phaAgencies={phaAgencies}
+            loading={loading}
+          />
+        );
     }
   };
 
@@ -111,6 +121,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
             <MapContainer
               ref={mapRef}
               mapboxToken={mapboxToken}
+              phaAgencies={phaAgencies}
               onOfficeSelect={setSelectedOffice}
               onTokenError={setTokenError}
             />

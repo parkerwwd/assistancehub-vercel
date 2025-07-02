@@ -9,7 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      pha_agencies: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          jurisdictions: string[] | null
+          last_updated: string | null
+          latitude: number | null
+          longitude: number | null
+          name: string
+          pha_code: string | null
+          phone: string | null
+          state: string | null
+          supports_hcv: boolean | null
+          waitlist_open: boolean | null
+          waitlist_status: string | null
+          website: string | null
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          jurisdictions?: string[] | null
+          last_updated?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          pha_code?: string | null
+          phone?: string | null
+          state?: string | null
+          supports_hcv?: boolean | null
+          waitlist_open?: boolean | null
+          waitlist_status?: string | null
+          website?: string | null
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          jurisdictions?: string[] | null
+          last_updated?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          pha_code?: string | null
+          phone?: string | null
+          state?: string | null
+          supports_hcv?: boolean | null
+          waitlist_open?: boolean | null
+          waitlist_status?: string | null
+          website?: string | null
+          zip?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

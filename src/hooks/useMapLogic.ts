@@ -1,16 +1,20 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { PHAOffice } from "@/types/phaOffice";
-import { phaOffices } from "@/data/phaOffices";
+import { Database } from "@/integrations/supabase/types";
 import { USCity } from "@/data/usCities";
 import { MapContainerRef } from "@/components/MapContainer";
+import { usePHAData } from "./usePHAData";
+
+type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export const useMapLogic = () => {
   const [mapboxToken, setMapboxToken] = useState("");
-  const [selectedOffice, setSelectedOffice] = useState<PHAOffice | null>(null);
+  const [selectedOffice, setSelectedOffice] = useState<PHAAgency | null>(null);
   const [tokenError, setTokenError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const mapRef = useRef<MapContainerRef>(null);
+  
+  const { phaAgencies, loading, searchPHAs } = usePHAData();
 
   // Load token from localStorage on component mount
   useEffect(() => {
@@ -39,12 +43,17 @@ export const useMapLogic = () => {
     }
 
     // Look for nearby PHA offices
-    const nearbyOffice = phaOffices.find(office => {
-      const addressLower = office.address.toLowerCase();
+    const nearbyOffice = phaAgencies.find(office => {
+      if (!office.city || !office.state) return false;
+      
+      const officeCityLower = office.city.toLowerCase();
+      const officeStateLower = office.state.toLowerCase();
       const cityLower = city.name.toLowerCase();
       const stateLower = city.state.toLowerCase();
       
-      return addressLower.includes(cityLower) || addressLower.includes(stateLower);
+      return officeCityLower.includes(cityLower) || 
+             cityLower.includes(officeCityLower) ||
+             (officeStateLower === stateLower.substring(0, 2));
     });
 
     if (nearbyOffice) {
@@ -53,37 +62,22 @@ export const useMapLogic = () => {
     }
   };
 
-  const handleSearch = (query: string) => {
-    if (!query.trim()) return;
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+      return;
+    }
     
-    const queryLower = query.toLowerCase().trim();
-    console.log('Searching for:', queryLower);
+    console.log('Searching for:', query);
+    await searchPHAs(query);
     
-    const office = phaOffices.find(office => {
-      const addressLower = office.address.toLowerCase();
-      const nameLower = office.name.toLowerCase();
+    // If we have results, select the first one and fly to it if it has coordinates
+    if (phaAgencies.length > 0) {
+      const firstResult = phaAgencies[0];
+      setSelectedOffice(firstResult);
       
-      // Extract city and state from address
-      const addressParts = office.address.split(',');
-      const city = addressParts[1]?.trim().toLowerCase() || '';
-      const state = addressParts[2]?.trim().toLowerCase() || '';
-      
-      return (
-        addressLower.includes(queryLower) ||
-        nameLower.includes(queryLower) ||
-        city.includes(queryLower) ||
-        state.includes(queryLower)
-      );
-    });
-    
-    if (office) {
-      console.log('Found office:', office.name);
-      setSelectedOffice(office);
-      if (mapRef.current) {
-        mapRef.current.flyTo(office.coordinates, 12);
+      if (firstResult.latitude && firstResult.longitude && mapRef.current) {
+        mapRef.current.flyTo([firstResult.longitude, firstResult.latitude], 12);
       }
-    } else {
-      console.log('No office found for query:', queryLower);
     }
   };
 
@@ -93,6 +87,8 @@ export const useMapLogic = () => {
     tokenError,
     showFilters,
     mapRef,
+    phaAgencies,
+    loading,
     setSelectedOffice,
     setTokenError,
     setShowFilters,

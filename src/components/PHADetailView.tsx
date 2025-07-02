@@ -3,16 +3,22 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText } from "lucide-react";
-import { PHAOffice } from "@/types/phaOffice";
+import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor } from "@/utils/mapUtils";
 
+type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
+
 interface PHADetailViewProps {
-  office: PHAOffice;
-  onViewHousing: (office: PHAOffice) => void;
+  office: PHAAgency;
+  onViewHousing: (office: PHAAgency) => void;
   onBack: () => void;
 }
 
 const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, onBack }) => {
+  const fullAddress = [office.address, office.city, office.state, office.zip]
+    .filter(Boolean)
+    .join(', ');
+
   return (
     <div className="h-full p-4 overflow-y-auto">
       <div className="mb-4">
@@ -31,10 +37,12 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           <CardTitle className="text-xl text-gray-900 leading-tight pr-2">
             {office.name}
           </CardTitle>
-          <CardDescription className="flex items-start text-sm text-gray-600">
-            <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-blue-600" />
-            <span className="leading-relaxed">{office.address}</span>
-          </CardDescription>
+          {fullAddress && (
+            <CardDescription className="flex items-start text-sm text-gray-600">
+              <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-blue-600" />
+              <span className="leading-relaxed">{fullAddress}</span>
+            </CardDescription>
+          )}
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -47,37 +55,53 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             <span 
               className="px-3 py-1 rounded-full text-sm font-medium"
               style={{ 
-                backgroundColor: getWaitlistColor(office.waitlistStatus) + '20',
-                color: getWaitlistColor(office.waitlistStatus)
+                backgroundColor: getWaitlistColor(office.waitlist_status || 'Unknown') + '20',
+                color: getWaitlistColor(office.waitlist_status || 'Unknown')
               }}
             >
-              {office.waitlistStatus}
+              {office.waitlist_status || 'Unknown'}
             </span>
           </div>
 
           {/* Contact Information */}
           <div className="space-y-3">
-            <a 
-              href={`tel:${office.phone}`}
-              className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group"
-            >
-              <Phone className="w-4 h-4 mr-3 text-blue-600" />
-              <span className="text-blue-700 group-hover:text-blue-800 font-medium">
-                {office.phone}
-              </span>
-            </a>
+            {office.phone && (
+              <a 
+                href={`tel:${office.phone}`}
+                className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group"
+              >
+                <Phone className="w-4 h-4 mr-3 text-blue-600" />
+                <span className="text-blue-700 group-hover:text-blue-800 font-medium">
+                  {office.phone}
+                </span>
+              </a>
+            )}
             
-            <a 
-              href={`https://${office.website}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group"
-            >
-              <ExternalLink className="w-4 h-4 mr-3 text-green-600" />
-              <span className="text-green-700 group-hover:text-green-800 font-medium">
-                Visit Website
-              </span>
-            </a>
+            {office.website && (
+              <a 
+                href={office.website.startsWith('http') ? office.website : `https://${office.website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group"
+              >
+                <ExternalLink className="w-4 h-4 mr-3 text-green-600" />
+                <span className="text-green-700 group-hover:text-green-800 font-medium">
+                  Visit Website
+                </span>
+              </a>
+            )}
+
+            {office.email && (
+              <a 
+                href={`mailto:${office.email}`}
+                className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group"
+              >
+                <FileText className="w-4 h-4 mr-3 text-purple-600" />
+                <span className="text-purple-700 group-hover:text-purple-800 font-medium">
+                  {office.email}
+                </span>
+              </a>
+            )}
           </div>
 
           {/* Office Hours */}
@@ -112,16 +136,18 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2 mb-1">
                   <DollarSign className="w-4 h-4 text-green-600" />
-                  <span className="text-xs font-medium text-gray-700">Income Limit</span>
+                  <span className="text-xs font-medium text-gray-700">HCV Support</span>
                 </div>
-                <p className="text-sm text-gray-900">50% AMI</p>
+                <p className="text-sm text-gray-900">
+                  {office.supports_hcv ? 'Yes' : 'No'}
+                </p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2 mb-1">
                   <FileText className="w-4 h-4 text-blue-600" />
-                  <span className="text-xs font-medium text-gray-700">Application</span>
+                  <span className="text-xs font-medium text-gray-700">PHA Code</span>
                 </div>
-                <p className="text-sm text-gray-900">Online/In-Person</p>
+                <p className="text-sm text-gray-900">{office.pha_code || 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -130,10 +156,12 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           <div className="pt-4 border-t border-gray-100">
             <h4 className="font-medium text-gray-900 mb-3">Available Programs</h4>
             <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                Section 8 Housing Choice Vouchers
-              </div>
+              {office.supports_hcv && (
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  Section 8 Housing Choice Vouchers
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 Public Housing Units
@@ -147,6 +175,18 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                 Senior Housing Programs
               </div>
             </div>
+          </div>
+
+          {/* Data Source */}
+          <div className="pt-4 border-t border-gray-100">
+            <p className="text-xs text-gray-500">
+              Data sourced from HUD PHA Contact Information API
+              {office.last_updated && (
+                <span className="block mt-1">
+                  Last updated: {new Date(office.last_updated).toLocaleDateString()}
+                </span>
+              )}
+            </p>
           </div>
         </CardContent>
       </Card>

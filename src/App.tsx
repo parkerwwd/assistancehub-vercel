@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Section8 from "./pages/Section8";
 import SNAP from "./pages/SNAP";
+import PHAAdmin from "./pages/PHAAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/section8" element={<Section8 />} />
           <Route path="/snap" element={<SNAP />} />
+          <Route path="/pha-admin" element={<PHAAdmin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
