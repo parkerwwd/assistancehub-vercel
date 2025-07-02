@@ -27,6 +27,9 @@ const Header = () => {
               <Link to="/snap" className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-blue-50">
                 SNAP
               </Link>
+              <Link to="/auth" className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-blue-50">
+                Admin Login
+              </Link>
             </nav>
           </div>
         </div>

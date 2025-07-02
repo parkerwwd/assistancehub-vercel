@@ -8,7 +8,9 @@ import Index from "./pages/Index";
 import Section8 from "./pages/Section8";
 import SNAP from "./pages/SNAP";
 import DataAdmin from "./pages/DataAdmin";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -22,7 +24,12 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/section8" element={<Section8 />} />
           <Route path="/snap" element={<SNAP />} />
-          <Route path="/data-admin" element={<DataAdmin />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/data-admin" element={
+            <ProtectedRoute>
+              <DataAdmin />
+            </ProtectedRoute>
+          } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

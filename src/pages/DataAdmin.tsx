@@ -3,9 +3,31 @@ import React from 'react';
 import { Link } from "react-router-dom";
 import PHADataManager from "@/components/PHADataManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, FileText, Users, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Database, FileText, Users, Activity, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const DataAdmin = () => {
+  const { signOut, user } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   console.log('DataAdmin component rendering...');
   
   return (
@@ -19,8 +41,19 @@ const DataAdmin = () => {
                 AssistanceHub
               </Link>
             </div>
-            <div className="text-sm text-gray-500 font-medium">
-              Admin Dashboard
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-gray-500">
+                Logged in as: <span className="font-medium">{user?.email}</span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSignOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>
