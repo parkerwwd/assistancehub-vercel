@@ -14,9 +14,9 @@ const Section8 = () => {
   } = useMapLogic();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -26,7 +26,7 @@ const Section8 = () => {
             </div>
             
             {/* Search in header */}
-            <div className="flex-1 max-w-2xl mx-8">
+            <div className="flex-1 max-w-2xl mx-6">
               <MapFilters
                 showFilters={showFilters}
                 onToggleFilters={() => setShowFilters(!showFilters)}
@@ -35,7 +35,7 @@ const Section8 = () => {
               />
             </div>
             
-            <nav className="hidden md:flex space-x-6">
+            <nav className="hidden md:flex space-x-4">
               <Link to="/section8" className="text-blue-900 font-medium px-3 py-2 rounded-md bg-blue-50">
                 Section 8
               </Link>
@@ -47,7 +47,8 @@ const Section8 = () => {
         </div>
       </header>
 
-      <div className="flex-1 h-[calc(100vh-4rem)]">
+      {/* Map Container */}
+      <div className="flex-1 overflow-hidden">
         <MapView hideSearch={true} />
       </div>
     </div>

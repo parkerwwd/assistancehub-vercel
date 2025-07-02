@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { Search, MapPin } from "lucide-react";
 import { usCities, USCity } from "@/data/usCities";
@@ -24,7 +23,7 @@ const CitySearch: React.FC<CitySearchProps> = ({ onCitySelect, onSearch }) => {
             city?.state?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             city?.stateCode?.toLowerCase().includes(searchQuery.toLowerCase())
           )
-          .slice(0, 10); // Limit to 10 suggestions
+          .slice(0, 8); // Reduced to 8 suggestions for better UI
         
         setFilteredCities(filtered || []);
         setShowSuggestions(true);
@@ -58,6 +57,8 @@ const CitySearch: React.FC<CitySearchProps> = ({ onCitySelect, onSearch }) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleSearchClick();
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
     }
   };
 
@@ -65,42 +66,48 @@ const CitySearch: React.FC<CitySearchProps> = ({ onCitySelect, onSearch }) => {
     setSearchQuery(value);
   };
 
+  const handleInputBlur = () => {
+    // Delay hiding suggestions to allow for clicks
+    setTimeout(() => setShowSuggestions(false), 200);
+  };
+
   return (
-    <div className="relative">
-      <div className="flex gap-3">
+    <div className="relative w-full">
+      <div className="flex gap-2">
         <div className="flex-1 relative">
-          <div className="border rounded-lg">
-            <div className="flex items-center border-b px-3">
-              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-              <input
-                type="text"
-                placeholder="Search by city, state, or PHA name..."
-                value={searchQuery}
-                onChange={(e) => handleInputChange(e.target.value)}
-                onKeyDown={handleKeyPress}
-                className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-0"
-              />
-            </div>
-            {showSuggestions && filteredCities.length > 0 && (
-              <div className="absolute top-full left-0 right-0 z-50 bg-white border border-t-0 rounded-b-lg shadow-lg max-h-60 overflow-y-auto">
-                {filteredCities.map((city, index) => (
-                  <div
-                    key={`${city.name}-${city.stateCode}-${index}`}
-                    onClick={() => handleCitySelect(city)}
-                    className="cursor-pointer flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <MapPin className="w-4 h-4 text-gray-400" />
-                    <span>{city.name}, {city.stateCode}</span>
-                    <span className="text-sm text-gray-500 ml-auto">{city.state}</span>
+          <input
+            type="text"
+            placeholder="Search by city, state, or PHA name..."
+            value={searchQuery}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onKeyDown={handleKeyPress}
+            onFocus={() => searchQuery.length > 1 && setShowSuggestions(true)}
+            onBlur={handleInputBlur}
+            className="w-full h-9 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-500"
+          />
+          
+          {showSuggestions && filteredCities.length > 0 && (
+            <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              {filteredCities.map((city, index) => (
+                <div
+                  key={`${city.name}-${city.stateCode}-${index}`}
+                  onClick={() => handleCitySelect(city)}
+                  className="cursor-pointer flex items-center gap-2 px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0"
+                >
+                  <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium">{city.name}, {city.stateCode}</span>
+                    <span className="text-gray-500 ml-2 hidden sm:inline">{city.state}</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <Button 
           onClick={handleSearchClick}
-          className="bg-blue-600 hover:bg-blue-700 transition-colors"
+          size="sm"
+          className="bg-blue-600 hover:bg-blue-700 transition-colors px-3 flex-shrink-0"
           disabled={!searchQuery.trim()}
         >
           <Search className="w-4 h-4" />
