@@ -73,57 +73,54 @@ const MapView = () => {
     }
   };
 
-  return (
-    <div className="h-full bg-white rounded-lg shadow-sm border overflow-hidden">
-      {/* Mapbox Token Input */}
-      <div className="p-4 border-b bg-gray-50">
+  if (!mapboxToken) {
+    return (
+      <div className="h-full bg-white rounded-lg shadow-sm border">
         <TokenInput 
           mapboxToken={mapboxToken}
           tokenError={tokenError}
           onTokenChange={handleTokenChange}
         />
       </div>
+    );
+  }
 
-      {/* Search and Filters */}
-      {mapboxToken && (
-        <div className="p-4 border-b bg-white">
-          <MapFilters
-            showFilters={showFilters}
-            onToggleFilters={() => setShowFilters(!showFilters)}
-            onCitySelect={handleCitySelect}
-            onSearch={handleSearch}
-          />
-        </div>
-      )}
-
-      {/* Main Content - Map and Details Side by Side */}
-      {mapboxToken && (
-        <div className="flex-1 h-full">
-          <ResizablePanelGroup direction="horizontal" className="h-full">
-            {/* Map Panel */}
-            <ResizablePanel defaultSize={65} minSize={50}>
-              <div className="bg-gray-100 h-full">
-                <MapContainer
-                  ref={mapRef}
-                  mapboxToken={mapboxToken}
-                  onOfficeSelect={setSelectedOffice}
-                  onTokenError={setTokenError}
-                />
-              </div>
-            </ResizablePanel>
+  return (
+    <div className="h-full bg-white rounded-lg shadow-sm border overflow-hidden">
+      <ResizablePanelGroup direction="horizontal" className="h-full">
+        {/* Map Panel with integrated search */}
+        <ResizablePanel defaultSize={65} minSize={50}>
+          <div className="relative h-full bg-gray-100">
+            {/* Search overlay */}
+            <div className="absolute top-4 left-4 right-4 z-10">
+              <MapFilters
+                showFilters={showFilters}
+                onToggleFilters={() => setShowFilters(!showFilters)}
+                onCitySelect={handleCitySelect}
+                onSearch={handleSearch}
+              />
+            </div>
             
-            {/* Resize Handle */}
-            <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-1" />
-            
-            {/* Details Panel */}
-            <ResizablePanel defaultSize={35} minSize={30} maxSize={50}>
-              <div className="bg-white h-full overflow-y-auto border-l">
-                {renderRightPanel()}
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
-      )}
+            {/* Map */}
+            <MapContainer
+              ref={mapRef}
+              mapboxToken={mapboxToken}
+              onOfficeSelect={setSelectedOffice}
+              onTokenError={setTokenError}
+            />
+          </div>
+        </ResizablePanel>
+        
+        {/* Resize Handle */}
+        <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-1" />
+        
+        {/* Details Panel */}
+        <ResizablePanel defaultSize={35} minSize={30} maxSize={50}>
+          <div className="bg-white h-full overflow-y-auto border-l">
+            {renderRightPanel()}
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
