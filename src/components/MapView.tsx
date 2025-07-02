@@ -1,11 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "./OfficeDetailsPanel";
+import PHADetailView from "./PHADetailView";
+import HousingListings from "./HousingListings";
 import TokenInput from "./TokenInput";
 import MapFilters from "./MapFilters";
 import MapContainer from "./MapContainer";
 import { useMapLogic } from "@/hooks/useMapLogic";
+import { PHAOffice } from "@/types/phaOffice";
+
+type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
 
 const MapView = () => {
   const {
@@ -21,6 +26,52 @@ const MapView = () => {
     handleCitySelect,
     handleSearch
   } = useMapLogic();
+
+  const [viewState, setViewState] = useState<ViewState>('overview');
+  const [detailOffice, setDetailOffice] = useState<PHAOffice | null>(null);
+
+  const handleOfficeClick = (office: PHAOffice) => {
+    setDetailOffice(office);
+    setViewState('pha-detail');
+  };
+
+  const handleViewHousing = (office: PHAOffice) => {
+    setDetailOffice(office);
+    setViewState('housing-listings');
+  };
+
+  const handleBackToOverview = () => {
+    setViewState('overview');
+    setDetailOffice(null);
+  };
+
+  const handleBackToPHADetail = () => {
+    setViewState('pha-detail');
+  };
+
+  const renderRightPanel = () => {
+    switch (viewState) {
+      case 'pha-detail':
+        return detailOffice ? (
+          <PHADetailView 
+            office={detailOffice}
+            onViewHousing={handleViewHousing}
+            onBack={handleBackToOverview}
+          />
+        ) : null;
+      
+      case 'housing-listings':
+        return detailOffice ? (
+          <HousingListings 
+            office={detailOffice}
+            onBack={handleBackToPHADetail}
+          />
+        ) : null;
+      
+      default:
+        return <OfficeDetailsPanel selectedOffice={selectedOffice} onOfficeClick={handleOfficeClick} />;
+    }
+  };
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
@@ -65,7 +116,7 @@ const MapView = () => {
             {/* Details Panel */}
             <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
               <div className="bg-white h-full">
-                <OfficeDetailsPanel selectedOffice={selectedOffice} />
+                {renderRightPanel()}
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>

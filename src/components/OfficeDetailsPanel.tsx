@@ -1,15 +1,17 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Phone, ExternalLink, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MapPin, Phone, ExternalLink, Users, ArrowRight } from "lucide-react";
 import { PHAOffice } from "@/types/phaOffice";
 import { getWaitlistColor } from "@/utils/mapUtils";
 
 interface OfficeDetailsPanelProps {
   selectedOffice?: PHAOffice | null;
+  onOfficeClick?: (office: PHAOffice) => void;
 }
 
-const OfficeDetailsPanel = ({ selectedOffice }: OfficeDetailsPanelProps) => {
+const OfficeDetailsPanel = ({ selectedOffice, onOfficeClick }: OfficeDetailsPanelProps) => {
   if (selectedOffice) {
     return (
       <div className="h-full p-4 overflow-y-auto">
@@ -63,6 +65,17 @@ const OfficeDetailsPanel = ({ selectedOffice }: OfficeDetailsPanelProps) => {
                 </span>
               </a>
             </div>
+
+            {/* View Details Button */}
+            {onOfficeClick && (
+              <Button
+                onClick={() => onOfficeClick(selectedOffice)}
+                className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700"
+              >
+                View Full Details & Housing Options
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            )}
             
             {/* Services List */}
             <div className="pt-4 border-t border-gray-100">
@@ -84,9 +97,9 @@ const OfficeDetailsPanel = ({ selectedOffice }: OfficeDetailsPanelProps) => {
     <div className="h-full p-4 overflow-y-auto">
       <Card className="h-fit shadow-sm border-0">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg text-gray-900">Find PHA Offices</CardTitle>
+          <CardTitle className="text-lg text-gray-900">Find PHA Offices & Housing</CardTitle>
           <CardDescription className="text-sm text-gray-600 leading-relaxed">
-            Click on a map marker or search above to view PHA office details.
+            Click on a map marker or search above to view PHA office details and available housing options.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -105,6 +118,14 @@ const OfficeDetailsPanel = ({ selectedOffice }: OfficeDetailsPanelProps) => {
                 <div className="text-xl font-bold text-red-700">15</div>
                 <div className="text-xs text-red-600 mt-1">Closed</div>
               </div>
+            </div>
+            
+            {/* Integration Info */}
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">New Feature</h4>
+              <p className="text-sm text-blue-800">
+                Click on any PHA to view detailed information and browse available low-income housing options in that area.
+              </p>
             </div>
             
             {/* Legend */}
@@ -128,7 +149,7 @@ const OfficeDetailsPanel = ({ selectedOffice }: OfficeDetailsPanelProps) => {
             
             <div className="pt-4 border-t border-gray-100">
               <p className="text-sm text-gray-600 leading-relaxed">
-                <strong>Tip:</strong> Contact PHAs directly for the most current waitlist information.
+                <strong>Tip:</strong> Contact PHAs directly for the most current waitlist information and housing availability.
               </p>
             </div>
           </div>
