@@ -54,40 +54,29 @@ export const usePHAData = () => {
       const from = (page - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
-      // Use individual queries and combine results
-      const searchQueries = [
-        supabase.from('pha_agencies').select('*', { count: 'exact' }).ilike('name', `%${searchTerm}%`),
-        supabase.from('pha_agencies').select('*', { count: 'exact' }).ilike('city', `%${searchTerm}%`),
-        supabase.from('pha_agencies').select('*', { count: 'exact' }).ilike('state', `%${searchTerm}%`),
-        supabase.from('pha_agencies').select('*', { count: 'exact' }).ilike('address', `%${searchTerm}%`)
-      ];
+      console.log('Searching for:', searchTerm);
 
-      const results = await Promise.all(searchQueries);
-      
-      // Combine and deduplicate results
-      const allResults: PHAAgency[] = [];
-      const seenIds = new Set<string>();
-      
-      results.forEach(({ data }) => {
-        if (data) {
-          data.forEach((agency: PHAAgency) => {
-            if (!seenIds.has(agency.id)) {
-              seenIds.add(agency.id);
-              allResults.push(agency);
-            }
-          });
-        }
-      });
+      // Use a single query with OR conditions using PostgREST syntax
+      const { data, error: searchError, count } = await supabase
+        .from('pha_agencies')
+        .select('*', { count: 'exact' })
+        .or(`name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`)
+        .order('name')
+        .range(from, to);
 
-      // Sort by name and apply pagination
-      const sortedResults = allResults.sort((a, b) => a.name.localeCompare(b.name));
-      const paginatedResults = sortedResults.slice(from, to + 1);
+      if (searchError) {
+        console.error('Search error:', searchError);
+        throw searchError;
+      }
+
+      console.log('Search results:', data?.length || 0, 'total count:', count);
       
-      setPHAAgencies(paginatedResults);
-      setTotalCount(sortedResults.length);
+      setPHAAgencies(data || []);
+      setTotalCount(count || 0);
       setCurrentPage(page);
     } catch (err) {
       console.error('Error searching PHA data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to search PHA data');
       
       // If search fails, fall back to fetching all data
       console.log('Falling back to fetch all PHA data');

@@ -23,7 +23,7 @@ const CitySearch: React.FC<CitySearchProps> = ({ onCitySelect, onSearch }) => {
             city?.state?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             city?.stateCode?.toLowerCase().includes(searchQuery.toLowerCase())
           )
-          .slice(0, 8); // Reduced to 8 suggestions for better UI
+          .slice(0, 8);
         
         setFilteredCities(filtered || []);
         setShowSuggestions(true);
@@ -41,13 +41,20 @@ const CitySearch: React.FC<CitySearchProps> = ({ onCitySelect, onSearch }) => {
   const handleCitySelect = (city: USCity) => {
     if (!city?.name || !city?.stateCode) return;
     
-    setSearchQuery(`${city.name}, ${city.stateCode}`);
+    const cityQuery = `${city.name}, ${city.stateCode}`;
+    setSearchQuery(cityQuery);
     setShowSuggestions(false);
+    
+    console.log('City selected, triggering search for:', cityQuery);
+    
+    // Trigger both city selection logic and search
     onCitySelect(city);
+    onSearch(cityQuery);
   };
 
   const handleSearchClick = () => {
     if (searchQuery.trim()) {
+      console.log('Search button clicked, searching for:', searchQuery);
       onSearch(searchQuery);
       setShowSuggestions(false);
     }
