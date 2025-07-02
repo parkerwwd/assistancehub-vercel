@@ -6,8 +6,8 @@ const Header = () => {
   return (
     <>
       {/* Disclaimer banner */}
-      <div className="bg-yellow-50 border-b border-yellow-200 text-center py-2 px-4">
-        <p className="text-sm text-yellow-800">
+      <div className="bg-gray-100 border-b border-gray-200 text-center py-2 px-4">
+        <p className="text-sm text-gray-700">
           This site is privately owned and is not affiliated with any government agency.
         </p>
       </div>
