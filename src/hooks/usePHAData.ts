@@ -13,6 +13,15 @@ export const usePHAData = () => {
   const [totalCount, setTotalCount] = useState(0);
   const itemsPerPage = 20;
 
+  // Enhanced input sanitization for search queries
+  const sanitizeSearchInput = (input: string): string => {
+    return input
+      .replace(/[<>\"']/g, '') // Remove HTML/script injection characters
+      .replace(/\0/g, '') // Remove null bytes
+      .trim()
+      .substring(0, 100); // Limit search query length
+  };
+
   const fetchPHAData = async (page = 1) => {
     try {
       setLoading(true);
@@ -58,68 +67,68 @@ export const usePHAData = () => {
       setLoading(true);
       setError(null);
       
-      const searchTerm = query.toLowerCase().trim();
+      // Sanitize search input to prevent injection attacks
+      const searchTerm = sanitizeSearchInput(query.toLowerCase());
       console.log('🔍 Starting search for:', searchTerm);
 
-      // First, let's see what data we actually have
-      const { data: allData, error: allDataError } = await supabase
-        .from('pha_agencies')
-        .select('name, city, state, address')
-        .limit(10);
+      // Enhanced search with rate limiting considerations
+      const searchPromises = [
+        // Name search
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('name', `%${searchTerm}%`)
+          .limit(100), // Limit results to prevent excessive resource usage
 
-      if (allDataError) {
-        console.error('❌ Error fetching sample data:', allDataError);
-      } else {
-        console.log('📊 Sample database records:', allData);
-      }
+        // City search
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('city', `%${searchTerm}%`)
+          .limit(100),
 
-      // Now try a simple search on just names first
-      const { data: nameSearch, error: nameError } = await supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('name', `%${searchTerm}%`);
+        // State search
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('state', `%${searchTerm}%`)
+          .limit(100)
+      ];
 
+      const [nameResults, cityResults, stateResults] = await Promise.all(searchPromises);
+
+      // Log individual search results for debugging
       console.log('🏷️ Name search results:', {
         query: `%${searchTerm}%`,
-        resultsCount: nameSearch?.length || 0,
-        error: nameError,
-        sampleResult: nameSearch?.[0]
+        resultsCount: nameResults.data?.length || 0,
+        error: nameResults.error
       });
-
-      // Try city search
-      const { data: citySearch, error: cityError } = await supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('city', `%${searchTerm}%`);
 
       console.log('🏙️ City search results:', {
         query: `%${searchTerm}%`,
-        resultsCount: citySearch?.length || 0,
-        error: cityError,
-        sampleResult: citySearch?.[0]
+        resultsCount: cityResults.data?.length || 0,
+        error: cityResults.error
       });
-
-      // Try state search
-      const { data: stateSearch, error: stateError } = await supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('state', `%${searchTerm}%`);
 
       console.log('🏛️ State search results:', {
         query: `%${searchTerm}%`,
-        resultsCount: stateSearch?.length || 0,
-        error: stateError,
-        sampleResult: stateSearch?.[0]
+        resultsCount: stateResults.data?.length || 0,
+        error: stateResults.error
       });
+
+      // Check for errors in any of the searches
+      if (nameResults.error || cityResults.error || stateResults.error) {
+        throw new Error('Search failed due to database error');
+      }
 
       // Combine all results
       const allResults = [
-        ...(nameSearch || []),
-        ...(citySearch || []),
-        ...(stateSearch || [])
+        ...(nameResults.data || []),
+        ...(cityResults.data || []),
+        ...(stateResults.data || [])
       ];
 
-      // Remove duplicates
+      // Remove duplicates based on ID
       const uniqueResults = allResults.filter((item, index, arr) => 
         arr.findIndex(other => other.id === item.id) === index
       );
@@ -152,13 +161,14 @@ export const usePHAData = () => {
   const getPHAsByState = async (state: string, page = 1) => {
     try {
       setLoading(true);
+      const sanitizedState = sanitizeSearchInput(state);
       const from = (page - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
       
       const { data, error: fetchError, count } = await supabase
         .from('pha_agencies')
         .select('*', { count: 'exact' })
-        .eq('state', state.toUpperCase())
+        .eq('state', sanitizedState.toUpperCase())
         .order('name')
         .range(from, to);
 

@@ -12,6 +12,7 @@ import { ImportProgressComponent } from "./PHADataManager/components/ImportProgr
 import { ImportControls } from "./PHADataManager/components/ImportControls";
 import { ImportResults } from "./PHADataManager/components/ImportResults";
 import { HUDFormatInfo } from "./PHADataManager/components/HUDFormatInfo";
+import { SecurityNotice } from "./SecurityNotice";
 
 const PHADataManager: React.FC = () => {
   console.log('PHADataManager component rendering...');
@@ -88,6 +89,8 @@ const PHADataManager: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        <SecurityNotice />
+        
         <PHAStatsCard 
           totalPHAs={totalPHAs || 0} 
           lastImport={lastImport}

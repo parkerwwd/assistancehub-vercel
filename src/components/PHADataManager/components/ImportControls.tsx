@@ -1,9 +1,10 @@
 
 import React, { useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { Upload, Download } from "lucide-react";
+import { Upload, Download, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImportProgress } from '../types';
+import { supabase } from "@/integrations/supabase/client";
 
 interface ImportControlsProps {
   isImporting: boolean;
@@ -21,17 +22,47 @@ export const ImportControls: React.FC<ImportControlsProps> = ({
 
   const progressPercentage = importProgress.total > 0 ? (importProgress.current / importProgress.total) * 100 : 0;
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && (file.type === 'text/csv' || file.type === 'application/vnd.ms-excel' || file.name.endsWith('.csv'))) {
-      onFileSelect(file);
-    } else {
+    if (!file) return;
+
+    // Enhanced security validation
+    const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'text/plain'];
+    const allowedExtensions = ['.csv', '.txt'];
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
       toast({
-        title: "Invalid File",
-        description: "Please select a CSV file",
+        title: "Invalid File Type",
+        description: "Please select a CSV file only",
         variant: "destructive",
       });
+      return;
     }
+
+    // File size validation (50MB limit)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      toast({
+        title: "File Too Large",
+        description: "File size must be less than 50MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check authentication before proceeding
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to import data",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onFileSelect(file);
   };
 
   const downloadSampleCSV = () => {
@@ -60,6 +91,17 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
         className="hidden"
       />
       
+      <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+        <div className="flex items-center gap-2 mb-2">
+          <Shield className="w-4 h-4 text-amber-600" />
+          <span className="text-sm font-medium text-amber-800">Security Notice</span>
+        </div>
+        <p className="text-xs text-amber-700">
+          Data imports now require authentication and are subject to enhanced security validation. 
+          Files are limited to 50MB and 100,000 records maximum.
+        </p>
+      </div>
+      
       <Button
         onClick={() => fileInputRef.current?.click()}
         disabled={isImporting}
@@ -67,7 +109,7 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
         size="lg"
       >
         <Upload className="w-4 h-4" />
-        {isImporting ? `Importing HUD Data... (${Math.round(progressPercentage)}%)` : 'Import HUD CSV File'}
+        {isImporting ? `Importing HUD Data... (${Math.round(progressPercentage)}%)` : 'Import HUD CSV File (Authentication Required)'}
       </Button>
 
       <Button
@@ -82,6 +124,8 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
       <p className="text-xs text-gray-600 text-center">
         Upload HUD PHA Contact Information CSV data. The system automatically maps HUD field names
         like PARTICIPANT_CODE, FORMAL_PARTICIPANT_NAME, STD_ADDR, LAT/LON, etc.
+        <br />
+        <strong>Note:</strong> Authentication is required for data imports.
       </p>
     </div>
   );
