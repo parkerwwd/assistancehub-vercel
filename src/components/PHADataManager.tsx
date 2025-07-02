@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw, Database, AlertCircle, CheckCircle, Download } from "lucide-react";
+import { Upload, Database, AlertCircle, CheckCircle, FileText, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,6 +19,7 @@ const PHADataManager: React.FC = () => {
   const [lastImport, setLastImport] = useState<Date | null>(null);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [totalPHAs, setTotalPHAs] = useState<number>(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Fetch current count of PHAs in database
@@ -35,48 +36,135 @@ const PHADataManager: React.FC = () => {
     }
   };
 
-  // Import PHA data from HUD API
-  const importPHAData = async () => {
+  // Parse CSV data
+  const parseCSV = (csvText: string) => {
+    const lines = csvText.split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const data = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i].trim()) {
+        const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+        const row: any = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index] || null;
+        });
+        data.push(row);
+      }
+    }
+
+    return data;
+  };
+
+  // Import PHA data from CSV
+  const importCSVData = async (file: File) => {
     setIsImporting(true);
     setImportResult(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('fetch-pha-data', {
-        method: 'POST'
-      });
-
-      if (error) throw error;
-
-      setImportResult(data);
-      setLastImport(new Date());
+      const csvText = await file.text();
+      const csvData = parseCSV(csvText);
       
-      if (data.success) {
-        toast({
-          title: "Import Successful",
-          description: `Processed ${data.processedCount} PHA records`,
-        });
-        await fetchPHACount();
-      } else {
-        toast({
-          title: "Import Failed",
-          description: data.error || "Unknown error occurred",
-          variant: "destructive",
-        });
+      let processedCount = 0;
+      let errorCount = 0;
+
+      for (const record of csvData) {
+        try {
+          // Map CSV fields to database fields
+          const phaData = {
+            pha_code: record.pha_code || record.code || null,
+            name: record.name || record.pha_name || 'Unknown PHA',
+            address: record.address || record.pha_address || null,
+            city: record.city || record.pha_city || null,
+            state: record.state || record.pha_state?.substring(0, 2) || null,
+            zip: record.zip || record.pha_zip?.substring(0, 10) || null,
+            phone: record.phone || record.pha_phone || null,
+            email: record.email || record.pha_email || null,
+            website: record.website || record.pha_website || null,
+            supports_hcv: record.supports_hcv === 'true' || record.hcv_flag === 'Y' || record.hcv_flag === 'YES' || false,
+            waitlist_status: record.waitlist_status || 'Unknown',
+            latitude: record.latitude ? parseFloat(record.latitude) : null,
+            longitude: record.longitude ? parseFloat(record.longitude) : null,
+            last_updated: new Date().toISOString()
+          };
+
+          // Upsert the record
+          const { error } = await supabase
+            .from('pha_agencies')
+            .upsert(phaData, { 
+              onConflict: 'pha_code',
+              ignoreDuplicates: false 
+            });
+
+          if (error) {
+            console.error('Error upserting PHA record:', error);
+            errorCount++;
+          } else {
+            processedCount++;
+          }
+        } catch (recordError) {
+          console.error('Error processing PHA record:', recordError);
+          errorCount++;
+        }
       }
+
+      setImportResult({
+        success: true,
+        processedCount,
+        errorCount,
+        message: `Processed ${processedCount} PHA records, ${errorCount} errors`
+      });
+      
+      setLastImport(new Date());
+      toast({
+        title: "Import Successful",
+        description: `Processed ${processedCount} PHA records`,
+      });
+      
+      await fetchPHACount();
     } catch (error) {
-      console.error('Import error:', error);
+      console.error('CSV Import error:', error);
       setImportResult({
         success: false,
-        error: error.message || 'Failed to import PHA data'
+        error: error.message || 'Failed to import CSV data'
       });
       toast({
         title: "Import Error",
-        description: "Failed to connect to import service",
+        description: "Failed to process CSV file",
         variant: "destructive",
       });
     } finally {
       setIsImporting(false);
     }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      importCSVData(file);
+    } else {
+      toast({
+        title: "Invalid File",
+        description: "Please select a CSV file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const downloadSampleCSV = () => {
+    const sampleData = `pha_code,name,address,city,state,zip,phone,email,website,supports_hcv,waitlist_status,latitude,longitude
+CA001,Sample Housing Authority,123 Main St,Los Angeles,CA,90210,555-123-4567,info@sample.gov,www.sampleha.gov,true,Open,34.0522,-118.2437
+NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov,www.anotherpha.gov,false,Closed,40.7128,-74.0060`;
+    
+    const blob = new Blob([sampleData], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'pha_sample.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   React.useEffect(() => {
@@ -105,25 +193,38 @@ const PHADataManager: React.FC = () => {
           )}
         </div>
 
-        {/* Import Controls */}
+        {/* CSV Import Controls */}
         <div className="space-y-4">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          
           <Button
-            onClick={importPHAData}
+            onClick={() => fileInputRef.current?.click()}
             disabled={isImporting}
             className="w-full flex items-center gap-2"
             size="lg"
           >
-            {isImporting ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-            {isImporting ? 'Importing PHA Data...' : 'Import from HUD API'}
+            <Upload className="w-4 h-4" />
+            {isImporting ? 'Importing CSV Data...' : 'Import CSV File'}
+          </Button>
+
+          <Button
+            onClick={downloadSampleCSV}
+            variant="outline"
+            className="w-full flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Download Sample CSV Template
           </Button>
 
           <p className="text-xs text-gray-600 text-center">
-            This will fetch the latest PHA contact information from HUD's official API
-            and update the database with current data.
+            Upload a CSV file with PHA data. The system will automatically map common field names
+            and update existing records based on PHA codes.
           </p>
         </div>
 
@@ -164,14 +265,19 @@ const PHADataManager: React.FC = () => {
           </div>
         )}
 
-        {/* Information */}
+        {/* CSV Format Information */}
         <div className="p-4 bg-blue-50 rounded-lg">
-          <h4 className="font-medium text-blue-800 mb-2">About PHA Data</h4>
+          <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            CSV Format Requirements
+          </h4>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Data sourced from HUD's official PHA Contact Information API</li>
-            <li>• Includes PHA names, addresses, contact info, and HCV participation</li>
-            <li>• Data is automatically deduplicated using PHA codes</li>
-            <li>• Recommended to refresh monthly for accuracy</li>
+            <li>• <strong>Required:</strong> name (PHA name)</li>
+            <li>• <strong>Optional:</strong> pha_code, address, city, state, zip</li>
+            <li>• <strong>Optional:</strong> phone, email, website</li>
+            <li>• <strong>Optional:</strong> latitude, longitude (for map display)</li>
+            <li>• <strong>Optional:</strong> supports_hcv (true/false), waitlist_status</li>
+            <li>• Field names are flexible - common variations are auto-mapped</li>
           </ul>
         </div>
       </CardContent>
