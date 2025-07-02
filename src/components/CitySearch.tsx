@@ -53,10 +53,13 @@ const CitySearch: React.FC<CitySearchProps> = ({ onCitySelect, onSearch }) => {
   };
 
   const handleSearchClick = () => {
+    console.log('🔍 Search button clicked! Query:', searchQuery.trim());
     if (searchQuery.trim()) {
-      console.log('Search button clicked, searching for:', searchQuery);
+      console.log('🔍 Calling onSearch with:', searchQuery);
       onSearch(searchQuery);
       setShowSuggestions(false);
+    } else {
+      console.log('❌ Search query is empty, not searching');
     }
   };
 
