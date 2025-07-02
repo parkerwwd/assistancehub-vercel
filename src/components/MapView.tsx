@@ -1,9 +1,9 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Key, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { PHAOffice } from "@/types/phaOffice";
 import { phaOffices } from "@/data/phaOffices";
 import { getWaitlistColor } from "@/utils/mapUtils";
@@ -228,20 +228,27 @@ const MapView = () => {
         </div>
       )}
 
-      {/* Main Content */}
+      {/* Main Content - Resizable Side-by-Side Layout */}
       {mapboxToken && (
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4">
-          {/* Map Container */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-sm border overflow-hidden h-full">
-              <div ref={mapContainer} className="w-full h-full min-h-[500px]" />
-            </div>
-          </div>
-
-          {/* Office Details Panel */}
-          <div className="lg:col-span-1">
-            <OfficeDetailsPanel selectedOffice={selectedOffice} />
-          </div>
+        <div className="flex-1">
+          <ResizablePanelGroup direction="horizontal" className="h-full">
+            {/* Map Panel */}
+            <ResizablePanel defaultSize={70} minSize={50}>
+              <div className="bg-white rounded-lg shadow-sm border overflow-hidden h-full">
+                <div ref={mapContainer} className="w-full h-full" />
+              </div>
+            </ResizablePanel>
+            
+            {/* Resize Handle */}
+            <ResizableHandle withHandle />
+            
+            {/* Details Panel */}
+            <ResizablePanel defaultSize={30} minSize={25}>
+              <div className="h-full pl-4">
+                <OfficeDetailsPanel selectedOffice={selectedOffice} />
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
       )}
     </div>
