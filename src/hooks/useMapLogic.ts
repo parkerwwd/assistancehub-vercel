@@ -43,17 +43,17 @@ export const useMapLogic = () => {
     }
   };
 
-  // Handle search results when they arrive
+  // Handle search results when they arrive - don't auto-select, just fly to first result
   useEffect(() => {
     if (currentSearchQuery && phaAgencies.length > 0 && !loading) {
-      const selectedResult = phaAgencies[0];
-      setSelectedOffice(selectedResult);
+      const firstResult = phaAgencies[0];
       
-      if (selectedResult.latitude && selectedResult.longitude && mapRef.current) {
-        mapRef.current.flyTo([selectedResult.longitude, selectedResult.latitude], 12);
+      // Fly to the first result location if coordinates exist, but don't select it
+      if (firstResult.latitude && firstResult.longitude && mapRef.current) {
+        mapRef.current.flyTo([firstResult.longitude, firstResult.latitude], 10);
       }
       
-      console.log('Selected search result:', selectedResult.name);
+      console.log('Search completed, showing', phaAgencies.length, 'results. First result:', firstResult.name);
     }
   }, [phaAgencies, currentSearchQuery, loading]);
 
