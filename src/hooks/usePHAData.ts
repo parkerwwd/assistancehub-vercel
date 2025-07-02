@@ -55,11 +55,17 @@ export const usePHAData = () => {
 
       console.log('Searching for:', searchTerm);
 
-      // Use proper PostgREST syntax with % wildcards for ilike
-      const { data, error: searchError, count } = await supabase
+      // Use correct PostgREST syntax - chain multiple or conditions
+      let queryBuilder = supabase
         .from('pha_agencies')
-        .select('*', { count: 'exact' })
-        .or(`name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`)
+        .select('*', { count: 'exact' });
+
+      // Apply search filters using individual ilike conditions combined with or
+      queryBuilder = queryBuilder.or(
+        `name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`
+      );
+
+      const { data, error: searchError, count } = await queryBuilder
         .order('name')
         .range(from, to);
 
