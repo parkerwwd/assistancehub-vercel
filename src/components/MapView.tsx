@@ -65,6 +65,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const handleSearchWrapper = (query: string) => {
     setSearchPerformed(true);
     setLastSearchQuery(query);
+    setSelectedOffice(null); // Clear selected office to show search results
     handleSearch(query);
   };
 
