@@ -71,62 +71,94 @@ export const usePHAData = () => {
       const searchTerm = sanitizeSearchInput(query.toLowerCase());
       console.log('🔍 Starting search for:', searchTerm);
 
-      // Enhanced search with rate limiting considerations
-      const searchPromises = [
-        // Name search
-        supabase
-          .from('pha_agencies')
-          .select('*')
-          .ilike('name', `%${searchTerm}%`)
-          .limit(100), // Limit results to prevent excessive resource usage
+      // Parse city/state combination (e.g., "Phoenix, AZ" or "Phoenix Arizona")
+      const cityStatePattern = /^(.+?),?\s+(a[lkszrz]|c[aot]|d[ce]|fl|ga|hi|i[adln]|k[sy]|la|m[adeinost]|n[cdehjmvy]|o[hkr]|p[ar]|ri|s[cd]|t[nx]|ut|v[ait]|w[aivy])$/i;
+      const cityStateMatch = searchTerm.match(cityStatePattern);
+      
+      let searchPromises;
+      
+      if (cityStateMatch) {
+        // Handle city, state format
+        const city = cityStateMatch[1].trim();
+        const state = cityStateMatch[2].trim().toUpperCase();
+        
+        console.log('🏙️ Parsed city/state:', { city, state });
+        
+        searchPromises = [
+          // Exact city and state match
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('city', `%${city}%`)
+            .ilike('state', `%${state}%`)
+            .limit(100),
+          
+          // City name search
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('city', `%${city}%`)
+            .limit(100),
+          
+          // State search
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('state', `%${state}%`)
+            .limit(100),
+          
+          // Name search (full query)
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('name', `%${searchTerm}%`)
+            .limit(100)
+        ];
+      } else {
+        // Regular search for single terms
+        searchPromises = [
+          // Name search
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('name', `%${searchTerm}%`)
+            .limit(100),
 
-        // City search
-        supabase
-          .from('pha_agencies')
-          .select('*')
-          .ilike('city', `%${searchTerm}%`)
-          .limit(100),
+          // City search
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('city', `%${searchTerm}%`)
+            .limit(100),
 
-        // State search
-        supabase
-          .from('pha_agencies')
-          .select('*')
-          .ilike('state', `%${searchTerm}%`)
-          .limit(100)
-      ];
+          // State search
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('state', `%${searchTerm}%`)
+            .limit(100)
+        ];
+      }
 
-      const [nameResults, cityResults, stateResults] = await Promise.all(searchPromises);
+      const searchResults = await Promise.all(searchPromises);
 
-      // Log individual search results for debugging
-      console.log('🏷️ Name search results:', {
-        query: `%${searchTerm}%`,
-        resultsCount: nameResults.data?.length || 0,
-        error: nameResults.error
-      });
-
-      console.log('🏙️ City search results:', {
-        query: `%${searchTerm}%`,
-        resultsCount: cityResults.data?.length || 0,
-        error: cityResults.error
-      });
-
-      console.log('🏛️ State search results:', {
-        query: `%${searchTerm}%`,
-        resultsCount: stateResults.data?.length || 0,
-        error: stateResults.error
+      // Log search results for debugging
+      console.log('🔍 Search results:', {
+        totalQueries: searchResults.length,
+        results: searchResults.map((result, index) => ({
+          index,
+          count: result.data?.length || 0,
+          error: result.error
+        }))
       });
 
       // Check for errors in any of the searches
-      if (nameResults.error || cityResults.error || stateResults.error) {
+      if (searchResults.some(result => result.error)) {
         throw new Error('Search failed due to database error');
       }
 
       // Combine all results
-      const allResults = [
-        ...(nameResults.data || []),
-        ...(cityResults.data || []),
-        ...(stateResults.data || [])
-      ];
+      const allResults = searchResults.flatMap(result => result.data || []);
 
       // Remove duplicates based on ID
       const uniqueResults = allResults.filter((item, index, arr) => 
