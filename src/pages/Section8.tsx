@@ -37,8 +37,8 @@ const Section8 = () => {
           </p>
         </div>
 
-        {/* Map View - Fixed height to prevent going below fold */}
-        <div className="h-[500px] mb-6">
+        {/* Map View - Compact height */}
+        <div className="h-[400px] mb-6">
           <MapView />
         </div>
 
