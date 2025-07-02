@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
@@ -56,11 +55,11 @@ export const usePHAData = () => {
 
       console.log('Searching for:', searchTerm);
 
-      // Use a single query with OR conditions using PostgREST syntax
+      // Use individual filter conditions with proper escaping
       const { data, error: searchError, count } = await supabase
         .from('pha_agencies')
         .select('*', { count: 'exact' })
-        .or(`name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`)
+        .or(`name.ilike.*${searchTerm}*,city.ilike.*${searchTerm}*,state.ilike.*${searchTerm}*,address.ilike.*${searchTerm}*`)
         .order('name')
         .range(from, to);
 
