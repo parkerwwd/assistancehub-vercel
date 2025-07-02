@@ -10,6 +10,8 @@ interface PHAUploadsTableProps {
 }
 
 export const PHAUploadsTable: React.FC<PHAUploadsTableProps> = ({ uploads }) => {
+  console.log('PHAUploadsTable rendering with uploads:', uploads);
+  
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
@@ -46,25 +48,35 @@ export const PHAUploadsTable: React.FC<PHAUploadsTableProps> = ({ uploads }) => 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                File Name
+              <TableHead>
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  File Name
+                </div>
               </TableHead>
-              <TableHead className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Upload Date
+              <TableHead>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Upload Date
+                </div>
               </TableHead>
-              <TableHead className="flex items-center gap-2">
-                <Plus className="w-4 h-4" />
-                Records Added
+              <TableHead>
+                <div className="flex items-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  Records Added
+                </div>
               </TableHead>
-              <TableHead className="flex items-center gap-2">
-                <Edit className="w-4 h-4" />
-                Records Edited
+              <TableHead>
+                <div className="flex items-center gap-2">
+                  <Edit className="w-4 h-4" />
+                  Records Edited
+                </div>
               </TableHead>
-              <TableHead className="flex items-center gap-2">
-                <Database className="w-4 h-4" />
-                Total Processed
+              <TableHead>
+                <div className="flex items-center gap-2">
+                  <Database className="w-4 h-4" />
+                  Total Processed
+                </div>
               </TableHead>
             </TableRow>
           </TableHeader>
