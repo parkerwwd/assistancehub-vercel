@@ -50,72 +50,50 @@ export const usePHAData = () => {
 
     try {
       setLoading(true);
+      setError(null);
+      
       const searchTerm = query.toLowerCase().trim();
       const from = (page - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
       console.log('Searching for:', searchTerm);
+      console.log('Query range:', from, 'to', to);
 
-      // Use multiple separate queries and combine results to avoid PostgREST parsing issues
-      const searchQueries = [
-        supabase
-          .from('pha_agencies')
-          .select('*', { count: 'exact' })
-          .ilike('name', `%${searchTerm}%`)
-          .range(from, to),
-        supabase
-          .from('pha_agencies')
-          .select('*', { count: 'exact' })
-          .ilike('city', `%${searchTerm}%`)
-          .range(from, to),
-        supabase
-          .from('pha_agencies')
-          .select('*', { count: 'exact' })
-          .ilike('state', `%${searchTerm}%`)
-          .range(from, to),
-        supabase
-          .from('pha_agencies')
-          .select('*', { count: 'exact' })
-          .ilike('address', `%${searchTerm}%`)
-          .range(from, to)
-      ];
-
-      const results = await Promise.allSettled(searchQueries);
+      // First, let's see what data we actually have
+      const { data: sampleData } = await supabase
+        .from('pha_agencies')
+        .select('name, city, state, address')
+        .limit(5);
       
-      // Combine all successful results and remove duplicates
-      const allData: PHAAgency[] = [];
-      const seenIds = new Set<string>();
-      let totalCountResult = 0;
+      console.log('Sample data from database:', sampleData);
 
-      results.forEach((result) => {
-        if (result.status === 'fulfilled' && result.value.data) {
-          result.value.data.forEach((agency) => {
-            if (!seenIds.has(agency.id)) {
-              seenIds.add(agency.id);
-              allData.push(agency);
-            }
-          });
-          // Use the highest count from all queries
-          if (result.value.count && result.value.count > totalCountResult) {
-            totalCountResult = result.value.count;
-          }
-        }
-      });
+      // Simple search using textSearch for better matching
+      const { data, error: searchError, count } = await supabase
+        .from('pha_agencies')
+        .select('*', { count: 'exact' })
+        .or(`name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`)
+        .order('name')
+        .range(from, to);
 
-      // Sort results by name
-      allData.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      if (searchError) {
+        console.error('Search error:', searchError);
+        throw searchError;
+      }
 
-      console.log('Search results:', allData.length, 'total count:', totalCountResult);
+      console.log('Search query executed successfully');
+      console.log('Search results count:', data?.length || 0);
+      console.log('Total count from DB:', count);
+      console.log('First few results:', data?.slice(0, 3));
       
-      setPHAAgencies(allData);
-      setTotalCount(totalCountResult);
+      setPHAAgencies(data || []);
+      setTotalCount(count || 0);
       setCurrentPage(page);
     } catch (err) {
       console.error('Error searching PHA data:', err);
       setError(err instanceof Error ? err.message : 'Failed to search PHA data');
       
-      // If search fails, fall back to fetching all data
-      console.log('Falling back to fetch all PHA data');
+      // Fallback to all data if search fails
+      console.log('Search failed, falling back to all data');
       await fetchPHAData(page);
     } finally {
       setLoading(false);
