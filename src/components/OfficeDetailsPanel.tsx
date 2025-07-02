@@ -3,16 +3,24 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, ExternalLink, Users, ArrowRight } from "lucide-react";
-import { PHAOffice } from "@/types/phaOffice";
+import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor } from "@/utils/mapUtils";
 
+type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
+
 interface OfficeDetailsPanelProps {
-  selectedOffice?: PHAOffice | null;
-  onOfficeClick?: (office: PHAOffice) => void;
+  selectedOffice?: PHAAgency | null;
+  onOfficeClick?: (office: PHAAgency) => void;
+  phaAgencies: PHAAgency[];
+  loading: boolean;
 }
 
-const OfficeDetailsPanel = ({ selectedOffice, onOfficeClick }: OfficeDetailsPanelProps) => {
+const OfficeDetailsPanel = ({ selectedOffice, onOfficeClick, phaAgencies, loading }: OfficeDetailsPanelProps) => {
   if (selectedOffice) {
+    const fullAddress = [selectedOffice.address, selectedOffice.city, selectedOffice.state, selectedOffice.zip]
+      .filter(Boolean)
+      .join(', ');
+
     return (
       <div className="h-full p-4 overflow-y-auto">
         <Card className="h-fit shadow-sm border-0">
@@ -20,7 +28,7 @@ const OfficeDetailsPanel = ({ selectedOffice, onOfficeClick }: OfficeDetailsPane
             <CardTitle className="text-lg text-gray-900 leading-tight pr-2">{selectedOffice.name}</CardTitle>
             <CardDescription className="flex items-start text-sm text-gray-600">
               <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-blue-600" />
-              <span className="leading-relaxed">{selectedOffice.address}</span>
+              <span className="leading-relaxed">{fullAddress}</span>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -33,37 +41,41 @@ const OfficeDetailsPanel = ({ selectedOffice, onOfficeClick }: OfficeDetailsPane
               <span 
                 className="px-3 py-1 rounded-full text-sm font-medium"
                 style={{ 
-                  backgroundColor: getWaitlistColor(selectedOffice.waitlistStatus) + '20',
-                  color: getWaitlistColor(selectedOffice.waitlistStatus)
+                  backgroundColor: getWaitlistColor(selectedOffice.waitlist_status || 'Unknown') + '20',
+                  color: getWaitlistColor(selectedOffice.waitlist_status || 'Unknown')
                 }}
               >
-                {selectedOffice.waitlistStatus}
+                {selectedOffice.waitlist_status || 'Unknown'}
               </span>
             </div>
             
             {/* Contact Information */}
             <div className="space-y-3">
-              <a 
-                href={`tel:${selectedOffice.phone}`}
-                className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group"
-              >
-                <Phone className="w-4 h-4 mr-3 text-blue-600" />
-                <span className="text-blue-700 group-hover:text-blue-800 font-medium">
-                  {selectedOffice.phone}
-                </span>
-              </a>
+              {selectedOffice.phone && (
+                <a 
+                  href={`tel:${selectedOffice.phone}`}
+                  className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group"
+                >
+                  <Phone className="w-4 h-4 mr-3 text-blue-600" />
+                  <span className="text-blue-700 group-hover:text-blue-800 font-medium">
+                    {selectedOffice.phone}
+                  </span>
+                </a>
+              )}
               
-              <a 
-                href={`https://${selectedOffice.website}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group"
-              >
-                <ExternalLink className="w-4 h-4 mr-3 text-green-600" />
-                <span className="text-green-700 group-hover:text-green-800 font-medium">
-                  Visit Website
-                </span>
-              </a>
+              {selectedOffice.website && (
+                <a 
+                  href={selectedOffice.website.startsWith('http') ? selectedOffice.website : `https://${selectedOffice.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group"
+                >
+                  <ExternalLink className="w-4 h-4 mr-3 text-green-600" />
+                  <span className="text-green-700 group-hover:text-green-800 font-medium">
+                    Visit Website
+                  </span>
+                </a>
+              )}
             </div>
 
             {/* View Details Button */}
@@ -81,7 +93,9 @@ const OfficeDetailsPanel = ({ selectedOffice, onOfficeClick }: OfficeDetailsPane
             <div className="pt-4 border-t border-gray-100">
               <h4 className="font-medium text-gray-900 mb-3">Available Services</h4>
               <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
-                <div>• Section 8 Housing Vouchers</div>
+                {selectedOffice.supports_hcv && (
+                  <div>• Section 8 Housing Vouchers</div>
+                )}
                 <div>• Public Housing Units</div>
                 <div>• Housing Assistance Programs</div>
                 <div>• Rental Assistance</div>
@@ -99,26 +113,34 @@ const OfficeDetailsPanel = ({ selectedOffice, onOfficeClick }: OfficeDetailsPane
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-gray-900">Find PHA Offices & Housing</CardTitle>
           <CardDescription className="text-sm text-gray-600 leading-relaxed">
-            Click on a map marker or search above to view PHA office details and available housing options.
+            {loading ? "Loading PHA offices..." : "Click on a map marker or search above to view PHA office details and available housing options."}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="p-3 bg-green-50 rounded-lg text-center">
-                <div className="text-xl font-bold text-green-700">12</div>
-                <div className="text-xs text-green-600 mt-1">Open</div>
+            {!loading && phaAgencies.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-3 bg-green-50 rounded-lg text-center">
+                  <div className="text-xl font-bold text-green-700">
+                    {phaAgencies.filter(agency => agency.waitlist_status === 'Open').length}
+                  </div>
+                  <div className="text-xs text-green-600 mt-1">Open</div>
+                </div>
+                <div className="p-3 bg-yellow-50 rounded-lg text-center">
+                  <div className="text-xl font-bold text-yellow-700">
+                    {phaAgencies.filter(agency => agency.waitlist_status === 'Limited').length}
+                  </div>
+                  <div className="text-xs text-yellow-600 mt-1">Limited</div>
+                </div>
+                <div className="p-3 bg-red-50 rounded-lg text-center">
+                  <div className="text-xl font-bold text-red-700">
+                    {phaAgencies.filter(agency => agency.waitlist_status === 'Closed').length}
+                  </div>
+                  <div className="text-xs text-red-600 mt-1">Closed</div>
+                </div>
               </div>
-              <div className="p-3 bg-yellow-50 rounded-lg text-center">
-                <div className="text-xl font-bold text-yellow-700">8</div>
-                <div className="text-xs text-yellow-600 mt-1">Limited</div>
-              </div>
-              <div className="p-3 bg-red-50 rounded-lg text-center">
-                <div className="text-xl font-bold text-red-700">15</div>
-                <div className="text-xs text-red-600 mt-1">Closed</div>
-              </div>
-            </div>
+            )}
             
             {/* Integration Info */}
             <div className="p-3 bg-blue-50 rounded-lg">
