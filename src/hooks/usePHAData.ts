@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
@@ -30,11 +31,17 @@ export const usePHAData = () => {
         throw fetchError;
       }
 
+      console.log('✅ fetchPHAData successful:', {
+        dataLength: data?.length || 0,
+        totalCount: count,
+        sampleRecord: data?.[0]
+      });
+
       setPHAAgencies(data || []);
       setTotalCount(count || 0);
       setCurrentPage(page);
     } catch (err) {
-      console.error('Error fetching PHA data:', err);
+      console.error('❌ Error fetching PHA data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch PHA data');
     } finally {
       setLoading(false);
@@ -52,70 +59,88 @@ export const usePHAData = () => {
       setError(null);
       
       const searchTerm = query.toLowerCase().trim();
-      console.log('Searching for:', searchTerm);
+      console.log('🔍 Starting search for:', searchTerm);
 
-      const from = (page - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
+      // First, let's see what data we actually have
+      const { data: allData, error: allDataError } = await supabase
+        .from('pha_agencies')
+        .select('name, city, state, address')
+        .limit(10);
 
-      // Use multiple individual searches and combine results
-      const searchPromises = [
-        supabase
-          .from('pha_agencies')
-          .select('*')
-          .ilike('name', `%${searchTerm}%`),
-        supabase
-          .from('pha_agencies')
-          .select('*')
-          .ilike('city', `%${searchTerm}%`),
-        supabase
-          .from('pha_agencies')
-          .select('*')
-          .ilike('state', `%${searchTerm}%`),
-        supabase
-          .from('pha_agencies')
-          .select('*')
-          .ilike('address', `%${searchTerm}%`)
-      ];
-
-      const results = await Promise.all(searchPromises);
-      
-      // Check for errors
-      const hasError = results.some(result => result.error);
-      if (hasError) {
-        const firstError = results.find(result => result.error)?.error;
-        throw firstError;
+      if (allDataError) {
+        console.error('❌ Error fetching sample data:', allDataError);
+      } else {
+        console.log('📊 Sample database records:', allData);
       }
 
-      // Combine all results and remove duplicates
-      const allResults: PHAAgency[] = [];
-      results.forEach(result => {
-        if (result.data) {
-          allResults.push(...result.data);
-        }
+      // Now try a simple search on just names first
+      const { data: nameSearch, error: nameError } = await supabase
+        .from('pha_agencies')
+        .select('*')
+        .ilike('name', `%${searchTerm}%`);
+
+      console.log('🏷️ Name search results:', {
+        query: `%${searchTerm}%`,
+        resultsCount: nameSearch?.length || 0,
+        error: nameError,
+        sampleResult: nameSearch?.[0]
       });
 
-      // Remove duplicates by ID
+      // Try city search
+      const { data: citySearch, error: cityError } = await supabase
+        .from('pha_agencies')
+        .select('*')
+        .ilike('city', `%${searchTerm}%`);
+
+      console.log('🏙️ City search results:', {
+        query: `%${searchTerm}%`,
+        resultsCount: citySearch?.length || 0,
+        error: cityError,
+        sampleResult: citySearch?.[0]
+      });
+
+      // Try state search
+      const { data: stateSearch, error: stateError } = await supabase
+        .from('pha_agencies')
+        .select('*')
+        .ilike('state', `%${searchTerm}%`);
+
+      console.log('🏛️ State search results:', {
+        query: `%${searchTerm}%`,
+        resultsCount: stateSearch?.length || 0,
+        error: stateError,
+        sampleResult: stateSearch?.[0]
+      });
+
+      // Combine all results
+      const allResults = [
+        ...(nameSearch || []),
+        ...(citySearch || []),
+        ...(stateSearch || [])
+      ];
+
+      // Remove duplicates
       const uniqueResults = allResults.filter((item, index, arr) => 
         arr.findIndex(other => other.id === item.id) === index
       );
 
-      // Sort by name
-      uniqueResults.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      console.log('🔄 Combined search results:', {
+        totalBeforeDedup: allResults.length,
+        totalAfterDedup: uniqueResults.length,
+        finalResults: uniqueResults.slice(0, 3) // Show first 3 for debugging
+      });
 
-      // Apply pagination to the combined results
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
       const paginatedResults = uniqueResults.slice(from, to + 1);
-      
-      console.log('Search completed. Total unique results:', uniqueResults.length);
-      console.log('Paginated results:', paginatedResults.length);
       
       setPHAAgencies(paginatedResults);
       setTotalCount(uniqueResults.length);
       setCurrentPage(page);
+
     } catch (err) {
-      console.error('Error searching PHA data:', err);
+      console.error('❌ Search failed:', err);
       setError(err instanceof Error ? err.message : 'Failed to search PHA data');
-      
-      // Show empty results on error
       setPHAAgencies([]);
       setTotalCount(0);
       setCurrentPage(page);
