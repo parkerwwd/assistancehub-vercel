@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "./OfficeDetailsPanel";
