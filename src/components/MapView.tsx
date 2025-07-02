@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "./OfficeDetailsPanel";
@@ -26,12 +25,16 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
     mapRef,
     phaAgencies,
     loading,
+    currentPage,
+    totalPages,
+    totalCount,
     setSelectedOffice,
     setTokenError,
     setShowFilters,
     handleTokenChange,
     handleCitySelect,
-    handleSearch
+    handleSearch,
+    handlePageChange
   } = useMapLogic();
 
   const [viewState, setViewState] = useState<ViewState>('overview');
@@ -82,6 +85,10 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
             onOfficeClick={handleOfficeClick}
             phaAgencies={phaAgencies}
             loading={loading}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            onPageChange={handlePageChange}
           />
         );
     }

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Database } from "@/integrations/supabase/types";
 import { USCity } from "@/data/usCities";
@@ -12,9 +11,18 @@ export const useMapLogic = () => {
   const [selectedOffice, setSelectedOffice] = useState<PHAAgency | null>(null);
   const [tokenError, setTokenError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [currentSearchQuery, setCurrentSearchQuery] = useState("");
   const mapRef = useRef<MapContainerRef>(null);
   
-  const { phaAgencies, loading, searchPHAs } = usePHAData();
+  const { 
+    phaAgencies, 
+    loading, 
+    currentPage,
+    totalPages,
+    totalCount,
+    searchPHAs,
+    goToPage 
+  } = usePHAData();
 
   // Load token from localStorage on component mount
   useEffect(() => {
@@ -31,6 +39,14 @@ export const useMapLogic = () => {
       localStorage.setItem('mapbox-token', token.trim());
     } else {
       localStorage.removeItem('mapbox-token');
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    if (currentSearchQuery) {
+      searchPHAs(currentSearchQuery, page);
+    } else {
+      goToPage(page);
     }
   };
 
@@ -94,11 +110,13 @@ export const useMapLogic = () => {
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
+      setCurrentSearchQuery("");
       return;
     }
     
     console.log('Searching for:', query);
-    await searchPHAs(query);
+    setCurrentSearchQuery(query);
+    await searchPHAs(query, 1);
     
     // Parse the search query to extract city and state
     const queryParts = query.split(',').map(part => part.trim());
@@ -163,11 +181,15 @@ export const useMapLogic = () => {
     mapRef,
     phaAgencies,
     loading,
+    currentPage,
+    totalPages,
+    totalCount,
     setSelectedOffice,
     setTokenError,
     setShowFilters,
     handleTokenChange,
     handleCitySelect,
-    handleSearch
+    handleSearch,
+    handlePageChange
   };
 };
