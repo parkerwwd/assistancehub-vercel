@@ -64,14 +64,18 @@ export const usePHAStats = () => {
     updateStats(emptyStats);
   };
 
-  // Calculate totals for summary
+  // Calculate totals for summary - ensure it always returns a valid object
   const getTotals = () => {
+    if (!importStats?.fileUploads || !Array.isArray(importStats.fileUploads)) {
+      return { totalFiles: 0, totalAdded: 0, totalEdited: 0, totalRecords: 0 };
+    }
+    
     return importStats.fileUploads.reduce(
       (acc, upload) => ({
         totalFiles: acc.totalFiles + 1,
-        totalAdded: acc.totalAdded + upload.recordsAdded,
-        totalEdited: acc.totalEdited + upload.recordsEdited,
-        totalRecords: acc.totalRecords + upload.totalRecords
+        totalAdded: acc.totalAdded + (upload.recordsAdded || 0),
+        totalEdited: acc.totalEdited + (upload.recordsEdited || 0),
+        totalRecords: acc.totalRecords + (upload.totalRecords || 0)
       }),
       { totalFiles: 0, totalAdded: 0, totalEdited: 0, totalRecords: 0 }
     );

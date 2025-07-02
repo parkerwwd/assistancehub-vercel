@@ -19,6 +19,14 @@ export const PHAStatsCard: React.FC<PHAStatsCardProps> = ({
   lastImport, 
   totals 
 }) => {
+  // Provide default values if totals is undefined
+  const safeTotals = totals || {
+    totalFiles: 0,
+    totalAdded: 0,
+    totalEdited: 0,
+    totalRecords: 0
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <Card>
@@ -40,7 +48,7 @@ export const PHAStatsCard: React.FC<PHAStatsCardProps> = ({
           <FileUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">{totals.totalFiles}</div>
+          <div className="text-2xl font-bold text-green-600">{safeTotals.totalFiles}</div>
           <p className="text-xs text-muted-foreground">
             CSV files processed
           </p>
@@ -53,7 +61,7 @@ export const PHAStatsCard: React.FC<PHAStatsCardProps> = ({
           <Plus className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-purple-600">{totals.totalAdded.toLocaleString()}</div>
+          <div className="text-2xl font-bold text-purple-600">{safeTotals.totalAdded.toLocaleString()}</div>
           <p className="text-xs text-muted-foreground">
             New PHA records
           </p>
@@ -66,7 +74,7 @@ export const PHAStatsCard: React.FC<PHAStatsCardProps> = ({
           <Edit className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-orange-600">{totals.totalEdited.toLocaleString()}</div>
+          <div className="text-2xl font-bold text-orange-600">{safeTotals.totalEdited.toLocaleString()}</div>
           <p className="text-xs text-muted-foreground">
             Modified records
           </p>
