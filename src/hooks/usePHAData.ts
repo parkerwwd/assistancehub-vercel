@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
@@ -59,19 +58,11 @@ export const usePHAData = () => {
       console.log('Searching for:', searchTerm);
       console.log('Query range:', from, 'to', to);
 
-      // First, let's see what data we actually have
-      const { data: sampleData } = await supabase
-        .from('pha_agencies')
-        .select('name, city, state, address')
-        .limit(5);
-      
-      console.log('Sample data from database:', sampleData);
-
-      // Simple search using textSearch for better matching
+      // Use proper PostgREST or syntax with individual conditions
       const { data, error: searchError, count } = await supabase
         .from('pha_agencies')
         .select('*', { count: 'exact' })
-        .or(`name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`)
+        .or(`name.ilike.*${searchTerm}*,city.ilike.*${searchTerm}*,state.ilike.*${searchTerm}*,address.ilike.*${searchTerm}*`)
         .order('name')
         .range(from, to);
 
@@ -83,7 +74,6 @@ export const usePHAData = () => {
       console.log('Search query executed successfully');
       console.log('Search results count:', data?.length || 0);
       console.log('Total count from DB:', count);
-      console.log('First few results:', data?.slice(0, 3));
       
       setPHAAgencies(data || []);
       setTotalCount(count || 0);
@@ -92,9 +82,10 @@ export const usePHAData = () => {
       console.error('Error searching PHA data:', err);
       setError(err instanceof Error ? err.message : 'Failed to search PHA data');
       
-      // Fallback to all data if search fails
-      console.log('Search failed, falling back to all data');
-      await fetchPHAData(page);
+      // Show empty results instead of falling back to all data
+      setPHAAgencies([]);
+      setTotalCount(0);
+      setCurrentPage(page);
     } finally {
       setLoading(false);
     }
