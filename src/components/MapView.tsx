@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "./OfficeDetailsPanel";
@@ -9,7 +8,6 @@ import MapFilters from "./MapFilters";
 import MapContainer from "./MapContainer";
 import { useMapLogic } from "@/hooks/useMapLogic";
 import { Database } from "@/integrations/supabase/types";
-import { convertPHAAgencyToPHAOffice } from "@/types/phaOffice";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
