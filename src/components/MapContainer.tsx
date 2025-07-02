@@ -79,8 +79,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [-98.5795, 39.8283], // Center of US
-        zoom: 4
+        center: [-95.7129, 37.0902], // Better center for continental US
+        zoom: 4.5 // Increased zoom to focus more on USA
       });
 
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
