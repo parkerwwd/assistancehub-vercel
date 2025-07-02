@@ -82,36 +82,42 @@ export const usePHAData = () => {
         const city = cityStateMatch[1].trim();
         const state = cityStateMatch[2].trim().toUpperCase();
         
-        console.log('🏙️ Parsed city/state:', { city, state });
+        // Map state abbreviations to possible formats in database
+        const stateVariants = [state];
+        if (state === 'AZ') {
+          stateVariants.push('03', 'Arizona', 'Az', 'arizona', 'az');
+        } else if (state === 'CA') {
+          stateVariants.push('06', 'California', 'Ca', 'california', 'ca');
+        } else if (state === 'TX') {
+          stateVariants.push('48', 'Texas', 'Tx', 'texas', 'tx');
+        }
+        // Add more state mappings as needed
+        
+        console.log('🏙️ Parsed city/state:', { city, state, stateVariants });
         
         searchPromises = [
-          // Exact city and state match
+          // Exact city and any state variant match
+          ...stateVariants.map(stateVar => 
+            supabase
+              .from('pha_agencies')
+              .select('*')
+              .ilike('city', `%${city}%`)
+              .ilike('state', `%${stateVar}%`)
+              .limit(50)
+          ),
+          
+          // City name search only
           supabase
             .from('pha_agencies')
             .select('*')
             .ilike('city', `%${city}%`)
-            .ilike('state', `%${state}%`)
             .limit(100),
           
-          // City name search
+          // Name search containing city
           supabase
             .from('pha_agencies')
             .select('*')
-            .ilike('city', `%${city}%`)
-            .limit(100),
-          
-          // State search
-          supabase
-            .from('pha_agencies')
-            .select('*')
-            .ilike('state', `%${state}%`)
-            .limit(100),
-          
-          // Name search (full query)
-          supabase
-            .from('pha_agencies')
-            .select('*')
-            .ilike('name', `%${searchTerm}%`)
+            .ilike('name', `%${city}%`)
             .limit(100)
         ];
       } else {
