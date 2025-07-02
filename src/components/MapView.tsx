@@ -156,39 +156,37 @@ const MapView = () => {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Mapbox Token Input - Compact */}
+      {/* Mapbox Token Input */}
       {!mapboxToken && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
-          <div className="flex items-center gap-2">
-            <Key className="w-4 h-4 text-yellow-600" />
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-3">
+            <Key className="w-5 h-5 text-yellow-600" />
             <div className="flex-1">
-              <p className="text-sm text-yellow-700 mb-2">
+              <p className="text-sm text-yellow-700 mb-3">
                 Enter your Mapbox token to display the map. Get one free at{' '}
                 <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">
                   mapbox.com
                 </a>
               </p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Enter Mapbox token (pk.)"
-                  className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={mapboxToken}
-                  onChange={(e) => handleTokenChange(e.target.value)}
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="Enter Mapbox token (pk.)"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={mapboxToken}
+                onChange={(e) => handleTokenChange(e.target.value)}
+              />
               {tokenError && (
-                <p className="text-xs text-red-600 mt-1">{tokenError}</p>
+                <p className="text-xs text-red-600 mt-2">{tokenError}</p>
               )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Compact Search and Filters Row */}
+      {/* Search and Filters */}
       {mapboxToken && (
-        <div className="bg-white rounded-lg shadow-sm border p-3 mb-3">
-          <div className="flex items-center gap-3">
+        <div className="bg-white rounded-lg shadow-sm border p-4 mb-4">
+          <div className="flex items-center gap-4">
             <div className="flex-1">
               <CitySearch onCitySelect={handleCitySelect} onSearch={handleSearch} />
             </div>
@@ -204,41 +202,43 @@ const MapView = () => {
           </div>
           
           {showFilters && (
-            <div className="mt-3 pt-3 border-t flex items-center gap-4 text-sm">
-              <span className="text-gray-700 font-medium">Waitlist Status:</span>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span>Open</span>
-                </label>
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <span>Limited</span>
-                </label>
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span>Closed</span>
-                </label>
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex items-center gap-6">
+                <span className="text-sm font-medium text-gray-700">Filter by waitlist status:</span>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" defaultChecked className="rounded" />
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="text-sm">Open</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" defaultChecked className="rounded" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <span className="text-sm">Limited</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" defaultChecked className="rounded" />
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span className="text-sm">Closed</span>
+                  </label>
+                </div>
               </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Main Content - Full Height */}
+      {/* Main Content */}
       {mapboxToken && (
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-3">
-          {/* Map Container - Takes 2/3 on large screens */}
-          <div className="lg:col-span-2">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4">
+          {/* Map Container */}
+          <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-sm border overflow-hidden h-full">
-              <div ref={mapContainer} className="w-full h-full min-h-[400px]" />
+              <div ref={mapContainer} className="w-full h-full min-h-[500px]" />
             </div>
           </div>
 
-          {/* Office Details Panel - Takes 1/3 on large screens */}
+          {/* Office Details Panel */}
           <div className="lg:col-span-1">
             <OfficeDetailsPanel selectedOffice={selectedOffice} />
           </div>
