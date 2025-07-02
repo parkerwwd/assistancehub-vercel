@@ -3,13 +3,14 @@ import { useState, useEffect, useRef } from 'react';
 import { PHAOffice } from "@/types/phaOffice";
 import { phaOffices } from "@/data/phaOffices";
 import { USCity } from "@/data/usCities";
+import { MapContainerRef } from "@/components/MapContainer";
 
 export const useMapLogic = () => {
   const [mapboxToken, setMapboxToken] = useState("");
   const [selectedOffice, setSelectedOffice] = useState<PHAOffice | null>(null);
   const [tokenError, setTokenError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<MapContainerRef>(null);
 
   // Load token from localStorage on component mount
   useEffect(() => {

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { PHAOffice } from "@/types/phaOffice";
@@ -12,13 +12,23 @@ interface MapContainerProps {
   onTokenError: (error: string) => void;
 }
 
-const MapContainer: React.FC<MapContainerProps> = ({ 
+export interface MapContainerRef {
+  flyTo: (center: [number, number], zoom: number) => void;
+}
+
+const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({ 
   mapboxToken, 
   onOfficeSelect, 
   onTokenError 
-}) => {
+}, ref) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    flyTo: (center: [number, number], zoom: number) => {
+      map.current?.flyTo({ center, zoom });
+    }
+  }));
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken.trim()) return;
@@ -76,14 +86,9 @@ const MapContainer: React.FC<MapContainerProps> = ({
     }
   }, [mapboxToken, onOfficeSelect, onTokenError]);
 
-  // Expose map instance for external control
-  React.useImperativeHandle(React.forwardRef(() => null), () => ({
-    flyTo: (center: [number, number], zoom: number) => {
-      map.current?.flyTo({ center, zoom });
-    }
-  }));
-
   return <div ref={mapContainer} className="w-full h-full" />;
-};
+});
+
+MapContainer.displayName = 'MapContainer';
 
 export default MapContainer;

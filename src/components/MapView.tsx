@@ -13,6 +13,7 @@ const MapView = () => {
     selectedOffice,
     tokenError,
     showFilters,
+    mapRef,
     setSelectedOffice,
     setTokenError,
     setShowFilters,
@@ -48,6 +49,7 @@ const MapView = () => {
             <ResizablePanel defaultSize={70} minSize={50}>
               <div className="bg-white rounded-lg shadow-sm border overflow-hidden h-full">
                 <MapContainer
+                  ref={mapRef}
                   mapboxToken={mapboxToken}
                   onOfficeSelect={setSelectedOffice}
                   onTokenError={setTokenError}
