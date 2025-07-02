@@ -92,32 +92,18 @@ export const usePHAData = () => {
             .ilike('name', `%${city}%`)
             .limit(100),
           
-          // Search for state in PHA name
+          // Search for city in phone field (contains city name due to data mix-up)
           supabase
             .from('pha_agencies')
             .select('*')
-            .ilike('name', `%${state}%`)
+            .ilike('phone', `%${city}%`)
             .limit(100),
             
-          // Search for city in address field
+          // Search for state name in name
           supabase
             .from('pha_agencies')
             .select('*')
-            .ilike('address', `%${city}%`)
-            .limit(100),
-            
-          // Search for state in address field
-          supabase
-            .from('pha_agencies')
-            .select('*')
-            .ilike('address', `%${state}%`)
-            .limit(100),
-            
-          // Combined search in name
-          supabase
-            .from('pha_agencies')
-            .select('*')
-            .or(`name.ilike.%${city}%,name.ilike.%${state}%`)
+            .ilike('name', `%arizona%`)
             .limit(100)
         ];
       } else {
