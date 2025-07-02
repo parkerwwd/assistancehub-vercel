@@ -149,14 +149,41 @@ export const usePHAImport = () => {
               currentRecord: recordName 
             });
             
-            // Enhanced data mapping with sanitization
+            // Enhanced data mapping for the new clean dataset format
+            let address = '';
+            let city = '';
+            let state = '';
+            let zip = '';
+            
+            // Parse FULL_ADDRESS if available (format: "street, city, state zip")
+            if (record.FULL_ADDRESS) {
+              const fullAddress = record.FULL_ADDRESS.trim();
+              const addressParts = fullAddress.split(',').map((part: string) => part.trim());
+              
+              if (addressParts.length >= 3) {
+                address = addressParts[0] || '';
+                city = addressParts[1] || '';
+                
+                // Last part contains "state zip"
+                const stateZipPart = addressParts[2] || '';
+                const stateZipMatch = stateZipPart.match(/^(.+?)\s+(\d{5}(?:-\d{4})?)$/);
+                if (stateZipMatch) {
+                  state = stateZipMatch[1].trim();
+                  zip = stateZipMatch[2].trim();
+                } else {
+                  // Fallback: assume it's just state if no ZIP found
+                  state = stateZipPart;
+                }
+              }
+            }
+            
             const phaData = {
               pha_code: sanitizeInput(record.PARTICIPANT_CODE || record.pha_code || record.code, 50),
               name: sanitizeInput(record.FORMAL_PARTICIPANT_NAME || record.name || record.PARTICIPANT_NAME || record.PHA_NAME, 255),
-              address: sanitizeInput(record.STD_ADDR || record.address || record.ADDRESS, 500),
-              city: sanitizeInput(record.STD_CITY || record.city || record.CITY, 100),
-              state: sanitizeInput((record.STD_ST || record.state || record.STATE), 2)?.substring(0, 2) || null,
-              zip: sanitizeInput((record.STD_ZIP5 || record.zip || record.ZIP), 10)?.substring(0, 10) || null,
+              address: sanitizeInput(address || record.STD_ADDR || record.address || record.ADDRESS, 500),
+              city: sanitizeInput(city || record.STD_CITY || record.city || record.CITY, 100),
+              state: sanitizeInput(state || record.STD_ST || record.state || record.STATE, 2)?.substring(0, 2) || null,
+              zip: sanitizeInput(zip || record.STD_ZIP5 || record.zip || record.ZIP, 10)?.substring(0, 10) || null,
               phone: sanitizeInput(record.HA_PHN_NUM || record.phone || record.PHONE, 20),
               email: sanitizeInput(record.HA_EMAIL_ADDR_TEXT || record.EXEC_DIR_EMAIL || record.email || record.EMAIL, 255),
               website: sanitizeInput(record.website || record.WEBSITE, 255),
