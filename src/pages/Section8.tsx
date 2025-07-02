@@ -1,8 +1,17 @@
 
 import { Link } from "react-router-dom";
 import MapView from "@/components/MapView";
+import MapFilters from "@/components/MapFilters";
+import { useMapLogic } from "@/hooks/useMapLogic";
 
 const Section8 = () => {
+  const {
+    showFilters,
+    setShowFilters,
+    handleCitySelect,
+    handleSearch
+  } = useMapLogic();
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -37,9 +46,19 @@ const Section8 = () => {
           </p>
         </div>
 
-        {/* Map View - Compact height */}
+        {/* Search Bar - Above Map */}
+        <div className="mb-4">
+          <MapFilters
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            onCitySelect={handleCitySelect}
+            onSearch={handleSearch}
+          />
+        </div>
+
+        {/* Map View - Without integrated search */}
         <div className="h-[400px] mb-6">
-          <MapView />
+          <MapView hideSearch={true} />
         </div>
 
         {/* Info Section */}

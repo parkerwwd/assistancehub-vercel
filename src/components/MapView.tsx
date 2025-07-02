@@ -12,7 +12,11 @@ import { PHAOffice } from "@/types/phaOffice";
 
 type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
 
-const MapView = () => {
+interface MapViewProps {
+  hideSearch?: boolean;
+}
+
+const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const {
     mapboxToken,
     selectedOffice,
@@ -88,18 +92,20 @@ const MapView = () => {
   return (
     <div className="h-full bg-white rounded-lg shadow-sm border overflow-hidden">
       <ResizablePanelGroup direction="horizontal" className="h-full">
-        {/* Map Panel with integrated search */}
+        {/* Map Panel */}
         <ResizablePanel defaultSize={65} minSize={50}>
           <div className="relative h-full bg-gray-100">
-            {/* Search overlay */}
-            <div className="absolute top-4 left-4 right-4 z-10">
-              <MapFilters
-                showFilters={showFilters}
-                onToggleFilters={() => setShowFilters(!showFilters)}
-                onCitySelect={handleCitySelect}
-                onSearch={handleSearch}
-              />
-            </div>
+            {/* Search overlay - only show if not hidden */}
+            {!hideSearch && (
+              <div className="absolute top-4 left-4 right-4 z-10">
+                <MapFilters
+                  showFilters={showFilters}
+                  onToggleFilters={() => setShowFilters(!showFilters)}
+                  onCitySelect={handleCitySelect}
+                  onSearch={handleSearch}
+                />
+              </div>
+            )}
             
             {/* Map */}
             <MapContainer
