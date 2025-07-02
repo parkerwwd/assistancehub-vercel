@@ -47,6 +47,28 @@ export const usePHAImport = () => {
     return data;
   };
 
+  // Helper function to safely parse coordinates
+  const parseCoordinate = (value: string | null | undefined, type: 'latitude' | 'longitude'): number | null => {
+    if (!value || value === 'null' || value === '') return null;
+    
+    const parsed = parseFloat(value);
+    if (isNaN(parsed)) return null;
+    
+    // Validate coordinate ranges
+    if (type === 'latitude' && (parsed < -90 || parsed > 90)) {
+      console.warn(`Invalid latitude value: ${parsed}`);
+      return null;
+    }
+    
+    if (type === 'longitude' && (parsed < -180 || parsed > 180)) {
+      console.warn(`Invalid longitude value: ${parsed}`);
+      return null;
+    }
+    
+    // Round to 8 decimal places to match database precision
+    return Math.round(parsed * 100000000) / 100000000;
+  };
+
   // Import PHA data from CSV
   const importCSVData = async (file: File) => {
     setIsImporting(true);
@@ -93,8 +115,8 @@ export const usePHAImport = () => {
                          record.supports_hcv === 'true' || 
                          false,
             waitlist_status: record.waitlist_status || record.WAITLIST_STATUS || 'Unknown',
-            latitude: record.LAT ? parseFloat(record.LAT) : (record.latitude ? parseFloat(record.latitude) : null),
-            longitude: record.LON ? parseFloat(record.LON) : (record.longitude ? parseFloat(record.longitude) : null),
+            latitude: parseCoordinate(record.LAT || record.latitude, 'latitude'),
+            longitude: parseCoordinate(record.LON || record.longitude, 'longitude'),
             last_updated: new Date().toISOString()
           };
 
@@ -118,6 +140,7 @@ export const usePHAImport = () => {
             }
           } else {
             console.log('Skipping record due to missing name:', record);
+            errorCount++;
           }
         } catch (recordError) {
           console.error('Error processing PHA record:', recordError);
