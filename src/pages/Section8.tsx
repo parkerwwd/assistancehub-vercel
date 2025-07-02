@@ -10,7 +10,8 @@ const Section8 = () => {
     showFilters,
     setShowFilters,
     handleCitySelect,
-    handleSearch
+    handleSearch,
+    currentSearchQuery
   } = useMapLogic();
 
   return (
@@ -49,7 +50,11 @@ const Section8 = () => {
 
       {/* Map Container */}
       <div className="flex-1 overflow-hidden">
-        <MapView hideSearch={true} />
+        <MapView 
+          hideSearch={true}
+          externalSearchQuery={currentSearchQuery}
+          externalSearchPerformed={!!currentSearchQuery}
+        />
       </div>
     </div>
   );

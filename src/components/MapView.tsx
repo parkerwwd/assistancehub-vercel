@@ -15,9 +15,15 @@ type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
 
 interface MapViewProps {
   hideSearch?: boolean;
+  externalSearchQuery?: string;
+  externalSearchPerformed?: boolean;
 }
 
-const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
+const MapView: React.FC<MapViewProps> = ({ 
+  hideSearch = false, 
+  externalSearchQuery = '', 
+  externalSearchPerformed = false 
+}) => {
   const {
     mapboxToken,
     selectedOffice,
@@ -42,6 +48,10 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const [detailOffice, setDetailOffice] = useState<PHAAgency | null>(null);
   const [searchPerformed, setSearchPerformed] = useState(false);
   const [lastSearchQuery, setLastSearchQuery] = useState('');
+
+  // Use external search state if provided, otherwise use internal state
+  const effectiveSearchPerformed = externalSearchPerformed || searchPerformed;
+  const effectiveSearchQuery = externalSearchQuery || lastSearchQuery;
 
   const handleOfficeClick = (office: PHAAgency) => {
     setDetailOffice(office);
@@ -101,8 +111,8 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
             totalPages={totalPages}
             totalCount={totalCount}
             onPageChange={handlePageChange}
-            searchPerformed={searchPerformed}
-            searchQuery={lastSearchQuery}
+            searchPerformed={effectiveSearchPerformed}
+            searchQuery={effectiveSearchQuery}
           />
         );
     }

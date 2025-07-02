@@ -143,6 +143,7 @@ export const useMapLogic = () => {
     currentPage,
     totalPages,
     totalCount,
+    currentSearchQuery,
     setSelectedOffice,
     setTokenError,
     setShowFilters,
