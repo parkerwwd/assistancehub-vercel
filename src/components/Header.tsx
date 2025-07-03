@@ -31,9 +31,9 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, onSearch, showSearch = fa
               </Link>
             </div>
             
-            {/* New Search Bar */}
+            {/* Search Bar with reduced width */}
             {showSearch && onCitySelect && onSearch && (
-              <div className="flex-1 max-w-2xl mx-6">
+              <div className="flex-1 max-w-lg mx-6">
                 <div className="relative">
                   <div className="flex items-center bg-white border-2 border-yellow-400 rounded-full px-4 py-2 shadow-sm">
                     <Search className="w-5 h-5 text-gray-400 mr-3" />
