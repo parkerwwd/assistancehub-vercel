@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -76,6 +76,9 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
   const [mappings, setMappings] = useState<FieldMapping[]>([]);
   const [autoMappedCount, setAutoMappedCount] = useState(0);
 
+  // Memoize the default mappings to prevent unnecessary re-renders
+  const memoizedDefaultMappings = useMemo(() => defaultMappings, [JSON.stringify(defaultMappings)]);
+
   useEffect(() => {
     if (csvHeaders.length > 0) {
       // Auto-map based on common field names
@@ -95,8 +98,8 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
       });
 
       // Apply default mappings if provided
-      if (defaultMappings.length > 0) {
-        defaultMappings.forEach(defaultMapping => {
+      if (memoizedDefaultMappings.length > 0) {
+        memoizedDefaultMappings.forEach(defaultMapping => {
           const index = newMappings.findIndex(m => m.csvField === defaultMapping.csvField);
           if (index >= 0) {
             newMappings[index].dbField = defaultMapping.dbField;
@@ -107,7 +110,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
       setMappings(newMappings);
       setAutoMappedCount(autoMapped);
     }
-  }, [csvHeaders, defaultMappings]);
+  }, [csvHeaders, memoizedDefaultMappings]);
 
   const updateMapping = (csvField: string, dbField: string) => {
     setMappings(prev => prev.map(m => 
