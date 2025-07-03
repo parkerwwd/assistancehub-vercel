@@ -5,13 +5,14 @@ export interface LocationMarkerOptions {
   lat: number;
   lng: number;
   name: string;
+  mapboxToken?: string;
 }
 
 export class LocationMarker {
   private marker: mapboxgl.Marker | null = null;
 
   create(options: LocationMarkerOptions): mapboxgl.Marker {
-    const { lat, lng, name } = options;
+    const { lat, lng, name, mapboxToken } = options;
     
     // Create marker container
     const markerElement = this.createMarkerElement();
@@ -19,7 +20,7 @@ export class LocationMarker {
     const pinShape = this.createPinShape();
     const innerDot = this.createInnerDot();
     const pulseRing = this.createPulseRing();
-    const hoverCard = this.createHoverCard(name);
+    const hoverCard = this.createHoverCard(name, lat, lng, mapboxToken);
     
     // Assemble marker
     pinShape.appendChild(innerDot);
@@ -113,7 +114,7 @@ export class LocationMarker {
     return ring;
   }
 
-  private createHoverCard(name: string): HTMLDivElement {
+  private createHoverCard(name: string, lat: number, lng: number, mapboxToken?: string): HTMLDivElement {
     const card = document.createElement('div');
     card.className = 'location-hover-card';
     card.style.cssText = `
@@ -133,12 +134,18 @@ export class LocationMarker {
       pointer-events: none;
     `;
     
-    const cityImageUrl = `https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=200&fit=crop&auto=format`;
+    // Create location-specific image URL using Mapbox Static Images API
+    let locationImageUrl = `https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=200&fit=crop&auto=format`;
+    
+    if (mapboxToken) {
+      // Use Mapbox Static Images API to get satellite view of the specific location
+      locationImageUrl = `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${lng},${lat},14,0/300x200@2x?access_token=${mapboxToken}`;
+    }
     
     card.innerHTML = `
       <div style="text-align: center;">
         <img 
-          src="${cityImageUrl}" 
+          src="${locationImageUrl}" 
           alt="${name}" 
           style="
             width: 180px; 

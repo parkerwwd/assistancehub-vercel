@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -66,13 +65,18 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         locationMarker.current.remove();
       }
       
-      // Create new location marker
-      locationMarker.current = locationMarkerHelper.current.create({ lat, lng, name });
+      // Create new location marker with mapbox token for correct images
+      locationMarker.current = locationMarkerHelper.current.create({ 
+        lat, 
+        lng, 
+        name, 
+        mapboxToken 
+      });
       locationMarker.current
         .setPopup(MarkerUtils.createLocationPopup(name))
         .addTo(map.current);
         
-      console.log('📍 Added enhanced location marker with hover image for:', name, 'at', { lat, lng });
+      console.log('📍 Added enhanced location marker with correct satellite image for:', name, 'at', { lat, lng });
     }
   }));
 
