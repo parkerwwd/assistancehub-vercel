@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,7 +52,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           className="flex items-center gap-2 text-gray-600 hover:text-gray-800 -ml-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Map
+          Back
         </Button>
       </div>
 

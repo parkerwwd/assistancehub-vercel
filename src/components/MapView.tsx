@@ -69,9 +69,9 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const handleBackToOverview = () => {
     setViewState('overview');
     setDetailOffice(null);
-    // Reset to US view and clear selected office when going back to overview
+    // Clear selected office when going back to show all PHA data
     setSelectedOffice(null);
-    resetToUSView();
+    // Don't reset to US view - keep current map position to show all PHA data
   };
 
   const handleBackToPHADetail = () => {
