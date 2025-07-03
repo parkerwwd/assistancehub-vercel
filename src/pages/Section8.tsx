@@ -55,6 +55,7 @@ const Section8 = () => {
   const handleBackToOverview = () => {
     setViewState('overview');
     setDetailOffice(null);
+    // Pass null explicitly to clear the selected office
     setSelectedOffice(null);
   };
 

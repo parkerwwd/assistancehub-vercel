@@ -77,7 +77,41 @@ export const useMapLogic = () => {
     }
   };
 
-  const handleOfficeSelect = (office: PHAAgency) => {
+  const geocodeAddress = async (address: string): Promise<{ lat: number; lng: number } | null> => {
+    if (!mapboxToken || !address) return null;
+    
+    try {
+      const encodedAddress = encodeURIComponent(address);
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
+      );
+      
+      if (!response.ok) {
+        console.warn('Geocoding API error:', response.status);
+        return null;
+      }
+      
+      const data = await response.json();
+      
+      if (data.features && data.features.length > 0) {
+        const [lng, lat] = data.features[0].center;
+        return { lat, lng };
+      }
+      
+      return null;
+    } catch (error) {
+      console.warn('Geocoding error:', error);
+      return null;
+    }
+  };
+
+  const handleOfficeSelect = async (office: PHAAgency | null) => {
+    if (!office) {
+      console.log('🏢 Clearing selected office');
+      setSelectedOffice(null);
+      return;
+    }
+
     console.log('🏢 Selected office:', office.name);
     
     // Set the selected office
@@ -87,8 +121,30 @@ export const useMapLogic = () => {
     setSelectedLocation(null);
     
     // Get coordinates from the office data
-    const lat = office.latitude || (office as any).geocoded_latitude;
-    const lng = office.longitude || (office as any).geocoded_longitude;
+    let lat = office.latitude || (office as any).geocoded_latitude;
+    let lng = office.longitude || (office as any).geocoded_longitude;
+    
+    // If no coordinates, try to geocode the address
+    if (!lat || !lng) {
+      console.log('🗺️ No coordinates found, trying to geocode address:', office.address);
+      
+      if (office.address) {
+        // Build full address string
+        const addressParts = [office.address];
+        if (office.city) addressParts.push(office.city);
+        if (office.state) addressParts.push(office.state);
+        if (office.zip) addressParts.push(office.zip);
+        
+        const fullAddress = addressParts.join(', ');
+        const coordinates = await geocodeAddress(fullAddress);
+        
+        if (coordinates) {
+          lat = coordinates.lat;
+          lng = coordinates.lng;
+          console.log('✅ Geocoded coordinates:', { lat, lng });
+        }
+      }
+    }
     
     console.log('🗺️ Flying to office coordinates:', { lat, lng });
     
