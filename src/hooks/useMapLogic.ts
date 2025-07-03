@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { Database } from "@/integrations/supabase/types";
 import { USLocation } from "@/data/usLocations";
@@ -174,6 +175,7 @@ export const useMapLogic = () => {
     totalPages,
     totalCount,
     setSelectedOffice: handleOfficeSelect,
+    setSelectedLocation,
     setTokenError,
     setShowFilters,
     handleTokenChange,
