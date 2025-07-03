@@ -79,6 +79,8 @@ export const useMapLogic = () => {
 
   const handleOfficeSelect = (office: PHAAgency) => {
     console.log('🏢 Selected office:', office.name);
+    
+    // Set the selected office
     setSelectedOffice(office);
     
     // Clear location marker when selecting an office

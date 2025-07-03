@@ -38,7 +38,11 @@ const Section8 = () => {
 
   const handleOfficeClick = (office: PHAAgency) => {
     console.log('🎯 Office clicked from panel:', office.name);
+    
+    // First select the office on the map (this will fly to it and show marker)
     setSelectedOffice(office);
+    
+    // Then show detail view
     setDetailOffice(office);
     setViewState('pha-detail');
   };
@@ -127,7 +131,7 @@ const Section8 = () => {
                 ref={mapRef}
                 mapboxToken={mapboxToken}
                 phaAgencies={phaAgencies}
-                onOfficeSelect={setSelectedOffice}
+                onOfficeSelect={handleOfficeClick}
                 onTokenError={setTokenError}
                 selectedOffice={selectedOffice}
                 selectedLocation={selectedLocation}
