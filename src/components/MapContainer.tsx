@@ -13,6 +13,7 @@ interface MapContainerProps {
   onOfficeSelect: (office: PHAAgency) => void;
   onTokenError: (error: string) => void;
   onBoundsChange?: (bounds: mapboxgl.LngLatBounds) => void;
+  selectedOffice?: PHAAgency | null;
 }
 
 export interface MapContainerRef {
@@ -25,7 +26,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   phaAgencies,
   onOfficeSelect, 
   onTokenError,
-  onBoundsChange
+  onBoundsChange,
+  selectedOffice
 }, ref) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -56,51 +58,47 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     markers.current = [];
   };
 
-  // Add markers for PHA agencies
-  const addMarkers = () => {
-    if (!map.current) return;
+  // Add marker for selected office only
+  const addSelectedOfficeMarker = () => {
+    if (!map.current || !selectedOffice) return;
     
     clearMarkers();
     
-    console.log('🏢 Adding markers for', phaAgencies.length, 'agencies');
+    // Use original coordinates or geocoded coordinates
+    const lat = selectedOffice.latitude || (selectedOffice as any).geocoded_latitude;
+    const lng = selectedOffice.longitude || (selectedOffice as any).geocoded_longitude;
     
-    phaAgencies.forEach((agency) => {
-      // Use original coordinates or geocoded coordinates
-      const lat = agency.latitude || (agency as any).geocoded_latitude;
-      const lng = agency.longitude || (agency as any).geocoded_longitude;
+    if (lat && lng) {
+      console.log('📍 Adding marker for selected office:', selectedOffice.name, 'at', { lat, lng });
       
-      if (lat && lng) {
-        console.log('📍 Adding marker for:', agency.name, 'at', { lat, lng });
-        
-        const marker = new mapboxgl.Marker({
-          color: getWaitlistColor(agency.waitlist_status || 'Unknown'),
-          scale: 0.8
-        })
-          .setLngLat([lng, lat])
-          .addTo(map.current!);
+      const marker = new mapboxgl.Marker({
+        color: getWaitlistColor(selectedOffice.waitlist_status || 'Unknown'),
+        scale: 1.0
+      })
+        .setLngLat([lng, lat])
+        .addTo(map.current!);
 
-        // Add click handler to marker
-        marker.getElement().addEventListener('click', () => {
-          console.log('🎯 Marker clicked:', agency.name);
-          onOfficeSelect(agency);
-        });
+      // Add click handler to marker
+      marker.getElement().addEventListener('click', () => {
+        console.log('🎯 Marker clicked:', selectedOffice.name);
+        onOfficeSelect(selectedOffice);
+      });
 
-        // Add hover effect
-        marker.getElement().style.cursor = 'pointer';
-        marker.getElement().addEventListener('mouseenter', () => {
-          marker.getElement().style.transform = 'scale(1.1)';
-        });
-        marker.getElement().addEventListener('mouseleave', () => {
-          marker.getElement().style.transform = 'scale(1)';
-        });
+      // Add hover effect
+      marker.getElement().style.cursor = 'pointer';
+      marker.getElement().addEventListener('mouseenter', () => {
+        marker.getElement().style.transform = 'scale(1.1)';
+      });
+      marker.getElement().addEventListener('mouseleave', () => {
+        marker.getElement().style.transform = 'scale(1)';
+      });
 
-        markers.current.push(marker);
-      } else {
-        console.warn('⚠️ No coordinates for agency:', agency.name);
-      }
-    });
-    
-    console.log('✅ Added', markers.current.length, 'markers to map');
+      markers.current.push(marker);
+      
+      console.log('✅ Added marker for selected office:', selectedOffice.name);
+    } else {
+      console.warn('⚠️ No coordinates for selected office:', selectedOffice.name);
+    }
   };
 
   // Handle bounds change
@@ -143,10 +141,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         }
       });
 
-      // Add markers when map loads
+      // Setup map when it loads - don't add markers initially
       map.current.on('load', () => {
-        console.log('🗺️ Map loaded successfully - showing US view in 2D');
-        addMarkers();
+        console.log('🗺️ Map loaded successfully - showing US view in 2D (no markers initially)');
         handleBoundsChange();
       });
 
@@ -164,13 +161,18 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     }
   }, [mapboxToken, onOfficeSelect, onTokenError, onBoundsChange]);
 
-  // Update markers when PHA agencies change
+  // Update marker when selected office changes
   useEffect(() => {
     if (map.current?.loaded()) {
-      console.log('🔄 PHA agencies changed, updating markers');
-      addMarkers();
+      console.log('🔄 Selected office changed, updating marker');
+      if (selectedOffice) {
+        addSelectedOfficeMarker();
+      } else {
+        clearMarkers();
+        console.log('🧹 Cleared all markers - no office selected');
+      }
     }
-  }, [phaAgencies]);
+  }, [selectedOffice]);
 
   return <div ref={mapContainer} className="w-full h-full" />;
 });

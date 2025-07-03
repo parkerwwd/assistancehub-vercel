@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "./OfficeDetailsPanel";
@@ -48,14 +47,14 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
         console.log('🇺🇸 Initial page load - showing US map');
         resetToUSView();
       }
-    }, 1000); // Small delay to ensure map is loaded
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
 
   const handleOfficeClick = (office: PHAAgency) => {
     console.log('🎯 Office clicked from panel:', office.name);
-    // First select the office on the map (this will fly to it)
+    // First select the office on the map (this will fly to it and show marker)
     setSelectedOffice(office);
     // Then show detail view
     setDetailOffice(office);
@@ -70,7 +69,8 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const handleBackToOverview = () => {
     setViewState('overview');
     setDetailOffice(null);
-    // Reset to US view when going back to overview
+    // Reset to US view and clear selected office when going back to overview
+    setSelectedOffice(null);
     resetToUSView();
   };
 
@@ -80,9 +80,10 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
 
   const handleCitySelectWithReset = (city: any) => {
     console.log('🏙️ City selected, flying to:', city.name);
-    // Reset view state when searching
+    // Reset view state and clear selected office when searching
     setViewState('overview');
     setDetailOffice(null);
+    setSelectedOffice(null);
     handleCitySelect(city);
   };
 
@@ -158,6 +159,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
                 phaAgencies={phaAgencies}
                 onOfficeSelect={setSelectedOffice}
                 onTokenError={setTokenError}
+                selectedOffice={selectedOffice}
               />
             </div>
           </ResizablePanel>
