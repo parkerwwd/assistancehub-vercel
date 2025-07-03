@@ -63,6 +63,11 @@ export const ImportControls: React.FC<ImportControlsProps> = ({
     }
 
     onFileSelect(file);
+    
+    // Reset file input to allow re-selecting the same file
+    if (event.target) {
+      event.target.value = '';
+    }
   };
 
   const downloadSampleCSV = () => {

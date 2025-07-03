@@ -3,11 +3,15 @@ import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ImportResult, ImportProgress } from '../types';
+import { FieldMapping } from '../components/FieldMappingDialog';
 
 export const usePHAImport = () => {
   const [isImporting, setIsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState<ImportProgress>({ current: 0, total: 0 });
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [showMappingDialog, setShowMappingDialog] = useState(false);
   const { toast } = useToast();
 
   // Enhanced CSV parsing with better security validation
@@ -101,8 +105,50 @@ export const usePHAImport = () => {
     return sanitized || null;
   };
 
-  // Import PHA data from CSV with enhanced security
-  const importCSVData = async (file: File) => {
+  // Start the import process by analyzing CSV structure
+  const startImport = async (file: File) => {
+    try {
+      // Security validations
+      const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'text/plain'];
+      if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.csv')) {
+        throw new Error('Invalid file type. Only CSV files are allowed.');
+      }
+
+      const maxFileSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxFileSize) {
+        throw new Error('File too large. Maximum size is 50MB.');
+      }
+
+      const csvText = await file.text();
+      const csvData = parseCSV(csvText);
+      
+      if (csvData.length === 0) {
+        throw new Error('CSV file appears to be empty or invalid.');
+      }
+
+      // Extract headers for mapping
+      const firstLine = csvText.split('\n')[0];
+      const tabCount = (firstLine.match(/\t/g) || []).length;
+      const commaCount = (firstLine.match(/,/g) || []).length;
+      const delimiter = tabCount > commaCount ? '\t' : ',';
+      const headers = firstLine.split(delimiter).map(h => h.trim().replace(/"/g, ''));
+
+      setCsvHeaders(headers);
+      setPendingFile(file);
+      setShowMappingDialog(true);
+    } catch (error) {
+      console.error('Error analyzing CSV file:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to analyze CSV file';
+      toast({
+        title: "File Analysis Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Import PHA data from CSV with field mapping
+  const importCSVData = async (file: File, fieldMappings: FieldMapping[]) => {
     setIsImporting(true);
     setImportResult(null);
     setImportProgress({ current: 0, total: 0 });
@@ -149,53 +195,60 @@ export const usePHAImport = () => {
               currentRecord: recordName 
             });
             
-            // Enhanced data mapping for the new clean dataset format
-            let address = '';
-            let city = '';
-            let state = '';
-            let zip = '';
-            
-            // Parse FULL_ADDRESS if available (format: "street, city, state zip")
-            if (record.FULL_ADDRESS) {
-              const fullAddress = record.FULL_ADDRESS.trim();
-              const addressParts = fullAddress.split(',').map((part: string) => part.trim());
-              
-              if (addressParts.length >= 3) {
-                address = addressParts[0] || '';
-                city = addressParts[1] || '';
-                
-                // Last part contains "state zip"
-                const stateZipPart = addressParts[2] || '';
-                const stateZipMatch = stateZipPart.match(/^(.+?)\s+(\d{5}(?:-\d{4})?)$/);
-                if (stateZipMatch) {
-                  state = stateZipMatch[1].trim();
-                  zip = stateZipMatch[2].trim();
-                } else {
-                  // Fallback: assume it's just state if no ZIP found
-                  state = stateZipPart;
-                }
-              }
-            }
-            
-            const phaData = {
-              pha_code: sanitizeInput(record.PARTICIPANT_CODE || record.pha_code || record.code, 50),
-              name: sanitizeInput(record.FORMAL_PARTICIPANT_NAME || record.name || record.PARTICIPANT_NAME || record.PHA_NAME, 255),
-              address: sanitizeInput(address || record.STD_ADDR || record.address || record.ADDRESS, 500),
-              city: sanitizeInput(city || record.STD_CITY || record.city || record.CITY, 100),
-              state: sanitizeInput(state || record.STD_ST || record.state || record.STATE, 2)?.substring(0, 2) || null,
-              zip: sanitizeInput(zip || record.STD_ZIP5 || record.zip || record.ZIP, 10)?.substring(0, 10) || null,
-              phone: sanitizeInput(record.HA_PHN_NUM || record.phone || record.PHONE, 20),
-              email: sanitizeInput(record.HA_EMAIL_ADDR_TEXT || record.EXEC_DIR_EMAIL || record.email || record.EMAIL, 255),
-              website: sanitizeInput(record.website || record.WEBSITE, 255),
-              supports_hcv: record.HA_PROGRAM_TYPE?.includes('Section 8') || 
-                           (record.SECTION8_UNITS_CNT && parseInt(record.SECTION8_UNITS_CNT) > 0) || 
-                           record.supports_hcv === 'true' || 
-                           false,
-              waitlist_status: sanitizeInput(record.waitlist_status || record.WAITLIST_STATUS, 50) || 'Unknown',
-              latitude: parseCoordinate(record.LAT || record.latitude, 'latitude'),
-              longitude: parseCoordinate(record.LON || record.longitude, 'longitude'),
+            // Apply field mappings to build PHA data object
+            const phaData: any = {
               last_updated: new Date().toISOString()
             };
+
+            // Map fields based on user configuration
+            fieldMappings.forEach(mapping => {
+              const csvValue = record[mapping.csvField];
+              
+              switch (mapping.dbField) {
+                case 'pha_code':
+                  phaData.pha_code = sanitizeInput(csvValue, 50);
+                  break;
+                case 'name':
+                  phaData.name = sanitizeInput(csvValue, 255);
+                  break;
+                case 'address':
+                  phaData.address = sanitizeInput(csvValue, 500);
+                  break;
+                case 'city':
+                  phaData.city = sanitizeInput(csvValue, 100);
+                  break;
+                case 'state':
+                  phaData.state = sanitizeInput(csvValue, 2)?.substring(0, 2) || null;
+                  break;
+                case 'zip':
+                  phaData.zip = sanitizeInput(csvValue, 10)?.substring(0, 10) || null;
+                  break;
+                case 'phone':
+                  phaData.phone = sanitizeInput(csvValue, 20);
+                  break;
+                case 'email':
+                  phaData.email = sanitizeInput(csvValue, 255);
+                  break;
+                case 'website':
+                  phaData.website = sanitizeInput(csvValue, 255);
+                  break;
+                case 'supports_hcv':
+                  phaData.supports_hcv = csvValue?.toString().toLowerCase().includes('section 8') || 
+                                       csvValue?.toString().toLowerCase() === 'true' || 
+                                       (csvValue && parseInt(csvValue.toString()) > 0) || 
+                                       false;
+                  break;
+                case 'waitlist_status':
+                  phaData.waitlist_status = sanitizeInput(csvValue, 50) || 'Unknown';
+                  break;
+                case 'latitude':
+                  phaData.latitude = parseCoordinate(csvValue, 'latitude');
+                  break;
+                case 'longitude':
+                  phaData.longitude = parseCoordinate(csvValue, 'longitude');
+                  break;
+              }
+            });
 
             console.log('Mapped PHA data:', phaData);
 
@@ -269,11 +322,25 @@ export const usePHAImport = () => {
     }
   };
 
+  const handleMappingConfirm = async (mappings: FieldMapping[]) => {
+    setShowMappingDialog(false);
+    if (pendingFile) {
+      await importCSVData(pendingFile, mappings);
+      setPendingFile(null);
+      setCsvHeaders([]);
+    }
+  };
+
   return {
     isImporting,
     importProgress,
     importResult,
+    startImport,
     importCSVData,
-    setImportResult
+    setImportResult,
+    showMappingDialog,
+    setShowMappingDialog,
+    csvHeaders,
+    handleMappingConfirm
   };
 };
