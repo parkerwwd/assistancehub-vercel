@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,33 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         <Card className="shadow-sm border-0 mb-4">
+          {/* Office Image */}
+          <div className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 rounded-t-lg overflow-hidden">
+            <img 
+              src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=400&fit=crop&crop=center"
+              alt={`${office.name} building`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to a gradient background with building icon if image fails to load
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.parentElement!.innerHTML = `
+                  <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+                    <div class="text-center">
+                      <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-white/20 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 8h2M7 21h2"></path>
+                        </svg>
+                      </div>
+                      <p class="text-sm text-gray-600 font-medium">${office.name}</p>
+                    </div>
+                  </div>
+                `;
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          </div>
+
           <CardHeader className="pb-4">
             <CardTitle className="text-lg text-gray-900 leading-tight pr-2">
               {office.name}
