@@ -116,7 +116,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
   };
 
   const getUsedDbFields = () => {
-    return mappings.filter(m => m.dbField).map(m => m.dbField);
+    return mappings.filter(m => m.dbField && m.dbField !== 'skip').map(m => m.dbField);
   };
 
   const getRequiredFieldStatus = () => {
@@ -143,7 +143,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
   };
 
   const handleConfirm = () => {
-    const validMappings = mappings.filter(m => m.dbField);
+    const validMappings = mappings.filter(m => m.dbField && m.dbField !== 'skip');
     onMappingConfirm(validMappings);
   };
 
@@ -201,14 +201,14 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                   <div>
                     <Label className="text-sm font-medium">Database Field</Label>
                     <Select 
-                      value={mapping.dbField} 
-                      onValueChange={(value) => updateMapping(mapping.csvField, value)}
+                      value={mapping.dbField || 'skip'} 
+                      onValueChange={(value) => updateMapping(mapping.csvField, value === 'skip' ? '' : value)}
                     >
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Select database field..." />
                       </SelectTrigger>
                       <SelectContent className="bg-white border shadow-lg z-50">
-                        <SelectItem value="">-- Skip this field --</SelectItem>
+                        <SelectItem value="skip">-- Skip this field --</SelectItem>
                         {DATABASE_FIELDS.map(field => (
                           <SelectItem key={field.key} value={field.key}>
                             <div className="flex items-center gap-2">
@@ -219,7 +219,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                         ))}
                       </SelectContent>
                     </Select>
-                    {mapping.dbField && (
+                    {mapping.dbField && mapping.dbField !== 'skip' && (
                       <p className="text-xs text-muted-foreground mt-1">
                         {DATABASE_FIELDS.find(f => f.key === mapping.dbField)?.description}
                       </p>
