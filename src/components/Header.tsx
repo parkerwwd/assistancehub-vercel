@@ -1,44 +1,20 @@
 
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
-import { Search, Target } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { USCity } from "@/data/usCities";
 import CitySearch from "./CitySearch";
 
 interface HeaderProps {
   onCitySelect?: (city: USCity) => void;
-  onSearch?: (query: string) => void;
   showSearch?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onCitySelect, onSearch, showSearch = false }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [hasValidSelection, setHasValidSelection] = useState(false);
-
-  const handleSearchFromHeader = (query: string) => {
-    console.log('🔍 Header search triggered with:', query);
-    setSearchQuery(query);
-    setHasValidSelection(true); // Search is only triggered from valid selections now
-    if (onSearch) {
-      onSearch(query);
-    }
-  };
-
+const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => {
   const handleCitySelectFromHeader = (city: USCity) => {
     console.log('🏙️ Header city selected:', city);
-    setHasValidSelection(true);
     if (onCitySelect) {
       onCitySelect(city);
-    }
-  };
-
-  const triggerSearch = () => {
-    if (hasValidSelection && searchQuery.trim() && onSearch) {
-      console.log('🔍 Triggering search from target button:', searchQuery);
-      onSearch(searchQuery);
-    } else {
-      console.log('❌ Target button clicked but no valid selection');
     }
   };
 
@@ -61,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, onSearch, showSearch = fa
             </div>
             
             {/* Search Bar with reduced width */}
-            {showSearch && onCitySelect && onSearch && (
+            {showSearch && onCitySelect && (
               <div className="flex-1 max-w-lg mx-6">
                 <div className="relative">
                   <div className="flex items-center bg-white border-2 border-yellow-400 rounded-full px-4 py-2 shadow-sm">
@@ -69,18 +45,10 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, onSearch, showSearch = fa
                     <div className="flex-1">
                       <CitySearch 
                         onCitySelect={handleCitySelectFromHeader}
-                        onSearch={handleSearchFromHeader}
                         placeholder="City, County, or Zipcode"
                         variant="header"
                       />
                     </div>
-                    <button 
-                      onClick={triggerSearch}
-                      className="ml-3 p-1 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={!hasValidSelection || !searchQuery.trim()}
-                    >
-                      <Target className="w-5 h-5 text-gray-600" />
-                    </button>
                   </div>
                 </div>
               </div>

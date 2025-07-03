@@ -15,15 +15,9 @@ type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
 
 interface MapViewProps {
   hideSearch?: boolean;
-  externalSearchQuery?: string;
-  externalSearchPerformed?: boolean;
 }
 
-const MapView: React.FC<MapViewProps> = ({ 
-  hideSearch = false, 
-  externalSearchQuery = '', 
-  externalSearchPerformed = false 
-}) => {
+const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const {
     mapboxToken,
     selectedOffice,
@@ -41,7 +35,6 @@ const MapView: React.FC<MapViewProps> = ({
     setShowFilters,
     handleTokenChange,
     handleCitySelect,
-    handleSearch,
     handlePageChange,
     handleBoundsChange,
     handleToggleSearchInArea
@@ -49,12 +42,6 @@ const MapView: React.FC<MapViewProps> = ({
 
   const [viewState, setViewState] = useState<ViewState>('overview');
   const [detailOffice, setDetailOffice] = useState<PHAAgency | null>(null);
-  const [searchPerformed, setSearchPerformed] = useState(false);
-  const [lastSearchQuery, setLastSearchQuery] = useState('');
-
-  // Use external search state if provided, otherwise use internal state
-  const effectiveSearchPerformed = externalSearchPerformed || searchPerformed;
-  const effectiveSearchQuery = externalSearchQuery || lastSearchQuery;
 
   const handleOfficeClick = (office: PHAAgency) => {
     setDetailOffice(office);
@@ -73,15 +60,6 @@ const MapView: React.FC<MapViewProps> = ({
 
   const handleBackToPHADetail = () => {
     setViewState('pha-detail');
-  };
-
-  const handleSearchWrapper = (query: string, searchInArea?: boolean) => {
-    console.log('🔍 MapView handleSearchWrapper called with:', query, 'searchInArea:', searchInArea);
-    setSearchPerformed(true);
-    setLastSearchQuery(query);
-    setSelectedOffice(null); // Clear selected office to show search results
-    console.log('🔍 About to call handleSearch from useMapLogic');
-    handleSearch(query, searchInArea);
   };
 
   const renderRightPanel = () => {
@@ -114,8 +92,8 @@ const MapView: React.FC<MapViewProps> = ({
             totalPages={totalPages}
             totalCount={totalCount}
             onPageChange={handlePageChange}
-            searchPerformed={effectiveSearchPerformed}
-            searchQuery={effectiveSearchQuery}
+            searchPerformed={false}
+            searchQuery=""
           />
         );
     }
@@ -142,7 +120,6 @@ const MapView: React.FC<MapViewProps> = ({
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters(!showFilters)}
             onCitySelect={handleCitySelect}
-            onSearch={handleSearchWrapper}
             searchInAreaEnabled={searchInAreaEnabled}
             onToggleSearchInArea={handleToggleSearchInArea}
           />

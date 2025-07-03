@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Filter, Search, MapPin } from "lucide-react";
+import React from 'react';
+import { Filter, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { USCity } from "@/data/usCities";
 import CitySearch from "./CitySearch";
@@ -9,7 +9,6 @@ interface MapFiltersProps {
   showFilters: boolean;
   onToggleFilters: () => void;
   onCitySelect: (city: USCity) => void;
-  onSearch: (query: string, searchInArea?: boolean) => void;
   searchInAreaEnabled?: boolean;
   onToggleSearchInArea?: (enabled: boolean) => void;
 }
@@ -18,24 +17,16 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   showFilters,
   onToggleFilters,
   onCitySelect,
-  onSearch,
   searchInAreaEnabled = false,
   onToggleSearchInArea
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    onSearch(query, searchInAreaEnabled);
-  };
-
   return (
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="p-3">
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-0">
-              <CitySearch onCitySelect={onCitySelect} onSearch={handleSearch} />
+              <CitySearch onCitySelect={onCitySelect} />
             </div>
             <Button
               variant="outline"
