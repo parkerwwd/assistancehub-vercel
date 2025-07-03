@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { sanitizeSearchInput } from "@/utils/inputSanitization";
@@ -78,147 +79,161 @@ export const searchPHAs = async (
   const cityStatePattern = /^(.+?),?\s+(a[lkszrz]|c[aot]|d[ce]|fl|ga|hi|i[adln]|k[sy]|la|m[adeinost]|n[cdehjmvy]|o[hkr]|p[ar]|ri|s[cd]|t[nx]|ut|v[ait]|w[aivy])$/i;
   const cityStateMatch = searchTerm.match(cityStatePattern);
   
-  let searchResults: any[];
+  let allResults: any[] = [];
   
   if (cityStateMatch) {
-    // Handle city, state format - search in multiple fields including address
+    // Handle city, state format with prioritized search
     const city = cityStateMatch[1].trim();
     const state = cityStateMatch[2].trim().toUpperCase();
     
     console.log('🏙️ Parsed city/state:', { city, state });
     
-    const [addressResult, phoneResult, nameResult, cityResult, stateResult] = await Promise.all([
-      // Search for city in address field
-      supabase
+    // Priority 1: Exact city and state match
+    const exactMatch = await supabase
+      .from('pha_agencies')
+      .select('*')
+      .ilike('city', city)
+      .ilike('state', state)
+      .limit(50);
+
+    if (exactMatch.data && exactMatch.data.length > 0) {
+      console.log('✅ Found exact city/state matches:', exactMatch.data.length);
+      allResults = exactMatch.data;
+    } else {
+      // Priority 2: City in address AND state match
+      const addressCityMatch = await supabase
         .from('pha_agencies')
         .select('*')
         .ilike('address', `%${city}%`)
-        .limit(100),
-      
-      // Search for city in phone field (where city names are sometimes stored)
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('phone', `%${city}%`)
-        .limit(100),
-      
-      // Search for city name in PHA name
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('name', `%${city}%`)
-        .limit(100),
-        
-      // Search for city in actual city field
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('city', `%${city}%`)
-        .limit(100),
-        
-      // Search by state
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('state', `%${state}%`)
-        .limit(100)
-    ]);
+        .ilike('state', state)
+        .limit(50);
 
-    searchResults = [addressResult, phoneResult, nameResult, cityResult, stateResult];
+      if (addressCityMatch.data && addressCityMatch.data.length > 0) {
+        console.log('✅ Found address/state matches:', addressCityMatch.data.length);
+        allResults = addressCityMatch.data;
+      } else {
+        // Priority 3: Broader search within the state
+        const [cityResults, addressResults] = await Promise.all([
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('city', `%${city}%`)
+            .ilike('state', state)
+            .limit(30),
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('address', `%${city}%`)
+            .ilike('state', state)
+            .limit(30)
+        ]);
+
+        const combinedResults = [
+          ...(cityResults.data || []),
+          ...(addressResults.data || [])
+        ];
+
+        // Remove duplicates
+        allResults = combinedResults.filter((item, index, arr) => 
+          arr.findIndex(other => other.id === item.id) === index
+        );
+
+        console.log('✅ Found broader matches:', allResults.length);
+      }
+    }
   } else {
-    // Regular search for single terms - search across all relevant fields
-    const [nameResult, addressResult, phoneResult, cityResult, stateResult] = await Promise.all([
-      // Name search
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('name', `%${searchTerm}%`)
-        .limit(100),
+    // Single term search - prioritize exact matches
+    console.log('🔍 Single term search for:', searchTerm);
+    
+    // Priority 1: Exact city match
+    const exactCityMatch = await supabase
+      .from('pha_agencies')
+      .select('*')
+      .ilike('city', searchTerm)
+      .limit(50);
 
-      // Address search
-      supabase
+    if (exactCityMatch.data && exactCityMatch.data.length > 0) {
+      console.log('✅ Found exact city matches:', exactCityMatch.data.length);
+      allResults = exactCityMatch.data;
+    } else {
+      // Priority 2: Address contains the search term
+      const addressMatch = await supabase
         .from('pha_agencies')
         .select('*')
         .ilike('address', `%${searchTerm}%`)
-        .limit(100),
+        .limit(50);
 
-      // Phone field search (where city names are sometimes stored)
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('phone', `%${searchTerm}%`)
-        .limit(100),
-        
-      // City search
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('city', `%${searchTerm}%`)
-        .limit(100),
-        
-      // State search
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('state', `%${searchTerm}%`)
-        .limit(100)
-    ]);
+      if (addressMatch.data && addressMatch.data.length > 0) {
+        console.log('✅ Found address matches:', addressMatch.data.length);
+        allResults = addressMatch.data;
+      } else {
+        // Priority 3: Broader search across relevant fields
+        const [nameResults, cityResults, stateResults] = await Promise.all([
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('name', `%${searchTerm}%`)
+            .limit(30),
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('city', `%${searchTerm}%`)
+            .limit(30),
+          supabase
+            .from('pha_agencies')
+            .select('*')
+            .ilike('state', `%${searchTerm}%`)
+            .limit(30)
+        ]);
 
-    searchResults = [nameResult, addressResult, phoneResult, cityResult, stateResult];
+        const combinedResults = [
+          ...(nameResults.data || []),
+          ...(cityResults.data || []),
+          ...(stateResults.data || [])
+        ];
+
+        // Remove duplicates
+        allResults = combinedResults.filter((item, index, arr) => 
+          arr.findIndex(other => other.id === item.id) === index
+        );
+
+        console.log('✅ Found broader matches:', allResults.length);
+      }
+    }
   }
 
-  // Log search results for debugging
-  console.log('🔍 Search results:', {
-    totalQueries: searchResults.length,
-    results: searchResults.map((result, index) => ({
-      index,
-      count: result.data?.length || 0,
-      error: result.error
+  console.log('🔄 Search completed:', {
+    searchTerm,
+    totalResults: allResults.length,
+    sampleResults: allResults.slice(0, 3).map(r => ({ 
+      name: r.name, 
+      city: r.city, 
+      state: r.state, 
+      address: r.address 
     }))
   });
 
-  // Check for errors in any of the searches
-  if (searchResults.some(result => result.error)) {
-    console.error('Search errors:', searchResults.filter(result => result.error));
-    throw new Error('Search failed due to database error');
-  }
-
-  // Combine all results
-  const allResults = searchResults.flatMap(result => result.data || []);
-
-  // Remove duplicates based on ID
-  let uniqueResults = allResults.filter((item, index, arr) => 
-    arr.findIndex(other => other.id === item.id) === index
-  );
-
   // Add geocoded coordinates for PHAs that don't have them
-  const geocodedResults = await geocodePHAs(uniqueResults);
+  const geocodedResults = await geocodePHAs(allResults);
 
   // Filter by bounds if provided
+  let finalResults = geocodedResults;
   if (bounds) {
-    uniqueResults = filterPHAsByBounds(geocodedResults, bounds);
+    finalResults = filterPHAsByBounds(geocodedResults, bounds);
     console.log('🗺️ Filtered by bounds:', {
       originalCount: geocodedResults.length,
-      filteredCount: uniqueResults.length,
+      filteredCount: finalResults.length,
       bounds
     });
-  } else {
-    uniqueResults = geocodedResults;
   }
-
-  console.log('🔄 Combined search results:', {
-    totalBeforeDedup: allResults.length,
-    totalAfterDedup: uniqueResults.length,
-    sampleResults: uniqueResults.slice(0, 3).map(r => ({ name: r.name, address: r.address, city: r.city, phone: r.phone }))
-  });
 
   const from = (page - 1) * itemsPerPage;
   const to = from + itemsPerPage - 1;
-  const paginatedResults = uniqueResults.slice(from, to + 1);
+  const paginatedResults = finalResults.slice(from, to + 1);
   
   return {
     data: paginatedResults,
-    count: uniqueResults.length
+    count: finalResults.length
   };
 };
 
