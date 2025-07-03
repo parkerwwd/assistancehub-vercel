@@ -23,11 +23,16 @@ export const useMapLogic = () => {
     goToPage 
   } = usePHAData();
 
-  // Load token from localStorage on component mount
+  // Load token from localStorage on component mount, or use provided token
   useEffect(() => {
     const savedToken = localStorage.getItem('mapbox-token');
+    const providedToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjenhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
+    
     if (savedToken) {
       setMapboxToken(savedToken);
+    } else {
+      setMapboxToken(providedToken);
+      localStorage.setItem('mapbox-token', providedToken);
     }
   }, []);
 
