@@ -1,4 +1,3 @@
-
 import mapboxgl from 'mapbox-gl';
 
 export interface LocationMarkerOptions {
@@ -12,7 +11,7 @@ export class LocationMarker {
   private marker: mapboxgl.Marker | null = null;
 
   create(options: LocationMarkerOptions): mapboxgl.Marker {
-    const { lat, lng, name, mapboxToken } = options;
+    const { lat, lng, name } = options;
     
     // Create marker container
     const markerElement = this.createMarkerElement();
@@ -20,7 +19,7 @@ export class LocationMarker {
     const pinShape = this.createPinShape();
     const innerDot = this.createInnerDot();
     const pulseRing = this.createPulseRing();
-    const hoverCard = this.createHoverCard(name, lat, lng, mapboxToken);
+    const hoverCard = this.createHoverCard(name);
     
     // Assemble marker
     pinShape.appendChild(innerDot);
@@ -114,7 +113,7 @@ export class LocationMarker {
     return ring;
   }
 
-  private createHoverCard(name: string, lat: number, lng: number, mapboxToken?: string): HTMLDivElement {
+  private createHoverCard(name: string): HTMLDivElement {
     const card = document.createElement('div');
     card.className = 'location-hover-card';
     card.style.cssText = `
@@ -125,7 +124,7 @@ export class LocationMarker {
       background: white;
       border-radius: 12px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-      padding: 12px;
+      padding: 16px;
       min-width: 200px;
       opacity: 0;
       visibility: hidden;
@@ -134,43 +133,17 @@ export class LocationMarker {
       pointer-events: none;
     `;
     
-    // Create location-specific image URL using Mapbox Static Images API
-    let locationImageUrl = `https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=200&fit=crop&auto=format`;
-    
-    if (mapboxToken && lat && lng) {
-      // Use Mapbox Static Images API to get satellite view of the specific location
-      // Format: /styles/v1/{username}/{style_id}/static/{lng},{lat},{zoom}/{width}x{height}@{retina}?access_token=
-      locationImageUrl = `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${lng.toFixed(6)},${lat.toFixed(6)},14/300x200@2x?access_token=${mapboxToken}`;
-      console.log('🛰️ Generated Mapbox Static Image URL for', name, ':', locationImageUrl);
-    }
-    
     card.innerHTML = `
       <div style="text-align: center;">
-        <img 
-          src="${locationImageUrl}" 
-          alt="${name} satellite view" 
-          style="
-            width: 180px; 
-            height: 120px; 
-            object-fit: cover; 
-            border-radius: 8px; 
-            margin-bottom: 8px;
-          "
-          onLoad="console.log('✅ Image loaded successfully for ${name}');"
-          onError="
-            console.log('❌ Failed to load Mapbox image for ${name}, falling back to generic image');
-            this.src='https://images.unsplash.com/photo-1472396961693-142e6e269027?w=300&h=200&fit=crop&auto=format';
-          "
-        />
         <div style="
           font-family: system-ui, -apple-system, sans-serif;
           font-weight: 600;
           color: #1f2937;
-          font-size: 14px;
-          margin-bottom: 4px;
+          font-size: 16px;
+          margin-bottom: 8px;
         ">📍 ${name}</div>
         <div style="
-          font-size: 12px;
+          font-size: 14px;
           color: #6b7280;
         ">Selected Location</div>
       </div>
