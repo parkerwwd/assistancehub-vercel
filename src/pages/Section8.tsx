@@ -6,6 +6,8 @@ import MapFilters from "@/components/MapFilters";
 import { useMapLogic } from "@/hooks/useMapLogic";
 
 const Section8 = () => {
+  console.log('Section8 component rendering...');
+  
   const {
     showFilters,
     setShowFilters,
@@ -13,6 +15,11 @@ const Section8 = () => {
     handleSearch,
     currentSearchQuery
   } = useMapLogic();
+
+  console.log('Section8 useMapLogic data:', {
+    showFilters,
+    currentSearchQuery
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
