@@ -5,6 +5,7 @@ import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import PHADetailView from "@/components/PHADetailView";
 import HousingListings from "@/components/HousingListings";
 import MapContainer from "@/components/MapContainer";
+import Header from "@/components/Header";
 import { useMapLogic } from "@/hooks/useMapLogic";
 import { Database } from "@/integrations/supabase/types";
 
@@ -28,6 +29,7 @@ const Section8 = () => {
     setTokenError,
     handleTokenChange,
     handlePageChange,
+    handleCitySelect,
   } = useMapLogic();
 
   const [viewState, setViewState] = React.useState<ViewState>('overview');
@@ -55,7 +57,12 @@ const Section8 = () => {
     setViewState('pha-detail');
   };
 
-  const renderLeftPanel = () => {
+  const handleHeaderCitySelect = (city: any) => {
+    console.log('🏙️ Section8 received city selection:', city);
+    handleCitySelect(city);
+  };
+
+  const renderRightPanel = () => {
     switch (viewState) {
       case 'pha-detail':
         return detailOffice ? (
@@ -102,32 +109,41 @@ const Section8 = () => {
   }
 
   return (
-    <div className="h-screen bg-white overflow-hidden">
-      <ResizablePanelGroup direction="horizontal" className="h-full">
-        {/* Left Panel - PHA List */}
-        <ResizablePanel defaultSize={40} minSize={30} maxSize={60}>
-          <div className="h-full overflow-y-auto border-r bg-white">
-            {renderLeftPanel()}
-          </div>
-        </ResizablePanel>
-        
-        {/* Resize Handle */}
-        <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-1" />
-        
-        {/* Right Panel - Map */}
-        <ResizablePanel defaultSize={60} minSize={40}>
-          <div className="h-full bg-gray-100">
-            <MapContainer
-              ref={mapRef}
-              mapboxToken={mapboxToken}
-              phaAgencies={phaAgencies}
-              onOfficeSelect={setSelectedOffice}
-              onTokenError={setTokenError}
-              selectedOffice={selectedOffice}
-            />
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+    <div className="h-screen bg-white overflow-hidden flex flex-col">
+      {/* Header */}
+      <Header 
+        showSearch={true}
+        onCitySelect={handleHeaderCitySelect}
+      />
+      
+      {/* Main Content */}
+      <div className="flex-1 overflow-hidden">
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          {/* Left Panel - Map */}
+          <ResizablePanel defaultSize={60} minSize={40}>
+            <div className="h-full bg-gray-100">
+              <MapContainer
+                ref={mapRef}
+                mapboxToken={mapboxToken}
+                phaAgencies={phaAgencies}
+                onOfficeSelect={setSelectedOffice}
+                onTokenError={setTokenError}
+                selectedOffice={selectedOffice}
+              />
+            </div>
+          </ResizablePanel>
+          
+          {/* Resize Handle */}
+          <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-1" />
+          
+          {/* Right Panel - PHA List */}
+          <ResizablePanel defaultSize={40} minSize={30} maxSize={60}>
+            <div className="h-full overflow-y-auto border-l bg-white">
+              {renderRightPanel()}
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </div>
   );
 };
