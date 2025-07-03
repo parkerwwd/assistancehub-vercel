@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,6 +41,29 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
 
   const phaType = getPHATypeFromData(office);
 
+  // Generate Mapbox static image URL for the office location
+  const generateMapboxImageUrl = () => {
+    const mapboxToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjelhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
+    
+    // Use coordinates if available, otherwise use address for geocoding
+    let lat = office.latitude || (office as any).geocoded_latitude;
+    let lng = office.longitude || (office as any).geocoded_longitude;
+    
+    if (lat && lng) {
+      // Create a satellite view with a marker at the exact location
+      return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-s-building+ff0000(${lng},${lat})/${lng},${lat},15,0,60/800x400@2x?access_token=${mapboxToken}`;
+    } else if (fullAddress) {
+      // If no coordinates, use the address for static map generation
+      const encodedAddress = encodeURIComponent(fullAddress);
+      return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/url-https%3A%2F%2Fi.imgur.com%2FMK4NUzI.png(${encodedAddress})/auto/800x400@2x?access_token=${mapboxToken}`;
+    }
+    
+    // Fallback to a generic building image
+    return "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=400&fit=crop&crop=center";
+  };
+
+  const mapboxImageUrl = generateMapboxImageUrl();
+
   return (
     <div className="h-full bg-gray-50">
       {/* Header */}
@@ -60,14 +82,14 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         <Card className="shadow-sm border-0 mb-4">
-          {/* Office Image */}
+          {/* Office Address Image from Mapbox */}
           <div className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 rounded-t-lg overflow-hidden">
             <img 
-              src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=400&fit=crop&crop=center"
-              alt={`${office.name} building`}
+              src={mapboxImageUrl}
+              alt={`Satellite view of ${office.name} at ${fullAddress}`}
               className="w-full h-full object-cover"
               onError={(e) => {
-                // Fallback to a gradient background with building icon if image fails to load
+                // Fallback to a gradient background with building icon if Mapbox image fails to load
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
                 target.parentElement!.innerHTML = `
@@ -79,12 +101,18 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                         </svg>
                       </div>
                       <p class="text-sm text-gray-600 font-medium">${office.name}</p>
+                      <p class="text-xs text-gray-500 mt-1">Address image unavailable</p>
                     </div>
                   </div>
                 `;
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            {/* Overlay with office info */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+            <div className="absolute bottom-3 left-3 text-white">
+              <p className="text-xs font-medium opacity-90">📍 Satellite View</p>
+              <p className="text-xs opacity-75 max-w-xs truncate">{fullAddress}</p>
+            </div>
           </div>
 
           <CardHeader className="pb-4">
