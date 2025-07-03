@@ -1,4 +1,3 @@
-
 export interface USLocation {
   name: string;
   type: 'state' | 'county' | 'city';
@@ -8,7 +7,7 @@ export interface USLocation {
   longitude: number;
 }
 
-// US States
+// US States and Territories
 export const usStates: USLocation[] = [
   { name: "Alabama", type: "state", stateCode: "AL", latitude: 32.3617, longitude: -86.2792 },
   { name: "Alaska", type: "state", stateCode: "AK", latitude: 64.0685, longitude: -152.2782 },
@@ -59,7 +58,14 @@ export const usStates: USLocation[] = [
   { name: "Washington", type: "state", stateCode: "WA", latitude: 47.7511, longitude: -120.7401 },
   { name: "West Virginia", type: "state", stateCode: "WV", latitude: 38.3498, longitude: -80.6547 },
   { name: "Wisconsin", type: "state", stateCode: "WI", latitude: 43.7844, longitude: -88.7879 },
-  { name: "Wyoming", type: "state", stateCode: "WY", latitude: 43.0759, longitude: -107.2903 }
+  { name: "Wyoming", type: "state", stateCode: "WY", latitude: 43.0759, longitude: -107.2903 },
+  // US Territories
+  { name: "Puerto Rico", type: "state", stateCode: "PR", latitude: 18.2208, longitude: -66.5901 },
+  { name: "US Virgin Islands", type: "state", stateCode: "VI", latitude: 18.3358, longitude: -64.8963 },
+  { name: "Guam", type: "state", stateCode: "GU", latitude: 13.4443, longitude: 144.7937 },
+  { name: "American Samoa", type: "state", stateCode: "AS", latitude: -14.2710, longitude: -170.1322 },
+  { name: "Northern Mariana Islands", type: "state", stateCode: "MP", latitude: 17.3308, longitude: 145.3846 },
+  { name: "District of Columbia", type: "state", stateCode: "DC", latitude: 38.8974, longitude: -77.0365 }
 ];
 
 // Major counties (sample - you can expand this)
