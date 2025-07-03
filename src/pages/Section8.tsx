@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
@@ -63,9 +62,9 @@ const Section8 = () => {
     setViewState('pha-detail');
   };
 
-  const handleHeaderCitySelect = (city: any) => {
-    console.log('🏙️ Section8 received city selection:', city);
-    handleCitySelect(city);
+  const handleHeaderCitySelect = (location: any) => {
+    console.log('🏙️ Section8 received location selection:', location);
+    handleCitySelect(location);
   };
 
   const renderRightPanel = () => {

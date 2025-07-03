@@ -78,13 +78,13 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
     setViewState('pha-detail');
   };
 
-  const handleCitySelectWithReset = (city: any) => {
-    console.log('🏙️ City selected, flying to:', city.name);
+  const handleCitySelectWithReset = (location: any) => {
+    console.log('🏙️ Location selected, flying to:', location.name);
     // Reset view state and clear selected office when searching
     setViewState('overview');
     setDetailOffice(null);
     setSelectedOffice(null);
-    handleCitySelect(city);
+    handleCitySelect(location);
   };
 
   const renderRightPanel = () => {

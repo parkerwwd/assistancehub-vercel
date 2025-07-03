@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Database } from "@/integrations/supabase/types";
-import { USCity } from "@/data/usCities";
+import { USLocation } from "@/data/usLocations";
 import { MapContainerRef } from "@/components/MapContainer";
 import { usePHAData } from "./usePHAData";
 
@@ -51,28 +51,40 @@ export const useMapLogic = () => {
     goToPage(page);
   };
 
-  const handleCitySelect = async (city: USCity) => {
-    console.log('🏙️ Selected city:', city.name, city.stateCode);
+  const handleCitySelect = async (location: USLocation) => {
+    console.log('🏙️ Selected location:', location.name, location.type);
     
     // Clear any selected office first
     setSelectedOffice(null);
     
     // Set selected location for marker
-    const location = {
-      lat: city.latitude,
-      lng: city.longitude,
-      name: `${city.name}, ${city.stateCode}`
+    const locationData = {
+      lat: location.latitude,
+      lng: location.longitude,
+      name: location.type === 'state' ? location.name : 
+            location.type === 'county' ? `${location.name}, ${location.stateCode}` :
+            `${location.name}, ${location.stateCode}`
     };
-    setSelectedLocation(location);
+    setSelectedLocation(locationData);
     
-    // Fly to the selected city with appropriate zoom level
+    // Determine appropriate zoom level based on location type
+    let zoomLevel = 10;
+    if (location.type === 'state') {
+      zoomLevel = 6;
+    } else if (location.type === 'county') {
+      zoomLevel = 8;
+    } else if (location.type === 'city') {
+      zoomLevel = 10;
+    }
+    
+    // Fly to the selected location with appropriate zoom level
     if (mapRef.current) {
-      console.log('🗺️ Flying to city coordinates:', { lat: city.latitude, lng: city.longitude });
-      mapRef.current.flyTo([city.longitude, city.latitude], 10);
+      console.log('🗺️ Flying to location coordinates:', { lat: location.latitude, lng: location.longitude, zoom: zoomLevel });
+      mapRef.current.flyTo([location.longitude, location.latitude], zoomLevel);
       
       // Add location marker
       setTimeout(() => {
-        mapRef.current?.setLocationMarker(city.latitude, city.longitude, `${city.name}, ${city.stateCode}`);
+        mapRef.current?.setLocationMarker(location.latitude, location.longitude, locationData.name);
       }, 1000);
     }
   };

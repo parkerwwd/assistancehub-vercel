@@ -1,56 +1,98 @@
 
 import React, { useState, useEffect } from 'react';
 import { MapPin } from "lucide-react";
-import { usCities, USCity } from "@/data/usCities";
+import { allUSLocations, USLocation } from "@/data/usLocations";
 
 interface CitySearchProps {
-  onCitySelect: (city: USCity) => void;
+  onCitySelect: (location: USLocation) => void;
   placeholder?: string;
   variant?: 'default' | 'header';
 }
 
 const CitySearch: React.FC<CitySearchProps> = ({ 
   onCitySelect, 
-  placeholder = "Search by city, state...",
+  placeholder = "Search by city, county, state...",
   variant = 'default'
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCities, setFilteredCities] = useState<USCity[]>([]);
+  const [filteredLocations, setFilteredLocations] = useState<USLocation[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     if (searchQuery.trim().length > 1) {
       try {
-        const filtered = usCities
-          .filter(city => 
-            city?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            city?.state?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            city?.stateCode?.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-          .slice(0, 8);
+        const filtered = allUSLocations
+          .filter(location => {
+            const query = searchQuery.toLowerCase();
+            return (
+              location?.name?.toLowerCase().includes(query) ||
+              location?.state?.toLowerCase().includes(query) ||
+              location?.stateCode?.toLowerCase().includes(query)
+            );
+          })
+          .sort((a, b) => {
+            // Sort by type priority: states first, then counties, then cities
+            const typeOrder = { 'state': 0, 'county': 1, 'city': 2 };
+            if (typeOrder[a.type] !== typeOrder[b.type]) {
+              return typeOrder[a.type] - typeOrder[b.type];
+            }
+            // Then sort alphabetically
+            return a.name.localeCompare(b.name);
+          })
+          .slice(0, 12); // Show more results since we have more types
         
-        setFilteredCities(filtered || []);
+        setFilteredLocations(filtered || []);
         setShowSuggestions(true);
       } catch (error) {
-        console.error('Error filtering cities:', error);
-        setFilteredCities([]);
+        console.error('Error filtering locations:', error);
+        setFilteredLocations([]);
         setShowSuggestions(false);
       }
     } else {
-      setFilteredCities([]);
+      setFilteredLocations([]);
       setShowSuggestions(false);
     }
   }, [searchQuery]);
 
-  const handleCitySelect = (city: USCity) => {
-    if (!city?.name || !city?.stateCode) return;
+  const handleLocationSelect = (location: USLocation) => {
+    if (!location?.name) return;
     
-    const cityQuery = `${city.name}, ${city.stateCode}`;
-    setSearchQuery(cityQuery);
+    let displayName = location.name;
+    if (location.type === 'city' || location.type === 'county') {
+      displayName = `${location.name}, ${location.stateCode}`;
+    }
+    
+    setSearchQuery(displayName);
     setShowSuggestions(false);
     
-    console.log('🏙️ City selected in CitySearch:', cityQuery);
-    onCitySelect(city);
+    console.log('🏙️ Location selected in CitySearch:', displayName);
+    onCitySelect(location);
+  };
+
+  const getLocationIcon = (type: string) => {
+    switch (type) {
+      case 'state':
+        return '🏛️';
+      case 'county':
+        return '🏞️';
+      case 'city':
+        return '🏙️';
+      default:
+        return '📍';
+    }
+  };
+
+  const getLocationDescription = (location: USLocation) => {
+    switch (location.type) {
+      case 'state':
+        return 'State';
+      case 'county':
+        return `County, ${location.stateCode}`;
+      case 'city':
+        return `City, ${location.stateCode}`;
+      default:
+        return '';
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -89,18 +131,25 @@ const CitySearch: React.FC<CitySearchProps> = ({
           className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base"
         />
         
-        {showSuggestions && filteredCities.length > 0 && (
-          <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
-            {filteredCities.map((city, index) => (
+        {showSuggestions && filteredLocations.length > 0 && (
+          <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border border-gray-200 rounded-md shadow-lg max-h-64 overflow-y-auto">
+            {filteredLocations.map((location, index) => (
               <div
-                key={`${city.name}-${city.stateCode}-${index}`}
-                onClick={() => handleCitySelect(city)}
-                className="cursor-pointer flex items-center gap-2 px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0"
+                key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
+                onClick={() => handleLocationSelect(location)}
+                className="cursor-pointer flex items-center gap-3 px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0"
               >
-                <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span className="text-lg">{getLocationIcon(location.type)}</span>
                 <div className="flex-1 min-w-0">
-                  <span className="font-medium">{city.name}, {city.stateCode}</span>
-                  <span className="text-gray-500 ml-2 hidden sm:inline">{city.state}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{location.name}</span>
+                    {(location.type === 'city' || location.type === 'county') && (
+                      <span className="text-gray-500">, {location.stateCode}</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {getLocationDescription(location)}
+                  </div>
                 </div>
               </div>
             ))}
@@ -123,18 +172,25 @@ const CitySearch: React.FC<CitySearchProps> = ({
         className="w-full h-9 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-500"
       />
       
-      {showSuggestions && filteredCities.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
-          {filteredCities.map((city, index) => (
+      {showSuggestions && filteredLocations.length > 0 && (
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-64 overflow-y-auto">
+          {filteredLocations.map((location, index) => (
             <div
-              key={`${city.name}-${city.stateCode}-${index}`}
-              onClick={() => handleCitySelect(city)}
-              className="cursor-pointer flex items-center gap-2 px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0"
+              key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
+              onClick={() => handleLocationSelect(location)}
+              className="cursor-pointer flex items-center gap-3 px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0"
             >
-              <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <span className="text-lg">{getLocationIcon(location.type)}</span>
               <div className="flex-1 min-w-0">
-                <span className="font-medium">{city.name}, {city.stateCode}</span>
-                <span className="text-gray-500 ml-2 hidden sm:inline">{city.state}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{location.name}</span>
+                  {(location.type === 'city' || location.type === 'county') && (
+                    <span className="text-gray-500">, {location.stateCode}</span>
+                  )}
+                </div>
+                <div className="text-xs text-gray-400">
+                  {getLocationDescription(location)}
+                </div>
               </div>
             </div>
           ))}
