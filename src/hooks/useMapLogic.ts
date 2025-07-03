@@ -4,6 +4,7 @@ import { Database } from "@/integrations/supabase/types";
 import { USCity } from "@/data/usCities";
 import { MapContainerRef } from "@/components/MapContainer";
 import { usePHAData } from "./usePHAData";
+import { getCityCoordinates } from "@/services/geocodingService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -130,6 +131,20 @@ export const useMapLogic = () => {
     
     // Perform the search - the results will be handled by the effect
     await searchPHAs(query, 1);
+    
+    // Try to center map on searched city
+    const cityStatePattern = /^(.+?),?\s+([a-z]{2})$/i;
+    const cityStateMatch = query.match(cityStatePattern);
+    
+    if (cityStateMatch) {
+      const cityName = cityStateMatch[1].trim();
+      const stateCode = cityStateMatch[2].trim();
+      
+      const cityCoords = await getCityCoordinates(cityName, stateCode);
+      if (cityCoords && mapRef.current) {
+        mapRef.current.flyTo([cityCoords.longitude, cityCoords.latitude], 10);
+      }
+    }
   };
 
   return {

@@ -2,11 +2,12 @@
 import { useState, useEffect } from 'react';
 import { Database } from "@/integrations/supabase/types";
 import { fetchPHAData, searchPHAs, getPHAsByState } from "@/services/phaService";
+import { GeocodedPHA } from "@/services/geocodingService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export const usePHAData = () => {
-  const [phaAgencies, setPHAAgencies] = useState<PHAAgency[]>([]);
+  const [phaAgencies, setPHAAgencies] = useState<GeocodedPHA[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);

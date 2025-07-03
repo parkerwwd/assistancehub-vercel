@@ -47,17 +47,21 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     clearMarkers();
     
     phaAgencies.forEach((agency) => {
-      if (agency.latitude && agency.longitude) {
+      // Use original coordinates or geocoded coordinates
+      const lat = agency.latitude || (agency as any).geocoded_latitude;
+      const lng = agency.longitude || (agency as any).geocoded_longitude;
+      
+      if (lat && lng) {
         const marker = new mapboxgl.Marker({
           color: getWaitlistColor(agency.waitlist_status || 'Unknown')
         })
-          .setLngLat([agency.longitude, agency.latitude])
+          .setLngLat([lng, lat])
           .addTo(map.current!);
 
         marker.getElement().addEventListener('click', () => {
           onOfficeSelect(agency);
           map.current?.flyTo({
-            center: [agency.longitude!, agency.latitude!],
+            center: [lng, lat],
             zoom: 12
           });
         });

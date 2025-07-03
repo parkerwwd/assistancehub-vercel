@@ -1,11 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { sanitizeSearchInput } from "@/utils/inputSanitization";
+import { geocodePHAs, GeocodedPHA } from "./geocodingService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export interface FetchPHADataResult {
-  data: PHAAgency[];
+  data: GeocodedPHA[];
   count: number;
 }
 
@@ -29,8 +30,11 @@ export const fetchPHAData = async (page = 1, itemsPerPage = 20): Promise<FetchPH
     sampleRecord: data?.[0]
   });
 
+  // Add geocoded coordinates for PHAs that don't have them
+  const geocodedData = await geocodePHAs(data || []);
+
   return {
-    data: data || [],
+    data: geocodedData,
     count: count || 0
   };
 };
@@ -51,29 +55,29 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
   let searchPromises;
   
   if (cityStateMatch) {
-    // Handle city, state format - search in name and address since city/state fields are empty
+    // Handle city, state format - city names are stored in the phone field due to data import issue
     const city = cityStateMatch[1].trim();
     const state = cityStateMatch[2].trim().toUpperCase();
     
     console.log('🏙️ Parsed city/state:', { city, state });
     
     searchPromises = [
-      // Search for city name in PHA name
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('name', `%${city}%`)
-        .limit(100),
-      
-      // Search for city in phone field (contains city name)
+      // Search for city in phone field (where city names are actually stored)
       supabase
         .from('pha_agencies')
         .select('*')
         .ilike('phone', `%${city}%`)
+        .limit(100),
+      
+      // Search for city name in PHA name as backup
+      supabase
+        .from('pha_agencies')
+        .select('*')
+        .ilike('name', `%${city}%`)
         .limit(100)
     ];
   } else {
-    // Regular search for single terms - search name and address
+    // Regular search for single terms - search name and phone field
     searchPromises = [
       // Name search
       supabase
@@ -82,11 +86,11 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
         .ilike('name', `%${searchTerm}%`)
         .limit(100),
 
-      // Address search
+      // Phone field search (where city names are stored)
       supabase
         .from('pha_agencies')
         .select('*')
-        .ilike('address', `%${searchTerm}%`)
+        .ilike('phone', `%${searchTerm}%`)
         .limit(100)
     ];
   }
@@ -126,8 +130,11 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
   const to = from + itemsPerPage - 1;
   const paginatedResults = uniqueResults.slice(from, to + 1);
   
+  // Add geocoded coordinates for PHAs that don't have them
+  const geocodedResults = await geocodePHAs(paginatedResults);
+  
   return {
-    data: paginatedResults,
+    data: geocodedResults,
     count: uniqueResults.length
   };
 };
@@ -148,8 +155,11 @@ export const getPHAsByState = async (state: string, page = 1, itemsPerPage = 20)
     throw fetchError;
   }
 
+  // Add geocoded coordinates for PHAs that don't have them
+  const geocodedData = await geocodePHAs(data || []);
+
   return {
-    data: data || [],
+    data: geocodedData,
     count: count || 0
   };
 };
