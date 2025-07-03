@@ -39,7 +39,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           center, 
           zoom,
           duration: 1500,
-          essential: true // This makes the flight animation smoother
+          essential: true
         });
       } else {
         console.warn('⚠️ Map not initialized yet');
@@ -127,6 +127,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         zoom: 4.5, // Good zoom level to see the whole US
         minZoom: 3,
         maxZoom: 18
+        // Removed projection: 'globe' and pitch for 2D view
       });
 
       // Add navigation controls
@@ -144,7 +145,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
       // Add markers when map loads
       map.current.on('load', () => {
-        console.log('🗺️ Map loaded successfully - showing US view');
+        console.log('🗺️ Map loaded successfully - showing US view in 2D');
         addMarkers();
         handleBoundsChange();
       });
