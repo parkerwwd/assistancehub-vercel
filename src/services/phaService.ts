@@ -81,90 +81,116 @@ export const searchPHAs = async (
   let searchResults: any[];
   
   if (cityStateMatch) {
-    // Handle city, state format - search in multiple fields including address
+    // Handle city, state format - prioritize exact city matches
     const city = cityStateMatch[1].trim();
     const state = cityStateMatch[2].trim().toUpperCase();
     
     console.log('🏙️ Parsed city/state:', { city, state });
     
-    const [addressResult, phoneResult, nameResult, cityResult, stateResult] = await Promise.all([
-      // Search for city in address field
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('address', `%${city}%`)
-        .limit(100),
-      
-      // Search for city in phone field (where city names are sometimes stored)
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('phone', `%${city}%`)
-        .limit(100),
-      
-      // Search for city name in PHA name
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('name', `%${city}%`)
-        .limit(100),
+    // First, try exact city match with state filter
+    const exactCityResult = await supabase
+      .from('pha_agencies')
+      .select('*')
+      .ilike('city', city)
+      .ilike('state', `%${state}%`)
+      .limit(100);
+    
+    console.log('🎯 Exact city match results:', exactCityResult.data?.length || 0);
+    
+    // If we have exact city matches, prioritize them
+    if (exactCityResult.data && exactCityResult.data.length > 0) {
+      searchResults = [exactCityResult];
+    } else {
+      // Fallback to broader search if no exact matches
+      const [addressResult, phoneResult, nameResult, stateResult] = await Promise.all([
+        // Search for city in address field
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('address', `%${city}%`)
+          .ilike('state', `%${state}%`)
+          .limit(50),
         
-      // Search for city in actual city field
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('city', `%${city}%`)
-        .limit(100),
+        // Search for city in phone field (where city names are sometimes stored)
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('phone', `%${city}%`)
+          .ilike('state', `%${state}%`)
+          .limit(50),
         
-      // Search by state
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('state', `%${state}%`)
-        .limit(100)
-    ]);
+        // Search for city name in PHA name
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('name', `%${city}%`)
+          .ilike('state', `%${state}%`)
+          .limit(50),
+          
+        // Search by state only
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('state', `%${state}%`)
+          .limit(50)
+      ]);
 
-    searchResults = [addressResult, phoneResult, nameResult, cityResult, stateResult];
+      searchResults = [addressResult, phoneResult, nameResult, stateResult];
+    }
   } else {
-    // Regular search for single terms - search across all relevant fields
-    const [nameResult, addressResult, phoneResult, cityResult, stateResult] = await Promise.all([
-      // Name search
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('name', `%${searchTerm}%`)
-        .limit(100),
+    // For single search terms, first try exact city match
+    const exactCityResult = await supabase
+      .from('pha_agencies')
+      .select('*')
+      .ilike('city', searchTerm)
+      .limit(100);
+    
+    console.log('🎯 Single term exact city match:', exactCityResult.data?.length || 0);
+    
+    if (exactCityResult.data && exactCityResult.data.length > 0) {
+      // If we have exact city matches, use them
+      searchResults = [exactCityResult];
+    } else {
+      // Fallback to broader search
+      const [nameResult, addressResult, phoneResult, cityResult, stateResult] = await Promise.all([
+        // Name search
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('name', `%${searchTerm}%`)
+          .limit(100),
 
-      // Address search
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('address', `%${searchTerm}%`)
-        .limit(100),
+        // Address search
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('address', `%${searchTerm}%`)
+          .limit(100),
 
-      // Phone field search (where city names are sometimes stored)
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('phone', `%${searchTerm}%`)
-        .limit(100),
-        
-      // City search
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('city', `%${searchTerm}%`)
-        .limit(100),
-        
-      // State search
-      supabase
-        .from('pha_agencies')
-        .select('*')
-        .ilike('state', `%${searchTerm}%`)
-        .limit(100)
-    ]);
+        // Phone field search (where city names are sometimes stored)
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('phone', `%${searchTerm}%`)
+          .limit(100),
+          
+        // City search
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('city', `%${searchTerm}%`)
+          .limit(100),
+          
+        // State search
+        supabase
+          .from('pha_agencies')
+          .select('*')
+          .ilike('state', `%${searchTerm}%`)
+          .limit(100)
+      ]);
 
-    searchResults = [nameResult, addressResult, phoneResult, cityResult, stateResult];
+      searchResults = [nameResult, addressResult, phoneResult, cityResult, stateResult];
+    }
   }
 
   // Log search results for debugging
