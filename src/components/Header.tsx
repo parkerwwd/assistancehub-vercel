@@ -2,19 +2,19 @@
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
-import { USCity } from "@/data/usCities";
+import { USLocation } from "@/data/usLocations";
 import CitySearch from "./CitySearch";
 
 interface HeaderProps {
-  onCitySelect?: (city: USCity) => void;
+  onCitySelect?: (location: USLocation) => void;
   showSearch?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => {
-  const handleCitySelectFromHeader = (city: USCity) => {
-    console.log('🏙️ Header city selected:', city);
+  const handleCitySelectFromHeader = (location: USLocation) => {
+    console.log('🏙️ Header location selected:', location);
     if (onCitySelect) {
-      onCitySelect(city);
+      onCitySelect(location);
     }
   };
 

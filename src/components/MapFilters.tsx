@@ -2,13 +2,13 @@
 import React from 'react';
 import { Filter, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { USCity } from "@/data/usCities";
+import { USLocation } from "@/data/usLocations";
 import CitySearch from "./CitySearch";
 
 interface MapFiltersProps {
   showFilters: boolean;
   onToggleFilters: () => void;
-  onCitySelect: (city: USCity) => void;
+  onCitySelect: (location: USLocation) => void;
   searchInAreaEnabled?: boolean;
   onToggleSearchInArea?: (enabled: boolean) => void;
 }
