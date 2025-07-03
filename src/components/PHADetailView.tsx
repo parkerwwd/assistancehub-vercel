@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,19 +55,60 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
       return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-s-building+ff0000(${lng},${lat})/${lng},${lat},15,0,60/400x300@2x?access_token=${mapboxToken}`;
     }
     
-    // If no coordinates but we have an address, try to create a static map with the address
-    if (fullAddress) {
-      // Use a simpler approach - just show a satellite view of the general area
-      // We'll use a default zoom level and let Mapbox handle the geocoding
-      const encodedAddress = encodeURIComponent(fullAddress);
-      return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/auto/400x300@2x?access_token=${mapboxToken}&location=${encodedAddress}`;
-    }
-    
-    // Fallback to a generic building image
-    return "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=400&h=300&fit=crop&crop=center";
+    return null;
   };
 
-  const mapboxImageUrl = generateMapboxImageUrl();
+  // Generate city image URL as fallback
+  const generateCityImageUrl = () => {
+    const mapboxToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjelhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
+    
+    // Get city name from phone field or city field
+    const cityName = phoneContainsCity ? office.phone : office.city;
+    
+    if (cityName && office.state) {
+      const encodedCity = encodeURIComponent(`${cityName}, ${office.state}`);
+      return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/auto/400x300@2x?access_token=${mapboxToken}&location=${encodedCity}`;
+    }
+    
+    return null;
+  };
+
+  const addressImageUrl = generateMapboxImageUrl();
+  const cityImageUrl = generateCityImageUrl();
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
+    
+    // If this was the address image, try city image
+    if (target.src === addressImageUrl && cityImageUrl) {
+      target.src = cityImageUrl;
+      // Update the overlay text
+      const overlay = target.parentElement?.querySelector('.image-overlay-text');
+      if (overlay) {
+        overlay.innerHTML = `
+          <p class="text-xs font-medium opacity-90">🏙️ City View</p>
+          <p class="text-xs opacity-75 max-w-xs truncate">${phoneContainsCity ? office.phone : office.city}, ${office.state}</p>
+        `;
+      }
+      return;
+    }
+    
+    // Final fallback to placeholder
+    target.style.display = 'none';
+    target.parentElement!.innerHTML = `
+      <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-white/20 flex items-center justify-center">
+            <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 8h2M7 21h2"></path>
+            </svg>
+          </div>
+          <p class="text-sm text-gray-600 font-medium">${office.name}</p>
+          <p class="text-xs text-gray-500 mt-1">Location image unavailable</p>
+        </div>
+      </div>
+    `;
+  };
 
   return (
     <div className="h-full bg-gray-50">
@@ -88,35 +130,32 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
         <Card className="shadow-sm border-0 mb-4">
           {/* Office Address Image from Mapbox */}
           <div className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 rounded-t-lg overflow-hidden">
-            <img 
-              src={mapboxImageUrl}
-              alt={`Satellite view of ${office.name} at ${fullAddress}`}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // Fallback to a gradient background with building icon if Mapbox image fails to load
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                target.parentElement!.innerHTML = `
-                  <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
-                    <div class="text-center">
-                      <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-white/20 flex items-center justify-center">
-                        <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 8h2M7 21h2"></path>
-                        </svg>
-                      </div>
-                      <p class="text-sm text-gray-600 font-medium">${office.name}</p>
-                      <p class="text-xs text-gray-500 mt-1">Address image unavailable</p>
-                    </div>
+            {(addressImageUrl || cityImageUrl) ? (
+              <>
+                <img 
+                  src={addressImageUrl || cityImageUrl}
+                  alt={`View of ${office.name} location`}
+                  className="w-full h-full object-cover"
+                  onError={handleImageError}
+                />
+                {/* Overlay with office info */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                <div className="absolute bottom-3 left-3 text-white image-overlay-text">
+                  <p className="text-xs font-medium opacity-90">📍 {addressImageUrl ? 'Satellite View' : 'City View'}</p>
+                  <p className="text-xs opacity-75 max-w-xs truncate">{addressImageUrl ? fullAddress : `${phoneContainsCity ? office.phone : office.city}, ${office.state}`}</p>
+                </div>
+              </>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-white/20 flex items-center justify-center">
+                    <Building className="w-8 h-8 text-gray-600" />
                   </div>
-                `;
-              }}
-            />
-            {/* Overlay with office info */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-            <div className="absolute bottom-3 left-3 text-white">
-              <p className="text-xs font-medium opacity-90">📍 Satellite View</p>
-              <p className="text-xs opacity-75 max-w-xs truncate">{fullAddress}</p>
-            </div>
+                  <p className="text-sm text-gray-600 font-medium">{office.name}</p>
+                  <p className="text-xs text-gray-500 mt-1">Location image unavailable</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <CardHeader className="pb-4">
