@@ -155,7 +155,6 @@ export const usePHAImport = () => {
     importProgress,
     importResult,
     startImport,
-    importCSVData,
     setImportResult,
     showMappingDialog,
     setShowMappingDialog,
