@@ -122,10 +122,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
         center: [-95.7129, 37.0902], // Center on continental US
-        zoom: 4.5, // Good zoom level to see the whole US
+        zoom: 4, // Proper zoom level to show full US like in reference image
         minZoom: 3,
         maxZoom: 18
-        // Removed projection: 'globe' and pitch for 2D view
       });
 
       // Add navigation controls
@@ -141,9 +140,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         }
       });
 
-      // Setup map when it loads - don't add markers initially
+      // Setup map when it loads - show full US view initially
       map.current.on('load', () => {
-        console.log('🗺️ Map loaded successfully - showing US view in 2D (no markers initially)');
+        console.log('🗺️ Map loaded successfully - showing full US view');
         handleBoundsChange();
       });
 

@@ -85,8 +85,8 @@ export const useMapLogic = () => {
     console.log('🇺🇸 Resetting to US view');
     setSelectedOffice(null);
     if (mapRef.current) {
-      // Center on continental US with appropriate zoom
-      mapRef.current.flyTo([-95.7129, 37.0902], 4.5);
+      // Center on continental US with appropriate zoom to match reference image
+      mapRef.current.flyTo([-95.7129, 37.0902], 4);
     }
   };
 
