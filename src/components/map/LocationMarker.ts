@@ -167,13 +167,15 @@ export class LocationMarker {
     markerElement.addEventListener('mouseenter', () => {
       hoverCard.style.opacity = '1';
       hoverCard.style.visibility = 'visible';
-      innerContainer.style.transform = 'scale(1.1)';
+      // Use filter effects instead of scale to avoid marker movement
+      innerContainer.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.3)) brightness(1.1) saturate(1.2)';
     });
-    
+
     markerElement.addEventListener('mouseleave', () => {
       hoverCard.style.opacity = '0';
       hoverCard.style.visibility = 'hidden';
-      innerContainer.style.transform = 'scale(1)';
+      // Reset filter effects
+      innerContainer.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))';
     });
   }
 

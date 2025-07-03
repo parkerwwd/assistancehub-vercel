@@ -44,10 +44,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     flyTo: (center: [number, number], zoom: number) => {
       console.log('🗺️ MapContainer.flyTo called with:', { center, zoom });
       if (map.current) {
-        map.current.flyTo({ 
-          center, 
+        map.current.flyTo({
+          center,
           zoom,
-          pitch: zoom > 8 ? 60 : 45,
           duration: 2000,
           essential: true
         });
@@ -163,12 +162,15 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         const element = marker.getElement();
         element.style.cursor = 'pointer';
         element.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        element.style.transform = 'scale(1.5)'; // Set initial scale
+        element.style.filter = 'drop-shadow(0 4px 8px rgba(239, 68, 68, 0.2))';
+
         element.addEventListener('mouseenter', () => {
-          element.style.transform = 'scale(1.8) translateZ(10px)';
-          element.style.filter = 'drop-shadow(0 8px 16px rgba(239, 68, 68, 0.4))';
+          // Use filter effects instead of scale to avoid marker movement
+          element.style.filter = 'drop-shadow(0 8px 16px rgba(239, 68, 68, 0.4)) brightness(1.1) saturate(1.2)';
         });
         element.addEventListener('mouseleave', () => {
-          element.style.transform = 'scale(1.5)';
+          // Reset to original filter
           element.style.filter = 'drop-shadow(0 4px 8px rgba(239, 68, 68, 0.2))';
         });
         
@@ -190,7 +192,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     console.log('🗺️ MapContainer useEffect - Token:', mapboxToken ? `Present (${mapboxToken.substring(0, 20)}...)` : 'Missing');
     
     // Ensure we have a valid token before proceeding
-    if (!mapboxToken || !mapboxToken.trim() || mapboxToken.length < 20) {
+    if (!mapboxToken || !mapboxToken.trim() || !mapboxToken.startsWith('pk.')) {
       console.error('❌ Invalid or missing Mapbox token:', mapboxToken);
       onTokenError("Invalid Mapbox token. Please check your token configuration.");
       return;
@@ -201,30 +203,23 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
     try {
       console.log('🗺️ Setting Mapbox access token...');
-      
+
       // Set the access token
       mapboxgl.accessToken = mapboxToken.trim();
-      
-      // Validate token format
-      if (!mapboxToken.startsWith('pk.')) {
-        console.error('❌ Invalid token format - should start with pk.');
-        onTokenError("Invalid Mapbox token format. Token should start with 'pk.'");
-        return;
-      }
+      console.log('🗺️ Access token set successfully');
       
       console.log('🗺️ Creating map instance...');
       
-      // Create the map
+      // Create the map with 3D configuration
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        style: 'mapbox://styles/mapbox/satellite-streets-v12', // Better for 3D with satellite imagery
         center: [-95.7129, 37.0902],
         zoom: 4,
-        pitch: 45,
-        bearing: 0,
-        minZoom: 3,
-        maxZoom: 18,
-        antialias: true
+        pitch: 45, // Add 3D tilt
+        bearing: 0, // Initial rotation
+        antialias: true, // Smooth 3D rendering
+        maxPitch: 85 // Allow steep viewing angles
       });
       
       console.log('🗺️ Map instance created successfully');
@@ -243,65 +238,158 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         }
       });
       
-      // Add 3D terrain and fog when map loads
+      // Setup map when style loads
+      map.current.on('load', () => {
+        console.log('🗺️ Map loaded successfully! 🎉');
+        console.log('🗺️ Map container size:', mapContainer.current?.offsetWidth, 'x', mapContainer.current?.offsetHeight);
+      });
+
       map.current.on('style.load', () => {
-        console.log('🗺️ Map style loaded, adding 3D features...');
-        
-        try {
-          // Add terrain source
-          map.current?.addSource('mapbox-dem', {
-            'type': 'raster-dem',
-            'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
-            'tileSize': 512,
-            'maxzoom': 14
-          });
-          
-          // Add 3D terrain
-          map.current?.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
-          
-          // Add atmospheric fog
-          map.current?.setFog({
-            'color': 'rgb(186, 210, 235)',
-            'high-color': 'rgb(36, 92, 223)',
-            'horizon-blend': 0.02,
-            'space-color': 'rgb(11, 11, 25)',
-            'star-intensity': 0.6
-          });
-          
-          // Add sky layer for better 3D effect
-          map.current?.addLayer({
-            'id': 'sky',
-            'type': 'sky',
-            'paint': {
-              'sky-type': 'atmosphere',
-              'sky-atmosphere-sun': [0.0, 0.0],
-              'sky-atmosphere-sun-intensity': 15
-            }
-          });
-          
-          console.log('✅ 3D features added successfully');
-        } catch (error) {
-          console.warn('⚠️ Error adding 3D features:', error);
-        }
+        console.log('🗺️ Map style loaded successfully');
+      });
+
+      map.current.on('render', () => {
+        console.log('🗺️ Map is rendering...');
       });
       
-      // Add navigation controls
+      // Add navigation controls with enhanced 3D support
       map.current.addControl(
         new mapboxgl.NavigationControl({
-          visualizePitch: true,
+          visualizePitch: true, // Show pitch control for 3D
           showZoom: true,
           showCompass: true
-        }), 
+        }),
         'top-right'
       );
-      
+
       // Add fullscreen control
       map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+
+      // Add custom 3D toggle control
+      const toggle3DControl = {
+        onAdd: function(map: mapboxgl.Map) {
+          const container = document.createElement('div');
+          container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+          container.style.background = 'white';
+          container.style.borderRadius = '4px';
+          container.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.1)';
+
+          const button = document.createElement('button');
+          button.className = 'mapboxgl-ctrl-icon';
+          button.type = 'button';
+          button.title = 'Toggle 3D View';
+          button.innerHTML = '🏔️';
+          button.style.fontSize = '16px';
+          button.style.width = '29px';
+          button.style.height = '29px';
+          button.style.border = 'none';
+          button.style.background = 'transparent';
+          button.style.cursor = 'pointer';
+          button.style.display = 'flex';
+          button.style.alignItems = 'center';
+          button.style.justifyContent = 'center';
+
+          let is3D = true; // Start in 3D mode
+
+          button.addEventListener('click', () => {
+            if (is3D) {
+              // Switch to 2D
+              map.easeTo({ pitch: 0, bearing: 0, duration: 1000 });
+              button.innerHTML = '🗺️';
+              button.title = 'Switch to 3D View';
+              is3D = false;
+            } else {
+              // Switch to 3D
+              map.easeTo({ pitch: 45, bearing: 0, duration: 1000 });
+              button.innerHTML = '🏔️';
+              button.title = 'Switch to 2D View';
+              is3D = true;
+            }
+          });
+
+          container.appendChild(button);
+          return container;
+        },
+        onRemove: function() {
+          // Cleanup if needed
+        }
+      };
+
+      map.current.addControl(toggle3DControl as any, 'top-right');
       
       // Setup enhanced map events
       MapControls.setupMapEvents(map.current, onTokenError, onBoundsChange);
 
-      console.log('✅ Map initialization complete');
+      // Add 3D features when map style loads
+      map.current.on('style.load', () => {
+        console.log('🏔️ Adding 3D terrain and buildings...');
+
+        // Add terrain source for 3D elevation
+        map.current!.addSource('mapbox-dem', {
+          'type': 'raster-dem',
+          'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+          'tileSize': 512,
+          'maxzoom': 14
+        });
+
+        // Set terrain for 3D elevation
+        map.current!.setTerrain({
+          'source': 'mapbox-dem',
+          'exaggeration': 1.5 // Make terrain more dramatic
+        });
+
+        // Add 3D buildings layer
+        const layers = map.current!.getStyle().layers;
+        const labelLayerId = layers.find(
+          (layer) => layer.type === 'symbol' && layer.layout && layer.layout['text-field']
+        )?.id;
+
+        // Add 3D buildings
+        map.current!.addLayer(
+          {
+            'id': '3d-buildings',
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'paint': {
+              'fill-extrusion-color': '#aaa',
+              'fill-extrusion-height': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                15,
+                0,
+                15.05,
+                ['get', 'height']
+              ],
+              'fill-extrusion-base': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                15,
+                0,
+                15.05,
+                ['get', 'min_height']
+              ],
+              'fill-extrusion-opacity': 0.6
+            }
+          },
+          labelLayerId
+        );
+
+        // Add atmospheric lighting for better 3D effect
+        map.current!.setLight({
+          'anchor': 'viewport',
+          'color': 'white',
+          'intensity': 0.4
+        });
+
+        console.log('✅ 3D terrain and buildings added successfully');
+      });
+
+      console.log('✅ Map initialization complete with 3D features');
 
       return () => {
         console.log('🧹 Cleaning up map...');
@@ -343,9 +431,13 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
   return (
     <div className="relative w-full h-full">
-      <div ref={mapContainer} className="w-full h-full" />
+      <div
+        ref={mapContainer}
+        className="w-full h-full"
+        style={{ minHeight: '400px' }}
+      />
       <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-2 rounded-lg text-sm font-medium backdrop-blur-sm">
-        🌐 3D Terrain View
+        🗺️ Map View
       </div>
     </div>
   );
