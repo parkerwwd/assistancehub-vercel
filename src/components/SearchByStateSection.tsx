@@ -25,7 +25,7 @@ const SearchByStateSection = () => {
   };
 
   return (
-    <section className="py-16 bg-gradient-to-b from-yellow-50 to-orange-50">
+    <section className="py-16 bg-gradient-to-r from-gray-50 to-blue-50 border-t">
       <div className="container mx-auto px-4 text-center">
         {/* Header */}
         <div className="mb-8">
