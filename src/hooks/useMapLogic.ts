@@ -4,7 +4,6 @@ import { Database } from "@/integrations/supabase/types";
 import { USCity } from "@/data/usCities";
 import { MapContainerRef } from "@/components/MapContainer";
 import { usePHAData } from "./usePHAData";
-import { SearchBounds } from "@/services/phaService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -13,8 +12,6 @@ export const useMapLogic = () => {
   const [selectedOffice, setSelectedOffice] = useState<PHAAgency | null>(null);
   const [tokenError, setTokenError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [searchInAreaEnabled, setSearchInAreaEnabled] = useState(false);
-  const [currentBounds, setCurrentBounds] = useState<SearchBounds | null>(null);
   const mapRef = useRef<MapContainerRef>(null);
   
   const { 
@@ -44,17 +41,6 @@ export const useMapLogic = () => {
     }
   };
 
-  // Handle bounds change from map
-  const handleBoundsChange = (bounds: mapboxgl.LngLatBounds) => {
-    const searchBounds: SearchBounds = {
-      north: bounds.getNorth(),
-      south: bounds.getSouth(),
-      east: bounds.getEast(),
-      west: bounds.getWest()
-    };
-    setCurrentBounds(searchBounds);
-  };
-
   const handlePageChange = (page: number) => {
     goToPage(page);
   };
@@ -71,16 +57,11 @@ export const useMapLogic = () => {
     }
   };
 
-  const handleToggleSearchInArea = (enabled: boolean) => {
-    setSearchInAreaEnabled(enabled);
-  };
-
   return {
     mapboxToken,
     selectedOffice,
     tokenError,
     showFilters,
-    searchInAreaEnabled,
     mapRef,
     phaAgencies,
     loading,
@@ -92,8 +73,6 @@ export const useMapLogic = () => {
     setShowFilters,
     handleTokenChange,
     handleCitySelect,
-    handlePageChange,
-    handleBoundsChange,
-    handleToggleSearchInArea
+    handlePageChange
   };
 };

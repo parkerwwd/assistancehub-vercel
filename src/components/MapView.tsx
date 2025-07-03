@@ -23,7 +23,6 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
     selectedOffice,
     tokenError,
     showFilters,
-    searchInAreaEnabled,
     mapRef,
     phaAgencies,
     loading,
@@ -35,9 +34,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
     setShowFilters,
     handleTokenChange,
     handleCitySelect,
-    handlePageChange,
-    handleBoundsChange,
-    handleToggleSearchInArea
+    handlePageChange
   } = useMapLogic();
 
   const [viewState, setViewState] = useState<ViewState>('overview');
@@ -92,8 +89,6 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
             totalPages={totalPages}
             totalCount={totalCount}
             onPageChange={handlePageChange}
-            searchPerformed={false}
-            searchQuery=""
           />
         );
     }
@@ -120,8 +115,6 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters(!showFilters)}
             onCitySelect={handleCitySelect}
-            searchInAreaEnabled={searchInAreaEnabled}
-            onToggleSearchInArea={handleToggleSearchInArea}
           />
         </div>
       )}
@@ -138,7 +131,6 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
                 phaAgencies={phaAgencies}
                 onOfficeSelect={setSelectedOffice}
                 onTokenError={setTokenError}
-                onBoundsChange={handleBoundsChange}
               />
             </div>
           </ResizablePanel>
