@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -62,24 +61,111 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         locationMarker.current.remove();
       }
       
-      // Create a custom marker element for location
-      const el = document.createElement('div');
-      el.className = 'location-marker';
-      el.style.width = '20px';
-      el.style.height = '20px';
-      el.style.borderRadius = '50%';
-      el.style.backgroundColor = '#ff4444';
-      el.style.border = '3px solid white';
-      el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-      el.style.cursor = 'pointer';
+      // Create a better custom marker element for location
+      const markerElement = document.createElement('div');
+      markerElement.className = 'location-marker-container';
+      markerElement.style.cssText = `
+        position: relative;
+        width: 32px;
+        height: 40px;
+        cursor: pointer;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        transition: transform 0.2s ease;
+      `;
       
-      // Add location marker
-      locationMarker.current = new mapboxgl.Marker({ element: el })
+      // Add the main pin shape
+      const pinShape = document.createElement('div');
+      pinShape.style.cssText = `
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border: 3px solid white;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        position: relative;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      `;
+      
+      // Add the inner dot
+      const innerDot = document.createElement('div');
+      innerDot.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 8px;
+        height: 8px;
+        background: white;
+        border-radius: 50%;
+        transform: translate(-50%, -50%) rotate(45deg);
+      `;
+      
+      // Add pulse animation
+      const pulseRing = document.createElement('div');
+      pulseRing.className = 'pulse-ring';
+      pulseRing.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 40px;
+        height: 40px;
+        border: 2px solid #ef4444;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        animation: pulse 2s infinite;
+        opacity: 0.6;
+      `;
+      
+      // Add CSS animation for pulse
+      if (!document.querySelector('#location-marker-styles')) {
+        const style = document.createElement('style');
+        style.id = 'location-marker-styles';
+        style.textContent = `
+          @keyframes pulse {
+            0% {
+              transform: translate(-50%, -50%) scale(0.8);
+              opacity: 0.8;
+            }
+            50% {
+              transform: translate(-50%, -50%) scale(1.2);
+              opacity: 0.4;
+            }
+            100% {
+              transform: translate(-50%, -50%) scale(1.6);
+              opacity: 0;
+            }
+          }
+          .location-marker-container:hover {
+            transform: scale(1.1);
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      pinShape.appendChild(innerDot);
+      markerElement.appendChild(pulseRing);
+      markerElement.appendChild(pinShape);
+      
+      // Add location marker with custom popup
+      locationMarker.current = new mapboxgl.Marker({ 
+        element: markerElement,
+        anchor: 'bottom'
+      })
         .setLngLat([lng, lat])
-        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${name}</strong>`))
+        .setPopup(
+          new mapboxgl.Popup({ 
+            offset: [0, -40],
+            closeButton: true,
+            className: 'location-popup'
+          }).setHTML(`
+            <div style="padding: 8px 12px; font-family: system-ui, -apple-system, sans-serif;">
+              <div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">📍 ${name}</div>
+              <div style="font-size: 12px; color: #6b7280;">Selected Location</div>
+            </div>
+          `)
+        )
         .addTo(map.current);
         
-      console.log('📍 Added location marker for:', name, 'at', { lat, lng });
+      console.log('📍 Added enhanced location marker for:', name, 'at', { lat, lng });
     }
   }));
 
