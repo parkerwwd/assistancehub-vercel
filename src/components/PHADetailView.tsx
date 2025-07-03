@@ -1,9 +1,11 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
+import { GoogleMapsService } from "@/services/googleMapsService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -14,6 +16,9 @@ interface PHADetailViewProps {
 }
 
 const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, onBack }) => {
+  const [imageError, setImageError] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
+
   // Build full address, handling the case where city might be in phone field
   const addressParts = [office.address];
   
@@ -41,6 +46,22 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
 
   const phaType = getPHATypeFromData(office);
 
+  // Get Google Maps images
+  const streetViewImageUrl = GoogleMapsService.getStreetViewImage({
+    address: fullAddress,
+    size: '400x250'
+  });
+
+  const staticMapImageUrl = GoogleMapsService.getStaticMapImage(fullAddress, '400x250');
+
+  const handleImageError = () => {
+    if (!showFallback) {
+      setShowFallback(true);
+    } else {
+      setImageError(true);
+    }
+  };
+
   return (
     <div className="h-full bg-gray-50">
       {/* Header */}
@@ -59,6 +80,23 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         <Card className="shadow-sm border-0 mb-4">
+          {/* Address Image */}
+          {fullAddress && !imageError && (
+            <div className="relative overflow-hidden rounded-t-lg">
+              <img
+                src={showFallback ? staticMapImageUrl : streetViewImageUrl}
+                alt={`Street view of ${office.name}`}
+                className="w-full h-56 object-cover"
+                onError={handleImageError}
+                onLoad={() => console.log('Image loaded successfully')}
+              />
+              <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
+                <Image className="w-3 h-3" />
+                {showFallback ? 'Map View' : 'Street View'}
+              </div>
+            </div>
+          )}
+
           <CardHeader className="pb-4">
             <CardTitle className="text-lg text-gray-900 leading-tight pr-2">
               {office.name}
