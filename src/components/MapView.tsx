@@ -34,7 +34,8 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
     handleTokenChange,
     handleCitySelect,
     handlePageChange,
-    resetToUSView
+    resetToUSView,
+    setSelectedLocation
   } = useMapLogic();
 
   const [viewState, setViewState] = useState<ViewState>('overview');
@@ -69,8 +70,9 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const handleBackToOverview = () => {
     setViewState('overview');
     setDetailOffice(null);
-    // Clear selected office when going back to show all PHA data
+    // Clear selected office and location when going back to show all PHA data
     setSelectedOffice(null);
+    setSelectedLocation(null);
     // Don't reset to US view - keep current map position to show all PHA data
   };
 

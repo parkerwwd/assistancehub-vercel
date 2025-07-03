@@ -30,6 +30,7 @@ const Section8 = () => {
     handleTokenChange,
     handlePageChange,
     handleCitySelect,
+    setSelectedLocation,
   } = useMapLogic();
 
   const [viewState, setViewState] = React.useState<ViewState>('overview');
@@ -54,8 +55,9 @@ const Section8 = () => {
   const handleBackToOverview = () => {
     setViewState('overview');
     setDetailOffice(null);
-    // Pass null explicitly to clear the selected office
+    // Clear the selected office and location to reset the search
     setSelectedOffice(null);
+    setSelectedLocation(null);
   };
 
   const handleBackToPHADetail = () => {
