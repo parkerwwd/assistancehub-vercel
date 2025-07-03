@@ -46,7 +46,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         map.current.flyTo({ 
           center, 
           zoom,
-          pitch: zoom > 8 ? 60 : 45, // Add pitch for closer views
+          pitch: zoom > 8 ? 60 : 45,
           duration: 2000,
           essential: true
         });
@@ -60,12 +60,10 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     setLocationMarker: (lat: number, lng: number, name: string) => {
       if (!map.current) return;
       
-      // Remove existing location marker
       if (locationMarker.current) {
         locationMarker.current.remove();
       }
       
-      // Create new location marker with mapbox token for correct images
       locationMarker.current = locationMarkerHelper.current.create({ 
         lat, 
         lng, 
@@ -108,7 +106,6 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       console.log('🗺️ No coordinates found, trying to geocode address:', office.address);
       
       try {
-        // Build full address string
         const addressParts = [office.address];
         if (office.city) addressParts.push(office.city);
         if (office.state) addressParts.push(office.state);
@@ -136,10 +133,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     
     if (lat && lng) {
       try {
-        // Create a 3D-style marker with enhanced styling
         const marker = new mapboxgl.Marker({
-          color: '#ef4444', // Red color for selected office
-          scale: 1.5 // Larger scale for 3D effect
+          color: '#ef4444',
+          scale: 1.5
         })
         .setLngLat([lng, lat])
         .setPopup(
@@ -158,13 +154,11 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
             `)
         );
         
-        // Add enhanced click handler
         marker.getElement().addEventListener('click', () => {
           console.log('🎯 3D Marker clicked:', office.name);
           onOfficeSelect(office);
         });
         
-        // Add enhanced hover effects for 3D feel
         const element = marker.getElement();
         element.style.cursor = 'pointer';
         element.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -190,64 +184,84 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   };
 
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken.trim()) return;
+    if (!mapContainer.current) return;
+    
+    console.log('🗺️ MapContainer useEffect - Token:', mapboxToken ? 'Present' : 'Missing');
+    
+    // Ensure we have a valid token
+    if (!mapboxToken || !mapboxToken.trim()) {
+      console.error('❌ No Mapbox token provided');
+      onTokenError("Mapbox token is required to display the map");
+      return;
+    }
 
     // Clear any previous error
     onTokenError("");
 
     try {
-      // Initialize 3D map
+      console.log('🗺️ Initializing Mapbox with token:', mapboxToken.substring(0, 20) + '...');
+      
+      // Set the access token
       mapboxgl.accessToken = mapboxToken.trim();
       
+      // Create the map
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/satellite-streets-v12', // Better for 3D
-        center: [-95.7129, 37.0902], // Center on continental US
+        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        center: [-95.7129, 37.0902],
         zoom: 4,
-        pitch: 45, // 3D tilt
+        pitch: 45,
         bearing: 0,
         minZoom: 3,
         maxZoom: 18,
-        antialias: true // Smooth 3D rendering
+        antialias: true
       });
+      
+      console.log('🗺️ Map created successfully');
       
       // Add 3D terrain and fog when map loads
       map.current.on('style.load', () => {
-        console.log('🗺️ Loading 3D terrain and atmosphere...');
+        console.log('🗺️ Map style loaded, adding 3D features...');
         
-        // Add terrain source
-        map.current?.addSource('mapbox-dem', {
-          'type': 'raster-dem',
-          'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
-          'tileSize': 512,
-          'maxzoom': 14
-        });
-        
-        // Add 3D terrain
-        map.current?.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
-        
-        // Add atmospheric fog
-        map.current?.setFog({
-          'color': 'rgb(186, 210, 235)', // Light blue
-          'high-color': 'rgb(36, 92, 223)', // Upper atmosphere
-          'horizon-blend': 0.02, // Smooth horizon
-          'space-color': 'rgb(11, 11, 25)', // Dark space
-          'star-intensity': 0.6 // Subtle stars
-        });
-        
-        // Add sky layer for better 3D effect
-        map.current?.addLayer({
-          'id': 'sky',
-          'type': 'sky',
-          'paint': {
-            'sky-type': 'atmosphere',
-            'sky-atmosphere-sun': [0.0, 0.0],
-            'sky-atmosphere-sun-intensity': 15
-          }
-        });
+        try {
+          // Add terrain source
+          map.current?.addSource('mapbox-dem', {
+            'type': 'raster-dem',
+            'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+            'tileSize': 512,
+            'maxzoom': 14
+          });
+          
+          // Add 3D terrain
+          map.current?.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+          
+          // Add atmospheric fog
+          map.current?.setFog({
+            'color': 'rgb(186, 210, 235)',
+            'high-color': 'rgb(36, 92, 223)',
+            'horizon-blend': 0.02,
+            'space-color': 'rgb(11, 11, 25)',
+            'star-intensity': 0.6
+          });
+          
+          // Add sky layer for better 3D effect
+          map.current?.addLayer({
+            'id': 'sky',
+            'type': 'sky',
+            'paint': {
+              'sky-type': 'atmosphere',
+              'sky-atmosphere-sun': [0.0, 0.0],
+              'sky-atmosphere-sun-intensity': 15
+            }
+          });
+          
+          console.log('✅ 3D features added successfully');
+        } catch (error) {
+          console.warn('⚠️ Error adding 3D features:', error);
+        }
       });
       
-      // Add enhanced navigation controls with pitch/bearing
+      // Add navigation controls
       map.current.addControl(
         new mapboxgl.NavigationControl({
           visualizePitch: true,
@@ -263,16 +277,19 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       // Setup enhanced map events
       MapControls.setupMapEvents(map.current, onTokenError, onBoundsChange);
 
+      console.log('✅ Map initialization complete');
+
       return () => {
+        console.log('🧹 Cleaning up map...');
         clearOfficeMarkers();
         clearLocationMarker();
         map.current?.remove();
       };
     } catch (error) {
-      console.error('Error initializing 3D map:', error);
-      onTokenError("Error initializing 3D map. Please check your token.");
+      console.error('❌ Error initializing map:', error);
+      onTokenError("Error initializing map. Please check your Mapbox token.");
     }
-  }, [mapboxToken, onOfficeSelect, onTokenError, onBoundsChange]);
+  }, [mapboxToken, onTokenError, onBoundsChange]);
 
   // Update marker when selected office changes
   useEffect(() => {
@@ -303,7 +320,6 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   return (
     <div className="relative w-full h-full">
       <div ref={mapContainer} className="w-full h-full" />
-      {/* 3D Map overlay info */}
       <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-2 rounded-lg text-sm font-medium backdrop-blur-sm">
         🌐 3D Terrain View
       </div>
