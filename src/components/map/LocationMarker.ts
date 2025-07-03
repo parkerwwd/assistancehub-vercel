@@ -137,16 +137,18 @@ export class LocationMarker {
     // Create location-specific image URL using Mapbox Static Images API
     let locationImageUrl = `https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=200&fit=crop&auto=format`;
     
-    if (mapboxToken) {
+    if (mapboxToken && lat && lng) {
       // Use Mapbox Static Images API to get satellite view of the specific location
-      locationImageUrl = `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${lng},${lat},14,0/300x200@2x?access_token=${mapboxToken}`;
+      // Format: /styles/v1/{username}/{style_id}/static/{lng},{lat},{zoom}/{width}x{height}@{retina}?access_token=
+      locationImageUrl = `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${lng.toFixed(6)},${lat.toFixed(6)},14/300x200@2x?access_token=${mapboxToken}`;
+      console.log('🛰️ Generated Mapbox Static Image URL for', name, ':', locationImageUrl);
     }
     
     card.innerHTML = `
       <div style="text-align: center;">
         <img 
           src="${locationImageUrl}" 
-          alt="${name}" 
+          alt="${name} satellite view" 
           style="
             width: 180px; 
             height: 120px; 
@@ -154,7 +156,11 @@ export class LocationMarker {
             border-radius: 8px; 
             margin-bottom: 8px;
           "
-          onError="this.src='https://images.unsplash.com/photo-1472396961693-142e6e269027?w=300&h=200&fit=crop&auto=format'"
+          onLoad="console.log('✅ Image loaded successfully for ${name}');"
+          onError="
+            console.log('❌ Failed to load Mapbox image for ${name}, falling back to generic image');
+            this.src='https://images.unsplash.com/photo-1472396961693-142e6e269027?w=300&h=200&fit=crop&auto=format';
+          "
         />
         <div style="
           font-family: system-ui, -apple-system, sans-serif;
