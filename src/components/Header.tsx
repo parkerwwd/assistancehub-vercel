@@ -14,10 +14,12 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onCitySelect, onSearch, showSearch = false }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [hasValidSelection, setHasValidSelection] = useState(false);
 
   const handleSearchFromHeader = (query: string) => {
     console.log('🔍 Header search triggered with:', query);
     setSearchQuery(query);
+    setHasValidSelection(true); // Search is only triggered from valid selections now
     if (onSearch) {
       onSearch(query);
     }
@@ -25,15 +27,18 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, onSearch, showSearch = fa
 
   const handleCitySelectFromHeader = (city: USCity) => {
     console.log('🏙️ Header city selected:', city);
+    setHasValidSelection(true);
     if (onCitySelect) {
       onCitySelect(city);
     }
   };
 
   const triggerSearch = () => {
-    if (searchQuery.trim() && onSearch) {
+    if (hasValidSelection && searchQuery.trim() && onSearch) {
       console.log('🔍 Triggering search from target button:', searchQuery);
       onSearch(searchQuery);
+    } else {
+      console.log('❌ Target button clicked but no valid selection');
     }
   };
 
@@ -71,8 +76,8 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, onSearch, showSearch = fa
                     </div>
                     <button 
                       onClick={triggerSearch}
-                      className="ml-3 p-1 hover:bg-gray-100 rounded-full transition-colors"
-                      disabled={!searchQuery.trim()}
+                      className="ml-3 p-1 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={!hasValidSelection || !searchQuery.trim()}
                     >
                       <Target className="w-5 h-5 text-gray-600" />
                     </button>

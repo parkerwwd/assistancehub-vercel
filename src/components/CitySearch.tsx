@@ -20,6 +20,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredCities, setFilteredCities] = useState<USCity[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedFromList, setSelectedFromList] = useState(false);
 
   useEffect(() => {
     if (searchQuery.trim().length > 1) {
@@ -34,6 +35,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
         
         setFilteredCities(filtered || []);
         setShowSuggestions(true);
+        setSelectedFromList(false); // Reset selection flag when typing
       } catch (error) {
         console.error('Error filtering cities:', error);
         setFilteredCities([]);
@@ -42,6 +44,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
     } else {
       setFilteredCities([]);
       setShowSuggestions(false);
+      setSelectedFromList(false);
     }
   }, [searchQuery]);
 
@@ -51,6 +54,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
     const cityQuery = `${city.name}, ${city.stateCode}`;
     setSearchQuery(cityQuery);
     setShowSuggestions(false);
+    setSelectedFromList(true);
     
     console.log('🏙️ City selected in CitySearch:', cityQuery);
     
@@ -60,21 +64,27 @@ const CitySearch: React.FC<CitySearchProps> = ({
   };
 
   const handleSearchClick = () => {
-    console.log('🔍 Search button clicked! Query:', searchQuery.trim());
-    if (searchQuery.trim()) {
-      console.log('🔍 Calling onSearch with:', searchQuery);
+    // Only allow search if user has selected from the list
+    if (selectedFromList && searchQuery.trim()) {
+      console.log('🔍 Search button clicked with selected city:', searchQuery);
       onSearch(searchQuery);
       setShowSuggestions(false);
     } else {
-      console.log('❌ Search query is empty, not searching');
+      console.log('❌ Search not allowed - must select from city list');
+      // Optionally show a message to user that they must select from the list
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      console.log('🔍 Enter key pressed, triggering search with:', searchQuery);
-      handleSearchClick();
+      // Only search if user has selected from list
+      if (selectedFromList && searchQuery.trim()) {
+        console.log('🔍 Enter key pressed with selected city:', searchQuery);
+        handleSearchClick();
+      } else {
+        console.log('❌ Enter key pressed but no valid selection made');
+      }
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
     }
@@ -168,7 +178,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
           onClick={handleSearchClick}
           size="sm"
           className="bg-blue-600 hover:bg-blue-700 transition-colors px-3 flex-shrink-0"
-          disabled={!searchQuery.trim()}
+          disabled={!selectedFromList || !searchQuery.trim()}
         >
           <Search className="w-4 h-4" />
         </Button>
