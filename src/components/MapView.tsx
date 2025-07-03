@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "./OfficeDetailsPanel";
 import PHADetailView from "./PHADetailView";
@@ -34,11 +34,24 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
     setShowFilters,
     handleTokenChange,
     handleCitySelect,
-    handlePageChange
+    handlePageChange,
+    resetToUSView
   } = useMapLogic();
 
   const [viewState, setViewState] = useState<ViewState>('overview');
   const [detailOffice, setDetailOffice] = useState<PHAAgency | null>(null);
+
+  // Reset to US view when component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (mapRef.current) {
+        console.log('🇺🇸 Initial page load - showing US map');
+        resetToUSView();
+      }
+    }, 1000); // Small delay to ensure map is loaded
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleOfficeClick = (office: PHAAgency) => {
     console.log('🎯 Office clicked from panel:', office.name);
@@ -57,10 +70,20 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const handleBackToOverview = () => {
     setViewState('overview');
     setDetailOffice(null);
+    // Reset to US view when going back to overview
+    resetToUSView();
   };
 
   const handleBackToPHADetail = () => {
     setViewState('pha-detail');
+  };
+
+  const handleCitySelectWithReset = (city: any) => {
+    console.log('🏙️ City selected, flying to:', city.name);
+    // Reset view state when searching
+    setViewState('overview');
+    setDetailOffice(null);
+    handleCitySelect(city);
   };
 
   const renderRightPanel = () => {
@@ -118,7 +141,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
           <MapFilters
             showFilters={showFilters}
             onToggleFilters={() => setShowFilters(!showFilters)}
-            onCitySelect={handleCitySelect}
+            onCitySelect={handleCitySelectWithReset}
           />
         </div>
       )}

@@ -38,7 +38,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         map.current.flyTo({ 
           center, 
           zoom,
-          duration: 2000 // Smooth animation
+          duration: 1500,
+          essential: true // This makes the flight animation smoother
         });
       } else {
         console.warn('⚠️ Map not initialized yet');
@@ -72,19 +73,25 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         console.log('📍 Adding marker for:', agency.name, 'at', { lat, lng });
         
         const marker = new mapboxgl.Marker({
-          color: getWaitlistColor(agency.waitlist_status || 'Unknown')
+          color: getWaitlistColor(agency.waitlist_status || 'Unknown'),
+          scale: 0.8
         })
           .setLngLat([lng, lat])
           .addTo(map.current!);
 
+        // Add click handler to marker
         marker.getElement().addEventListener('click', () => {
           console.log('🎯 Marker clicked:', agency.name);
           onOfficeSelect(agency);
-          map.current?.flyTo({
-            center: [lng, lat],
-            zoom: 12,
-            duration: 1500
-          });
+        });
+
+        // Add hover effect
+        marker.getElement().style.cursor = 'pointer';
+        marker.getElement().addEventListener('mouseenter', () => {
+          marker.getElement().style.transform = 'scale(1.1)';
+        });
+        marker.getElement().addEventListener('mouseleave', () => {
+          marker.getElement().style.transform = 'scale(1)';
         });
 
         markers.current.push(marker);
@@ -116,10 +123,13 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [-95.7129, 37.0902], // Better center for continental US
-        zoom: 4.5 // Increased zoom to focus more on USA
+        center: [-95.7129, 37.0902], // Center on continental US
+        zoom: 4.5, // Good zoom level to see the whole US
+        minZoom: 3,
+        maxZoom: 18
       });
 
+      // Add navigation controls
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
       // Handle map load errors
@@ -134,7 +144,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
       // Add markers when map loads
       map.current.on('load', () => {
-        console.log('🗺️ Map loaded successfully');
+        console.log('🗺️ Map loaded successfully - showing US view');
         addMarkers();
         handleBoundsChange();
       });

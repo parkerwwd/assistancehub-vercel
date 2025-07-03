@@ -51,13 +51,14 @@ export const useMapLogic = () => {
   };
 
   const handleCitySelect = async (city: USCity) => {
-    console.log('Selected city:', city.name, city.stateCode);
+    console.log('🏙️ Selected city:', city.name, city.stateCode);
     
     // Clear any selected office first
     setSelectedOffice(null);
     
-    // Fly to the selected city
+    // Fly to the selected city with appropriate zoom level
     if (mapRef.current) {
+      console.log('🗺️ Flying to city coordinates:', { lat: city.latitude, lng: city.longitude });
       mapRef.current.flyTo([city.longitude, city.latitude], 10);
     }
   };
@@ -70,13 +71,22 @@ export const useMapLogic = () => {
     const lat = office.latitude || (office as any).geocoded_latitude;
     const lng = office.longitude || (office as any).geocoded_longitude;
     
-    console.log('🗺️ Flying to coordinates:', { lat, lng });
+    console.log('🗺️ Flying to office coordinates:', { lat, lng });
     
-    // If we have coordinates, fly to them
+    // If we have coordinates, fly to them with closer zoom
     if (lat && lng && mapRef.current) {
-      mapRef.current.flyTo([lng, lat], 12);
+      mapRef.current.flyTo([lng, lat], 14);
     } else {
       console.warn('⚠️ No coordinates found for office:', office.name);
+    }
+  };
+
+  const resetToUSView = () => {
+    console.log('🇺🇸 Resetting to US view');
+    setSelectedOffice(null);
+    if (mapRef.current) {
+      // Center on continental US with appropriate zoom
+      mapRef.current.flyTo([-95.7129, 37.0902], 4.5);
     }
   };
 
@@ -96,6 +106,7 @@ export const useMapLogic = () => {
     setShowFilters,
     handleTokenChange,
     handleCitySelect,
-    handlePageChange
+    handlePageChange,
+    resetToUSView
   };
 };
