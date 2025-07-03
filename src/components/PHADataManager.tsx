@@ -23,7 +23,7 @@ const PHADataManager: React.FC = () => {
     importProgress, 
     importResult, 
     startImport,
-    setImportResult,
+    setImportResult: resetImportState,
     showMappingDialog,
     setShowMappingDialog,
     csvHeaders,
@@ -52,7 +52,7 @@ const PHADataManager: React.FC = () => {
 
   const handleFileImport = async (file: File) => {
     console.log('Starting file import:', file.name);
-    setImportResult(null);
+    resetImportState();
     await startImport(file);
   };
 
