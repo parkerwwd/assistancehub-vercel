@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Database } from "@/integrations/supabase/types";
 import { USLocation } from "@/data/usLocations";
@@ -8,7 +7,9 @@ import { usePHAData } from "./usePHAData";
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export const useMapLogic = () => {
-  const [mapboxToken, setMapboxToken] = useState("");
+  // Initialize with the provided token immediately
+  const providedToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjelhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
+  const [mapboxToken, setMapboxToken] = useState(providedToken);
   const [selectedOffice, setSelectedOffice] = useState<PHAAgency | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; name: string } | null>(null);
   const [tokenError, setTokenError] = useState("");
@@ -24,26 +25,42 @@ export const useMapLogic = () => {
     goToPage 
   } = usePHAData();
 
-  // Load token from localStorage on component mount, or use provided token
+  // Load token from localStorage on component mount, but always ensure we have a token
   useEffect(() => {
-    const savedToken = localStorage.getItem('mapbox-token');
-    const providedToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjelhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
+    console.log('🔑 useMapLogic: Initializing token...');
     
-    if (savedToken) {
+    const savedToken = localStorage.getItem('mapbox-token');
+    
+    if (savedToken && savedToken.trim()) {
+      console.log('🔑 Using saved token from localStorage');
       setMapboxToken(savedToken);
     } else {
+      console.log('🔑 Using provided token and saving to localStorage');
       setMapboxToken(providedToken);
-      localStorage.setItem('mapbox-token', providedToken);
+      try {
+        localStorage.setItem('mapbox-token', providedToken);
+      } catch (error) {
+        console.warn('⚠️ Could not save token to localStorage:', error);
+      }
     }
   }, []);
 
   // Save token to localStorage whenever it changes
   const handleTokenChange = (token: string) => {
+    console.log('🔑 Token changed:', token ? 'Present' : 'Empty');
     setMapboxToken(token);
     if (token.trim()) {
-      localStorage.setItem('mapbox-token', token.trim());
+      try {
+        localStorage.setItem('mapbox-token', token.trim());
+      } catch (error) {
+        console.warn('⚠️ Could not save token to localStorage:', error);
+      }
     } else {
-      localStorage.removeItem('mapbox-token');
+      try {
+        localStorage.removeItem('mapbox-token');
+      } catch (error) {
+        console.warn('⚠️ Could not remove token from localStorage:', error);
+      }
     }
   };
 

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -186,12 +187,12 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   useEffect(() => {
     if (!mapContainer.current) return;
     
-    console.log('🗺️ MapContainer useEffect - Token:', mapboxToken ? 'Present' : 'Missing');
+    console.log('🗺️ MapContainer useEffect - Token:', mapboxToken ? `Present (${mapboxToken.substring(0, 20)}...)` : 'Missing');
     
-    // Ensure we have a valid token
-    if (!mapboxToken || !mapboxToken.trim()) {
-      console.error('❌ No Mapbox token provided');
-      onTokenError("Mapbox token is required to display the map");
+    // Ensure we have a valid token before proceeding
+    if (!mapboxToken || !mapboxToken.trim() || mapboxToken.length < 20) {
+      console.error('❌ Invalid or missing Mapbox token:', mapboxToken);
+      onTokenError("Invalid Mapbox token. Please check your token configuration.");
       return;
     }
 
@@ -199,10 +200,19 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     onTokenError("");
 
     try {
-      console.log('🗺️ Initializing Mapbox with token:', mapboxToken.substring(0, 20) + '...');
+      console.log('🗺️ Setting Mapbox access token...');
       
       // Set the access token
       mapboxgl.accessToken = mapboxToken.trim();
+      
+      // Validate token format
+      if (!mapboxToken.startsWith('pk.')) {
+        console.error('❌ Invalid token format - should start with pk.');
+        onTokenError("Invalid Mapbox token format. Token should start with 'pk.'");
+        return;
+      }
+      
+      console.log('🗺️ Creating map instance...');
       
       // Create the map
       map.current = new mapboxgl.Map({
@@ -217,7 +227,21 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         antialias: true
       });
       
-      console.log('🗺️ Map created successfully');
+      console.log('🗺️ Map instance created successfully');
+      
+      // Add error handling for the map
+      map.current.on('error', (e) => {
+        console.error('❌ Map error:', e);
+        if (e.error && 'status' in e.error) {
+          if (e.error.status === 401) {
+            onTokenError("Invalid Mapbox token. Please check your token and try again.");
+          } else {
+            onTokenError(`Map error (${e.error.status}): ${e.error.message || 'Unknown error'}`);
+          }
+        } else {
+          onTokenError("Error loading map. Please check your token and try again.");
+        }
+      });
       
       // Add 3D terrain and fog when map loads
       map.current.on('style.load', () => {
@@ -287,7 +311,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       };
     } catch (error) {
       console.error('❌ Error initializing map:', error);
-      onTokenError("Error initializing map. Please check your Mapbox token.");
+      onTokenError(`Error initializing map: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }, [mapboxToken, onTokenError, onBoundsChange]);
 
