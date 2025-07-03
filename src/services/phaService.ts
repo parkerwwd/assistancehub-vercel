@@ -52,32 +52,53 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
   const cityStatePattern = /^(.+?),?\s+(a[lkszrz]|c[aot]|d[ce]|fl|ga|hi|i[adln]|k[sy]|la|m[adeinost]|n[cdehjmvy]|o[hkr]|p[ar]|ri|s[cd]|t[nx]|ut|v[ait]|w[aivy])$/i;
   const cityStateMatch = searchTerm.match(cityStatePattern);
   
-  let searchPromises;
+  let searchPromises: Promise<any>[];
   
   if (cityStateMatch) {
-    // Handle city, state format - city names are stored in the phone field due to data import issue
+    // Handle city, state format - search in multiple fields including address
     const city = cityStateMatch[1].trim();
     const state = cityStateMatch[2].trim().toUpperCase();
     
     console.log('🏙️ Parsed city/state:', { city, state });
     
     searchPromises = [
-      // Search for city in phone field (where city names are actually stored)
+      // Search for city in address field
+      supabase
+        .from('pha_agencies')
+        .select('*')
+        .ilike('address', `%${city}%`)
+        .limit(100),
+      
+      // Search for city in phone field (where city names are sometimes stored)
       supabase
         .from('pha_agencies')
         .select('*')
         .ilike('phone', `%${city}%`)
         .limit(100),
       
-      // Search for city name in PHA name as backup
+      // Search for city name in PHA name
       supabase
         .from('pha_agencies')
         .select('*')
         .ilike('name', `%${city}%`)
+        .limit(100),
+        
+      // Search for city in actual city field
+      supabase
+        .from('pha_agencies')
+        .select('*')
+        .ilike('city', `%${city}%`)
+        .limit(100),
+        
+      // Search by state
+      supabase
+        .from('pha_agencies')
+        .select('*')
+        .ilike('state', `%${state}%`)
         .limit(100)
     ];
   } else {
-    // Regular search for single terms - search name and phone field
+    // Regular search for single terms - search across all relevant fields
     searchPromises = [
       // Name search
       supabase
@@ -86,11 +107,32 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
         .ilike('name', `%${searchTerm}%`)
         .limit(100),
 
-      // Phone field search (where city names are stored)
+      // Address search
+      supabase
+        .from('pha_agencies')
+        .select('*')
+        .ilike('address', `%${searchTerm}%`)
+        .limit(100),
+
+      // Phone field search (where city names are sometimes stored)
       supabase
         .from('pha_agencies')
         .select('*')
         .ilike('phone', `%${searchTerm}%`)
+        .limit(100),
+        
+      // City search
+      supabase
+        .from('pha_agencies')
+        .select('*')
+        .ilike('city', `%${searchTerm}%`)
+        .limit(100),
+        
+      // State search
+      supabase
+        .from('pha_agencies')
+        .select('*')
+        .ilike('state', `%${searchTerm}%`)
         .limit(100)
     ];
   }
@@ -109,6 +151,7 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
 
   // Check for errors in any of the searches
   if (searchResults.some(result => result.error)) {
+    console.error('Search errors:', searchResults.filter(result => result.error));
     throw new Error('Search failed due to database error');
   }
 
@@ -123,7 +166,7 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
   console.log('🔄 Combined search results:', {
     totalBeforeDedup: allResults.length,
     totalAfterDedup: uniqueResults.length,
-    finalResults: uniqueResults.slice(0, 3) // Show first 3 for debugging
+    sampleResults: uniqueResults.slice(0, 3).map(r => ({ name: r.name, address: r.address, city: r.city, phone: r.phone }))
   });
 
   const from = (page - 1) * itemsPerPage;

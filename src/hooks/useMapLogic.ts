@@ -44,17 +44,21 @@ export const useMapLogic = () => {
     }
   };
 
-  // Handle search results when they arrive - don't auto-select, just fly to first result
+  // Handle search results when they arrive - don't auto-select if no results
   useEffect(() => {
-    if (currentSearchQuery && phaAgencies.length > 0 && !loading) {
-      const firstResult = phaAgencies[0];
-      
-      // Fly to the first result location if coordinates exist, but don't select it
-      if (firstResult.latitude && firstResult.longitude && mapRef.current) {
-        mapRef.current.flyTo([firstResult.longitude, firstResult.latitude], 10);
+    if (currentSearchQuery && !loading) {
+      if (phaAgencies.length > 0) {
+        const firstResult = phaAgencies[0];
+        
+        // Fly to the first result location if coordinates exist, but don't select it
+        if (firstResult.latitude && firstResult.longitude && mapRef.current) {
+          mapRef.current.flyTo([firstResult.longitude, firstResult.latitude], 10);
+        }
+        
+        console.log('Search completed, showing', phaAgencies.length, 'results. First result:', firstResult.name);
+      } else {
+        console.log('Search completed with no results for:', currentSearchQuery);
       }
-      
-      console.log('Search completed, showing', phaAgencies.length, 'results. First result:', firstResult.name);
     }
   }, [phaAgencies, currentSearchQuery, loading]);
 
@@ -72,48 +76,15 @@ export const useMapLogic = () => {
     // Automatically search for PHAs in the selected city
     const searchQuery = `${city.name}, ${city.stateCode}`;
     setCurrentSearchQuery(searchQuery);
+    
+    // Clear any selected office first
+    setSelectedOffice(null);
+    
     await searchPHAs(searchQuery, 1);
     
     // Fly to the selected city
     if (mapRef.current) {
       mapRef.current.flyTo([city.longitude, city.latitude], 10);
-    }
-
-    // Look for the best matching PHA office from search results
-    const cityLower = city.name.toLowerCase().trim();
-    const stateLower = city.stateCode.toLowerCase().trim();
-    
-    // Find exact city matches first, then closest matches
-    const exactCityMatch = phaAgencies.find(office => {
-      if (!office.city || !office.state) return false;
-      
-      const officeCityLower = office.city.toLowerCase().trim();
-      const officeStateLower = office.state.toLowerCase().trim();
-      
-      return officeCityLower === cityLower && 
-             (officeStateLower === stateLower || 
-              officeStateLower === city.state.toLowerCase().substring(0, 2));
-    });
-
-    if (exactCityMatch) {
-      setSelectedOffice(exactCityMatch);
-      console.log('Found exact city match:', exactCityMatch.name);
-      
-      // Fly to the PHA office if it has coordinates
-      if (exactCityMatch.latitude && exactCityMatch.longitude && mapRef.current) {
-        mapRef.current.flyTo([exactCityMatch.longitude, exactCityMatch.latitude], 12);
-      }
-    } else if (phaAgencies.length > 0) {
-      // Select the first result from the search
-      setSelectedOffice(phaAgencies[0]);
-      console.log('Selected first search result:', phaAgencies[0].name);
-      
-      if (phaAgencies[0].latitude && phaAgencies[0].longitude && mapRef.current) {
-        mapRef.current.flyTo([phaAgencies[0].longitude, phaAgencies[0].latitude], 12);
-      }
-    } else {
-      console.log('No PHA offices found for:', city.name, city.stateCode);
-      setSelectedOffice(null);
     }
   };
 
@@ -123,13 +94,13 @@ export const useMapLogic = () => {
       return;
     }
     
-    console.log('Searching for:', query);
+    console.log('🔍 Searching for:', query);
     setCurrentSearchQuery(query);
     
-    // Clear the selected office first to avoid confusion
+    // Clear the selected office first to show search results properly
     setSelectedOffice(null);
     
-    // Perform the search - the results will be handled by the effect
+    // Perform the search
     await searchPHAs(query, 1);
     
     // Try to center map on searched city
