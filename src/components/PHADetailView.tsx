@@ -66,31 +66,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
     return "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=400&h=300&fit=crop&crop=center";
   };
 
-  // Generate street view fallback image
-  const generateStreetViewFallback = () => {
-    const mapboxToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjelhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
-    
-    // Use coordinates if available for street view
-    let lat = office.latitude || (office as any).geocoded_latitude;
-    let lng = office.longitude || (office as any).geocoded_longitude;
-    
-    if (lat && lng) {
-      // Create a street-level view
-      return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${lng},${lat},16,0,60/400x300@2x?access_token=${mapboxToken}`;
-    }
-    
-    // If no coordinates but we have an address, use street view with address
-    if (fullAddress) {
-      const encodedAddress = encodeURIComponent(fullAddress);
-      return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/auto/400x300@2x?access_token=${mapboxToken}&location=${encodedAddress}`;
-    }
-    
-    // Final fallback to a generic street image
-    return "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=300&fit=crop&crop=center";
-  };
-
   const mapboxImageUrl = generateMapboxImageUrl();
-  const streetViewFallback = generateStreetViewFallback();
 
   return (
     <div className="h-full bg-gray-50">
@@ -117,15 +93,8 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               alt={`Satellite view of ${office.name} at ${fullAddress}`}
               className="w-full h-full object-cover"
               onError={(e) => {
+                // Fallback to a gradient background with building icon if Mapbox image fails to load
                 const target = e.target as HTMLImageElement;
-                // Try street view fallback first
-                if (target.src !== streetViewFallback) {
-                  target.src = streetViewFallback;
-                  target.alt = `Street view of ${office.name} at ${fullAddress}`;
-                  return;
-                }
-                
-                // If street view also fails, show fallback UI
                 target.style.display = 'none';
                 target.parentElement!.innerHTML = `
                   <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
