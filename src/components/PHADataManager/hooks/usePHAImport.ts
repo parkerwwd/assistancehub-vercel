@@ -4,6 +4,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ImportResult, ImportProgress } from '../types';
 import { FieldMapping } from '../components/FieldMappingDialog';
+import { parseCSV, extractCSVHeaders, validateCSVFile } from '../utils/csvParser';
+import { processPHARecord, upsertPHARecord } from '../services/phaImportService';
 
 export const usePHAImport = () => {
   const [isImporting, setIsImporting] = useState(false);
@@ -14,110 +16,11 @@ export const usePHAImport = () => {
   const [showMappingDialog, setShowMappingDialog] = useState(false);
   const { toast } = useToast();
 
-  // Enhanced CSV parsing with better security validation
-  const parseCSV = (csvText: string) => {
-    // Security: Limit file size to prevent DoS attacks
-    const maxFileSize = 50 * 1024 * 1024; // 50MB limit
-    if (csvText.length > maxFileSize) {
-      throw new Error('File size too large. Maximum allowed size is 50MB.');
-    }
-
-    const lines = csvText.split('\n').filter(line => line.trim());
-    if (lines.length === 0) return [];
-    
-    // Security: Limit number of records to prevent resource exhaustion
-    const maxRecords = 100000; // 100k records limit
-    if (lines.length > maxRecords) {
-      throw new Error(`Too many records. Maximum allowed is ${maxRecords.toLocaleString()} records.`);
-    }
-
-    console.log('Total lines in CSV:', lines.length);
-    console.log('First line (headers):', lines[0]);
-    
-    // Try to detect delimiter (tab or comma)
-    const firstLine = lines[0];
-    const tabCount = (firstLine.match(/\t/g) || []).length;
-    const commaCount = (firstLine.match(/,/g) || []).length;
-    const delimiter = tabCount > commaCount ? '\t' : ',';
-    
-    console.log('Using delimiter:', delimiter === '\t' ? 'tab' : 'comma');
-    
-    // Parse headers with sanitization
-    const headers = firstLine.split(delimiter).map(h => {
-      const sanitized = h.trim().replace(/"/g, '').replace(/[<>]/g, ''); // Basic XSS prevention
-      return sanitized.substring(0, 100); // Limit header length
-    });
-    console.log('Headers found:', headers);
-    
-    const data = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      if (lines[i].trim()) {
-        const values = lines[i].split(delimiter).map(v => {
-          const sanitized = v.trim().replace(/"/g, '').replace(/[<>]/g, ''); // Basic XSS prevention
-          return sanitized.substring(0, 500); // Limit field length
-        });
-        const row: any = {};
-        headers.forEach((header, index) => {
-          row[header] = values[index] || null;
-        });
-        data.push(row);
-      }
-    }
-
-    console.log('Parsed data sample:', data.slice(0, 2));
-    return data;
-  };
-
-  // Enhanced coordinate parsing with validation
-  const parseCoordinate = (value: string | null | undefined, type: 'latitude' | 'longitude'): number | null => {
-    if (!value || value === 'null' || value === '') return null;
-    
-    const parsed = parseFloat(value);
-    if (isNaN(parsed)) return null;
-    
-    // Validate coordinate ranges
-    if (type === 'latitude' && (parsed < -90 || parsed > 90)) {
-      console.warn(`Invalid latitude value: ${parsed}`);
-      return null;
-    }
-    
-    if (type === 'longitude' && (parsed < -180 || parsed > 180)) {
-      console.warn(`Invalid longitude value: ${parsed}`);
-      return null;
-    }
-    
-    // Round to 8 decimal places to match database precision
-    return Math.round(parsed * 100000000) / 100000000;
-  };
-
-  // Enhanced input sanitization function
-  const sanitizeInput = (input: string | null | undefined, maxLength: number = 255): string | null => {
-    if (!input) return null;
-    
-    // Remove potentially dangerous characters and limit length
-    const sanitized = input
-      .replace(/[<>\"']/g, '') // Remove HTML/script injection characters
-      .replace(/\0/g, '') // Remove null bytes
-      .trim()
-      .substring(0, maxLength);
-    
-    return sanitized || null;
-  };
-
   // Start the import process by analyzing CSV structure
   const startImport = async (file: File) => {
     try {
       // Security validations
-      const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'text/plain'];
-      if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.csv')) {
-        throw new Error('Invalid file type. Only CSV files are allowed.');
-      }
-
-      const maxFileSize = 50 * 1024 * 1024; // 50MB
-      if (file.size > maxFileSize) {
-        throw new Error('File too large. Maximum size is 50MB.');
-      }
+      validateCSVFile(file);
 
       const csvText = await file.text();
       const csvData = parseCSV(csvText);
@@ -127,11 +30,7 @@ export const usePHAImport = () => {
       }
 
       // Extract headers for mapping
-      const firstLine = csvText.split('\n')[0];
-      const tabCount = (firstLine.match(/\t/g) || []).length;
-      const commaCount = (firstLine.match(/,/g) || []).length;
-      const delimiter = tabCount > commaCount ? '\t' : ',';
-      const headers = firstLine.split(delimiter).map(h => h.trim().replace(/"/g, ''));
+      const headers = extractCSVHeaders(csvText);
 
       setCsvHeaders(headers);
       setPendingFile(file);
@@ -160,16 +59,8 @@ export const usePHAImport = () => {
         throw new Error('Authentication required. Please log in to import data.');
       }
 
-      // Security: Validate file type and size
-      const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'text/plain'];
-      if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.csv')) {
-        throw new Error('Invalid file type. Only CSV files are allowed.');
-      }
-
-      const maxFileSize = 50 * 1024 * 1024; // 50MB
-      if (file.size > maxFileSize) {
-        throw new Error('File too large. Maximum size is 50MB.');
-      }
+      // Security validations
+      validateCSVFile(file);
 
       const csvText = await file.text();
       const csvData = parseCSV(csvText);
@@ -188,94 +79,22 @@ export const usePHAImport = () => {
         for (const record of batch) {
           try {
             // Update progress
-            const recordName = sanitizeInput(record.FORMAL_PARTICIPANT_NAME || record.name || record.PARTICIPANT_NAME || record.PHA_NAME) || `Record ${i + 1}`;
+            const recordName = record[fieldMappings.find(m => m.dbField === 'name')?.csvField || ''] || `Record ${i + 1}`;
             setImportProgress({ 
               current: i + 1, 
               total: csvData.length, 
               currentRecord: recordName 
             });
             
-            // Apply field mappings to build PHA data object
-            const phaData: any = {
-              last_updated: new Date().toISOString()
-            };
-
-            // Map fields based on user configuration
-            fieldMappings.forEach(mapping => {
-              const csvValue = record[mapping.csvField];
-              
-              switch (mapping.dbField) {
-                case 'pha_code':
-                  phaData.pha_code = sanitizeInput(csvValue, 50);
-                  break;
-                case 'name':
-                  phaData.name = sanitizeInput(csvValue, 255);
-                  break;
-                case 'address':
-                  phaData.address = sanitizeInput(csvValue, 500);
-                  break;
-                case 'city':
-                  phaData.city = sanitizeInput(csvValue, 100);
-                  break;
-                case 'state':
-                  phaData.state = sanitizeInput(csvValue, 2)?.substring(0, 2) || null;
-                  break;
-                case 'zip':
-                  phaData.zip = sanitizeInput(csvValue, 10)?.substring(0, 10) || null;
-                  break;
-                case 'phone':
-                  phaData.phone = sanitizeInput(csvValue, 20);
-                  break;
-                case 'email':
-                  phaData.email = sanitizeInput(csvValue, 255);
-                  break;
-                case 'website':
-                  phaData.website = sanitizeInput(csvValue, 255);
-                  break;
-                case 'supports_hcv':
-                  phaData.supports_hcv = csvValue?.toString().toLowerCase().includes('section 8') || 
-                                       csvValue?.toString().toLowerCase() === 'true' || 
-                                       (csvValue && parseInt(csvValue.toString()) > 0) || 
-                                       false;
-                  break;
-                case 'waitlist_status':
-                  phaData.waitlist_status = sanitizeInput(csvValue, 50) || 'Unknown';
-                  break;
-                case 'latitude':
-                  phaData.latitude = parseCoordinate(csvValue, 'latitude');
-                  break;
-                case 'longitude':
-                  phaData.longitude = parseCoordinate(csvValue, 'longitude');
-                  break;
-              }
-            });
+            // Process the record using mapped fields
+            const phaData = processPHARecord(record, fieldMappings);
 
             console.log('Mapped PHA data:', phaData);
 
-            // Enhanced validation - require name
-            if (phaData.name && phaData.name.trim().length > 0) {
-              const { error } = await supabase
-                .from('pha_agencies')
-                .upsert(phaData, { 
-                  onConflict: 'pha_code',
-                  ignoreDuplicates: false 
-                });
-
-              if (error) {
-                console.error('Error upserting PHA record:', error);
-                // Check if it's an authentication error
-                if (error.message.includes('row-level security policy')) {
-                  throw new Error('Authentication required for data import. Please ensure you are logged in.');
-                }
-                errorCount++;
-              } else {
-                processedCount++;
-                console.log('Successfully processed record for:', phaData.name);
-              }
-            } else {
-              console.log('Skipping record due to missing name:', record);
-              errorCount++;
-            }
+            // Save to database
+            await upsertPHARecord(phaData);
+            processedCount++;
+            console.log('Successfully processed record for:', phaData.name);
           } catch (recordError) {
             console.error('Error processing PHA record:', recordError);
             errorCount++;
