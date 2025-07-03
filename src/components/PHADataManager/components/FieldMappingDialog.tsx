@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -44,6 +45,7 @@ const COMMON_MAPPINGS = {
   'PHA_NAME': 'name',
   'STD_ADDR': 'address',
   'ADDRESS': 'address',
+  'FULL_ADDRESS': 'address',
   'STD_CITY': 'city',
   'CITY': 'city',
   'STD_ST': 'state',
@@ -140,6 +142,11 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  const handleConfirm = () => {
+    const validMappings = mappings.filter(m => m.dbField);
+    onMappingConfirm(validMappings);
+  };
+
   const { missingRequired, hasRequired } = getRequiredFieldStatus();
 
   return (
@@ -150,6 +157,9 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
             <Upload className="w-5 h-5" />
             Map CSV Fields to Database
           </DialogTitle>
+          <DialogDescription>
+            Map your CSV columns to the corresponding database fields. Required fields must be mapped to proceed.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -197,7 +207,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Select database field..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white border shadow-lg z-50">
                         <SelectItem value="">-- Skip this field --</SelectItem>
                         {DATABASE_FIELDS.map(field => (
                           <SelectItem key={field.key} value={field.key}>
@@ -226,7 +236,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
             Cancel
           </Button>
           <Button 
-            onClick={() => onMappingConfirm(mappings.filter(m => m.dbField))}
+            onClick={handleConfirm}
             disabled={!hasRequired}
           >
             Apply Mapping & Continue Import

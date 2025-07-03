@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ImportResult, ImportProgress } from '../types';
@@ -16,9 +16,11 @@ export const usePHAImport = () => {
   const [showMappingDialog, setShowMappingDialog] = useState(false);
   const { toast } = useToast();
 
-  // Start the import process by analyzing CSV structure
-  const startImport = async (file: File) => {
+  // Memoize the startImport function to prevent unnecessary re-renders
+  const startImport = useCallback(async (file: File) => {
     try {
+      console.log('Starting CSV analysis for:', file.name);
+      
       // Security validations
       validateCSVFile(file);
 
@@ -31,6 +33,7 @@ export const usePHAImport = () => {
 
       // Extract headers for mapping
       const headers = extractCSVHeaders(csvText);
+      console.log('Extracted headers:', headers);
 
       setCsvHeaders(headers);
       setPendingFile(file);
@@ -44,15 +47,17 @@ export const usePHAImport = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
 
   // Import PHA data from CSV with field mapping
-  const importCSVData = async (file: File, fieldMappings: FieldMapping[]) => {
+  const importCSVData = useCallback(async (file: File, fieldMappings: FieldMapping[]) => {
     setIsImporting(true);
     setImportResult(null);
     setImportProgress({ current: 0, total: 0 });
 
     try {
+      console.log('Starting CSV import with mappings:', fieldMappings);
+      
       // Security: Check authentication first
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -72,16 +77,19 @@ export const usePHAImport = () => {
       let errorCount = 0;
 
       // Process in smaller batches to prevent timeouts
-      const batchSize = 50;
+      const batchSize = 25; // Reduced batch size for better performance
       for (let i = 0; i < csvData.length; i += batchSize) {
         const batch = csvData.slice(i, i + batchSize);
         
-        for (const record of batch) {
+        for (let j = 0; j < batch.length; j++) {
+          const record = batch[j];
+          const currentIndex = i + j;
+          
           try {
             // Update progress
-            const recordName = record[fieldMappings.find(m => m.dbField === 'name')?.csvField || ''] || `Record ${i + 1}`;
+            const recordName = record[fieldMappings.find(m => m.dbField === 'name')?.csvField || ''] || `Record ${currentIndex + 1}`;
             setImportProgress({ 
-              current: i + 1, 
+              current: currentIndex + 1, 
               total: csvData.length, 
               currentRecord: recordName 
             });
@@ -89,30 +97,32 @@ export const usePHAImport = () => {
             // Process the record using mapped fields
             const phaData = processPHARecord(record, fieldMappings);
 
-            console.log('Mapped PHA data:', phaData);
-
             // Save to database
             await upsertPHARecord(phaData);
             processedCount++;
-            console.log('Successfully processed record for:', phaData.name);
           } catch (recordError) {
             console.error('Error processing PHA record:', recordError);
             errorCount++;
             
             // If we get too many errors, stop the import
-            if (errorCount > 100) {
+            if (errorCount > 50) {
               throw new Error('Too many errors encountered. Import stopped for safety.');
             }
           }
         }
+        
+        // Small delay between batches to prevent overwhelming the system
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      setImportResult({
+      const result = {
         success: true,
         processedCount,
         errorCount,
         message: `Processed ${processedCount} PHA records, ${errorCount} errors`
-      });
+      };
+      
+      setImportResult(result);
       
       toast({
         title: "Import Completed",
@@ -124,10 +134,12 @@ export const usePHAImport = () => {
       console.error('CSV Import error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to import CSV data';
       
-      setImportResult({
+      const result = {
         success: false,
         error: errorMessage
-      });
+      };
+      
+      setImportResult(result);
       
       toast({
         title: "Import Error",
@@ -139,23 +151,31 @@ export const usePHAImport = () => {
       setIsImporting(false);
       setImportProgress({ current: 0, total: 0 });
     }
-  };
+  }, [toast]);
 
-  const handleMappingConfirm = async (mappings: FieldMapping[]) => {
+  const handleMappingConfirm = useCallback(async (mappings: FieldMapping[]) => {
     setShowMappingDialog(false);
     if (pendingFile) {
-      await importCSVData(pendingFile, mappings);
-      setPendingFile(null);
-      setCsvHeaders([]);
+      try {
+        await importCSVData(pendingFile, mappings);
+      } finally {
+        setPendingFile(null);
+        setCsvHeaders([]);
+      }
     }
-  };
+  }, [pendingFile, importCSVData]);
+
+  const resetImportState = useCallback(() => {
+    setImportResult(null);
+    setImportProgress({ current: 0, total: 0 });
+  }, []);
 
   return {
     isImporting,
     importProgress,
     importResult,
     startImport,
-    setImportResult,
+    setImportResult: resetImportState,
     showMappingDialog,
     setShowMappingDialog,
     csvHeaders,
