@@ -18,6 +18,7 @@ const Section8 = () => {
     mapboxToken,
     selectedOffice,
     selectedLocation,
+    filteredLocation,
     tokenError,
     mapRef,
     phaAgencies,
@@ -31,6 +32,7 @@ const Section8 = () => {
     handlePageChange,
     handleCitySelect,
     setSelectedLocation,
+    clearLocationFilter,
   } = useMapLogic();
 
   const [viewState, setViewState] = React.useState<ViewState>('overview');
@@ -90,7 +92,7 @@ const Section8 = () => {
       
       default:
         return (
-          <OfficeDetailsPanel 
+          <OfficeDetailsPanel
             selectedOffice={selectedOffice}
             onOfficeClick={handleOfficeClick}
             phaAgencies={phaAgencies}
@@ -99,6 +101,9 @@ const Section8 = () => {
             totalPages={totalPages}
             totalCount={totalCount}
             onPageChange={handlePageChange}
+            onShowAll={clearLocationFilter}
+            hasFilter={!!filteredLocation}
+            filteredLocation={filteredLocation}
           />
         );
     }

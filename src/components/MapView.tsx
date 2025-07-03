@@ -20,6 +20,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const {
     mapboxToken,
     selectedOffice,
+    filteredLocation,
     tokenError,
     showFilters,
     mapRef,
@@ -35,7 +36,8 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
     handleCitySelect,
     handlePageChange,
     resetToUSView,
-    setSelectedLocation
+    setSelectedLocation,
+    clearLocationFilter
   } = useMapLogic();
 
   const [viewState, setViewState] = useState<ViewState>('overview');
@@ -110,7 +112,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
       
       default:
         return (
-          <OfficeDetailsPanel 
+          <OfficeDetailsPanel
             selectedOffice={selectedOffice}
             onOfficeClick={handleOfficeClick}
             phaAgencies={phaAgencies}
@@ -119,6 +121,9 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
             totalPages={totalPages}
             totalCount={totalCount}
             onPageChange={handlePageChange}
+            onShowAll={clearLocationFilter}
+            hasFilter={!!filteredLocation}
+            filteredLocation={filteredLocation}
           />
         );
     }

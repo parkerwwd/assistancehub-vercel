@@ -5,6 +5,8 @@ import OfficeDetailCard from "./OfficeDetailCard";
 import PHAOfficeCard from "./PHAOfficeCard";
 import EmptyOfficeState from "./EmptyOfficeState";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { USLocation } from "@/data/usLocations";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -17,17 +19,23 @@ interface OfficeDetailsPanelProps {
   totalPages?: number;
   totalCount?: number;
   onPageChange?: (page: number) => void;
+  onShowAll?: () => void;
+  hasFilter?: boolean;
+  filteredLocation?: USLocation | null;
 }
 
-const OfficeDetailsPanel = ({ 
-  selectedOffice, 
-  onOfficeClick, 
-  phaAgencies, 
+const OfficeDetailsPanel = ({
+  selectedOffice,
+  onOfficeClick,
+  phaAgencies,
   loading,
   currentPage = 1,
   totalPages = 1,
   totalCount = 0,
-  onPageChange
+  onPageChange,
+  onShowAll,
+  hasFilter = false,
+  filteredLocation
 }: OfficeDetailsPanelProps) => {
   console.log('🏢 OfficeDetailsPanel render:', {
     selectedOffice: selectedOffice?.name || 'none',
@@ -66,11 +74,27 @@ const OfficeDetailsPanel = ({
     return (
       <div className="h-full overflow-y-auto flex flex-col">
         <div className="p-4 border-b bg-gray-50 flex-shrink-0">
-          <h3 className="text-lg font-semibold text-gray-900">PHA Offices</h3>
-          <p className="text-sm text-gray-600 mt-1">
-            Showing {phaAgencies.length} of {totalCount} offices
-            {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                PHA Offices{filteredLocation ? ` in ${filteredLocation.name}` : ''}
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Showing {phaAgencies.length} of {totalCount} offices
+                {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
+              </p>
+            </div>
+            {hasFilter && onShowAll && (
+              <Button
+                onClick={onShowAll}
+                variant="outline"
+                size="sm"
+                className="ml-4"
+              >
+                Show All
+              </Button>
+            )}
+          </div>
         </div>
         
         <div className="flex-1 p-4 space-y-3 overflow-y-auto">
@@ -139,7 +163,7 @@ const OfficeDetailsPanel = ({
   }
 
   // Default empty state
-  return <EmptyOfficeState loading={loading} />;
+  return <EmptyOfficeState loading={loading} onShowAll={onShowAll} hasFilter={hasFilter} />;
 };
 
 export default OfficeDetailsPanel;

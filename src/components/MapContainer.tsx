@@ -118,7 +118,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         markerManager.current.resetToOverviewStyle(map.current);
       }
     }
-  }, [selectedOffice, mapboxToken]);
+  }, [selectedOffice, mapboxToken, onOfficeSelect]);
 
   // Handle selected location changes
   useEffect(() => {
@@ -128,6 +128,17 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       markerManager.current.clearLocationMarker();
     }
   }, [selectedLocation]);
+
+  // Handle PHA agencies changes - show markers for all filtered agencies
+  useEffect(() => {
+    if (map.current?.loaded() && phaAgencies && phaAgencies.length > 0 && !selectedOffice) {
+      console.log('🗺️ Updating agency markers for', phaAgencies.length, 'agencies');
+      markerManager.current.addAllAgencyMarkers(map.current, phaAgencies, onOfficeSelect);
+    } else if (map.current?.loaded() && (!phaAgencies || phaAgencies.length === 0 || selectedOffice)) {
+      // Clear agency markers when no agencies or when an office is selected
+      markerManager.current.clearAllAgencyMarkers();
+    }
+  }, [phaAgencies, selectedOffice, onOfficeSelect]);
 
   return (
     <div className="relative w-full h-full">

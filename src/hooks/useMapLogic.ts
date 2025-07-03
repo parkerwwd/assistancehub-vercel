@@ -18,11 +18,14 @@ export const useMapLogic = () => {
 
   const {
     phaAgencies,
+    filteredLocation,
     loading,
     currentPage,
     totalPages,
     totalCount,
-    goToPage
+    goToPage,
+    applyLocationFilter,
+    clearLocationFilter
   } = usePHAData();
 
   // Token is now hardcoded, so this function is a no-op
@@ -37,20 +40,23 @@ export const useMapLogic = () => {
 
   const handleCitySelect = async (location: USLocation) => {
     console.log('🏙️ Selected location:', location.name, location.type);
-    
+
     // Clear any selected office first
     setSelectedOffice(null);
-    
+
+    // Apply location filter to PHA agencies
+    applyLocationFilter(location);
+
     // Set selected location for marker
     const locationData = {
       lat: location.latitude,
       lng: location.longitude,
-      name: location.type === 'state' ? location.name : 
+      name: location.type === 'state' ? location.name :
             location.type === 'county' ? `${location.name}, ${location.stateCode}` :
             `${location.name}, ${location.stateCode}`
     };
     setSelectedLocation(locationData);
-    
+
     // Determine appropriate zoom level based on location type
     let zoomLevel = 10;
     if (location.type === 'state') {
@@ -60,12 +66,12 @@ export const useMapLogic = () => {
     } else if (location.type === 'city') {
       zoomLevel = 10;
     }
-    
+
     // Fly to the selected location with appropriate zoom level
     if (mapRef.current) {
       console.log('🗺️ Flying to location coordinates:', { lat: location.latitude, lng: location.longitude, zoom: zoomLevel });
       mapRef.current.flyTo([location.longitude, location.latitude], zoomLevel);
-      
+
       // Add location marker
       setTimeout(() => {
         mapRef.current?.setLocationMarker(location.latitude, location.longitude, locationData.name);
@@ -156,6 +162,7 @@ export const useMapLogic = () => {
     console.log('🇺🇸 Resetting to US view');
     setSelectedOffice(null);
     setSelectedLocation(null);
+    clearLocationFilter(); // Clear the location filter to show all agencies
     if (mapRef.current) {
       // Center on continental US with appropriate zoom to match reference image
       mapRef.current.flyTo([-95.7129, 37.0902], 4);
@@ -166,6 +173,7 @@ export const useMapLogic = () => {
     mapboxToken,
     selectedOffice,
     selectedLocation,
+    filteredLocation,
     tokenError,
     showFilters,
     mapRef,
@@ -181,6 +189,7 @@ export const useMapLogic = () => {
     handleTokenChange,
     handleCitySelect,
     handlePageChange,
-    resetToUSView
+    resetToUSView,
+    clearLocationFilter
   };
 };
