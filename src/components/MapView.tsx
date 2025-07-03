@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "./OfficeDetailsPanel";
@@ -8,6 +9,7 @@ import MapFilters from "./MapFilters";
 import MapContainer from "./MapContainer";
 import { useMapLogic } from "@/hooks/useMapLogic";
 import { Database } from "@/integrations/supabase/types";
+import { X } from "lucide-react";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
@@ -28,13 +30,15 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
     currentPage,
     totalPages,
     totalCount,
+    locationFilter,
     setSelectedOffice,
     setTokenError,
     setShowFilters,
     handleTokenChange,
     handleCitySelect,
     handlePageChange,
-    resetToUSView
+    resetToUSView,
+    clearLocationFilter
   } = useMapLogic();
 
   const [viewState, setViewState] = useState<ViewState>('overview');
@@ -108,16 +112,36 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
       
       default:
         return (
-          <OfficeDetailsPanel 
-            selectedOffice={selectedOffice}
-            onOfficeClick={handleOfficeClick}
-            phaAgencies={phaAgencies}
-            loading={loading}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={totalCount}
-            onPageChange={handlePageChange}
-          />
+          <div className="h-full flex flex-col">
+            {/* Location filter indicator */}
+            {locationFilter && (
+              <div className="p-4 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-700 font-medium">📍 Filtered by:</span>
+                  <span className="text-blue-800">{locationFilter}</span>
+                  <span className="text-blue-600 text-sm">({totalCount} results)</span>
+                </div>
+                <button
+                  onClick={clearLocationFilter}
+                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  <X className="w-4 h-4" />
+                  Clear filter
+                </button>
+              </div>
+            )}
+            
+            <OfficeDetailsPanel 
+              selectedOffice={selectedOffice}
+              onOfficeClick={handleOfficeClick}
+              phaAgencies={phaAgencies}
+              loading={loading}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              onPageChange={handlePageChange}
+            />
+          </div>
         );
     }
   };

@@ -8,6 +8,7 @@ import MapContainer from "@/components/MapContainer";
 import Header from "@/components/Header";
 import { useMapLogic } from "@/hooks/useMapLogic";
 import { Database } from "@/integrations/supabase/types";
+import { X } from "lucide-react";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
@@ -26,11 +27,13 @@ const Section8 = () => {
     currentPage,
     totalPages,
     totalCount,
+    locationFilter,
     setSelectedOffice,
     setTokenError,
     handleTokenChange,
     handlePageChange,
     handleCitySelect,
+    clearLocationFilter,
   } = useMapLogic();
 
   const [viewState, setViewState] = React.useState<ViewState>('overview');
@@ -89,16 +92,36 @@ const Section8 = () => {
       
       default:
         return (
-          <OfficeDetailsPanel 
-            selectedOffice={selectedOffice}
-            onOfficeClick={handleOfficeClick}
-            phaAgencies={phaAgencies}
-            loading={loading}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={totalCount}
-            onPageChange={handlePageChange}
-          />
+          <div className="h-full flex flex-col">
+            {/* Location filter indicator */}
+            {locationFilter && (
+              <div className="p-4 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-700 font-medium">📍 Filtered by:</span>
+                  <span className="text-blue-800">{locationFilter}</span>
+                  <span className="text-blue-600 text-sm">({totalCount} results)</span>
+                </div>
+                <button
+                  onClick={clearLocationFilter}
+                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  <X className="w-4 h-4" />
+                  Clear filter
+                </button>
+              </div>
+            )}
+            
+            <OfficeDetailsPanel 
+              selectedOffice={selectedOffice}
+              onOfficeClick={handleOfficeClick}
+              phaAgencies={phaAgencies}
+              loading={loading}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              onPageChange={handlePageChange}
+            />
+          </div>
         );
     }
   };

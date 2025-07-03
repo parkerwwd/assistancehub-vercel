@@ -13,16 +13,33 @@ export const useMapLogic = () => {
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; name: string } | null>(null);
   const [tokenError, setTokenError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [locationFilter, setLocationFilter] = useState<string>("");
   const mapRef = useRef<MapContainerRef>(null);
   
   const { 
-    phaAgencies, 
+    phaAgencies: allPHAAgencies, 
     loading, 
     currentPage,
     totalPages,
     totalCount,
     goToPage 
   } = usePHAData();
+
+  // Filter PHA agencies based on selected location
+  const filteredPHAAgencies = locationFilter 
+    ? allPHAAgencies.filter(agency => {
+        const searchTerms = locationFilter.toLowerCase().split(',').map(term => term.trim());
+        const agencyText = [
+          agency.address,
+          agency.city,
+          agency.state,
+          agency.zip
+        ].filter(Boolean).join(' ').toLowerCase();
+        
+        // Check if any search term matches the agency's location data
+        return searchTerms.some(term => agencyText.includes(term));
+      })
+    : allPHAAgencies;
 
   // Load token from localStorage on component mount, or use provided token
   useEffect(() => {
@@ -56,6 +73,11 @@ export const useMapLogic = () => {
     
     // Clear any selected office first
     setSelectedOffice(null);
+    
+    // Set location filter for office list filtering
+    const locationFilterText = `${city.name}, ${city.stateCode}`;
+    setLocationFilter(locationFilterText);
+    console.log('🔍 Setting location filter:', locationFilterText);
     
     // Set selected location for marker
     const location = {
@@ -160,10 +182,17 @@ export const useMapLogic = () => {
     console.log('🇺🇸 Resetting to US view');
     setSelectedOffice(null);
     setSelectedLocation(null);
+    setLocationFilter(""); // Clear location filter
     if (mapRef.current) {
       // Center on continental US with appropriate zoom to match reference image
       mapRef.current.flyTo([-95.7129, 37.0902], 4);
     }
+  };
+
+  const clearLocationFilter = () => {
+    console.log('🧹 Clearing location filter');
+    setLocationFilter("");
+    setSelectedLocation(null);
   };
 
   return {
@@ -173,17 +202,19 @@ export const useMapLogic = () => {
     tokenError,
     showFilters,
     mapRef,
-    phaAgencies,
+    phaAgencies: filteredPHAAgencies,
     loading,
     currentPage,
     totalPages,
-    totalCount,
+    totalCount: locationFilter ? filteredPHAAgencies.length : totalCount,
+    locationFilter,
     setSelectedOffice: handleOfficeSelect,
     setTokenError,
     setShowFilters,
     handleTokenChange,
     handleCitySelect,
     handlePageChange,
-    resetToUSView
+    resetToUSView,
+    clearLocationFilter
   };
 };
