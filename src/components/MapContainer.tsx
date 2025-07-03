@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -70,6 +71,15 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         width: 32px;
         height: 40px;
         cursor: pointer;
+      `;
+      
+      // Create inner container for hover effects
+      const innerContainer = document.createElement('div');
+      innerContainer.className = 'location-marker-inner';
+      innerContainer.style.cssText = `
+        position: relative;
+        width: 100%;
+        height: 100%;
         filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
         transition: transform 0.2s ease;
       `;
@@ -178,17 +188,17 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         "></div>
       `;
       
-      // Add hover events
+      // Add hover events to the marker element, but apply transform to inner container
       markerElement.addEventListener('mouseenter', () => {
         hoverCard.style.opacity = '1';
         hoverCard.style.visibility = 'visible';
-        markerElement.style.transform = 'scale(1.1)';
+        innerContainer.style.transform = 'scale(1.1)';
       });
       
       markerElement.addEventListener('mouseleave', () => {
         hoverCard.style.opacity = '0';
         hoverCard.style.visibility = 'hidden';
-        markerElement.style.transform = 'scale(1)';
+        innerContainer.style.transform = 'scale(1)';
       });
       
       // Add CSS animation for pulse
@@ -210,9 +220,6 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
               opacity: 0;
             }
           }
-          .location-marker-container:hover {
-            transform: scale(1.1);
-          }
           .location-hover-card {
             font-family: system-ui, -apple-system, sans-serif;
           }
@@ -221,8 +228,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       }
       
       pinShape.appendChild(innerDot);
-      markerElement.appendChild(pulseRing);
-      markerElement.appendChild(pinShape);
+      innerContainer.appendChild(pulseRing);
+      innerContainer.appendChild(pinShape);
+      markerElement.appendChild(innerContainer);
       markerElement.appendChild(hoverCard);
       
       // Add location marker with custom popup
