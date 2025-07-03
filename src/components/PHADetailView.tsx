@@ -45,21 +45,25 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
   const generateMapboxImageUrl = () => {
     const mapboxToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjelhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
     
-    // Use coordinates if available, otherwise use address for geocoding
+    // Use coordinates if available
     let lat = office.latitude || (office as any).geocoded_latitude;
     let lng = office.longitude || (office as any).geocoded_longitude;
     
     if (lat && lng) {
       // Create a satellite view with a marker at the exact location
-      return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-s-building+ff0000(${lng},${lat})/${lng},${lat},15,0,60/800x400@2x?access_token=${mapboxToken}`;
-    } else if (fullAddress) {
-      // If no coordinates, use the address for static map generation
+      return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-s-building+ff0000(${lng},${lat})/${lng},${lat},15,0,60/400x300@2x?access_token=${mapboxToken}`;
+    }
+    
+    // If no coordinates but we have an address, try to create a static map with the address
+    if (fullAddress) {
+      // Use a simpler approach - just show a satellite view of the general area
+      // We'll use a default zoom level and let Mapbox handle the geocoding
       const encodedAddress = encodeURIComponent(fullAddress);
-      return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/url-https%3A%2F%2Fi.imgur.com%2FMK4NUzI.png(${encodedAddress})/auto/800x400@2x?access_token=${mapboxToken}`;
+      return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/auto/400x300@2x?access_token=${mapboxToken}&location=${encodedAddress}`;
     }
     
     // Fallback to a generic building image
-    return "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800&h=400&fit=crop&crop=center";
+    return "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=400&h=300&fit=crop&crop=center";
   };
 
   const mapboxImageUrl = generateMapboxImageUrl();
