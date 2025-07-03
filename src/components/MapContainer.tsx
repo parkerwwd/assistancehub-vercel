@@ -3,8 +3,9 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Database } from "@/integrations/supabase/types";
-import { getWaitlistColor } from "@/utils/mapUtils";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { LocationMarker } from "./map/LocationMarker";
+import { MarkerUtils } from "./map/MarkerUtils";
+import { MapControls } from "./map/MapControls";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -37,6 +38,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
   const locationMarker = useRef<mapboxgl.Marker | null>(null);
+  const locationMarkerHelper = useRef<LocationMarker>(new LocationMarker());
 
   useImperativeHandle(ref, () => ({
     flyTo: (center: [number, number], zoom: number) => {
@@ -63,194 +65,10 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         locationMarker.current.remove();
       }
       
-      // Create a better custom marker element for location
-      const markerElement = document.createElement('div');
-      markerElement.className = 'location-marker-container';
-      markerElement.style.cssText = `
-        position: relative;
-        width: 32px;
-        height: 40px;
-        cursor: pointer;
-      `;
-      
-      // Create inner container for hover effects
-      const innerContainer = document.createElement('div');
-      innerContainer.className = 'location-marker-inner';
-      innerContainer.style.cssText = `
-        position: relative;
-        width: 100%;
-        height: 100%;
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-        transition: transform 0.2s ease;
-      `;
-      
-      // Add the main pin shape
-      const pinShape = document.createElement('div');
-      pinShape.style.cssText = `
-        width: 32px;
-        height: 32px;
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        border: 3px solid white;
-        border-radius: 50% 50% 50% 0;
-        transform: rotate(-45deg);
-        position: relative;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      `;
-      
-      // Add the inner dot
-      const innerDot = document.createElement('div');
-      innerDot.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 8px;
-        height: 8px;
-        background: white;
-        border-radius: 50%;
-        transform: translate(-50%, -50%) rotate(45deg);
-      `;
-      
-      // Add pulse animation
-      const pulseRing = document.createElement('div');
-      pulseRing.className = 'pulse-ring';
-      pulseRing.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 40px;
-        height: 40px;
-        border: 2px solid #ef4444;
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        animation: pulse 2s infinite;
-        opacity: 0.6;
-      `;
-      
-      // Create hover card for location image
-      const hoverCard = document.createElement('div');
-      hoverCard.className = 'location-hover-card';
-      hoverCard.style.cssText = `
-        position: absolute;
-        bottom: 50px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-        padding: 12px;
-        min-width: 200px;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        z-index: 1000;
-        pointer-events: none;
-      `;
-      
-      // Get a relevant city image (using placeholder service)
-      const cityImageUrl = `https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=200&fit=crop&auto=format`;
-      
-      hoverCard.innerHTML = `
-        <div style="text-align: center;">
-          <img 
-            src="${cityImageUrl}" 
-            alt="${name}" 
-            style="
-              width: 180px; 
-              height: 120px; 
-              object-fit: cover; 
-              border-radius: 8px; 
-              margin-bottom: 8px;
-            "
-            onError="this.src='https://images.unsplash.com/photo-1472396961693-142e6e269027?w=300&h=200&fit=crop&auto=format'"
-          />
-          <div style="
-            font-family: system-ui, -apple-system, sans-serif;
-            font-weight: 600;
-            color: #1f2937;
-            font-size: 14px;
-            margin-bottom: 4px;
-          ">📍 ${name}</div>
-          <div style="
-            font-size: 12px;
-            color: #6b7280;
-          ">Selected Location</div>
-        </div>
-        <div style="
-          position: absolute;
-          bottom: -6px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 0;
-          height: 0;
-          border-left: 6px solid transparent;
-          border-right: 6px solid transparent;
-          border-top: 6px solid white;
-        "></div>
-      `;
-      
-      // Add hover events to the marker element, but apply transform to inner container
-      markerElement.addEventListener('mouseenter', () => {
-        hoverCard.style.opacity = '1';
-        hoverCard.style.visibility = 'visible';
-        innerContainer.style.transform = 'scale(1.1)';
-      });
-      
-      markerElement.addEventListener('mouseleave', () => {
-        hoverCard.style.opacity = '0';
-        hoverCard.style.visibility = 'hidden';
-        innerContainer.style.transform = 'scale(1)';
-      });
-      
-      // Add CSS animation for pulse
-      if (!document.querySelector('#location-marker-styles')) {
-        const style = document.createElement('style');
-        style.id = 'location-marker-styles';
-        style.textContent = `
-          @keyframes pulse {
-            0% {
-              transform: translate(-50%, -50%) scale(0.8);
-              opacity: 0.8;
-            }
-            50% {
-              transform: translate(-50%, -50%) scale(1.2);
-              opacity: 0.4;
-            }
-            100% {
-              transform: translate(-50%, -50%) scale(1.6);
-              opacity: 0;
-            }
-          }
-          .location-hover-card {
-            font-family: system-ui, -apple-system, sans-serif;
-          }
-        `;
-        document.head.appendChild(style);
-      }
-      
-      pinShape.appendChild(innerDot);
-      innerContainer.appendChild(pulseRing);
-      innerContainer.appendChild(pinShape);
-      markerElement.appendChild(innerContainer);
-      markerElement.appendChild(hoverCard);
-      
-      // Add location marker with custom popup
-      locationMarker.current = new mapboxgl.Marker({ 
-        element: markerElement,
-        anchor: 'bottom'
-      })
-        .setLngLat([lng, lat])
-        .setPopup(
-          new mapboxgl.Popup({ 
-            offset: [0, -40],
-            closeButton: true,
-            className: 'location-popup'
-          }).setHTML(`
-            <div style="padding: 8px 12px; font-family: system-ui, -apple-system, sans-serif;">
-              <div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">📍 ${name}</div>
-              <div style="font-size: 12px; color: #6b7280;">Selected Location</div>
-            </div>
-          `)
-        )
+      // Create new location marker
+      locationMarker.current = locationMarkerHelper.current.create({ lat, lng, name });
+      locationMarker.current
+        .setPopup(MarkerUtils.createLocationPopup(name))
         .addTo(map.current);
         
       console.log('📍 Added enhanced location marker with hover image for:', name, 'at', { lat, lng });
@@ -277,48 +95,16 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     
     clearMarkers();
     
-    // Use original coordinates or geocoded coordinates
-    const lat = selectedOffice.latitude || (selectedOffice as any).geocoded_latitude;
-    const lng = selectedOffice.longitude || (selectedOffice as any).geocoded_longitude;
-    
-    if (lat && lng) {
-      console.log('📍 Adding marker for selected office:', selectedOffice.name, 'at', { lat, lng });
+    try {
+      console.log('📍 Adding marker for selected office:', selectedOffice.name);
       
-      const marker = new mapboxgl.Marker({
-        color: getWaitlistColor(selectedOffice.waitlist_status || 'Unknown'),
-        scale: 1.0
-      })
-        .setLngLat([lng, lat])
-        .addTo(map.current!);
-
-      // Add click handler to marker
-      marker.getElement().addEventListener('click', () => {
-        console.log('🎯 Marker clicked:', selectedOffice.name);
-        onOfficeSelect(selectedOffice);
-      });
-
-      // Add hover effect
-      marker.getElement().style.cursor = 'pointer';
-      marker.getElement().addEventListener('mouseenter', () => {
-        marker.getElement().style.transform = 'scale(1.1)';
-      });
-      marker.getElement().addEventListener('mouseleave', () => {
-        marker.getElement().style.transform = 'scale(1)';
-      });
-
+      const marker = MarkerUtils.createOfficeMarker(selectedOffice, onOfficeSelect);
+      marker.addTo(map.current);
       markers.current.push(marker);
       
       console.log('✅ Added marker for selected office:', selectedOffice.name);
-    } else {
-      console.warn('⚠️ No coordinates for selected office:', selectedOffice.name);
-    }
-  };
-
-  // Handle bounds change
-  const handleBoundsChange = () => {
-    if (map.current && onBoundsChange) {
-      const bounds = map.current.getBounds();
-      onBoundsChange(bounds);
+    } catch (error) {
+      console.warn('⚠️ Failed to add marker for office:', selectedOffice.name, error);
     }
   };
 
@@ -329,39 +115,13 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     onTokenError("");
 
     try {
-      mapboxgl.accessToken = mapboxToken.trim();
+      map.current = MapControls.createMap(mapContainer.current, mapboxToken);
       
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
-        center: [-95.7129, 37.0902], // Center on continental US
-        zoom: 4, // Proper zoom level to show full US like in reference image
-        minZoom: 3,
-        maxZoom: 18
-      });
-
       // Add navigation controls
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-      // Handle map load errors
-      map.current.on('error', (e) => {
-        console.error('Map error:', e);
-        if (e.error && 'status' in e.error && e.error.status === 401) {
-          onTokenError("Invalid Mapbox token. Please check your token and try again.");
-        } else {
-          onTokenError("Error loading map. Please check your token and try again.");
-        }
-      });
-
-      // Setup map when it loads - show full US view initially
-      map.current.on('load', () => {
-        console.log('🗺️ Map loaded successfully - showing full US view');
-        handleBoundsChange();
-      });
-
-      // Listen for bounds changes
-      map.current.on('moveend', handleBoundsChange);
-      map.current.on('zoomend', handleBoundsChange);
+      MapControls.addNavigationControls(map.current);
+      
+      // Setup map events
+      MapControls.setupMapEvents(map.current, onTokenError, onBoundsChange);
 
       return () => {
         clearMarkers();
@@ -391,10 +151,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   useEffect(() => {
     if (map.current?.loaded() && selectedLocation) {
       console.log('🗺️ Selected location changed, adding location marker');
-      // Clear location marker when no location is selected
-      if (!selectedLocation) {
-        clearLocationMarker();
-      }
+    } else if (map.current?.loaded() && !selectedLocation) {
+      clearLocationMarker();
     }
   }, [selectedLocation]);
 

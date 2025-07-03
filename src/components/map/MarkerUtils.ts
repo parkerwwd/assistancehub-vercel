@@ -1,0 +1,53 @@
+
+import mapboxgl from 'mapbox-gl';
+import { Database } from "@/integrations/supabase/types";
+import { getWaitlistColor } from "@/utils/mapUtils";
+
+type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
+
+export class MarkerUtils {
+  static createOfficeMarker(office: PHAAgency, onOfficeSelect: (office: PHAAgency) => void): mapboxgl.Marker {
+    const lat = office.latitude || (office as any).geocoded_latitude;
+    const lng = office.longitude || (office as any).geocoded_longitude;
+    
+    if (!lat || !lng) {
+      throw new Error(`No coordinates for office: ${office.name}`);
+    }
+
+    const marker = new mapboxgl.Marker({
+      color: getWaitlistColor(office.waitlist_status || 'Unknown'),
+      scale: 1.0
+    }).setLngLat([lng, lat]);
+
+    // Add click handler
+    marker.getElement().addEventListener('click', () => {
+      console.log('🎯 Marker clicked:', office.name);
+      onOfficeSelect(office);
+    });
+
+    // Add hover effects
+    const element = marker.getElement();
+    element.style.cursor = 'pointer';
+    element.addEventListener('mouseenter', () => {
+      element.style.transform = 'scale(1.1)';
+    });
+    element.addEventListener('mouseleave', () => {
+      element.style.transform = 'scale(1)';
+    });
+
+    return marker;
+  }
+
+  static createLocationPopup(name: string): mapboxgl.Popup {
+    return new mapboxgl.Popup({ 
+      offset: [0, -40],
+      closeButton: true,
+      className: 'location-popup'
+    }).setHTML(`
+      <div style="padding: 8px 12px; font-family: system-ui, -apple-system, sans-serif;">
+        <div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">📍 ${name}</div>
+        <div style="font-size: 12px; color: #6b7280;">Selected Location</div>
+      </div>
+    `);
+  }
+}
