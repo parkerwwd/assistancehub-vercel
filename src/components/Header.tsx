@@ -13,6 +13,30 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onCitySelect, onSearch, showSearch = false }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearchFromHeader = (query: string) => {
+    console.log('🔍 Header search triggered with:', query);
+    setSearchQuery(query);
+    if (onSearch) {
+      onSearch(query);
+    }
+  };
+
+  const handleCitySelectFromHeader = (city: USCity) => {
+    console.log('🏙️ Header city selected:', city);
+    if (onCitySelect) {
+      onCitySelect(city);
+    }
+  };
+
+  const triggerSearch = () => {
+    if (searchQuery.trim() && onSearch) {
+      console.log('🔍 Triggering search from target button:', searchQuery);
+      onSearch(searchQuery);
+    }
+  };
+
   return (
     <>
       {/* Disclaimer banner */}
@@ -39,13 +63,19 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, onSearch, showSearch = fa
                     <Search className="w-5 h-5 text-gray-400 mr-3" />
                     <div className="flex-1">
                       <CitySearch 
-                        onCitySelect={onCitySelect}
-                        onSearch={onSearch}
+                        onCitySelect={handleCitySelectFromHeader}
+                        onSearch={handleSearchFromHeader}
                         placeholder="City, County, or Zipcode"
                         variant="header"
                       />
                     </div>
-                    <Target className="w-5 h-5 text-gray-600 ml-3" />
+                    <button 
+                      onClick={triggerSearch}
+                      className="ml-3 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                      disabled={!searchQuery.trim()}
+                    >
+                      <Target className="w-5 h-5 text-gray-600" />
+                    </button>
                   </div>
                 </div>
               </div>

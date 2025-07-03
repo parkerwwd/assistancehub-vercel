@@ -24,13 +24,23 @@ const Section8 = () => {
     currentSearchQuery
   });
 
+  const handleHeaderCitySelect = (city: any) => {
+    console.log('🏙️ Section8 received city selection:', city);
+    handleCitySelect(city);
+  };
+
+  const handleHeaderSearch = (query: string) => {
+    console.log('🔍 Section8 received search query:', query);
+    handleSearch(query);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* New Header with Search */}
+      {/* Header with Search */}
       <Header 
         showSearch={true}
-        onCitySelect={handleCitySelect}
-        onSearch={handleSearch}
+        onCitySelect={handleHeaderCitySelect}
+        onSearch={handleHeaderSearch}
       />
 
       {/* Map Container */}

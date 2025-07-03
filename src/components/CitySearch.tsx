@@ -52,7 +52,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
     setSearchQuery(cityQuery);
     setShowSuggestions(false);
     
-    console.log('City selected, triggering search for:', cityQuery);
+    console.log('🏙️ City selected in CitySearch:', cityQuery);
     
     // Trigger both city selection logic and search
     onCitySelect(city);
@@ -73,6 +73,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      console.log('🔍 Enter key pressed, triggering search with:', searchQuery);
       handleSearchClick();
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
@@ -80,12 +81,19 @@ const CitySearch: React.FC<CitySearchProps> = ({
   };
 
   const handleInputChange = (value: string) => {
+    console.log('📝 Input changed to:', value);
     setSearchQuery(value);
   };
 
   const handleInputBlur = () => {
     // Delay hiding suggestions to allow for clicks
     setTimeout(() => setShowSuggestions(false), 200);
+  };
+
+  const handleInputFocus = () => {
+    if (searchQuery.length > 1) {
+      setShowSuggestions(true);
+    }
   };
 
   if (variant === 'header') {
@@ -97,7 +105,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
           value={searchQuery}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyPress}
-          onFocus={() => searchQuery.length > 1 && setShowSuggestions(true)}
+          onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base"
         />
@@ -133,7 +141,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
             value={searchQuery}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyPress}
-            onFocus={() => searchQuery.length > 1 && setShowSuggestions(true)}
+            onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             className="w-full h-9 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-500"
           />
