@@ -2,12 +2,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Download, Upload } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FieldMappingRow } from './fieldMapping/FieldMappingRow';
+import { downloadMappingTemplate, getRequiredFieldStatus } from './fieldMapping/utils';
+import { COMMON_MAPPINGS } from './fieldMapping/constants';
 
 export interface FieldMapping {
   csvField: string;
@@ -21,50 +21,6 @@ interface FieldMappingDialogProps {
   onMappingConfirm: (mappings: FieldMapping[]) => void;
   defaultMappings?: FieldMapping[];
 }
-
-const DATABASE_FIELDS = [
-  { key: 'pha_code', label: 'PHA Code', description: 'Unique identifier for the PHA' },
-  { key: 'name', label: 'PHA Name', description: 'Official name of the housing authority', required: true },
-  { key: 'address', label: 'Address', description: 'Street address' },
-  { key: 'city', label: 'City', description: 'City name' },
-  { key: 'state', label: 'State', description: 'State abbreviation (2 letters)' },
-  { key: 'zip', label: 'ZIP Code', description: 'Postal code' },
-  { key: 'phone', label: 'Phone', description: 'Contact phone number' },
-  { key: 'email', label: 'Email', description: 'Contact email address' },
-  { key: 'website', label: 'Website', description: 'Official website URL' },
-  { key: 'supports_hcv', label: 'Supports HCV', description: 'Housing Choice Voucher support (Section 8)' },
-  { key: 'waitlist_status', label: 'Waitlist Status', description: 'Current waitlist status' },
-  { key: 'latitude', label: 'Latitude', description: 'Geographic latitude coordinate' },
-  { key: 'longitude', label: 'Longitude', description: 'Geographic longitude coordinate' },
-];
-
-const COMMON_MAPPINGS = {
-  'PARTICIPANT_CODE': 'pha_code',
-  'FORMAL_PARTICIPANT_NAME': 'name',
-  'PARTICIPANT_NAME': 'name',
-  'PHA_NAME': 'name',
-  'STD_ADDR': 'address',
-  'ADDRESS': 'address',
-  'FULL_ADDRESS': 'address',
-  'STD_CITY': 'city',
-  'CITY': 'city',
-  'STD_ST': 'state',
-  'STATE': 'state',
-  'STD_ZIP5': 'zip',
-  'ZIP': 'zip',
-  'HA_PHN_NUM': 'phone',
-  'PHONE': 'phone',
-  'HA_EMAIL_ADDR_TEXT': 'email',
-  'EXEC_DIR_EMAIL': 'email',
-  'EMAIL': 'email',
-  'WEBSITE': 'website',
-  'LAT': 'latitude',
-  'LATITUDE': 'latitude',
-  'LON': 'longitude',
-  'LONGITUDE': 'longitude',
-  'HA_PROGRAM_TYPE': 'supports_hcv',
-  'WAITLIST_STATUS': 'waitlist_status',
-};
 
 export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
   open,
@@ -122,35 +78,12 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
     return mappings.filter(m => m.dbField && m.dbField !== 'skip').map(m => m.dbField);
   };
 
-  const getRequiredFieldStatus = () => {
-    const usedFields = getUsedDbFields();
-    const requiredFields = DATABASE_FIELDS.filter(f => f.required).map(f => f.key);
-    const missingRequired = requiredFields.filter(field => !usedFields.includes(field));
-    return { missingRequired, hasRequired: missingRequired.length === 0 };
-  };
-
-  const downloadMappingTemplate = () => {
-    const template = DATABASE_FIELDS.map(field => 
-      `${field.key},${field.label},"${field.description}"`
-    ).join('\n');
-    
-    const blob = new Blob([`Database Field,Label,Description\n${template}`], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'pha_field_mapping_template.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
   const handleConfirm = () => {
     const validMappings = mappings.filter(m => m.dbField && m.dbField !== 'skip');
     onMappingConfirm(validMappings);
   };
 
-  const { missingRequired, hasRequired } = getRequiredFieldStatus();
+  const { missingRequired, hasRequired } = getRequiredFieldStatus(getUsedDbFields());
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -193,42 +126,12 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
           <ScrollArea className="h-[400px] border rounded-lg p-4">
             <div className="space-y-4">
               {mappings.map((mapping, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg">
-                  <div>
-                    <Label className="text-sm font-medium">CSV Column</Label>
-                    <div className="mt-1 p-2 bg-muted rounded border">
-                      <code className="text-sm">{mapping.csvField}</code>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-sm font-medium">Database Field</Label>
-                    <Select 
-                      value={mapping.dbField || 'skip'} 
-                      onValueChange={(value) => updateMapping(mapping.csvField, value === 'skip' ? '' : value)}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select database field..." />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border shadow-lg z-50">
-                        <SelectItem value="skip">-- Skip this field --</SelectItem>
-                        {DATABASE_FIELDS.map(field => (
-                          <SelectItem key={field.key} value={field.key}>
-                            <div className="flex items-center gap-2">
-                              <span>{field.label}</span>
-                              {field.required && <Badge variant="destructive" className="text-xs">Required</Badge>}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {mapping.dbField && mapping.dbField !== 'skip' && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {DATABASE_FIELDS.find(f => f.key === mapping.dbField)?.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
+                <FieldMappingRow
+                  key={index}
+                  csvField={mapping.csvField}
+                  dbField={mapping.dbField}
+                  onMappingChange={updateMapping}
+                />
               ))}
             </div>
           </ScrollArea>
