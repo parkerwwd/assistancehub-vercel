@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import usaMapSvg from '@/assets/usa-map.svg';
 
 const SearchByStateSection = () => {
   const [selectedState, setSelectedState] = useState('');
@@ -59,98 +60,19 @@ const SearchByStateSection = () => {
 
         {/* US Map */}
         <div className="relative max-w-5xl mx-auto">
-          <svg 
-            viewBox="0 0 1000 600" 
-            className="w-full h-auto"
-            style={{ maxHeight: '400px' }}
-          >
-            {/* US Map Background */}
-            <rect width="1000" height="600" fill="#FDE68A" />
-            
-            {/* Simplified US Map Shape */}
-            <path
-              d="M 200 200 L 800 200 L 850 250 L 850 400 L 800 450 L 200 450 L 150 400 L 150 250 Z"
-              fill="#F59E0B"
-              stroke="#FFFFFF"
-              strokeWidth="2"
-            />
-            
-            {/* Alaska */}
-            <rect x="80" y="380" width="60" height="40" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="2" />
-            
-            {/* Hawaii */}
-            <circle cx="180" cy="420" r="8" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="2" />
-            <circle cx="170" cy="430" r="6" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="2" />
-            <circle cx="160" cy="440" r="4" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="2" />
-
-            {/* State Markers */}
-            {/* West Coast */}
-            <circle cx="180" cy="280" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('California')} />
-            <circle cx="190" cy="240" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Oregon')} />
-            <circle cx="200" cy="220" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Washington')} />
-            
-            {/* Mountain West */}
-            <circle cx="250" cy="270" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Nevada')} />
-            <circle cx="280" cy="250" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Idaho')} />
-            <circle cx="300" cy="280" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Utah')} />
-            <circle cx="320" cy="300" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Colorado')} />
-            <circle cx="280" cy="320" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Arizona')} />
-            <circle cx="330" cy="350" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('New Mexico')} />
-            
-            {/* Central States */}
-            <circle cx="380" cy="280" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Wyoming')} />
-            <circle cx="420" cy="320" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Kansas')} />
-            <circle cx="450" cy="340" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Oklahoma')} />
-            <circle cx="400" cy="380" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Texas')} />
-            
-            {/* Midwest */}
-            <circle cx="480" cy="280" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Nebraska')} />
-            <circle cx="520" cy="270" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Iowa')} />
-            <circle cx="510" cy="320" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Missouri')} />
-            <circle cx="500" cy="240" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('South Dakota')} />
-            <circle cx="480" cy="220" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('North Dakota')} />
-            <circle cx="540" cy="250" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Minnesota')} />
-            <circle cx="580" cy="240" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Wisconsin')} />
-            <circle cx="600" cy="280" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Illinois')} />
-            <circle cx="620" cy="270" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Indiana')} />
-            <circle cx="630" cy="290" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Ohio')} />
-            <circle cx="620" cy="250" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Michigan')} />
-            
-            {/* South */}
-            <circle cx="530" cy="350" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Arkansas')} />
-            <circle cx="570" cy="380" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Louisiana')} />
-            <circle cx="550" cy="370" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Mississippi')} />
-            <circle cx="600" cy="360" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Alabama')} />
-            <circle cx="620" cy="340" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Tennessee')} />
-            <circle cx="650" cy="320" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Kentucky')} />
-            <circle cx="680" cy="350" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Georgia')} />
-            <circle cx="720" cy="380" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Florida')} />
-            <circle cx="690" cy="330" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('South Carolina')} />
-            <circle cx="700" cy="310" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('North Carolina')} />
-            
-            {/* East Coast */}
-            <circle cx="720" cy="290" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Virginia')} />
-            <circle cx="750" cy="280" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Maryland')} />
-            <circle cx="760" cy="270" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Delaware')} />
-            <circle cx="750" cy="260" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Pennsylvania')} />
-            <circle cx="780" cy="250" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('New Jersey')} />
-            <circle cx="790" cy="240" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('New York')} />
-            <circle cx="800" cy="230" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Connecticut')} />
-            <circle cx="810" cy="220" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Massachusetts')} />
-            <circle cx="780" cy="210" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Vermont')} />
-            <circle cx="790" cy="200" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('New Hampshire')} />
-            <circle cx="800" cy="190" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Maine')} />
-            <circle cx="820" cy="215" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Rhode Island')} />
-            
-            {/* Special highlight for Iowa (as shown in the reference image) */}
-            <circle cx="520" cy="270" r="8" fill="#DC2626" stroke="#FFFFFF" strokeWidth="2" className="cursor-pointer" onClick={() => handleStateSelect('Iowa')} />
-            
-            {/* Alaska marker */}
-            <circle cx="110" cy="400" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Alaska')} />
-            
-            {/* Hawaii marker */}
-            <circle cx="170" cy="430" r="5" fill="#374151" className="cursor-pointer hover:fill-red-600" onClick={() => handleStateSelect('Hawaii')} />
-          </svg>
+          <img 
+            src={usaMapSvg} 
+            alt="Interactive US Map for Section 8 Housing Search" 
+            className="w-full h-auto cursor-pointer"
+            style={{ maxHeight: '500px' }}
+            onClick={(e) => {
+              // Handle clicks on the map - you can add specific state detection logic here
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              console.log('Map clicked at:', x, y);
+            }}
+          />
         </div>
       </div>
     </section>
