@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,16 +14,44 @@ interface PHADetailViewProps {
 }
 
 const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, onBack }) => {
+  // Helper function to extract city from address or other fields
+  const extractCityFromOfficeData = () => {
+    // Priority order: city field, then extract from phone field, then from address
+    if (office.city && office.city.trim()) {
+      return office.city.trim();
+    }
+    
+    // Check if phone field contains city name (non-numeric data)
+    if (office.phone && !/^[\d\s\-\(\)\+\.]+$/.test(office.phone)) {
+      return office.phone.trim();
+    }
+    
+    // Try to extract city from address (look for common patterns)
+    if (office.address) {
+      const addressParts = office.address.split(',');
+      if (addressParts.length > 1) {
+        // Usually city is the second part in "Street, City, State" format
+        const potentialCity = addressParts[1]?.trim();
+        if (potentialCity && potentialCity.length > 2) {
+          return potentialCity;
+        }
+      }
+    }
+    
+    return null;
+  };
+
   // Build full address, handling the case where city might be in phone field
   const addressParts = [office.address];
+  const extractedCity = extractCityFromOfficeData();
   
   // Check if phone field contains city name (non-numeric data)
   const phoneContainsCity = office.phone && !/^[\d\s\-\(\)\+\.]+$/.test(office.phone);
   
   if (phoneContainsCity) {
     addressParts.push(office.phone);
-  } else if (office.city) {
-    addressParts.push(office.city);
+  } else if (extractedCity) {
+    addressParts.push(extractedCity);
   }
   
   if (office.state) {
@@ -62,10 +89,10 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
   const generateCityImageUrl = () => {
     const mapboxToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjelhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
     
-    // Get city name from phone field or city field
-    const cityName = phoneContainsCity ? office.phone : office.city;
+    const cityName = extractCityFromOfficeData();
     
     if (cityName && office.state) {
+      // Create a geocoding request to get city coordinates and then generate image
       const encodedCity = encodeURIComponent(`${cityName}, ${office.state}`);
       return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/auto/400x300@2x?access_token=${mapboxToken}&location=${encodedCity}`;
     }
@@ -85,9 +112,10 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
       // Update the overlay text
       const overlay = target.parentElement?.querySelector('.image-overlay-text');
       if (overlay) {
+        const cityName = extractCityFromOfficeData();
         overlay.innerHTML = `
           <p class="text-xs font-medium opacity-90">🏙️ City View</p>
-          <p class="text-xs opacity-75 max-w-xs truncate">${phoneContainsCity ? office.phone : office.city}, ${office.state}</p>
+          <p class="text-xs opacity-75 max-w-xs truncate">${cityName}, ${office.state}</p>
         `;
       }
       return;
@@ -142,7 +170,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                 <div className="absolute bottom-3 left-3 text-white image-overlay-text">
                   <p className="text-xs font-medium opacity-90">📍 {addressImageUrl ? 'Satellite View' : 'City View'}</p>
-                  <p className="text-xs opacity-75 max-w-xs truncate">{addressImageUrl ? fullAddress : `${phoneContainsCity ? office.phone : office.city}, ${office.state}`}</p>
+                  <p className="text-xs opacity-75 max-w-xs truncate">{addressImageUrl ? fullAddress : `${extractCityFromOfficeData()}, ${office.state}`}</p>
                 </div>
               </>
             ) : (
