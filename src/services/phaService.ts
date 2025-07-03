@@ -53,7 +53,7 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
   const cityStatePattern = /^(.+?),?\s+(a[lkszrz]|c[aot]|d[ce]|fl|ga|hi|i[adln]|k[sy]|la|m[adeinost]|n[cdehjmvy]|o[hkr]|p[ar]|ri|s[cd]|t[nx]|ut|v[ait]|w[aivy])$/i;
   const cityStateMatch = searchTerm.match(cityStatePattern);
   
-  let searchPromises: Promise<any>[];
+  let searchResults: any[];
   
   if (cityStateMatch) {
     // Handle city, state format - search in multiple fields including address
@@ -62,7 +62,7 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
     
     console.log('🏙️ Parsed city/state:', { city, state });
     
-    searchPromises = [
+    const [addressResult, phoneResult, nameResult, cityResult, stateResult] = await Promise.all([
       // Search for city in address field
       supabase
         .from('pha_agencies')
@@ -97,10 +97,12 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
         .select('*')
         .ilike('state', `%${state}%`)
         .limit(100)
-    ];
+    ]);
+
+    searchResults = [addressResult, phoneResult, nameResult, cityResult, stateResult];
   } else {
     // Regular search for single terms - search across all relevant fields
-    searchPromises = [
+    const [nameResult, addressResult, phoneResult, cityResult, stateResult] = await Promise.all([
       // Name search
       supabase
         .from('pha_agencies')
@@ -135,10 +137,10 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
         .select('*')
         .ilike('state', `%${searchTerm}%`)
         .limit(100)
-    ];
-  }
+    ]);
 
-  const searchResults = await Promise.all(searchPromises);
+    searchResults = [nameResult, addressResult, phoneResult, cityResult, stateResult];
+  }
 
   // Log search results for debugging
   console.log('🔍 Search results:', {
