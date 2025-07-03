@@ -3,6 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor } from "@/utils/mapUtils";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -115,6 +116,81 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         opacity: 0.6;
       `;
       
+      // Create hover card for location image
+      const hoverCard = document.createElement('div');
+      hoverCard.className = 'location-hover-card';
+      hoverCard.style.cssText = `
+        position: absolute;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        padding: 12px;
+        min-width: 200px;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        pointer-events: none;
+      `;
+      
+      // Get a relevant city image (using placeholder service)
+      const cityImageUrl = `https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=200&fit=crop&auto=format`;
+      
+      hoverCard.innerHTML = `
+        <div style="text-align: center;">
+          <img 
+            src="${cityImageUrl}" 
+            alt="${name}" 
+            style="
+              width: 180px; 
+              height: 120px; 
+              object-fit: cover; 
+              border-radius: 8px; 
+              margin-bottom: 8px;
+            "
+            onError="this.src='https://images.unsplash.com/photo-1472396961693-142e6e269027?w=300&h=200&fit=crop&auto=format'"
+          />
+          <div style="
+            font-family: system-ui, -apple-system, sans-serif;
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+            margin-bottom: 4px;
+          ">📍 ${name}</div>
+          <div style="
+            font-size: 12px;
+            color: #6b7280;
+          ">Selected Location</div>
+        </div>
+        <div style="
+          position: absolute;
+          bottom: -6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 6px solid white;
+        "></div>
+      `;
+      
+      // Add hover events
+      markerElement.addEventListener('mouseenter', () => {
+        hoverCard.style.opacity = '1';
+        hoverCard.style.visibility = 'visible';
+        markerElement.style.transform = 'scale(1.1)';
+      });
+      
+      markerElement.addEventListener('mouseleave', () => {
+        hoverCard.style.opacity = '0';
+        hoverCard.style.visibility = 'hidden';
+        markerElement.style.transform = 'scale(1)';
+      });
+      
       // Add CSS animation for pulse
       if (!document.querySelector('#location-marker-styles')) {
         const style = document.createElement('style');
@@ -137,6 +213,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           .location-marker-container:hover {
             transform: scale(1.1);
           }
+          .location-hover-card {
+            font-family: system-ui, -apple-system, sans-serif;
+          }
         `;
         document.head.appendChild(style);
       }
@@ -144,6 +223,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       pinShape.appendChild(innerDot);
       markerElement.appendChild(pulseRing);
       markerElement.appendChild(pinShape);
+      markerElement.appendChild(hoverCard);
       
       // Add location marker with custom popup
       locationMarker.current = new mapboxgl.Marker({ 
@@ -165,7 +245,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         )
         .addTo(map.current);
         
-      console.log('📍 Added enhanced location marker for:', name, 'at', { lat, lng });
+      console.log('📍 Added enhanced location marker with hover image for:', name, 'at', { lat, lng });
     }
   }));
 
