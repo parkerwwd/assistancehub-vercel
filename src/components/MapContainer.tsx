@@ -91,7 +91,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
   // Add marker for selected office
   const addSelectedOfficeMarker = async (office: PHAAgency) => {
-    if (!map.current) return;
+    if (!map.current || !mapboxToken) return;
     
     console.log('📍 Adding marker for selected office:', office.name);
     
@@ -99,7 +99,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     let lng = office.longitude || (office as any).geocoded_longitude;
     
     // If no coordinates, try to geocode the address using Mapbox
-    if (!lat || !lng && office.address) {
+    if ((!lat || !lng) && office.address) {
       console.log('🗺️ No coordinates found, trying to geocode address:', office.address);
       
       try {
@@ -131,10 +131,41 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     
     if (lat && lng) {
       try {
-        const marker = MarkerUtils.createOfficeMarker(
-          { ...office, latitude: lat, longitude: lng }, 
-          onOfficeSelect
+        // Create a simple marker with red color for the selected office
+        const marker = new mapboxgl.Marker({
+          color: '#ef4444', // Red color for selected office
+          scale: 1.2
+        })
+        .setLngLat([lng, lat])
+        .setPopup(
+          new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`
+              <div style="padding: 10px; font-family: system-ui, -apple-system, sans-serif;">
+                <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">${office.name}</h3>
+                ${office.address ? `<p style="margin: 0 0 4px 0; font-size: 12px; color: #6b7280;">${office.address}</p>` : ''}
+                ${office.city && office.state ? `<p style="margin: 0 0 4px 0; font-size: 12px; color: #6b7280;">${office.city}, ${office.state} ${office.zip || ''}</p>` : ''}
+                ${office.phone ? `<p style="margin: 0 0 4px 0; font-size: 12px; color: #6b7280;">📞 ${office.phone}</p>` : ''}
+                ${office.waitlist_status ? `<p style="margin: 0; font-size: 12px; color: #6b7280;">Status: ${office.waitlist_status}</p>` : ''}
+              </div>
+            `)
         );
+        
+        // Add click handler
+        marker.getElement().addEventListener('click', () => {
+          console.log('🎯 Marker clicked:', office.name);
+          onOfficeSelect(office);
+        });
+        
+        // Add hover effects
+        const element = marker.getElement();
+        element.style.cursor = 'pointer';
+        element.addEventListener('mouseenter', () => {
+          element.style.transform = 'scale(1.1)';
+        });
+        element.addEventListener('mouseleave', () => {
+          element.style.transform = 'scale(1.2)';
+        });
+        
         marker.addTo(map.current);
         officeMarkers.current.push(marker);
         
@@ -180,7 +211,10 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       clearOfficeMarkers();
       
       if (selectedOffice) {
-        addSelectedOfficeMarker(selectedOffice);
+        // Add marker after a short delay to ensure map is ready
+        setTimeout(() => {
+          addSelectedOfficeMarker(selectedOffice);
+        }, 100);
       } else {
         console.log('🧹 Cleared all office markers - no office selected');
       }
