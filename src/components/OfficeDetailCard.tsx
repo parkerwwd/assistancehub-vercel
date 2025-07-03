@@ -14,9 +14,30 @@ interface OfficeDetailCardProps {
 }
 
 const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
-  const fullAddress = [office.address, office.city, office.state, office.zip]
-    .filter(Boolean)
-    .join(', ');
+  // Build full address, handling the case where city might be in phone field
+  const addressParts = [office.address];
+  
+  // Check if phone field contains city name (non-numeric data)
+  const phoneContainsCity = office.phone && !/^[\d\s\-\(\)\+\.]+$/.test(office.phone);
+  
+  if (phoneContainsCity) {
+    addressParts.push(office.phone);
+  } else if (office.city) {
+    addressParts.push(office.city);
+  }
+  
+  if (office.state) {
+    addressParts.push(office.state);
+  }
+  
+  if (office.zip) {
+    addressParts.push(office.zip);
+  }
+  
+  const fullAddress = addressParts.filter(Boolean).join(', ');
+  
+  // Use phone for contact only if it's actually a phone number
+  const actualPhone = phoneContainsCity ? null : office.phone;
 
   const phaType = getPHATypeFromData(office);
 
@@ -67,14 +88,14 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
           
           {/* Contact Information */}
           <div className="space-y-3">
-            {office.phone && (
+            {actualPhone && (
               <a 
-                href={`tel:${office.phone}`}
+                href={`tel:${actualPhone}`}
                 className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group"
               >
                 <Phone className="w-4 h-4 mr-3 text-blue-600" />
                 <span className="text-blue-700 group-hover:text-blue-800 font-medium">
-                  {office.phone}
+                  {actualPhone}
                 </span>
               </a>
             )}
