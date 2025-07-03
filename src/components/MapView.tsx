@@ -29,6 +29,7 @@ const MapView: React.FC<MapViewProps> = ({
     selectedOffice,
     tokenError,
     showFilters,
+    searchInAreaEnabled,
     mapRef,
     phaAgencies,
     loading,
@@ -41,7 +42,9 @@ const MapView: React.FC<MapViewProps> = ({
     handleTokenChange,
     handleCitySelect,
     handleSearch,
-    handlePageChange
+    handlePageChange,
+    handleBoundsChange,
+    handleToggleSearchInArea
   } = useMapLogic();
 
   const [viewState, setViewState] = useState<ViewState>('overview');
@@ -72,13 +75,13 @@ const MapView: React.FC<MapViewProps> = ({
     setViewState('pha-detail');
   };
 
-  const handleSearchWrapper = (query: string) => {
-    console.log('🔍 MapView handleSearchWrapper called with:', query);
+  const handleSearchWrapper = (query: string, searchInArea?: boolean) => {
+    console.log('🔍 MapView handleSearchWrapper called with:', query, 'searchInArea:', searchInArea);
     setSearchPerformed(true);
     setLastSearchQuery(query);
     setSelectedOffice(null); // Clear selected office to show search results
     console.log('🔍 About to call handleSearch from useMapLogic');
-    handleSearch(query);
+    handleSearch(query, searchInArea);
   };
 
   const renderRightPanel = () => {
@@ -140,6 +143,8 @@ const MapView: React.FC<MapViewProps> = ({
             onToggleFilters={() => setShowFilters(!showFilters)}
             onCitySelect={handleCitySelect}
             onSearch={handleSearchWrapper}
+            searchInAreaEnabled={searchInAreaEnabled}
+            onToggleSearchInArea={handleToggleSearchInArea}
           />
         </div>
       )}
@@ -156,6 +161,7 @@ const MapView: React.FC<MapViewProps> = ({
                 phaAgencies={phaAgencies}
                 onOfficeSelect={setSelectedOffice}
                 onTokenError={setTokenError}
+                onBoundsChange={handleBoundsChange}
               />
             </div>
           </ResizablePanel>

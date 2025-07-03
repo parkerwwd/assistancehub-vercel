@@ -12,17 +12,20 @@ interface MapContainerProps {
   phaAgencies: PHAAgency[];
   onOfficeSelect: (office: PHAAgency) => void;
   onTokenError: (error: string) => void;
+  onBoundsChange?: (bounds: mapboxgl.LngLatBounds) => void;
 }
 
 export interface MapContainerRef {
   flyTo: (center: [number, number], zoom: number) => void;
+  getBounds: () => mapboxgl.LngLatBounds | null;
 }
 
 const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({ 
   mapboxToken, 
   phaAgencies,
   onOfficeSelect, 
-  onTokenError 
+  onTokenError,
+  onBoundsChange
 }, ref) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -31,6 +34,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   useImperativeHandle(ref, () => ({
     flyTo: (center: [number, number], zoom: number) => {
       map.current?.flyTo({ center, zoom });
+    },
+    getBounds: () => {
+      return map.current?.getBounds() || null;
     }
   }));
 
@@ -71,6 +77,14 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     });
   };
 
+  // Handle bounds change
+  const handleBoundsChange = () => {
+    if (map.current && onBoundsChange) {
+      const bounds = map.current.getBounds();
+      onBoundsChange(bounds);
+    }
+  };
+
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken.trim()) return;
 
@@ -102,7 +116,12 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       // Add markers when map loads
       map.current.on('load', () => {
         addMarkers();
+        handleBoundsChange();
       });
+
+      // Listen for bounds changes
+      map.current.on('moveend', handleBoundsChange);
+      map.current.on('zoomend', handleBoundsChange);
 
       return () => {
         clearMarkers();
@@ -112,7 +131,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       console.error('Error initializing map:', error);
       onTokenError("Error initializing map. Please check your token.");
     }
-  }, [mapboxToken, onOfficeSelect, onTokenError]);
+  }, [mapboxToken, onOfficeSelect, onTokenError, onBoundsChange]);
 
   // Update markers when PHA agencies change
   useEffect(() => {

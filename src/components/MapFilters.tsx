@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Filter, Search } from "lucide-react";
+import React, { useState } from 'react';
+import { Filter, Search, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { USCity } from "@/data/usCities";
 import CitySearch from "./CitySearch";
@@ -9,22 +9,33 @@ interface MapFiltersProps {
   showFilters: boolean;
   onToggleFilters: () => void;
   onCitySelect: (city: USCity) => void;
-  onSearch: (query: string) => void;
+  onSearch: (query: string, searchInArea?: boolean) => void;
+  searchInAreaEnabled?: boolean;
+  onToggleSearchInArea?: (enabled: boolean) => void;
 }
 
 const MapFilters: React.FC<MapFiltersProps> = ({
   showFilters,
   onToggleFilters,
   onCitySelect,
-  onSearch
+  onSearch,
+  searchInAreaEnabled = false,
+  onToggleSearchInArea
 }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    onSearch(query, searchInAreaEnabled);
+  };
+
   return (
     <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="p-3">
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-0">
-              <CitySearch onCitySelect={onCitySelect} onSearch={onSearch} />
+              <CitySearch onCitySelect={onCitySelect} onSearch={handleSearch} />
             </div>
             <Button
               variant="outline"
@@ -36,6 +47,29 @@ const MapFilters: React.FC<MapFiltersProps> = ({
               <span className="hidden sm:inline">Filters</span>
             </Button>
           </div>
+          
+          {/* Search in Area Toggle */}
+          {onToggleSearchInArea && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={searchInAreaEnabled}
+                  onChange={(e) => onToggleSearchInArea(e.target.checked)}
+                  className="rounded border-gray-300 w-4 h-4"
+                />
+                <MapPin className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-gray-700">
+                  Search only in visible map area
+                </span>
+              </label>
+              {searchInAreaEnabled && (
+                <p className="text-xs text-gray-500 mt-1 ml-6">
+                  Results will be filtered to the current map view
+                </p>
+              )}
+            </div>
+          )}
           
           {showFilters && (
             <div className="mt-3 pt-3 border-t border-gray-100">

@@ -5,6 +5,7 @@ import { USCity } from "@/data/usCities";
 import { MapContainerRef } from "@/components/MapContainer";
 import { usePHAData } from "./usePHAData";
 import { getCityCoordinates } from "@/services/geocodingService";
+import { SearchBounds } from "@/services/phaService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -14,6 +15,8 @@ export const useMapLogic = () => {
   const [tokenError, setTokenError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [currentSearchQuery, setCurrentSearchQuery] = useState("");
+  const [searchInAreaEnabled, setSearchInAreaEnabled] = useState(false);
+  const [currentBounds, setCurrentBounds] = useState<SearchBounds | null>(null);
   const mapRef = useRef<MapContainerRef>(null);
   
   const { 
@@ -44,6 +47,17 @@ export const useMapLogic = () => {
     }
   };
 
+  // Handle bounds change from map
+  const handleBoundsChange = (bounds: mapboxgl.LngLatBounds) => {
+    const searchBounds: SearchBounds = {
+      north: bounds.getNorth(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      west: bounds.getWest()
+    };
+    setCurrentBounds(searchBounds);
+  };
+
   // Handle search results when they arrive - don't auto-select if no results
   useEffect(() => {
     if (currentSearchQuery && !loading) {
@@ -64,7 +78,8 @@ export const useMapLogic = () => {
 
   const handlePageChange = (page: number) => {
     if (currentSearchQuery) {
-      searchPHAs(currentSearchQuery, page);
+      const bounds = searchInAreaEnabled ? currentBounds : undefined;
+      searchPHAs(currentSearchQuery, page, bounds);
     } else {
       goToPage(page);
     }
@@ -80,7 +95,8 @@ export const useMapLogic = () => {
     // Clear any selected office first
     setSelectedOffice(null);
     
-    await searchPHAs(searchQuery, 1);
+    const bounds = searchInAreaEnabled ? currentBounds : undefined;
+    await searchPHAs(searchQuery, 1, bounds);
     
     // Fly to the selected city
     if (mapRef.current) {
@@ -88,20 +104,23 @@ export const useMapLogic = () => {
     }
   };
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = async (query: string, useAreaSearch = false) => {
     if (!query.trim()) {
       setCurrentSearchQuery("");
       return;
     }
     
-    console.log('🔍 Searching for:', query);
+    console.log('🔍 Searching for:', query, useAreaSearch ? 'in current area' : 'globally');
     setCurrentSearchQuery(query);
     
     // Clear the selected office first to show search results properly
     setSelectedOffice(null);
     
+    // Use bounds if area search is enabled
+    const bounds = useAreaSearch ? currentBounds : undefined;
+    
     // Perform the search
-    await searchPHAs(query, 1);
+    await searchPHAs(query, 1, bounds);
     
     // Try to center map on searched city
     const cityStatePattern = /^(.+?),?\s+([a-z]{2})$/i;
@@ -118,11 +137,22 @@ export const useMapLogic = () => {
     }
   };
 
+  const handleToggleSearchInArea = (enabled: boolean) => {
+    setSearchInAreaEnabled(enabled);
+    
+    // If we have a current search query, re-run the search with the new area setting
+    if (currentSearchQuery) {
+      const bounds = enabled ? currentBounds : undefined;
+      searchPHAs(currentSearchQuery, 1, bounds);
+    }
+  };
+
   return {
     mapboxToken,
     selectedOffice,
     tokenError,
     showFilters,
+    searchInAreaEnabled,
     mapRef,
     phaAgencies,
     loading,
@@ -136,6 +166,8 @@ export const useMapLogic = () => {
     handleTokenChange,
     handleCitySelect,
     handleSearch,
-    handlePageChange
+    handlePageChange,
+    handleBoundsChange,
+    handleToggleSearchInArea
   };
 };

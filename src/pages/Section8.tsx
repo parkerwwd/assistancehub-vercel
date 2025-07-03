@@ -10,14 +10,17 @@ const Section8 = () => {
   
   const {
     showFilters,
+    searchInAreaEnabled,
     setShowFilters,
     handleCitySelect,
     handleSearch,
+    handleToggleSearchInArea,
     currentSearchQuery
   } = useMapLogic();
 
   console.log('Section8 useMapLogic data:', {
     showFilters,
+    searchInAreaEnabled,
     currentSearchQuery
   });
 
@@ -40,6 +43,8 @@ const Section8 = () => {
                 onToggleFilters={() => setShowFilters(!showFilters)}
                 onCitySelect={handleCitySelect}
                 onSearch={handleSearch}
+                searchInAreaEnabled={searchInAreaEnabled}
+                onToggleSearchInArea={handleToggleSearchInArea}
               />
             </div>
             

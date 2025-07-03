@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Database } from "@/integrations/supabase/types";
-import { fetchPHAData, searchPHAs, getPHAsByState } from "@/services/phaService";
+import { fetchPHAData, searchPHAs, getPHAsByState, SearchBounds } from "@/services/phaService";
 import { GeocodedPHA } from "@/services/geocodingService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
@@ -32,12 +32,12 @@ export const usePHAData = () => {
     }
   };
 
-  const handleSearchPHAs = async (query: string, page = 1) => {
+  const handleSearchPHAs = async (query: string, page = 1, bounds?: SearchBounds) => {
     try {
       setLoading(true);
       setError(null);
       
-      const result = await searchPHAs(query, page, itemsPerPage);
+      const result = await searchPHAs(query, page, itemsPerPage, bounds);
       
       setPHAAgencies(result.data);
       setTotalCount(result.count);

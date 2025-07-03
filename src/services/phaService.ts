@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { sanitizeSearchInput } from "@/utils/inputSanitization";
@@ -9,6 +8,13 @@ type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 export interface FetchPHADataResult {
   data: GeocodedPHA[];
   count: number;
+}
+
+export interface SearchBounds {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
 }
 
 export const fetchPHAData = async (page = 1, itemsPerPage = 20): Promise<FetchPHADataResult> => {
@@ -40,7 +46,26 @@ export const fetchPHAData = async (page = 1, itemsPerPage = 20): Promise<FetchPH
   };
 };
 
-export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Promise<FetchPHADataResult> => {
+const filterPHAsByBounds = (phas: GeocodedPHA[], bounds: SearchBounds): GeocodedPHA[] => {
+  return phas.filter(pha => {
+    const lat = pha.latitude || pha.geocoded_latitude;
+    const lng = pha.longitude || pha.geocoded_longitude;
+    
+    if (!lat || !lng) return false;
+    
+    return lat >= bounds.south && 
+           lat <= bounds.north && 
+           lng >= bounds.west && 
+           lng <= bounds.east;
+  });
+};
+
+export const searchPHAs = async (
+  query: string, 
+  page = 1, 
+  itemsPerPage = 20, 
+  bounds?: SearchBounds
+): Promise<FetchPHADataResult> => {
   if (!query.trim()) {
     return await fetchPHAData(page, itemsPerPage);
   }
@@ -162,9 +187,24 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
   const allResults = searchResults.flatMap(result => result.data || []);
 
   // Remove duplicates based on ID
-  const uniqueResults = allResults.filter((item, index, arr) => 
+  let uniqueResults = allResults.filter((item, index, arr) => 
     arr.findIndex(other => other.id === item.id) === index
   );
+
+  // Add geocoded coordinates for PHAs that don't have them
+  const geocodedResults = await geocodePHAs(uniqueResults);
+
+  // Filter by bounds if provided
+  if (bounds) {
+    uniqueResults = filterPHAsByBounds(geocodedResults, bounds);
+    console.log('🗺️ Filtered by bounds:', {
+      originalCount: geocodedResults.length,
+      filteredCount: uniqueResults.length,
+      bounds
+    });
+  } else {
+    uniqueResults = geocodedResults;
+  }
 
   console.log('🔄 Combined search results:', {
     totalBeforeDedup: allResults.length,
@@ -176,11 +216,8 @@ export const searchPHAs = async (query: string, page = 1, itemsPerPage = 20): Pr
   const to = from + itemsPerPage - 1;
   const paginatedResults = uniqueResults.slice(from, to + 1);
   
-  // Add geocoded coordinates for PHAs that don't have them
-  const geocodedResults = await geocodePHAs(paginatedResults);
-  
   return {
-    data: geocodedResults,
+    data: paginatedResults,
     count: uniqueResults.length
   };
 };
