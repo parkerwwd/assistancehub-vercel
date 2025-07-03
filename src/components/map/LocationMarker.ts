@@ -1,4 +1,6 @@
+
 import mapboxgl from 'mapbox-gl';
+import { GoogleMapsService } from '@/services/googleMapsService';
 
 export interface LocationMarkerOptions {
   lat: number;
@@ -19,7 +21,7 @@ export class LocationMarker {
     const pinShape = this.createPinShape();
     const innerDot = this.createInnerDot();
     const pulseRing = this.createPulseRing();
-    const hoverCard = this.createHoverCard(name);
+    const hoverCard = this.createHoverCard(name, lat, lng);
     
     // Assemble marker
     pinShape.appendChild(innerDot);
@@ -113,7 +115,7 @@ export class LocationMarker {
     return ring;
   }
 
-  private createHoverCard(name: string): HTMLDivElement {
+  private createHoverCard(name: string, lat: number, lng: number): HTMLDivElement {
     const card = document.createElement('div');
     card.className = 'location-hover-card';
     card.style.cssText = `
@@ -124,17 +126,47 @@ export class LocationMarker {
       background: white;
       border-radius: 12px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-      padding: 16px;
-      min-width: 200px;
+      padding: 0;
+      min-width: 280px;
+      max-width: 320px;
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
       z-index: 1000;
       pointer-events: none;
+      overflow: hidden;
     `;
     
+    // Get Google Maps images
+    const streetViewImage = GoogleMapsService.getStreetViewImageByCoords(lat, lng, '280x160');
+    const staticMapImage = GoogleMapsService.getStaticMapImageByCoords(lat, lng, '280x160');
+    
     card.innerHTML = `
-      <div style="text-align: center;">
+      <div style="position: relative;">
+        <img 
+          src="${streetViewImage}" 
+          alt="Street View of ${name}"
+          style="
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 12px 12px 0 0;
+          "
+          onerror="this.src='${staticMapImage}'; this.onerror=null;"
+        />
+        <div style="
+          position: absolute;
+          bottom: 8px;
+          right: 8px;
+          background: rgba(0,0,0,0.7);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: 500;
+        ">📍 Google Maps</div>
+      </div>
+      <div style="padding: 16px; text-align: center;">
         <div style="
           font-family: system-ui, -apple-system, sans-serif;
           font-weight: 600;
@@ -145,7 +177,12 @@ export class LocationMarker {
         <div style="
           font-size: 14px;
           color: #6b7280;
+          margin-bottom: 8px;
         ">Selected Location</div>
+        <div style="
+          font-size: 12px;
+          color: #9ca3af;
+        ">${lat.toFixed(4)}, ${lng.toFixed(4)}</div>
       </div>
       <div style="
         position: absolute;
@@ -200,6 +237,12 @@ export class LocationMarker {
         }
         .location-hover-card {
           font-family: system-ui, -apple-system, sans-serif;
+        }
+        .location-hover-card img {
+          transition: transform 0.2s ease;
+        }
+        .location-hover-card:hover img {
+          transform: scale(1.02);
         }
       `;
       document.head.appendChild(style);
