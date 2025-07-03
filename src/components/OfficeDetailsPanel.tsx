@@ -17,8 +17,6 @@ interface OfficeDetailsPanelProps {
   totalPages?: number;
   totalCount?: number;
   onPageChange?: (page: number) => void;
-  searchPerformed?: boolean;
-  searchQuery?: string;
 }
 
 const OfficeDetailsPanel = ({ 
@@ -29,16 +27,12 @@ const OfficeDetailsPanel = ({
   currentPage = 1,
   totalPages = 1,
   totalCount = 0,
-  onPageChange,
-  searchPerformed = false,
-  searchQuery = ""
+  onPageChange
 }: OfficeDetailsPanelProps) => {
   console.log('🏢 OfficeDetailsPanel render:', {
     selectedOffice: selectedOffice?.name || 'none',
     phaAgenciesCount: phaAgencies.length,
     loading,
-    searchPerformed,
-    searchQuery,
     totalCount
   });
 
@@ -60,39 +54,7 @@ const OfficeDetailsPanel = ({
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Searching...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show no results message if search was performed but returned empty
-  if (searchPerformed && phaAgencies.length === 0 && !loading) {
-    return (
-      <div className="h-full p-4 overflow-y-auto">
-        <div className="bg-white rounded-lg border p-6 text-center">
-          <div className="text-gray-400 mb-4">
-            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No PHA Offices Found</h3>
-          <p className="text-gray-600 mb-4">
-            {searchQuery ? (
-              <>No PHA offices found for "<span className="font-medium">{searchQuery}</span>"</>
-            ) : (
-              "No PHA offices found matching your search criteria"
-            )}
-          </p>
-          <div className="text-sm text-gray-500 bg-amber-50 border border-amber-200 rounded-lg p-3">
-            <p className="font-medium text-amber-800 mb-1">Search Tips</p>
-            <div className="text-amber-700 text-left space-y-1">
-              <p>• Try searching by city name (e.g., "Fresno")</p>
-              <p>• Try city and state (e.g., "Fresno, CA")</p>
-              <p>• Try searching by PHA name</p>
-              <p>• Try broader terms (e.g., state name)</p>
-            </div>
+            <p className="text-gray-600">Loading...</p>
           </div>
         </div>
       </div>
@@ -101,14 +63,10 @@ const OfficeDetailsPanel = ({
 
   // If we have PHAs loaded, show them in a clean card list
   if (phaAgencies.length > 0) {
-    const resultsText = searchPerformed && searchQuery 
-      ? `Search results for "${searchQuery}"` 
-      : 'PHA Offices';
-      
     return (
       <div className="h-full overflow-y-auto flex flex-col">
         <div className="p-4 border-b bg-gray-50 flex-shrink-0">
-          <h3 className="text-lg font-semibold text-gray-900">{resultsText}</h3>
+          <h3 className="text-lg font-semibold text-gray-900">PHA Offices</h3>
           <p className="text-sm text-gray-600 mt-1">
             Showing {phaAgencies.length} of {totalCount} offices
             {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
