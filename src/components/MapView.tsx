@@ -41,6 +41,10 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const [detailOffice, setDetailOffice] = useState<PHAAgency | null>(null);
 
   const handleOfficeClick = (office: PHAAgency) => {
+    console.log('🎯 Office clicked from panel:', office.name);
+    // First select the office on the map (this will fly to it)
+    setSelectedOffice(office);
+    // Then show detail view
     setDetailOffice(office);
     setViewState('pha-detail');
   };

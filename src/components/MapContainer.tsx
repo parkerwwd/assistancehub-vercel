@@ -33,7 +33,16 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
   useImperativeHandle(ref, () => ({
     flyTo: (center: [number, number], zoom: number) => {
-      map.current?.flyTo({ center, zoom });
+      console.log('🗺️ MapContainer.flyTo called with:', { center, zoom });
+      if (map.current) {
+        map.current.flyTo({ 
+          center, 
+          zoom,
+          duration: 2000 // Smooth animation
+        });
+      } else {
+        console.warn('⚠️ Map not initialized yet');
+      }
     },
     getBounds: () => {
       return map.current?.getBounds() || null;
@@ -52,12 +61,16 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     
     clearMarkers();
     
+    console.log('🏢 Adding markers for', phaAgencies.length, 'agencies');
+    
     phaAgencies.forEach((agency) => {
       // Use original coordinates or geocoded coordinates
       const lat = agency.latitude || (agency as any).geocoded_latitude;
       const lng = agency.longitude || (agency as any).geocoded_longitude;
       
       if (lat && lng) {
+        console.log('📍 Adding marker for:', agency.name, 'at', { lat, lng });
+        
         const marker = new mapboxgl.Marker({
           color: getWaitlistColor(agency.waitlist_status || 'Unknown')
         })
@@ -65,16 +78,22 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           .addTo(map.current!);
 
         marker.getElement().addEventListener('click', () => {
+          console.log('🎯 Marker clicked:', agency.name);
           onOfficeSelect(agency);
           map.current?.flyTo({
             center: [lng, lat],
-            zoom: 12
+            zoom: 12,
+            duration: 1500
           });
         });
 
         markers.current.push(marker);
+      } else {
+        console.warn('⚠️ No coordinates for agency:', agency.name);
       }
     });
+    
+    console.log('✅ Added', markers.current.length, 'markers to map');
   };
 
   // Handle bounds change
@@ -115,6 +134,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
       // Add markers when map loads
       map.current.on('load', () => {
+        console.log('🗺️ Map loaded successfully');
         addMarkers();
         handleBoundsChange();
       });
@@ -136,6 +156,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   // Update markers when PHA agencies change
   useEffect(() => {
     if (map.current?.loaded()) {
+      console.log('🔄 PHA agencies changed, updating markers');
       addMarkers();
     }
   }, [phaAgencies]);

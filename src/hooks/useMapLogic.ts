@@ -62,6 +62,24 @@ export const useMapLogic = () => {
     }
   };
 
+  const handleOfficeSelect = (office: PHAAgency) => {
+    console.log('🏢 Selected office:', office.name);
+    setSelectedOffice(office);
+    
+    // Get coordinates from the office data
+    const lat = office.latitude || (office as any).geocoded_latitude;
+    const lng = office.longitude || (office as any).geocoded_longitude;
+    
+    console.log('🗺️ Flying to coordinates:', { lat, lng });
+    
+    // If we have coordinates, fly to them
+    if (lat && lng && mapRef.current) {
+      mapRef.current.flyTo([lng, lat], 12);
+    } else {
+      console.warn('⚠️ No coordinates found for office:', office.name);
+    }
+  };
+
   return {
     mapboxToken,
     selectedOffice,
@@ -73,7 +91,7 @@ export const useMapLogic = () => {
     currentPage,
     totalPages,
     totalCount,
-    setSelectedOffice,
+    setSelectedOffice: handleOfficeSelect,
     setTokenError,
     setShowFilters,
     handleTokenChange,
