@@ -1,8 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from "react-router-dom";
+import { Search, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { USCity } from "@/data/usCities";
+import CitySearch from "./CitySearch";
 
-const Header = () => {
+interface HeaderProps {
+  onCitySelect?: (city: USCity) => void;
+  onSearch?: (query: string) => void;
+  showSearch?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ onCitySelect, onSearch, showSearch = false }) => {
   return (
     <>
       {/* Disclaimer banner */}
@@ -20,6 +30,27 @@ const Header = () => {
                 AssistanceHub
               </Link>
             </div>
+            
+            {/* New Search Bar */}
+            {showSearch && onCitySelect && onSearch && (
+              <div className="flex-1 max-w-2xl mx-6">
+                <div className="relative">
+                  <div className="flex items-center bg-white border-2 border-yellow-400 rounded-full px-4 py-2 shadow-sm">
+                    <Search className="w-5 h-5 text-gray-400 mr-3" />
+                    <div className="flex-1">
+                      <CitySearch 
+                        onCitySelect={onCitySelect}
+                        onSearch={onSearch}
+                        placeholder="City, County, or Zipcode"
+                        variant="header"
+                      />
+                    </div>
+                    <Target className="w-5 h-5 text-gray-600 ml-3" />
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <nav className="hidden md:flex space-x-8">
               <Link to="/section8" className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-blue-50">
                 Section 8

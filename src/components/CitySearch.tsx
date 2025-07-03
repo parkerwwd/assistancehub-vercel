@@ -7,9 +7,16 @@ import { usCities, USCity } from "@/data/usCities";
 interface CitySearchProps {
   onCitySelect: (city: USCity) => void;
   onSearch: (query: string) => void;
+  placeholder?: string;
+  variant?: 'default' | 'header';
 }
 
-const CitySearch: React.FC<CitySearchProps> = ({ onCitySelect, onSearch }) => {
+const CitySearch: React.FC<CitySearchProps> = ({ 
+  onCitySelect, 
+  onSearch, 
+  placeholder = "Search by city, state, or PHA name...",
+  variant = 'default'
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredCities, setFilteredCities] = useState<USCity[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -81,13 +88,48 @@ const CitySearch: React.FC<CitySearchProps> = ({ onCitySelect, onSearch }) => {
     setTimeout(() => setShowSuggestions(false), 200);
   };
 
+  if (variant === 'header') {
+    return (
+      <div className="relative w-full">
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={searchQuery}
+          onChange={(e) => handleInputChange(e.target.value)}
+          onKeyDown={handleKeyPress}
+          onFocus={() => searchQuery.length > 1 && setShowSuggestions(true)}
+          onBlur={handleInputBlur}
+          className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base"
+        />
+        
+        {showSuggestions && filteredCities.length > 0 && (
+          <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+            {filteredCities.map((city, index) => (
+              <div
+                key={`${city.name}-${city.stateCode}-${index}`}
+                onClick={() => handleCitySelect(city)}
+                className="cursor-pointer flex items-center gap-2 px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0"
+              >
+                <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium">{city.name}, {city.stateCode}</span>
+                  <span className="text-gray-500 ml-2 hidden sm:inline">{city.state}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full">
       <div className="flex gap-2">
         <div className="flex-1 relative">
           <input
             type="text"
-            placeholder="Search by city, state, or PHA name..."
+            placeholder={placeholder}
             value={searchQuery}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyPress}
