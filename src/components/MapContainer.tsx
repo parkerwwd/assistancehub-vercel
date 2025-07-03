@@ -36,7 +36,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 }, ref) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const markers = useRef<mapboxgl.Marker[]>([]);
+  const officeMarkers = useRef<mapboxgl.Marker[]>([]);
   const locationMarker = useRef<mapboxgl.Marker | null>(null);
   const locationMarkerHelper = useRef<LocationMarker>(new LocationMarker());
 
@@ -75,10 +75,10 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     }
   }));
 
-  // Clear existing markers
-  const clearMarkers = () => {
-    markers.current.forEach(marker => marker.remove());
-    markers.current = [];
+  // Clear existing office markers
+  const clearOfficeMarkers = () => {
+    officeMarkers.current.forEach(marker => marker.remove());
+    officeMarkers.current = [];
   };
 
   // Clear location marker
@@ -89,22 +89,61 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     }
   };
 
-  // Add marker for selected office only
-  const addSelectedOfficeMarker = () => {
-    if (!map.current || !selectedOffice) return;
+  // Add marker for selected office
+  const addSelectedOfficeMarker = async (office: PHAAgency) => {
+    if (!map.current) return;
     
-    clearMarkers();
+    console.log('📍 Adding marker for selected office:', office.name);
     
-    try {
-      console.log('📍 Adding marker for selected office:', selectedOffice.name);
+    let lat = office.latitude || (office as any).geocoded_latitude;
+    let lng = office.longitude || (office as any).geocoded_longitude;
+    
+    // If no coordinates, try to geocode the address using Mapbox
+    if (!lat || !lng && office.address) {
+      console.log('🗺️ No coordinates found, trying to geocode address:', office.address);
       
-      const marker = MarkerUtils.createOfficeMarker(selectedOffice, onOfficeSelect);
-      marker.addTo(map.current);
-      markers.current.push(marker);
-      
-      console.log('✅ Added marker for selected office:', selectedOffice.name);
-    } catch (error) {
-      console.warn('⚠️ Failed to add marker for office:', selectedOffice.name, error);
+      try {
+        // Build full address string
+        const addressParts = [office.address];
+        if (office.city) addressParts.push(office.city);
+        if (office.state) addressParts.push(office.state);
+        if (office.zip) addressParts.push(office.zip);
+        
+        const fullAddress = addressParts.join(', ');
+        const encodedAddress = encodeURIComponent(fullAddress);
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.features && data.features.length > 0) {
+            const [geocodedLng, geocodedLat] = data.features[0].center;
+            lat = geocodedLat;
+            lng = geocodedLng;
+            console.log('✅ Geocoded coordinates:', { lat, lng });
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Geocoding error:', error);
+      }
+    }
+    
+    if (lat && lng) {
+      try {
+        const marker = MarkerUtils.createOfficeMarker(
+          { ...office, latitude: lat, longitude: lng }, 
+          onOfficeSelect
+        );
+        marker.addTo(map.current);
+        officeMarkers.current.push(marker);
+        
+        console.log('✅ Added marker for selected office:', office.name, 'at', { lat, lng });
+      } catch (error) {
+        console.warn('⚠️ Failed to add marker for office:', office.name, error);
+      }
+    } else {
+      console.warn('⚠️ No coordinates available for office:', office.name);
     }
   };
 
@@ -124,7 +163,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       MapControls.setupMapEvents(map.current, onTokenError, onBoundsChange);
 
       return () => {
-        clearMarkers();
+        clearOfficeMarkers();
         clearLocationMarker();
         map.current?.remove();
       };
@@ -137,15 +176,16 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   // Update marker when selected office changes
   useEffect(() => {
     if (map.current?.loaded()) {
-      console.log('🔄 Selected office changed, updating marker');
+      console.log('🔄 Selected office changed, updating markers');
+      clearOfficeMarkers();
+      
       if (selectedOffice) {
-        addSelectedOfficeMarker();
+        addSelectedOfficeMarker(selectedOffice);
       } else {
-        clearMarkers();
-        console.log('🧹 Cleared all markers - no office selected');
+        console.log('🧹 Cleared all office markers - no office selected');
       }
     }
-  }, [selectedOffice]);
+  }, [selectedOffice, mapboxToken]);
 
   // Handle selected location changes
   useEffect(() => {
