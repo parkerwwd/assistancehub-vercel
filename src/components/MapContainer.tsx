@@ -133,6 +133,21 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     
     if (lat && lng) {
       try {
+        // Switch to satellite style for office detail view
+        if (map.current.getStyle().name !== 'Mapbox Satellite Streets') {
+          map.current.setStyle('mapbox://styles/mapbox/satellite-streets-v12');
+        }
+
+        // Fly to office with close zoom level (like the uploaded image)
+        map.current.flyTo({
+          center: [lng, lat],
+          zoom: 18, // Very close zoom to show building details like in the image
+          pitch: 0, // Top-down view for better building visibility
+          bearing: 0,
+          duration: 2500,
+          essential: true
+        });
+
         const marker = new mapboxgl.Marker({
           color: '#ef4444',
           scale: 1.5
@@ -416,6 +431,17 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         }, 100);
       } else {
         console.log('🧹 Cleared all office markers - no office selected');
+        // Reset to overview style when no office is selected
+        if (map.current && map.current.getStyle().name === 'Mapbox Satellite Streets') {
+          map.current.setStyle('mapbox://styles/mapbox/satellite-streets-v12');
+          map.current.flyTo({
+            center: [-95.7129, 37.0902],
+            zoom: 4,
+            pitch: 45,
+            bearing: 0,
+            duration: 2000
+          });
+        }
       }
     }
   }, [selectedOffice, mapboxToken]);
