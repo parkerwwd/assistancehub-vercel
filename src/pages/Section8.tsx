@@ -18,6 +18,7 @@ const Section8 = () => {
   const {
     mapboxToken,
     selectedOffice,
+    selectedLocation,
     tokenError,
     mapRef,
     phaAgencies,
@@ -129,6 +130,7 @@ const Section8 = () => {
                 onOfficeSelect={setSelectedOffice}
                 onTokenError={setTokenError}
                 selectedOffice={selectedOffice}
+                selectedLocation={selectedLocation}
               />
             </div>
           </ResizablePanel>

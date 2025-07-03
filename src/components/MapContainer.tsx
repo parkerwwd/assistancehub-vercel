@@ -14,11 +14,13 @@ interface MapContainerProps {
   onTokenError: (error: string) => void;
   onBoundsChange?: (bounds: mapboxgl.LngLatBounds) => void;
   selectedOffice?: PHAAgency | null;
+  selectedLocation?: { lat: number; lng: number; name: string } | null;
 }
 
 export interface MapContainerRef {
   flyTo: (center: [number, number], zoom: number) => void;
   getBounds: () => mapboxgl.LngLatBounds | null;
+  setLocationMarker: (lat: number, lng: number, name: string) => void;
 }
 
 const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({ 
@@ -27,11 +29,13 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   onOfficeSelect, 
   onTokenError,
   onBoundsChange,
-  selectedOffice
+  selectedOffice,
+  selectedLocation
 }, ref) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
+  const locationMarker = useRef<mapboxgl.Marker | null>(null);
 
   useImperativeHandle(ref, () => ({
     flyTo: (center: [number, number], zoom: number) => {
@@ -49,6 +53,33 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     },
     getBounds: () => {
       return map.current?.getBounds() || null;
+    },
+    setLocationMarker: (lat: number, lng: number, name: string) => {
+      if (!map.current) return;
+      
+      // Remove existing location marker
+      if (locationMarker.current) {
+        locationMarker.current.remove();
+      }
+      
+      // Create a custom marker element for location
+      const el = document.createElement('div');
+      el.className = 'location-marker';
+      el.style.width = '20px';
+      el.style.height = '20px';
+      el.style.borderRadius = '50%';
+      el.style.backgroundColor = '#ff4444';
+      el.style.border = '3px solid white';
+      el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+      el.style.cursor = 'pointer';
+      
+      // Add location marker
+      locationMarker.current = new mapboxgl.Marker({ element: el })
+        .setLngLat([lng, lat])
+        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${name}</strong>`))
+        .addTo(map.current);
+        
+      console.log('📍 Added location marker for:', name, 'at', { lat, lng });
     }
   }));
 
@@ -56,6 +87,14 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   const clearMarkers = () => {
     markers.current.forEach(marker => marker.remove());
     markers.current = [];
+  };
+
+  // Clear location marker
+  const clearLocationMarker = () => {
+    if (locationMarker.current) {
+      locationMarker.current.remove();
+      locationMarker.current = null;
+    }
   };
 
   // Add marker for selected office only
@@ -152,6 +191,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
       return () => {
         clearMarkers();
+        clearLocationMarker();
         map.current?.remove();
       };
     } catch (error) {
@@ -172,6 +212,17 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       }
     }
   }, [selectedOffice]);
+
+  // Handle selected location changes
+  useEffect(() => {
+    if (map.current?.loaded() && selectedLocation) {
+      console.log('🗺️ Selected location changed, adding location marker');
+      // Clear location marker when no location is selected
+      if (!selectedLocation) {
+        clearLocationMarker();
+      }
+    }
+  }, [selectedLocation]);
 
   return <div ref={mapContainer} className="w-full h-full" />;
 });

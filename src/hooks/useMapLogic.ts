@@ -10,6 +10,7 @@ type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 export const useMapLogic = () => {
   const [mapboxToken, setMapboxToken] = useState("");
   const [selectedOffice, setSelectedOffice] = useState<PHAAgency | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; name: string } | null>(null);
   const [tokenError, setTokenError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const mapRef = useRef<MapContainerRef>(null);
@@ -26,7 +27,7 @@ export const useMapLogic = () => {
   // Load token from localStorage on component mount, or use provided token
   useEffect(() => {
     const savedToken = localStorage.getItem('mapbox-token');
-    const providedToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjenhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
+    const providedToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjelhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
     
     if (savedToken) {
       setMapboxToken(savedToken);
@@ -56,16 +57,32 @@ export const useMapLogic = () => {
     // Clear any selected office first
     setSelectedOffice(null);
     
+    // Set selected location for marker
+    const location = {
+      lat: city.latitude,
+      lng: city.longitude,
+      name: `${city.name}, ${city.stateCode}`
+    };
+    setSelectedLocation(location);
+    
     // Fly to the selected city with appropriate zoom level
     if (mapRef.current) {
       console.log('🗺️ Flying to city coordinates:', { lat: city.latitude, lng: city.longitude });
       mapRef.current.flyTo([city.longitude, city.latitude], 10);
+      
+      // Add location marker
+      setTimeout(() => {
+        mapRef.current?.setLocationMarker(city.latitude, city.longitude, `${city.name}, ${city.stateCode}`);
+      }, 1000);
     }
   };
 
   const handleOfficeSelect = (office: PHAAgency) => {
     console.log('🏢 Selected office:', office.name);
     setSelectedOffice(office);
+    
+    // Clear location marker when selecting an office
+    setSelectedLocation(null);
     
     // Get coordinates from the office data
     const lat = office.latitude || (office as any).geocoded_latitude;
@@ -84,6 +101,7 @@ export const useMapLogic = () => {
   const resetToUSView = () => {
     console.log('🇺🇸 Resetting to US view');
     setSelectedOffice(null);
+    setSelectedLocation(null);
     if (mapRef.current) {
       // Center on continental US with appropriate zoom to match reference image
       mapRef.current.flyTo([-95.7129, 37.0902], 4);
@@ -93,6 +111,7 @@ export const useMapLogic = () => {
   return {
     mapboxToken,
     selectedOffice,
+    selectedLocation,
     tokenError,
     showFilters,
     mapRef,
