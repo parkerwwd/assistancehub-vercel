@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, Mail, Fax, Calendar, TrendingUp, BarChart3 } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, Mail, Calendar, TrendingUp, BarChart3 } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
@@ -192,7 +192,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
 
               {office.fax && (
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg border">
-                  <Fax className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
+                  <Phone className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
                   <div>
                     <span className="text-gray-700 font-medium block">{office.fax}</span>
                     <span className="text-xs text-gray-600">Fax</span>
@@ -252,7 +252,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
 
                 {office.exec_dir_fax && (
                   <div className="flex items-center p-3 bg-gray-50 rounded-lg border">
-                    <Fax className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
+                    <Phone className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
                     <div>
                       <span className="text-gray-700 font-medium block">{office.exec_dir_fax}</span>
                       <span className="text-xs text-gray-600">Executive Director Fax</span>
