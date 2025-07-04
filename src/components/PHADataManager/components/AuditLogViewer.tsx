@@ -16,7 +16,7 @@ interface AuditLogEntry {
   old_data: any;
   new_data: any;
   user_id: string | null;
-  ip_address: string | null;
+  ip_address: unknown | null;
   user_agent: string | null;
   created_at: string;
 }
@@ -202,7 +202,7 @@ export const AuditLogViewer: React.FC = () => {
                               <div className="lg:col-span-2">
                                 <h5 className="font-semibold text-sm mb-1">Additional Info:</h5>
                                 <p className="text-xs text-gray-600">
-                                  IP: {log.ip_address}
+                                  IP: {String(log.ip_address)}
                                   {log.user_agent && ` | User Agent: ${log.user_agent}`}
                                 </p>
                               </div>
