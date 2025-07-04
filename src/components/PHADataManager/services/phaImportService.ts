@@ -27,15 +27,6 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
       case 'address':
         phaData.address = sanitizeInput(csvValue, 500);
         break;
-      case 'city':
-        phaData.city = sanitizeInput(csvValue, 100);
-        break;
-      case 'state':
-        phaData.state = sanitizeInput(csvValue, 2)?.substring(0, 2) || null;
-        break;
-      case 'zip':
-        phaData.zip = sanitizeInput(csvValue, 10)?.substring(0, 10) || null;
-        break;
       case 'phone':
         phaData.phone = sanitizeInput(csvValue, 20);
         break;
@@ -44,9 +35,6 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
         break;
       case 'email':
         phaData.email = sanitizeInput(csvValue, 255);
-        break;
-      case 'website':
-        phaData.website = sanitizeInput(csvValue, 255);
         break;
       case 'exec_dir_phone':
         phaData.exec_dir_phone = sanitizeInput(csvValue, 20);
@@ -57,34 +45,17 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
       case 'exec_dir_email':
         phaData.exec_dir_email = sanitizeInput(csvValue, 255);
         break;
-      case 'supports_hcv':
-        phaData.supports_hcv = csvValue?.toString().toLowerCase().includes('section 8') || 
-                             csvValue?.toString().toLowerCase().includes('hcv') ||
-                             csvValue?.toString().toLowerCase().includes('voucher') ||
-                             csvValue?.toString().toLowerCase() === 'true' || 
-                             (csvValue && parseInt(csvValue.toString()) > 0) || 
-                             false;
-        break;
-      case 'waitlist_open':
-        phaData.waitlist_open = csvValue?.toString().toLowerCase() === 'open' ||
-                              csvValue?.toString().toLowerCase() === 'true' ||
-                              csvValue?.toString().toLowerCase() === 'yes' ||
-                              false;
-        break;
-      case 'waitlist_status':
-        phaData.waitlist_status = sanitizeInput(csvValue, 50) || 'Unknown';
-        break;
-      case 'latitude':
-        phaData.latitude = parseCoordinate(csvValue, 'latitude');
-        break;
-      case 'longitude':
-        phaData.longitude = parseCoordinate(csvValue, 'longitude');
+      case 'phas_designation':
+        phaData.phas_designation = sanitizeInput(csvValue, 50);
         break;
       case 'total_units':
         phaData.total_units = csvValue ? parseInt(csvValue.toString()) || null : null;
         break;
       case 'total_dwelling_units':
         phaData.total_dwelling_units = csvValue ? parseInt(csvValue.toString()) || null : null;
+        break;
+      case 'acc_units':
+        phaData.acc_units = csvValue ? parseInt(csvValue.toString()) || null : null;
         break;
       case 'ph_occupied':
         phaData.ph_occupied = csvValue ? parseInt(csvValue.toString()) || null : null;
@@ -95,8 +66,32 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
       case 'section8_occupied':
         phaData.section8_occupied = csvValue ? parseInt(csvValue.toString()) || null : null;
         break;
-      case 'performance_status':
-        phaData.performance_status = sanitizeInput(csvValue, 50);
+      case 'total_occupied':
+        phaData.total_occupied = csvValue ? parseInt(csvValue.toString()) || null : null;
+        break;
+      case 'pct_occupied':
+        phaData.pct_occupied = csvValue ? parseFloat(csvValue.toString()) || null : null;
+        break;
+      case 'regular_vacant':
+        phaData.regular_vacant = csvValue ? parseInt(csvValue.toString()) || null : null;
+        break;
+      case 'pha_total_units':
+        phaData.pha_total_units = csvValue ? parseInt(csvValue.toString()) || null : null;
+        break;
+      case 'number_reported':
+        phaData.number_reported = csvValue ? parseInt(csvValue.toString()) || null : null;
+        break;
+      case 'pct_reported':
+        phaData.pct_reported = csvValue ? parseFloat(csvValue.toString()) || null : null;
+        break;
+      case 'opfund_amount':
+        phaData.opfund_amount = csvValue ? parseFloat(csvValue.toString()) || null : null;
+        break;
+      case 'opfund_amount_prev_yr':
+        phaData.opfund_amount_prev_yr = csvValue ? parseFloat(csvValue.toString()) || null : null;
+        break;
+      case 'capfund_amount':
+        phaData.capfund_amount = csvValue ? parseFloat(csvValue.toString()) || null : null;
         break;
       case 'program_type':
         phaData.program_type = sanitizeInput(csvValue, 100);
@@ -112,13 +107,6 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
         break;
       case 'fiscal_year_end':
         phaData.fiscal_year_end = sanitizeInput(csvValue, 20);
-        break;
-      case 'jurisdictions':
-        // Handle jurisdictions as array if it's a comma-separated string
-        if (csvValue) {
-          const jurisdictionsStr = sanitizeInput(csvValue, 500);
-          phaData.jurisdictions = jurisdictionsStr ? jurisdictionsStr.split(',').map(j => j.trim()) : null;
-        }
         break;
     }
   });
