@@ -23,40 +23,14 @@ interface FieldMappingModalProps {
 }
 
 const FIELD_GROUPS = {
-  'Basic Information': [
-    { origin: 'PARTICIPANT_CODE', mapped: 'PHA Code' },
-    { origin: 'FORMAL_PARTICIPANT_NAME', mapped: 'PHA Name' },
-    { origin: 'HA_TYPE', mapped: 'Housing Authority Type' },
-  ],
-  'Address Information': [
-    { origin: 'STD_ADDR', mapped: 'Street Address' },
-    { origin: 'STD_CITY', mapped: 'City' },
-    { origin: 'STD_ST', mapped: 'State' },
-    { origin: 'STD_ZIP5', mapped: 'ZIP Code' },
-    { origin: 'STD_ZIP4', mapped: 'ZIP+4' },
-  ],
-  'Contact Information': [
+  'PHA Information': [
+    { origin: 'FORMAL_PARTICIPANT_NAME', mapped: 'Agency Name (Title)' },
+    { origin: 'FULL_ADDRESS', mapped: 'Address' },
     { origin: 'HA_PHN_NUM', mapped: 'Phone Number' },
     { origin: 'HA_EMAIL_ADDR_TEXT', mapped: 'Email Address' },
     { origin: 'EXEC_DIR_EMAIL', mapped: 'Executive Director Email' },
-    { origin: 'HA_WEB_ADDR_TEXT', mapped: 'Website URL' },
-  ],
-  'Geographic Data': [
-    { origin: 'LAT', mapped: 'Latitude' },
-    { origin: 'LON', mapped: 'Longitude' },
-    { origin: 'GEOCODING_ACCURACY', mapped: 'Geocoding Accuracy' },
-  ],
-  'Program Information': [
-    { origin: 'HA_PROGRAM_TYPE', mapped: 'Program Type' },
-    { origin: 'SECTION8_UNITS_CNT', mapped: 'Section 8 Units Count' },
-    { origin: 'PH_UNITS_CNT', mapped: 'Public Housing Units Count' },
-    { origin: 'TOTAL_UNITS_CNT', mapped: 'Total Units Count' },
-  ],
-  'Additional Data': [
-    { origin: 'CLUSTER_CD', mapped: 'Cluster Code' },
-    { origin: 'CLUSTER_NAME', mapped: 'Cluster Name' },
-    { origin: 'PART_REGION', mapped: 'Participant Region' },
-    { origin: 'FIELD_OFFICE_NAME', mapped: 'Field Office Name' },
+    { origin: 'PARTICIPANT_CODE', mapped: 'PHA Code' },
+    { origin: 'HA_PROGRAM_TYPE', mapped: 'PHA Classification' },
   ]
 };
 
@@ -104,7 +78,7 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
         });
       });
       
-      // Add unmapped fields
+      // Add unmapped fields from CSV that don't match our required fields
       const mappedOrigins = mappings.map(m => m.originField.toUpperCase());
       const unmappedHeaders = headers.filter(h => 
         !mappedOrigins.includes(h.toUpperCase())
@@ -156,6 +130,17 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
     acc[mapping.group].push(mapping);
     return acc;
   }, {} as Record<string, FieldMapping[]>);
+
+  const availableFields = [
+    'Agency Name (Title)',
+    'Address',
+    'Phone Number',
+    'Email Address',
+    'Executive Director Email',
+    'PHA Code',
+    'PHA Classification',
+    'Unmapped Field'
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -238,12 +223,11 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {Object.values(FIELD_GROUPS).flat().map(field => (
-                                      <SelectItem key={field.mapped} value={field.mapped}>
-                                        {field.mapped}
+                                    {availableFields.map(field => (
+                                      <SelectItem key={field} value={field}>
+                                        {field}
                                       </SelectItem>
                                     ))}
-                                    <SelectItem value="Unmapped Field">Unmapped Field</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </TableCell>
