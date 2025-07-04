@@ -60,7 +60,7 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 
 /**
  * Filters PHA agencies based on the selected location from search
- * - For states: matches all agencies in that state
+ * - For states: matches agencies using location search terms (like counties)
  * - For cities: matches all agencies within 25 miles of the city
  * - For counties: matches agencies in that county and state
  */
@@ -75,18 +75,12 @@ export const filterPHAAgenciesByLocation = (
   console.log('🔍 Filtering PHA agencies for location:', selectedLocation.name, selectedLocation.type);
 
   if (selectedLocation.type === 'state') {
-    // For states, show all agencies in that state
+    // For states, use the same logic as counties - search through location fields
+    const searchTerms = getLocationSearchTerms(selectedLocation);
+    console.log('🔍 State search terms:', searchTerms);
+
     const filteredAgencies = agencies.filter(agency => {
-      if (!agency.state) return false;
-      
-      const agencyState = agency.state.toLowerCase().trim();
-      const selectedState = selectedLocation.name.toLowerCase().trim();
-      const selectedStateCode = selectedLocation.stateCode?.toLowerCase().trim();
-      
-      return agencyState === selectedState || 
-             agencyState === selectedStateCode ||
-             agencyState.includes(selectedState) ||
-             selectedState.includes(agencyState);
+      return searchTerms.some(term => matchesAgencyLocation(agency, term));
     });
 
     console.log('🔍 State filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
