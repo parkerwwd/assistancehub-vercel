@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, Menu, X } from "lucide-react";
 import { USLocation } from "@/data/usLocations";
 import CitySearch from "./CitySearch";
 
@@ -11,11 +11,17 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const handleCitySelectFromHeader = (location: USLocation) => {
     console.log('🏙️ Header location selected:', location);
     if (onCitySelect) {
       onCitySelect(location);
     }
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
@@ -29,23 +35,25 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
       
       <header className="bg-header backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Main header row */}
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+            {/* Logo */}
+            <div className="flex items-center flex-shrink-0">
               <Link to="/" className="hover:opacity-80 transition-opacity">
                 <img 
                   src="/lovable-uploads/221b75b2-2ed8-4872-b9ef-18b878e8e8fe.png" 
                   alt="AssistanceHub Logo" 
-                  className="h-12 w-auto"
+                  className="h-10 sm:h-12 w-auto"
                 />
               </Link>
             </div>
             
-            {/* Search Bar with reduced width */}
+            {/* Desktop Search Bar */}
             {showSearch && onCitySelect && (
-              <div className="flex-1 max-w-lg mx-6">
-                <div className="relative">
+              <div className="hidden md:flex flex-1 max-w-lg mx-6">
+                <div className="relative w-full">
                   <div className="flex items-center bg-white border-2 border-yellow-400 rounded-full px-4 py-2 shadow-sm">
-                    <Search className="w-5 h-5 text-gray-400 mr-3" />
+                    <Search className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
                     <div className="flex-1">
                       <CitySearch 
                         onCitySelect={handleCitySelectFromHeader}
@@ -58,18 +66,81 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
               </div>
             )}
             
-            <nav className="hidden md:flex space-x-8">
-              <Link to="/section8" className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-4 lg:space-x-8">
+              <Link to="/section8" className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-3 py-2 rounded-lg hover:bg-white/10 text-sm lg:text-base">
                 Section 8
               </Link>
-              <Link to="/snap" className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10">
+              <Link to="/snap" className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-3 py-2 rounded-lg hover:bg-white/10 text-sm lg:text-base">
                 SNAP
               </Link>
-              <Link to="/auth" className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10">
+              <Link to="/auth" className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-3 py-2 rounded-lg hover:bg-white/10 text-sm lg:text-base">
                 Admin Login
               </Link>
             </nav>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <button
+                onClick={toggleMobileMenu}
+                className="text-header-foreground hover:text-yellow-300 transition-colors p-2"
+                aria-label="Toggle menu"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
+              </button>
+            </div>
           </div>
+
+          {/* Mobile Search Bar - Full width below header */}
+          {showSearch && onCitySelect && (
+            <div className="md:hidden pb-4">
+              <div className="relative">
+                <div className="flex items-center bg-white border-2 border-yellow-400 rounded-full px-4 py-3 shadow-sm">
+                  <Search className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
+                  <div className="flex-1">
+                    <CitySearch 
+                      onCitySelect={handleCitySelectFromHeader}
+                      placeholder="Search City, County, or Zipcode"
+                      variant="header"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Mobile Navigation Menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden border-t border-white/20 py-4">
+              <nav className="flex flex-col space-y-2">
+                <Link 
+                  to="/section8" 
+                  className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-4 py-3 rounded-lg hover:bg-white/10 text-base"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Section 8
+                </Link>
+                <Link 
+                  to="/snap" 
+                  className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-4 py-3 rounded-lg hover:bg-white/10 text-base"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  SNAP
+                </Link>
+                <Link 
+                  to="/auth" 
+                  className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-4 py-3 rounded-lg hover:bg-white/10 text-base"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Admin Login
+                </Link>
+              </nav>
+            </div>
+          )}
         </div>
       </header>
     </>
