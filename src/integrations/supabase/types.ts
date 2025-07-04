@@ -11,64 +11,109 @@ export type Database = {
     Tables: {
       pha_agencies: {
         Row: {
+          acc_units: number | null
           address: string | null
-          city: string | null
+          capfund_amount: number | null
+          combined_size_category: string | null
           created_at: string
           email: string | null
+          exec_dir_email: string | null
+          exec_dir_fax: string | null
+          exec_dir_phone: string | null
+          fax: string | null
+          fiscal_year_end: string | null
           id: string
-          jurisdictions: string[] | null
           last_updated: string | null
-          latitude: number | null
-          longitude: number | null
+          low_rent_size_category: string | null
           name: string
+          number_reported: number | null
+          opfund_amount: number | null
+          opfund_amount_prev_yr: number | null
+          pct_occupied: number | null
+          pct_reported: number | null
+          ph_occupied: number | null
           pha_code: string | null
+          pha_total_units: number | null
+          phas_designation: string | null
           phone: string | null
-          state: string | null
-          supports_hcv: boolean | null
-          waitlist_open: boolean | null
-          waitlist_status: string | null
-          website: string | null
-          zip: string | null
+          program_type: string | null
+          regular_vacant: number | null
+          section8_occupied: number | null
+          section8_size_category: string | null
+          section8_units_count: number | null
+          total_dwelling_units: number | null
+          total_occupied: number | null
+          total_units: number | null
         }
         Insert: {
+          acc_units?: number | null
           address?: string | null
-          city?: string | null
+          capfund_amount?: number | null
+          combined_size_category?: string | null
           created_at?: string
           email?: string | null
+          exec_dir_email?: string | null
+          exec_dir_fax?: string | null
+          exec_dir_phone?: string | null
+          fax?: string | null
+          fiscal_year_end?: string | null
           id?: string
-          jurisdictions?: string[] | null
           last_updated?: string | null
-          latitude?: number | null
-          longitude?: number | null
+          low_rent_size_category?: string | null
           name: string
+          number_reported?: number | null
+          opfund_amount?: number | null
+          opfund_amount_prev_yr?: number | null
+          pct_occupied?: number | null
+          pct_reported?: number | null
+          ph_occupied?: number | null
           pha_code?: string | null
+          pha_total_units?: number | null
+          phas_designation?: string | null
           phone?: string | null
-          state?: string | null
-          supports_hcv?: boolean | null
-          waitlist_open?: boolean | null
-          waitlist_status?: string | null
-          website?: string | null
-          zip?: string | null
+          program_type?: string | null
+          regular_vacant?: number | null
+          section8_occupied?: number | null
+          section8_size_category?: string | null
+          section8_units_count?: number | null
+          total_dwelling_units?: number | null
+          total_occupied?: number | null
+          total_units?: number | null
         }
         Update: {
+          acc_units?: number | null
           address?: string | null
-          city?: string | null
+          capfund_amount?: number | null
+          combined_size_category?: string | null
           created_at?: string
           email?: string | null
+          exec_dir_email?: string | null
+          exec_dir_fax?: string | null
+          exec_dir_phone?: string | null
+          fax?: string | null
+          fiscal_year_end?: string | null
           id?: string
-          jurisdictions?: string[] | null
           last_updated?: string | null
-          latitude?: number | null
-          longitude?: number | null
+          low_rent_size_category?: string | null
           name?: string
+          number_reported?: number | null
+          opfund_amount?: number | null
+          opfund_amount_prev_yr?: number | null
+          pct_occupied?: number | null
+          pct_reported?: number | null
+          ph_occupied?: number | null
           pha_code?: string | null
+          pha_total_units?: number | null
+          phas_designation?: string | null
           phone?: string | null
-          state?: string | null
-          supports_hcv?: boolean | null
-          waitlist_open?: boolean | null
-          waitlist_status?: string | null
-          website?: string | null
-          zip?: string | null
+          program_type?: string | null
+          regular_vacant?: number | null
+          section8_occupied?: number | null
+          section8_size_category?: string | null
+          section8_units_count?: number | null
+          total_dwelling_units?: number | null
+          total_occupied?: number | null
+          total_units?: number | null
         }
         Relationships: []
       }
@@ -81,7 +126,7 @@ export type Database = {
           new_data: Json | null
           old_data: Json | null
           record_id: string | null
-          table_name: string | null
+          table_name: string
           user_agent: string | null
           user_id: string | null
         }
@@ -93,7 +138,7 @@ export type Database = {
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string | null
-          table_name?: string | null
+          table_name?: string
           user_agent?: string | null
           user_id?: string | null
         }
@@ -105,7 +150,7 @@ export type Database = {
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string | null
-          table_name?: string | null
+          table_name?: string
           user_agent?: string | null
           user_id?: string | null
         }

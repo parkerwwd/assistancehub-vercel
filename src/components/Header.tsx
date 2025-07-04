@@ -31,8 +31,12 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-indigo-700 transition-all duration-200">
-                AssistanceHub
+              <Link to="/" className="hover:opacity-80 transition-opacity">
+                <img 
+                  src="/lovable-uploads/80384fe9-e82f-4176-b42b-cf132c13a51f.png" 
+                  alt="AssistanceHub Logo" 
+                  className="h-8 w-auto"
+                />
               </Link>
             </div>
             
