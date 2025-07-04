@@ -132,24 +132,22 @@ const CitySearch: React.FC<CitySearchProps> = ({
         />
         
         {showSuggestions && filteredLocations.length > 0 && (
-          <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl w-screen max-w-md sm:max-w-lg md:w-auto md:min-w-[400px] max-h-80 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl min-w-[320px] max-h-80 overflow-y-auto">
             {filteredLocations.map((location, index) => (
               <div
                 key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
                 onClick={() => handleLocationSelect(location)}
-                className="cursor-pointer flex items-center gap-4 px-5 py-4 text-base hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 transition-all duration-200 active:bg-blue-100"
+                className="cursor-pointer flex items-center gap-3 px-4 py-3 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 transition-colors"
               >
-                <span className="text-2xl flex-shrink-0">{getLocationIcon(location.type)}</span>
+                <span className="text-lg flex-shrink-0">{getLocationIcon(location.type)}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start flex-col gap-1 mb-1">
-                    <div className="flex items-center gap-2 w-full">
-                      <span className="font-semibold text-gray-900 text-lg truncate">{location.name}</span>
-                      {(location.type === 'city' || location.type === 'county') && (
-                        <span className="text-gray-600 flex-shrink-0 font-medium">{location.stateCode}</span>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-gray-900 truncate">{location.name}</span>
+                    {(location.type === 'city' || location.type === 'county') && (
+                      <span className="text-gray-500 flex-shrink-0">, {location.stateCode}</span>
+                    )}
                   </div>
-                  <div className="text-sm text-gray-500 font-medium">
+                  <div className="text-xs text-gray-500">
                     {getLocationDescription(location)}
                   </div>
                 </div>
@@ -175,12 +173,12 @@ const CitySearch: React.FC<CitySearchProps> = ({
       />
       
       {showSuggestions && filteredLocations.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl min-w-[320px] max-h-64 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl min-w-[280px] max-h-64 overflow-y-auto">
           {filteredLocations.map((location, index) => (
             <div
               key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
               onClick={() => handleLocationSelect(location)}
-              className="cursor-pointer flex items-center gap-3 px-4 py-3 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 transition-colors"
+              className="cursor-pointer flex items-center gap-3 px-3 py-3 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 transition-colors"
             >
               <span className="text-lg flex-shrink-0">{getLocationIcon(location.type)}</span>
               <div className="flex-1 min-w-0">
