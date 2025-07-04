@@ -1,13 +1,10 @@
-
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Database } from "@/integrations/supabase/types";
+import { PHAAgency } from "@/types/phaOffice";
 import { MapInitializer } from "./map/MapInitializer";
 import { MapMarkerManager } from "./map/MapMarkerManager";
 import { Map3DControls } from "./map/Map3DControls";
-
-type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 interface MapContainerProps {
   mapboxToken: string;

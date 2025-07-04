@@ -1,8 +1,6 @@
 
-import { Database } from "@/integrations/supabase/types";
+import { PHAAgency } from "@/types/phaOffice";
 import { USLocation } from "@/data/usLocations";
-
-type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export const getWaitlistColor = (status: string) => {
   switch (status) {
@@ -14,24 +12,8 @@ export const getWaitlistColor = (status: string) => {
 };
 
 export const getPHATypeFromData = (agency: any) => {
-  // First check if we have HA_PROGRAM_TYPE field
-  if (agency.ha_program_type) {
-    // Map various program types to our two simplified categories
-    const programType = agency.ha_program_type.toLowerCase();
-    if (programType.includes('combined') || programType.includes('both')) {
-      return "Combined PHA";
-    } else {
-      return "Section 8 PHA";
-    }
-  }
-  
-  // Fallback to existing logic using section8_units_count
-  if (agency.section8_units_count && agency.section8_units_count > 0) {
-    return "Section 8 PHA";
-  } else {
-    // If they don't support HCV, they likely have public housing too, so Combined
-    return "Combined PHA";
-  }
+  // Simplified for now since we don't have database data
+  return "PHA Office";
 };
 
 export const getPHATypeColor = (phaType: string) => {
@@ -60,154 +42,11 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 
 /**
  * Filters PHA agencies based on the selected location from search
- * - For states: matches agencies using location search terms (like counties)
- * - For cities: matches all agencies within 25 miles of the city
- * - For counties: matches agencies in that county and state
  */
 export const filterPHAAgenciesByLocation = (
   agencies: PHAAgency[],
   selectedLocation: USLocation
 ): PHAAgency[] => {
-  if (!agencies || agencies.length === 0) {
-    return [];
-  }
-
-  console.log('🔍 Filtering PHA agencies for location:', selectedLocation.name, selectedLocation.type);
-
-  if (selectedLocation.type === 'state') {
-    // For states, use the same logic as counties - search through location fields
-    const searchTerms = getLocationSearchTerms(selectedLocation);
-    console.log('🔍 State search terms:', searchTerms);
-
-    const filteredAgencies = agencies.filter(agency => {
-      return searchTerms.some(term => matchesAgencyLocation(agency, term));
-    });
-
-    console.log('🔍 State filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
-    return filteredAgencies;
-  }
-
-  if (selectedLocation.type === 'city') {
-    // For cities, show all agencies within 25 miles
-    const filteredAgencies = agencies.filter(agency => {
-      // Get agency coordinates using geocoded coordinates
-      let agencyLat = (agency as any).geocoded_latitude;
-      let agencyLng = (agency as any).geocoded_longitude;
-      
-      // Skip agencies without coordinates
-      if (!agencyLat || !agencyLng) {
-        console.log('⚠️ No coordinates for agency:', agency.name);
-        return false;
-      }
-      
-      // Calculate distance
-      const distance = calculateDistance(
-        selectedLocation.latitude,
-        selectedLocation.longitude,
-        agencyLat,
-        agencyLng
-      );
-      
-      const withinRange = distance <= 25;
-      if (withinRange) {
-        console.log('✅ Agency within 25 miles:', agency.name, `(${distance.toFixed(1)} miles)`);
-      }
-      
-      return withinRange;
-    });
-
-    console.log('🔍 City filter (25 miles) - found agencies:', filteredAgencies.length, 'out of', agencies.length);
-    return filteredAgencies;
-  }
-
-  if (selectedLocation.type === 'county') {
-    // For counties, match by county name and state
-    const searchTerms = getLocationSearchTerms(selectedLocation);
-    console.log('🔍 County search terms:', searchTerms);
-
-    const filteredAgencies = agencies.filter(agency => {
-      return searchTerms.some(term => matchesAgencyLocation(agency, term));
-    });
-
-    console.log('🔍 County filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
-    return filteredAgencies;
-  }
-
-  // Fallback to original logic
-  const searchTerms = getLocationSearchTerms(selectedLocation);
-  console.log('🔍 Fallback search terms:', searchTerms);
-
-  const filteredAgencies = agencies.filter(agency => {
-    return searchTerms.some(term => matchesAgencyLocation(agency, term));
-  });
-
-  console.log('🔍 Fallback filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
-  return filteredAgencies;
-};
-
-/**
- * Generate search terms based on the selected location type
- */
-const getLocationSearchTerms = (location: USLocation): string[] => {
-  const terms: string[] = [];
-
-  switch (location.type) {
-    case 'state':
-      // For states, search by state name and state code
-      terms.push(location.name.toLowerCase());
-      if (location.stateCode) {
-        terms.push(location.stateCode.toLowerCase());
-      }
-      break;
-
-    case 'county':
-      // For counties, search by county name and state
-      terms.push(location.name.toLowerCase());
-      if (location.stateCode) {
-        terms.push(location.stateCode.toLowerCase());
-      }
-      // Also try without "County" suffix
-      const countyNameWithoutSuffix = location.name.replace(/\s+county$/i, '').toLowerCase();
-      if (countyNameWithoutSuffix !== location.name.toLowerCase()) {
-        terms.push(countyNameWithoutSuffix);
-      }
-      break;
-
-    case 'city':
-      // For cities, search by city name and state
-      terms.push(location.name.toLowerCase());
-      if (location.stateCode) {
-        terms.push(location.stateCode.toLowerCase());
-      }
-      break;
-  }
-
-  return terms;
-};
-
-/**
- * Check if a PHA agency matches a search term in its location fields
- */
-const matchesAgencyLocation = (agency: PHAAgency, searchTerm: string): boolean => {
-  const fieldsToSearch = [
-    agency.address,
-    // Also check phone field as it sometimes contains city info
-    agency.phone
-  ];
-
-  return fieldsToSearch.some(field => {
-    if (!field) return false;
-    const fieldLower = field.toLowerCase();
-    const termLower = searchTerm.toLowerCase();
-
-    // For state codes (2 letters), do exact word matching to avoid false positives
-    if (termLower.length === 2 && /^[a-z]{2}$/.test(termLower)) {
-      // Split field into words and check for exact match
-      const words = fieldLower.split(/\s+|,|\.|;/);
-      return words.some(word => word === termLower);
-    }
-
-    // For longer terms, use contains matching
-    return fieldLower.includes(termLower);
-  });
+  console.log('⚠️ Database tables removed - returning empty filtered results');
+  return [];
 };

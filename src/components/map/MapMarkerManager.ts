@@ -1,10 +1,7 @@
-
 import mapboxgl from 'mapbox-gl';
-import { Database } from "@/integrations/supabase/types";
-import { LocationMarker } from "./LocationMarker";
-import { MarkerUtils } from "./MarkerUtils";
-
-type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
+import { PHAAgency } from "@/types/phaOffice";
+import { MarkerUtils } from './MarkerUtils';
+import { LocationMarker } from './LocationMarker';
 
 export class MapMarkerManager {
   private officeMarkers: mapboxgl.Marker[] = [];

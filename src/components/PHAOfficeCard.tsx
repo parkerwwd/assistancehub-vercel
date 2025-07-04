@@ -1,11 +1,8 @@
-
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { MapPin, Heart, Phone, Building2 } from "lucide-react";
-import { Database } from "@/integrations/supabase/types";
+import { PHAAgency } from "@/types/phaOffice";
 import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
-
-type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 interface PHAOfficeCardProps {
   agency: PHAAgency;

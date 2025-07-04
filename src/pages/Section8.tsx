@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
@@ -9,9 +8,8 @@ import Header from "@/components/Header";
 import MobileSection8Layout from "@/components/MobileSection8Layout";
 import { useMapLogic } from "@/hooks/useMapLogic";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Database } from "@/integrations/supabase/types";
+import { PHAAgency } from "@/types/phaOffice";
 
-type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
 
 const Section8 = () => {

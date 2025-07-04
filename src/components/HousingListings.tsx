@@ -2,9 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Home, DollarSign, Users, Bed } from "lucide-react";
-import { Database } from "@/integrations/supabase/types";
-
-type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
+import { PHAAgency } from "@/types/phaOffice";
 
 interface HousingListingsProps {
   office: PHAAgency;

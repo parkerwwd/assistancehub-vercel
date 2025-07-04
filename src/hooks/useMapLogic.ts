@@ -1,11 +1,8 @@
-
 import { useState, useRef } from 'react';
-import { Database } from "@/integrations/supabase/types";
+import { PHAAgency } from "@/types/phaOffice";
 import { USLocation } from "@/data/usLocations";
 import { MapContainerRef } from "@/components/MapContainer";
 import { usePHAData } from "./usePHAData";
-
-type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export const useMapLogic = () => {
   // Use your provided token
@@ -28,7 +25,6 @@ export const useMapLogic = () => {
     clearLocationFilter
   } = usePHAData();
 
-  // Token is now hardcoded, so this function is a no-op
   const handleTokenChange = (token: string) => {
     console.log('🔑 Token change requested but using hardcoded token:', token ? 'Present' : 'Empty');
     // No-op since we're using a hardcoded token
@@ -175,14 +171,51 @@ export const useMapLogic = () => {
     currentPage,
     totalPages,
     totalCount,
-    setSelectedOffice: handleOfficeSelect,
+    setSelectedOffice: setSelectedOffice,
     setSelectedLocation,
     setTokenError,
     setShowFilters,
-    handleTokenChange,
-    handleCitySelect,
-    handlePageChange,
-    resetToUSView,
+    handleTokenChange: (token: string) => {},
+    handleCitySelect: async (location: USLocation) => {
+      console.log('🏙️ Selected location:', location.name, location.type);
+      setSelectedOffice(null);
+      applyLocationFilter(location);
+      
+      const locationData = {
+        lat: location.latitude,
+        lng: location.longitude,
+        name: location.type === 'state' ? location.name :
+              location.type === 'county' ? `${location.name}, ${location.stateCode}` :
+              `${location.name}, ${location.stateCode}`
+      };
+      setSelectedLocation(locationData);
+      
+      let zoomLevel = 10;
+      if (location.type === 'state') {
+        zoomLevel = 6;
+      } else if (location.type === 'county') {
+        zoomLevel = 8;
+      } else if (location.type === 'city') {
+        zoomLevel = 10;
+      }
+      
+      if (mapRef.current) {
+        mapRef.current.flyTo([location.longitude, location.latitude], zoomLevel);
+        setTimeout(() => {
+          mapRef.current?.setLocationMarker(location.latitude, location.longitude, locationData.name);
+        }, 1000);
+      }
+    },
+    handlePageChange: goToPage,
+    resetToUSView: () => {
+      console.log('🇺🇸 Resetting to US view');
+      setSelectedOffice(null);
+      setSelectedLocation(null);
+      clearLocationFilter();
+      if (mapRef.current) {
+        mapRef.current.flyTo([-95.7129, 37.0902], 4);
+      }
+    },
     clearLocationFilter
   };
 };

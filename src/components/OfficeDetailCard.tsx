@@ -1,13 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, ExternalLink, Users, ArrowRight, Building, Image } from "lucide-react";
-import { Database } from "@/integrations/supabase/types";
+import { PHAAgency } from "@/types/phaOffice";
 import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
-
-type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 interface OfficeDetailCardProps {
   office: PHAAgency;
