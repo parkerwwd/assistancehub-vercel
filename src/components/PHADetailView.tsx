@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, Map, Mail } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, Map, Mail, Shield, Calendar } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
@@ -20,12 +20,10 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
   const [imageError, setImageError] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
 
-  // Build full address using only the address field since city, state, zip don't exist in current schema
   const fullAddress = office.address || 'Address not available';
-
   const phaType = getPHATypeFromData(office);
+  const waitlistStatus = 'Unknown';
 
-  // Get Google Maps images
   const streetViewImageUrl = GoogleMapsService.getStreetViewImage({
     address: fullAddress,
     size: '400x200'
@@ -41,238 +39,274 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
     }
   };
 
-  // Default waitlist status since the field doesn't exist in current schema
-  const waitlistStatus = 'Unknown';
-
   return (
-    <div className="h-full bg-gray-50">
-      {/* Header - Mobile optimized */}
-      <div className="bg-white border-b px-4 py-3 flex-shrink-0">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 -ml-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to List
-        </Button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Modern Header */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="px-4 py-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onBack}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Search
+          </Button>
+        </div>
       </div>
 
-      {/* Content - Mobile optimized scrolling */}
-      <div className="flex-1 overflow-y-auto p-3">
-        <Card className="shadow-sm border-0 mb-4">
-          {/* Address Image - Smaller for mobile */}
+      <div className="max-w-4xl mx-auto p-4 space-y-6">
+        {/* Hero Section */}
+        <Card className="overflow-hidden shadow-lg border-0 bg-white">
+          {/* Hero Image */}
           {fullAddress && !imageError && (
-            <div className="relative overflow-hidden rounded-t-lg">
+            <div className="relative h-48 md:h-64 overflow-hidden">
               <img
                 src={showFallback ? staticMapImageUrl : streetViewImageUrl}
-                alt={`Street view of ${office.name}`}
-                className="w-full h-40 object-cover"
+                alt={`View of ${office.name}`}
+                className="w-full h-full object-cover"
                 onError={handleImageError}
-                onLoad={() => console.log('Image loaded successfully')}
               />
-              <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 shadow-sm">
                 <Image className="w-3 h-3" />
                 {showFallback ? 'Map View' : 'Street View'}
+              </div>
+              <div className="absolute bottom-4 left-4 right-4">
+                <h1 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">
+                  {office.name}
+                </h1>
+                {fullAddress && (
+                  <button
+                    onClick={onShowMap}
+                    className="flex items-center gap-2 text-white/90 hover:text-white transition-colors group"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    <span className="text-sm group-hover:underline">{fullAddress}</span>
+                  </button>
+                )}
               </div>
             </div>
           )}
 
-          <CardHeader className="pb-3 px-4">
-            <CardTitle className="text-lg text-gray-900 leading-tight">
-              {office.name}
-            </CardTitle>
-            {fullAddress && (
-              <CardDescription className="flex items-start text-sm text-gray-600 mt-2">
-                <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-blue-600" />
-                <button
-                  onClick={onShowMap}
-                  className="leading-relaxed hover:text-blue-600 hover:underline text-left"
-                >
-                  {fullAddress}
-                </button>
-              </CardDescription>
-            )}
-          </CardHeader>
-
-          <CardContent className="space-y-3 px-4">
-            {/* Show Map Button */}
-            {onShowMap && (
+          <CardContent className="p-6">
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
               <Button
-                onClick={onShowMap}
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+                onClick={() => onViewHousing(office)}
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 h-12"
               >
-                <Map className="w-4 h-4" />
-                View on Map
+                <Home className="w-5 h-5" />
+                View Available Housing
               </Button>
+              {onShowMap && (
+                <Button
+                  onClick={onShowMap}
+                  variant="outline"
+                  className="flex items-center justify-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 h-12"
+                >
+                  <Map className="w-5 h-5" />
+                  Show on Map
+                </Button>
+              )}
+            </div>
+
+            {/* Status Badges */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
+                <Building className="w-6 h-6 mx-auto mb-2 text-blue-600" />
+                <div className="text-xs text-gray-500 mb-1">PHA Type</div>
+                <div 
+                  className="px-3 py-1 rounded-full text-sm font-medium inline-block"
+                  style={{ 
+                    backgroundColor: getPHATypeColor(phaType) + '20',
+                    color: getPHATypeColor(phaType)
+                  }}
+                >
+                  {phaType}
+                </div>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-xl border border-green-100">
+                <Users className="w-6 h-6 mx-auto mb-2 text-green-600" />
+                <div className="text-xs text-gray-500 mb-1">Waitlist Status</div>
+                <div 
+                  className="px-3 py-1 rounded-full text-sm font-medium inline-block"
+                  style={{ 
+                    backgroundColor: getWaitlistColor(waitlistStatus) + '20',
+                    color: getWaitlistColor(waitlistStatus)
+                  }}
+                >
+                  {waitlistStatus}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Contact Information Section */}
+        <Card className="shadow-lg border-0 bg-white">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Phone className="w-5 h-5 text-blue-600" />
+              Contact Information
+            </CardTitle>
+            <CardDescription>Get in touch with this housing authority</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {office.phone && (
+              <a 
+                href={`tel:${office.phone}`}
+                className="flex items-center p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-all group border border-blue-100 hover:border-blue-200"
+              >
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors">
+                  <Phone className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-900">Main Phone</div>
+                  <div className="text-lg font-semibold text-blue-700 group-hover:text-blue-800">
+                    {office.phone}
+                  </div>
+                </div>
+              </a>
+            )}
+            
+            {office.email && (
+              <a 
+                href={`mailto:${office.email}`}
+                className="flex items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-all group border border-green-100 hover:border-green-200"
+              >
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-green-200 transition-colors">
+                  <Mail className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-900">General Email</div>
+                  <div className="text-lg font-semibold text-green-700 group-hover:text-green-800 break-all">
+                    {office.email}
+                  </div>
+                </div>
+              </a>
             )}
 
-            {/* PHA Type - Compact mobile design */}
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
-              <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Building className="w-4 h-4" />
-                PHA Type
-              </span>
-              <span 
-                className="px-2 py-1 rounded-full text-xs font-medium border"
-                style={{ 
-                  backgroundColor: getPHATypeColor(phaType) + '15',
-                  borderColor: getPHATypeColor(phaType) + '30',
-                  color: getPHATypeColor(phaType)
-                }}
+            {office.exec_dir_email && (
+              <a 
+                href={`mailto:${office.exec_dir_email}`}
+                className="flex items-center p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-all group border border-purple-100 hover:border-purple-200"
               >
-                {phaType}
-              </span>
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-purple-200 transition-colors">
+                  <Mail className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-900">Executive Director</div>
+                  <div className="text-lg font-semibold text-purple-700 group-hover:text-purple-800 break-all">
+                    {office.exec_dir_email}
+                  </div>
+                </div>
+              </a>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Program Information Section */}
+        <Card className="shadow-lg border-0 bg-white">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Home className="w-5 h-5 text-purple-600" />
+              Housing Programs
+            </CardTitle>
+            <CardDescription>Available housing assistance programs</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {office.program_type && (
+              <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="w-5 h-5 text-purple-600" />
+                  <span className="font-medium text-gray-900">Program Type</span>
+                </div>
+                <p className="text-lg font-semibold text-purple-700">{office.program_type}</p>
+              </div>
+            )}
+
+            <div className="grid gap-3">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-sm font-medium">Section 8 Housing Choice Vouchers</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-sm font-medium">Public Housing Units</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span className="text-sm font-medium">Emergency Housing Assistance</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                <span className="text-sm font-medium">Senior Housing Programs</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Office Details Section */}
+        <Card className="shadow-lg border-0 bg-white">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Clock className="w-5 h-5 text-orange-600" />
+              Office Information
+            </CardTitle>
+            <CardDescription>Hours of operation and additional details</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {office.pha_code && (
+              <div className="p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="w-5 h-5 text-gray-600" />
+                  <span className="font-medium text-gray-900">PHA Code</span>
+                </div>
+                <p className="text-lg font-semibold text-gray-700">{office.pha_code}</p>
+              </div>
+            )}
+
+            <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-100">
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="w-5 h-5 text-yellow-600" />
+                <span className="font-medium text-gray-900">Office Hours</span>
+              </div>
+              <div className="space-y-2 text-sm text-gray-700">
+                <div className="flex justify-between">
+                  <span className="font-medium">Monday - Friday</span>
+                  <span>8:00 AM - 4:30 PM</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Saturday - Sunday</span>
+                  <span>Closed</span>
+                </div>
+              </div>
             </div>
 
-            {/* Waitlist Status */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-              <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Status
-              </span>
-              <span 
-                className="px-2 py-1 rounded-full text-xs font-medium border"
-                style={{ 
-                  backgroundColor: getWaitlistColor(waitlistStatus) + '15',
-                  borderColor: getWaitlistColor(waitlistStatus) + '30',
-                  color: getWaitlistColor(waitlistStatus)
-                }}
-              >
-                {waitlistStatus}
-              </span>
-            </div>
-
-            {/* Contact Information - All 7 fields properly displayed */}
-            <div className="space-y-3">
-              {/* Phone Number */}
-              {office.phone && (
-                <a 
-                  href={`tel:${office.phone}`}
-                  className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
-                >
-                  <Phone className="w-4 h-4 mr-3 text-blue-600 flex-shrink-0" />
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Phone</div>
-                    <span className="text-blue-700 group-hover:text-blue-800 font-medium text-sm">
-                      {office.phone}
-                    </span>
-                  </div>
-                </a>
-              )}
-              
-              {/* Email */}
-              {office.email && (
-                <a 
-                  href={`mailto:${office.email}`}
-                  className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group border border-green-100"
-                >
-                  <Mail className="w-4 h-4 mr-3 text-green-600 flex-shrink-0" />
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Email</div>
-                    <span className="text-green-700 group-hover:text-green-800 font-medium text-sm">
-                      {office.email}
-                    </span>
-                  </div>
-                </a>
-              )}
-
-              {/* Executive Director Email */}
-              {office.exec_dir_email && (
-                <a 
-                  href={`mailto:${office.exec_dir_email}`}
-                  className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
-                >
-                  <Mail className="w-4 h-4 mr-3 text-purple-600 flex-shrink-0" />
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Executive Director Email</div>
-                    <span className="text-purple-700 group-hover:text-purple-800 font-medium text-sm">
-                      {office.exec_dir_email}
-                    </span>
-                  </div>
-                </a>
-              )}
-            </div>
-
-            {/* Office Hours - Compact for mobile */}
-            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
               <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-yellow-600" />
-                <span className="text-sm font-medium text-gray-700">Office Hours</span>
+                <Calendar className="w-5 h-5 text-blue-600" />
+                <span className="font-medium text-gray-900">Last Updated</span>
               </div>
-              <div className="text-xs text-gray-600 space-y-1">
-                <p>Mon-Fri: 8:00 AM - 4:30 PM</p>
-                <p>Sat-Sun: Closed</p>
-              </div>
-            </div>
-
-            {/* View Housing Button - Full width for mobile */}
-            <Button
-              onClick={() => onViewHousing(office)}
-              className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 h-12 text-sm"
-            >
-              <Home className="w-4 h-4" />
-              View Available Housing
-            </Button>
-
-            {/* Additional Information - All fields displayed */}
-            <div className="space-y-3">
-              {/* Program Type */}
-              <div className="p-3 bg-gray-50 rounded-lg border">
-                <div className="flex items-center gap-2 mb-1">
-                  <DollarSign className="w-4 h-4 text-green-600" />
-                  <span className="text-xs font-medium text-gray-700">Program Type</span>
-                </div>
-                <p className="text-sm text-gray-900 font-medium">
-                  {office.program_type || 'Contact for Details'}
-                </p>
-              </div>
-
-              {/* PHA Code */}
-              <div className="p-3 bg-gray-50 rounded-lg border">
-                <div className="flex items-center gap-2 mb-1">
-                  <FileText className="w-4 h-4 text-blue-600" />
-                  <span className="text-xs font-medium text-gray-700">PHA Code</span>
-                </div>
-                <p className="text-sm text-gray-900 font-medium">{office.pha_code || 'N/A'}</p>
-              </div>
-            </div>
-
-            {/* Available Programs - Mobile optimized */}
-            <div className="pt-3 border-t border-gray-100">
-              <h4 className="font-medium text-gray-900 mb-3 text-sm">Available Programs</h4>
-              <div className="space-y-2 text-sm">
-                {office.program_type?.toLowerCase().includes('section') && (
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                    <span className="text-xs">Section 8 Housing Choice Vouchers</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-gray-700">
-                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                  <span className="text-xs">Public Housing Units</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
-                  <span className="text-xs">Emergency Housing Assistance</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
-                  <span className="text-xs">Senior Housing Programs</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Data Source - Footer */}
-            <div className="pt-3 border-t border-gray-100">
-              <p className="text-xs text-gray-500">
-                Data from HUD PHA Contact Information API
-                <span className="block mt-1">
-                  Updated: {new Date(office.updated_at).toLocaleDateString()}
-                </span>
+              <p className="text-sm text-blue-700">
+                {new Date(office.updated_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
               </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Data Source Footer */}
+        <Card className="shadow-lg border-0 bg-white">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Shield className="w-4 h-4" />
+              <span>Data sourced from HUD PHA Contact Information API</span>
             </div>
           </CardContent>
         </Card>
