@@ -9,21 +9,35 @@ export const DATABASE_FIELDS = [
   { key: 'program_type', label: 'Program Type', description: 'Type of housing program' },
 ];
 
-// Updated mappings - removed state, city, zip and other unwanted fields
+// Fixed mappings - corrected field assignments based on typical HUD CSV format
 export const COMMON_MAPPINGS: { [key: string]: string } = {
   'PARTICIPANT_CODE': 'pha_code',
+  'PHA_CODE': 'pha_code',
   'FORMAL_PARTICIPANT_NAME': 'name',
   'PARTICIPANT_NAME': 'name',
   'PHA_NAME': 'name',
   'FULL_ADDRESS': 'address',
   'ADDRESS': 'address',
+  'STREET_ADDRESS': 'address',
   'HA_PHN_NUM': 'phone',
   'PHONE': 'phone',
+  'PHONE_NUMBER': 'phone',
   'HA_EMAIL_ADDR_TEXT': 'email',
   'EMAIL': 'email',
+  'EMAIL_ADDRESS': 'email',
+  'CONTACT_EMAIL': 'email',
   'EXEC_DIR_EMAIL': 'exec_dir_email',
+  'EXECUTIVE_DIRECTOR_EMAIL': 'exec_dir_email',
   'HA_PROGRAM_TYPE': 'program_type',
   'PROGRAM_TYPE': 'program_type',
+  'SIZE_CATEGORY': 'program_type',
+  // Additional common field mappings
+  'ZIP': null, // Skip ZIP field as we don't have a separate column for it
+  'ZIP_CODE': null,
+  'CITY': null, // Skip CITY field 
+  'STATE': null, // Skip STATE field
+  'FAX': 'fax',
+  'FAX_NUMBER': 'fax',
 };
 
 // Essential fields that should be auto-checked

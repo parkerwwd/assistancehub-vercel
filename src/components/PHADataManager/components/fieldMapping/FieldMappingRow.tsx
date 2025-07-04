@@ -9,19 +9,26 @@ interface FieldMappingRowProps {
   csvField: string;
   dbField: string;
   onMappingChange: (csvField: string, dbField: string) => void;
+  sampleValue?: string;
 }
 
 export const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
   csvField,
   dbField,
-  onMappingChange
+  onMappingChange,
+  sampleValue
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
       <div>
         <Label className="text-sm font-medium">CSV Column</Label>
         <div className="mt-1 p-2 bg-muted rounded border">
           <code className="text-sm">{csvField}</code>
+          {sampleValue && (
+            <div className="text-xs text-gray-500 mt-1 truncate">
+              Sample: "{sampleValue}"
+            </div>
+          )}
         </div>
       </div>
       
@@ -51,6 +58,19 @@ export const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
             {DATABASE_FIELDS.find(f => f.key === dbField)?.description}
           </p>
         )}
+      </div>
+
+      <div>
+        <Label className="text-sm font-medium">Preview</Label>
+        <div className="mt-1 p-2 bg-gray-50 rounded border min-h-[40px] flex items-center">
+          {dbField && dbField !== 'skip' ? (
+            <span className="text-sm text-green-700">
+              ✓ Will map to: <strong>{DATABASE_FIELDS.find(f => f.key === dbField)?.label}</strong>
+            </span>
+          ) : (
+            <span className="text-sm text-gray-500">Will be skipped</span>
+          )}
+        </div>
       </div>
     </div>
   );
