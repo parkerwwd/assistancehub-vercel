@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { usePHAImport } from "./PHADataManager/hooks/usePHAImport";
 import { usePHACount } from "./PHADataManager/hooks/usePHACount";
 import { usePHAStats } from "./PHADataManager/hooks/usePHAStats";
@@ -17,6 +18,7 @@ import { SecurityNotice } from "./SecurityNotice";
 
 const PHADataManager: React.FC = () => {
   console.log('PHADataManager component rendering...');
+  const { toast } = useToast();
   
   const { 
     isImporting, 
@@ -74,6 +76,27 @@ const PHADataManager: React.FC = () => {
     }
   };
 
+  const handleResetStats = async () => {
+    try {
+      await resetStats();
+      
+      // Refresh the PHA count after clearing all data
+      await fetchPHACount();
+      
+      toast({
+        title: "Reset Complete",
+        description: "All import statistics and PHA data have been cleared.",
+      });
+    } catch (error) {
+      console.error('Reset failed:', error);
+      toast({
+        title: "Reset Failed",
+        description: "Failed to clear data. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const totals = getTotals();
   console.log('Calculated totals:', totals);
 
@@ -86,7 +109,7 @@ const PHADataManager: React.FC = () => {
             HUD PHA Data Management
           </CardTitle>
           <Button
-            onClick={resetStats}
+            onClick={handleResetStats}
             variant="outline"
             size="sm"
             className="flex items-center gap-2"
