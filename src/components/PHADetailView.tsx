@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,36 +14,134 @@ interface PHADetailViewProps {
   onBack: () => void;
 }
 
+// Helper function to detect if a string looks like a phone number
+const isPhoneNumber = (str: string): boolean => {
+  if (!str) return false;
+  // Check for phone number patterns: contains digits and common phone separators
+  const phonePattern = /^[\d\s\-\(\)\+\.]{7,}$/;
+  return phonePattern.test(str) && str.replace(/\D/g, '').length >= 7;
+};
+
+// Helper function to detect if a string looks like an email
+const isEmail = (str: string): boolean => {
+  if (!str) return false;
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailPattern.test(str);
+};
+
+// Helper function to detect if a string looks like a ZIP code
+const isZipCode = (str: string): boolean => {
+  if (!str) return false;
+  const zipPattern = /^\d{5}(-\d{4})?$/;
+  return zipPattern.test(str);
+};
+
+// Helper function to detect if a string is a state abbreviation
+const isStateAbbreviation = (str: string): boolean => {
+  if (!str) return false;
+  const states = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
+  return states.includes(str.toUpperCase());
+};
+
+// Function to extract correct contact information from mixed-up data
+const extractContactInfo = (office: PHAAgency) => {
+  const allFields = [
+    office.phone,
+    office.email,
+    office.fax,
+    office.city,
+    office.state,
+    office.zip,
+    office.exec_dir_phone,
+    office.exec_dir_email,
+    office.exec_dir_fax,
+    office.performance_status
+  ].filter(Boolean);
+
+  let phone = null;
+  let email = null;
+  let fax = null;
+  let city = null;
+  let state = null;
+  let zip = null;
+  let execDirPhone = null;
+  let execDirEmail = null;
+  let execDirFax = null;
+
+  // Go through all fields and categorize them correctly
+  allFields.forEach(field => {
+    if (!field) return;
+    
+    if (isEmail(field)) {
+      if (!email) {
+        email = field;
+      } else if (!execDirEmail) {
+        execDirEmail = field;
+      }
+    } else if (isPhoneNumber(field)) {
+      if (!phone) {
+        phone = field;
+      } else if (!fax) {
+        fax = field;
+      } else if (!execDirPhone) {
+        execDirPhone = field;
+      } else if (!execDirFax) {
+        execDirFax = field;
+      }
+    } else if (isZipCode(field)) {
+      if (!zip) {
+        zip = field;
+      }
+    } else if (isStateAbbreviation(field)) {
+      if (!state) {
+        state = field;
+      }
+    } else {
+      // Assume it's a city name if it's not categorized yet
+      if (!city && field.length > 1 && !field.match(/^\d+$/)) {
+        city = field;
+      }
+    }
+  });
+
+  return {
+    phone,
+    email,
+    fax,
+    city,
+    state,
+    zip,
+    execDirPhone,
+    execDirEmail,
+    execDirFax
+  };
+};
+
 const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, onBack }) => {
   const [imageError, setImageError] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
 
   console.log('PHADetailView received office data:', office);
 
-  // Build full address, handling the case where city might be in phone field
+  // Extract correct contact information
+  const contactInfo = extractContactInfo(office);
+  
+  // Build full address using corrected data
   const addressParts = [office.address];
   
-  // Check if phone field contains city name (non-numeric data)
-  const phoneContainsCity = office.phone && !/^[\d\s\-\(\)\+\.]+$/.test(office.phone);
-  
-  if (phoneContainsCity) {
-    addressParts.push(office.phone);
-  } else if (office.city) {
-    addressParts.push(office.city);
+  if (contactInfo.city) {
+    addressParts.push(contactInfo.city);
   }
   
-  if (office.state) {
-    addressParts.push(office.state);
+  if (contactInfo.state) {
+    addressParts.push(contactInfo.state);
   }
   
-  if (office.zip) {
-    addressParts.push(office.zip);
+  if (contactInfo.zip) {
+    addressParts.push(contactInfo.zip);
   }
   
   const fullAddress = addressParts.filter(Boolean).join(', ');
-  
-  // Use phone for contact only if it's actually a phone number
-  const actualPhone = phoneContainsCity ? null : office.phone;
 
   const phaType = getPHATypeFromData(office);
 
@@ -160,58 +257,45 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </span>
             </div>
 
-            {/* Performance Status */}
-            {office.performance_status && (
-              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  Performance Status
-                </span>
-                <span className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                  {office.performance_status}
-                </span>
-              </div>
-            )}
-
-            {/* Contact Information - Enhanced */}
-            {(actualPhone || office.fax || office.email || office.website) && (
+            {/* Contact Information - Fixed */}
+            {(contactInfo.phone || contactInfo.fax || contactInfo.email || office.website) && (
               <div className="space-y-2">
                 <h4 className="font-medium text-gray-900 text-sm mb-3">Contact Information</h4>
                 
-                {actualPhone && (
+                {contactInfo.phone && (
                   <a 
-                    href={`tel:${actualPhone}`}
+                    href={`tel:${contactInfo.phone}`}
                     className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
                   >
                     <Phone className="w-4 h-4 mr-3 text-blue-600 flex-shrink-0" />
                     <div>
                       <span className="text-blue-700 group-hover:text-blue-800 font-medium block">
-                        {actualPhone}
+                        {contactInfo.phone}
                       </span>
                       <span className="text-xs text-blue-600">Main Phone</span>
                     </div>
                   </a>
                 )}
 
-                {office.fax && (
+                {contactInfo.fax && (
                   <div className="flex items-center p-3 bg-gray-50 rounded-lg border">
                     <Phone className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
                     <div>
-                      <span className="text-gray-700 font-medium block">{office.fax}</span>
+                      <span className="text-gray-700 font-medium block">{contactInfo.fax}</span>
                       <span className="text-xs text-gray-600">Fax</span>
                     </div>
                   </div>
                 )}
 
-                {office.email && (
+                {contactInfo.email && (
                   <a 
-                    href={`mailto:${office.email}`}
+                    href={`mailto:${contactInfo.email}`}
                     className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
                   >
                     <Mail className="w-4 h-4 mr-3 text-purple-600 flex-shrink-0" />
                     <div>
                       <span className="text-purple-700 group-hover:text-purple-800 font-medium text-sm block">
-                        {office.email}
+                        {contactInfo.email}
                       </span>
                       <span className="text-xs text-purple-600">Email</span>
                     </div>
@@ -234,45 +318,45 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </div>
             )}
 
-            {/* Executive Director Information */}
-            {(office.exec_dir_phone || office.exec_dir_fax || office.exec_dir_email) && (
+            {/* Executive Director Information - Fixed */}
+            {(contactInfo.execDirPhone || contactInfo.execDirFax || contactInfo.execDirEmail) && (
               <div className="space-y-2">
                 <h4 className="font-medium text-gray-900 text-sm mb-3">Executive Director Contact</h4>
                 
-                {office.exec_dir_phone && (
+                {contactInfo.execDirPhone && (
                   <a 
-                    href={`tel:${office.exec_dir_phone}`}
+                    href={`tel:${contactInfo.execDirPhone}`}
                     className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
                   >
                     <Phone className="w-4 h-4 mr-3 text-blue-600 flex-shrink-0" />
                     <div>
                       <span className="text-blue-700 group-hover:text-blue-800 font-medium block">
-                        {office.exec_dir_phone}
+                        {contactInfo.execDirPhone}
                       </span>
                       <span className="text-xs text-blue-600">Executive Director Phone</span>
                     </div>
                   </a>
                 )}
 
-                {office.exec_dir_fax && (
+                {contactInfo.execDirFax && (
                   <div className="flex items-center p-3 bg-gray-50 rounded-lg border">
                     <Phone className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
                     <div>
-                      <span className="text-gray-700 font-medium block">{office.exec_dir_fax}</span>
+                      <span className="text-gray-700 font-medium block">{contactInfo.execDirFax}</span>
                       <span className="text-xs text-gray-600">Executive Director Fax</span>
                     </div>
                   </div>
                 )}
 
-                {office.exec_dir_email && (
+                {contactInfo.execDirEmail && (
                   <a 
-                    href={`mailto:${office.exec_dir_email}`}
+                    href={`mailto:${contactInfo.execDirEmail}`}
                     className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
                   >
                     <Mail className="w-4 h-4 mr-3 text-purple-600 flex-shrink-0" />
                     <div>
                       <span className="text-purple-700 group-hover:text-purple-800 font-medium text-sm block">
-                        {office.exec_dir_email}
+                        {contactInfo.execDirEmail}
                       </span>
                       <span className="text-xs text-purple-600">Executive Director Email</span>
                     </div>
@@ -281,7 +365,18 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </div>
             )}
 
-            {/* Program & Size Categories */}
+            {office.performance_status && !isPhoneNumber(office.performance_status) && (
+              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Performance Status
+                </span>
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                  {office.performance_status}
+                </span>
+              </div>
+            )}
+
             <div className="space-y-3">
               <h4 className="font-medium text-gray-900 text-sm mb-3">Program Information</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -305,7 +400,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   </div>
                 )}
 
-                {office.low_rent_size_category && (
+                {office.low_rent_size_category && !isPhoneNumber(office.low_rent_size_category) && (
                   <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
                     <div className="flex items-center gap-2 mb-1">
                       <Home className="w-4 h-4 text-orange-600" />
@@ -325,7 +420,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   </div>
                 )}
 
-                {office.fiscal_year_end && (
+                {office.fiscal_year_end && office.fiscal_year_end !== '0' && (
                   <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
                     <div className="flex items-center gap-2 mb-1">
                       <Calendar className="w-4 h-4 text-purple-600" />
@@ -347,7 +442,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </div>
             </div>
 
-            {/* Housing Units Statistics */}
             {(office.total_units || office.total_dwelling_units || office.ph_occupied || office.section8_units_count || office.section8_occupied) && (
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-900 text-sm mb-3">Housing Units & Occupancy Statistics</h4>
@@ -400,7 +494,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </div>
             )}
 
-            {/* Office Hours */}
             <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-yellow-600" />
@@ -413,7 +506,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </div>
             </div>
 
-            {/* View Housing Button */}
             <Button
               onClick={() => onViewHousing(office)}
               className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 h-11"
@@ -422,7 +514,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               View Available Housing in Area
             </Button>
 
-            {/* Available Programs */}
             <div className="pt-3 border-t border-gray-100">
               <h4 className="font-medium text-gray-900 mb-3 text-sm">Available Housing Programs</h4>
               <div className="space-y-2 text-sm">
@@ -447,7 +538,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </div>
             </div>
 
-            {/* Jurisdictions */}
             {office.jurisdictions && office.jurisdictions.length > 0 && (
               <div className="pt-3 border-t border-gray-100">
                 <h4 className="font-medium text-gray-900 mb-3 text-sm">Service Areas & Jurisdictions</h4>
@@ -464,7 +554,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </div>
             )}
 
-            {/* Data Source - Footer */}
             <div className="pt-3 border-t border-gray-100">
               <p className="text-xs text-gray-500">
                 Data sourced from HUD PHA Contact Information API
