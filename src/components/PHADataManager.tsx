@@ -34,7 +34,8 @@ const PHADataManager: React.FC = () => {
     totalPHAs, 
     lastImport, 
     setLastImport, 
-    fetchPHACount 
+    fetchPHACount,
+    setTotalPHAs
   } = usePHACount();
 
   const {
@@ -74,6 +75,19 @@ const PHADataManager: React.FC = () => {
     }
   };
 
+  const handleResetAllStats = () => {
+    console.log('Resetting all statistics...');
+    // Reset import stats
+    resetStats();
+    // Reset PHA count
+    setTotalPHAs(0);
+    // Reset last import date
+    setLastImport(null);
+    // Reset any import results
+    resetImportState();
+    console.log('All statistics have been reset');
+  };
+
   const totals = getTotals();
   console.log('Calculated totals:', totals);
 
@@ -86,7 +100,7 @@ const PHADataManager: React.FC = () => {
             HUD PHA Data Management
           </CardTitle>
           <Button
-            onClick={resetStats}
+            onClick={handleResetAllStats}
             variant="outline"
             size="sm"
             className="flex items-center gap-2"
