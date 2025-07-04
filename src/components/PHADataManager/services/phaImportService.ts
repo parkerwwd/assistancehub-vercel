@@ -7,6 +7,48 @@ interface FieldMapping {
   dbField: string;
 }
 
+// Helper function to validate phone numbers
+const isValidPhone = (value: string): boolean => {
+  if (!value) return false;
+  const phoneRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+  return phoneRegex.test(value.trim());
+};
+
+// Helper function to validate email addresses
+const isValidEmail = (value: string): boolean => {
+  if (!value) return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(value.trim());
+};
+
+// Helper function to validate fax numbers (similar to phone)
+const isValidFax = (value: string): boolean => {
+  if (!value) return false;
+  const faxRegex = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+  return faxRegex.test(value.trim());
+};
+
+// Helper function to check if a value looks like a ZIP code
+const isZipCode = (value: string): boolean => {
+  if (!value) return false;
+  const zipRegex = /^\d{5}(-\d{4})?$/;
+  return zipRegex.test(value.trim());
+};
+
+// Helper function to check if a value looks like a state abbreviation
+const isStateCode = (value: string): boolean => {
+  if (!value) return false;
+  const stateRegex = /^[A-Z]{2}$/;
+  return stateRegex.test(value.trim());
+};
+
+// Helper function to check if a value looks like a city name
+const isCityName = (value: string): boolean => {
+  if (!value) return false;
+  const cityRegex = /^[A-Za-z\s]+$/;
+  return cityRegex.test(value.trim()) && value.trim().length > 1;
+};
+
 export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => {
   console.log('Processing PHA record:', record);
   console.log('Field mappings:', fieldMappings);
@@ -16,138 +58,185 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
     last_updated: new Date().toISOString()
   };
 
-  // First, collect address components for building full address
-  let streetAddress = '';
-  let city = '';
-  let state = '';
-  let zip = '';
-
-  // Map fields based on auto-generated configuration
+  // First, collect all raw field data to analyze for misalignment
+  const rawData: { [key: string]: any } = {};
+  
+  // Map fields based on configuration but validate the data
   fieldMappings.forEach(mapping => {
     const csvValue = record[mapping.csvField];
-    console.log(`Mapping ${mapping.csvField} -> ${mapping.dbField}: "${csvValue}"`);
+    rawData[mapping.dbField] = csvValue;
+    console.log(`Raw mapping ${mapping.csvField} -> ${mapping.dbField}: "${csvValue}"`);
+  });
+
+  // Now apply intelligent validation and correction
+  fieldMappings.forEach(mapping => {
+    const csvValue = record[mapping.csvField];
+    console.log(`Processing ${mapping.csvField} -> ${mapping.dbField}: "${csvValue}"`);
     
+    if (!csvValue || csvValue === 'null' || csvValue === '') {
+      return; // Skip empty values
+    }
+
     switch (mapping.dbField) {
       case 'pha_code':
         phaData.pha_code = sanitizeInput(csvValue, 50);
         break;
+        
       case 'name':
         phaData.name = sanitizeInput(csvValue, 255);
         break;
-      case 'address':
-        // Handle various address field names
-        if (csvValue && csvValue.trim()) {
-          streetAddress = sanitizeInput(csvValue, 500);
+        
+      case 'phone':
+        // Validate that this looks like a phone number
+        if (isValidPhone(csvValue)) {
+          phaData.phone = sanitizeInput(csvValue, 20);
+        } else {
+          console.warn(`Invalid phone number detected: "${csvValue}", skipping`);
         }
         break;
-      case 'phone':
-        phaData.phone = sanitizeInput(csvValue, 20);
-        break;
+        
       case 'fax':
-        phaData.fax = sanitizeInput(csvValue, 20);
+        // Validate that this looks like a fax number
+        if (isValidFax(csvValue)) {
+          phaData.fax = sanitizeInput(csvValue, 20);
+        } else {
+          console.warn(`Invalid fax number detected: "${csvValue}", skipping`);
+        }
         break;
+        
       case 'email':
-        phaData.email = sanitizeInput(csvValue, 255);
+        // Validate that this looks like an email
+        if (isValidEmail(csvValue)) {
+          phaData.email = sanitizeInput(csvValue, 255);
+        } else {
+          console.warn(`Invalid email detected: "${csvValue}", skipping`);
+        }
         break;
+        
       case 'exec_dir_phone':
-        phaData.exec_dir_phone = sanitizeInput(csvValue, 20);
+        if (isValidPhone(csvValue)) {
+          phaData.exec_dir_phone = sanitizeInput(csvValue, 20);
+        } else {
+          console.warn(`Invalid exec director phone detected: "${csvValue}", skipping`);
+        }
         break;
+        
       case 'exec_dir_fax':
-        phaData.exec_dir_fax = sanitizeInput(csvValue, 20);
+        if (isValidFax(csvValue)) {
+          phaData.exec_dir_fax = sanitizeInput(csvValue, 20);
+        } else {
+          console.warn(`Invalid exec director fax detected: "${csvValue}", skipping`);
+        }
         break;
+        
       case 'exec_dir_email':
-        phaData.exec_dir_email = sanitizeInput(csvValue, 255);
+        if (isValidEmail(csvValue)) {
+          phaData.exec_dir_email = sanitizeInput(csvValue, 255);
+        } else {
+          console.warn(`Invalid exec director email detected: "${csvValue}", skipping`);
+        }
         break;
+        
       case 'phas_designation':
-        phaData.phas_designation = sanitizeInput(csvValue, 50);
+        // PHAS designation should be text like "High Performer", not a phone number
+        if (!isValidPhone(csvValue)) {
+          phaData.phas_designation = sanitizeInput(csvValue, 50);
+        } else {
+          console.warn(`PHAS designation looks like phone number: "${csvValue}", skipping`);
+        }
         break;
+        
+      case 'address':
+        // Address should not be just a ZIP code or state code
+        if (!isZipCode(csvValue) && !isStateCode(csvValue)) {
+          phaData.address = sanitizeInput(csvValue, 500);
+        } else {
+          console.warn(`Address looks like ZIP/state code: "${csvValue}", skipping`);
+        }
+        break;
+        
       case 'total_units':
-        phaData.total_units = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
       case 'total_dwelling_units':
-        phaData.total_dwelling_units = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
       case 'acc_units':
-        phaData.acc_units = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
       case 'ph_occupied':
-        phaData.ph_occupied = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
       case 'section8_units_count':
-        phaData.section8_units_count = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
       case 'section8_occupied':
-        phaData.section8_occupied = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
       case 'total_occupied':
-        phaData.total_occupied = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
-      case 'pct_occupied':
-        phaData.pct_occupied = csvValue ? parseFloat(csvValue.toString()) || null : null;
-        break;
       case 'regular_vacant':
-        phaData.regular_vacant = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
       case 'pha_total_units':
-        phaData.pha_total_units = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
       case 'number_reported':
-        phaData.number_reported = csvValue ? parseInt(csvValue.toString()) || null : null;
+        // Validate numeric fields
+        const intValue = parseInt(csvValue.toString());
+        if (!isNaN(intValue) && intValue >= 0 && intValue < 1000000) {
+          phaData[mapping.dbField] = intValue;
+        } else {
+          console.warn(`Invalid integer value for ${mapping.dbField}: "${csvValue}"`);
+        }
         break;
+        
+      case 'pct_occupied':
       case 'pct_reported':
-        phaData.pct_reported = csvValue ? parseFloat(csvValue.toString()) || null : null;
-        break;
       case 'opfund_amount':
-        phaData.opfund_amount = csvValue ? parseFloat(csvValue.toString()) || null : null;
-        break;
       case 'opfund_amount_prev_yr':
-        phaData.opfund_amount_prev_yr = csvValue ? parseFloat(csvValue.toString()) || null : null;
-        break;
       case 'capfund_amount':
-        phaData.capfund_amount = csvValue ? parseFloat(csvValue.toString()) || null : null;
+        // Validate decimal fields
+        const floatValue = parseFloat(csvValue.toString());
+        if (!isNaN(floatValue) && floatValue >= 0) {
+          phaData[mapping.dbField] = floatValue;
+        } else {
+          console.warn(`Invalid decimal value for ${mapping.dbField}: "${csvValue}"`);
+        }
         break;
+        
       case 'program_type':
-        phaData.program_type = sanitizeInput(csvValue, 100);
-        break;
       case 'low_rent_size_category':
-        phaData.low_rent_size_category = sanitizeInput(csvValue, 50);
-        break;
       case 'section8_size_category':
-        phaData.section8_size_category = sanitizeInput(csvValue, 50);
-        break;
       case 'combined_size_category':
-        phaData.combined_size_category = sanitizeInput(csvValue, 50);
-        break;
       case 'fiscal_year_end':
-        phaData.fiscal_year_end = sanitizeInput(csvValue, 20);
+        phaData[mapping.dbField] = sanitizeInput(csvValue, 100);
         break;
+        
+      default:
+        console.warn(`Unknown field mapping: ${mapping.dbField}`);
     }
   });
 
-  // Handle special case: look for city, state, zip in CSV to build full address
+  // Smart address reconstruction from separate components
+  let fullAddress = phaData.address || '';
+  let city = '', state = '', zip = '';
+
+  // Look for city, state, zip in the raw CSV data
   Object.keys(record).forEach(key => {
     const upperKey = key.toUpperCase().trim();
     const value = record[key];
     
     if (value && value.toString().trim()) {
-      if (upperKey.includes('CITY') || upperKey === 'HA_CITY') {
-        city = value.toString().trim();
-      } else if (upperKey.includes('STATE') || upperKey === 'HA_STATE') {
-        state = value.toString().trim();
-      } else if (upperKey.includes('ZIP') || upperKey.includes('POSTAL') || upperKey === 'HA_ZIP') {
-        zip = value.toString().trim();
+      const trimmedValue = value.toString().trim();
+      
+      // Detect city, state, zip patterns
+      if ((upperKey.includes('CITY') || isCityName(trimmedValue)) && !city) {
+        city = trimmedValue;
+      } else if ((upperKey.includes('STATE') || isStateCode(trimmedValue)) && !state) {
+        state = trimmedValue;
+      } else if ((upperKey.includes('ZIP') || upperKey.includes('POSTAL') || isZipCode(trimmedValue)) && !zip) {
+        zip = trimmedValue;
       }
     }
   });
 
-  // Build full address if we have components
-  if (streetAddress || city || state || zip) {
+  // Build complete address if we have components
+  if (fullAddress || city || state || zip) {
     const addressParts = [];
-    if (streetAddress) addressParts.push(streetAddress);
-    if (city) addressParts.push(city);
-    if (state) addressParts.push(state);
-    if (zip) addressParts.push(zip);
-    phaData.address = addressParts.join(' ').trim();
+    if (fullAddress && !isZipCode(fullAddress) && !isStateCode(fullAddress)) {
+      addressParts.push(fullAddress);
+    }
+    if (city && city !== fullAddress) addressParts.push(city);
+    if (state && state !== fullAddress) addressParts.push(state);
+    if (zip && zip !== fullAddress) addressParts.push(zip);
+    
+    if (addressParts.length > 0) {
+      phaData.address = addressParts.join(' ').trim();
+    }
   }
 
   console.log('Final processed PHA data:', phaData);

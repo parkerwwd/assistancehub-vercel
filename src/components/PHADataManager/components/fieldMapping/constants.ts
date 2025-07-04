@@ -1,3 +1,4 @@
+
 export const DATABASE_FIELDS = [
   { key: 'pha_code', label: 'PHA Code', description: 'Unique identifier for the PHA' },
   { key: 'name', label: 'PHA Name', description: 'Official name of the housing authority', required: true },
@@ -31,7 +32,7 @@ export const DATABASE_FIELDS = [
   { key: 'fiscal_year_end', label: 'Fiscal Year End', description: 'Fiscal year end date' },
 ];
 
-// Fixed field mappings based on actual HUD CSV format
+// Updated field mappings based on actual HUD CSV format analysis
 export const COMMON_MAPPINGS = {
   // Basic PHA Information
   'PARTICIPANT_CODE': 'pha_code',
@@ -45,14 +46,14 @@ export const COMMON_MAPPINGS = {
   'NAME': 'name',
   'AGENCY_NAME': 'name',
   
-  // Address Components - Build full address from separate fields
+  // Address Components - These are the problematic fields
   'STD_ADDR': 'address',
   'ADDRESS': 'address',
   'STREET_ADDRESS': 'address',
   'MAILING_ADDRESS': 'address',
   'FULL_ADDRESS': 'address',
   
-  // Contact Information
+  // Contact Information - Fix the mapping order
   'HA_PHN_NUM': 'phone',
   'PHONE': 'phone',
   'PHONE_NUMBER': 'phone',
