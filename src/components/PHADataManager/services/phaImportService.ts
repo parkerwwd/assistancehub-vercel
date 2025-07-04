@@ -120,20 +120,48 @@ export const upsertPHARecord = async (phaData: any) => {
     throw new Error('PHA name is required');
   }
 
-  const { error } = await supabase
-    .from('pha_agencies')
-    .upsert(phaData, { 
-      onConflict: 'pha_code',
-      ignoreDuplicates: false 
-    });
+  try {
+    // First, try to find existing record by pha_code if it exists
+    if (phaData.pha_code) {
+      const { data: existingRecord } = await supabase
+        .from('pha_agencies')
+        .select('id')
+        .eq('pha_code', phaData.pha_code)
+        .maybeSingle();
 
-  if (error) {
-    console.error('Error upserting PHA record:', error);
-    if (error.message.includes('row-level security policy')) {
-      throw new Error('Authentication required for data import. Please ensure you are logged in.');
+      if (existingRecord) {
+        // Update existing record
+        const { error } = await supabase
+          .from('pha_agencies')
+          .update(phaData)
+          .eq('id', existingRecord.id);
+
+        if (error) {
+          console.error('Error updating PHA record:', error);
+          throw error;
+        }
+        console.log('✅ Updated existing PHA record');
+        return true;
+      }
     }
+
+    // Insert new record
+    const { error } = await supabase
+      .from('pha_agencies')
+      .insert(phaData);
+
+    if (error) {
+      console.error('Error inserting PHA record:', error);
+      if (error.message.includes('row-level security policy')) {
+        throw new Error('Authentication required for data import. Please ensure you are logged in.');
+      }
+      throw error;
+    }
+
+    console.log('✅ Inserted new PHA record');
+    return true;
+  } catch (error) {
+    console.error('Error in upsertPHARecord:', error);
     throw error;
   }
-
-  return true;
 };
