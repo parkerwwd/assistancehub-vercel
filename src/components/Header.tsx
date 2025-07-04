@@ -33,8 +33,8 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
             <div className="flex items-center">
               <Link to="/" className="hover:opacity-80 transition-opacity">
                 <img 
-                  src="/lovable-uploads/80384fe9-e82f-4176-b42b-cf132c13a51f.png" 
-                  alt="AssistanceHub Logo" 
+                  src="/lovable-uploads/4141c242-7fa4-40c2-8294-aef518db40dd.png" 
+                  alt="JetWord AssistanceHub Logo" 
                   className="h-8 w-auto"
                 />
               </Link>
