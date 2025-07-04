@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card } from "@/components/ui/card";
-import { MapPin, Heart } from "lucide-react";
+import { MapPin, Heart, Phone, Building2 } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 
@@ -15,47 +15,70 @@ interface PHAOfficeCardProps {
 const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
   // Build full address using only the address field since city, state, zip don't exist in current schema
   const fullAddress = agency.address || 'Address not available';
-
   const phaType = getPHATypeFromData(agency);
 
   return (
     <Card 
-      key={agency.id} 
-      className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer border border-gray-200 bg-white" 
+      className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer border border-gray-200 bg-white active:shadow-md" 
       onClick={() => onOfficeClick?.(agency)}
     >
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1 min-w-0 pr-3">
-            <h4 className="font-semibold text-gray-900 text-base leading-tight mb-2">
+      <div className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            {/* Office Name */}
+            <h4 className="font-bold text-gray-900 text-base sm:text-lg leading-tight mb-2 line-clamp-2">
               {agency.name}
             </h4>
             
+            {/* Address */}
             {fullAddress && (
-              <p className="text-sm text-gray-600 mb-3 flex items-start leading-relaxed">
-                <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-gray-400" />
-                <span>{fullAddress}</span>
-              </p>
+              <div className="flex items-start gap-2 mb-3">
+                <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+                  {fullAddress}
+                </p>
+              </div>
             )}
             
-            {/* PHA Type badge */}
-            <div className="flex items-center">
-              <span 
-                className="px-3 py-1 rounded-full text-xs font-medium border inline-block"
-                style={{ 
-                  backgroundColor: getPHATypeColor(phaType) + '15',
-                  borderColor: getPHATypeColor(phaType) + '30',
-                  color: getPHATypeColor(phaType)
-                }}
-              >
-                {phaType}
-              </span>
+            {/* Contact Info */}
+            {agency.phone && (
+              <div className="flex items-center gap-2 mb-3">
+                <Phone className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <span className="text-sm text-gray-700 font-medium">
+                  {agency.phone}
+                </span>
+              </div>
+            )}
+            
+            {/* Bottom row with PHA Type and additional info */}
+            <div className="flex items-center justify-between gap-3">
+              {/* PHA Type badge */}
+              <div className="flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-gray-400" />
+                <span 
+                  className="px-2.5 py-1 rounded-full text-xs font-semibold border"
+                  style={{ 
+                    backgroundColor: getPHATypeColor(phaType) + '15',
+                    borderColor: getPHATypeColor(phaType) + '30',
+                    color: getPHATypeColor(phaType)
+                  }}
+                >
+                  {phaType}
+                </span>
+              </div>
+              
+              {/* Units count if available */}
+              {agency.total_units && (
+                <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  {agency.total_units.toLocaleString()} units
+                </div>
+              )}
             </div>
           </div>
           
-          {/* Heart icon */}
+          {/* Heart icon - More subtle on mobile */}
           <button 
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 touch-manipulation"
             onClick={(e) => {
               e.stopPropagation();
               // Handle favorite functionality here
@@ -63,6 +86,13 @@ const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
           >
             <Heart className="w-5 h-5 text-gray-400 hover:text-red-500 transition-colors" />
           </button>
+        </div>
+        
+        {/* Tap indicator for mobile */}
+        <div className="mt-3 pt-3 border-t border-gray-100 sm:hidden">
+          <div className="text-xs text-gray-500 text-center">
+            Tap for details
+          </div>
         </div>
       </div>
     </Card>
