@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, BarChart3, TrendingUp, Calendar } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
@@ -43,6 +43,29 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
     }
   };
 
+  // Helper function to format numbers
+  const formatNumber = (value: number | null) => {
+    if (value === null || value === undefined) return 'N/A';
+    return value.toLocaleString();
+  };
+
+  // Helper function to format currency
+  const formatCurrency = (value: number | null) => {
+    if (value === null || value === undefined) return 'N/A';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  // Helper function to format percentage
+  const formatPercentage = (value: number | null) => {
+    if (value === null || value === undefined) return 'N/A';
+    return `${value.toFixed(2)}%`;
+  };
+
   return (
     <div className="h-full bg-gray-50">
       {/* Header */}
@@ -59,8 +82,9 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <Card className="shadow-sm border-0 mb-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Main Info Card */}
+        <Card className="shadow-sm border-0">
           {/* Address Image */}
           {fullAddress && !imageError && (
             <div className="relative overflow-hidden rounded-t-lg">
@@ -82,6 +106,11 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             <CardTitle className="text-lg text-gray-900 leading-tight pr-2">
               {office.name}
             </CardTitle>
+            {office.pha_code && (
+              <CardDescription className="text-sm text-gray-600">
+                PHA Code: {office.pha_code}
+              </CardDescription>
+            )}
             {fullAddress && (
               <CardDescription className="flex items-start text-sm text-gray-600 mt-2">
                 <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-blue-600" />
@@ -91,83 +120,35 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           </CardHeader>
 
           <CardContent className="space-y-4">
-            {/* PHA Type - Most prominent */}
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
-              <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Building className="w-4 h-4" />
-                PHA Type
-              </span>
-              <span 
-                className="px-3 py-1 rounded-full text-sm font-medium border"
-                style={{ 
-                  backgroundColor: getPHATypeColor(phaType) + '15',
-                  borderColor: getPHATypeColor(phaType) + '30',
-                  color: getPHATypeColor(phaType)
-                }}
-              >
-                {phaType}
-              </span>
-            </div>
-
-            {/* Unit Information */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-              <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Total Units
-              </span>
-              <span className="px-3 py-1 rounded-full text-sm font-medium border bg-blue-50 border-blue-100 text-blue-700">
-                {office.total_units || 'N/A'}
-              </span>
-            </div>
-
-            {/* Contact Information - Improved layout */}
-            <div className="space-y-2">
-              <h4 className="font-medium text-gray-900 text-sm mb-3">Contact Information</h4>
-              
-              {actualPhone && (
-                <a 
-                  href={`tel:${actualPhone}`}
-                  className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
+            {/* PHA Type & Designation */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Building className="w-4 h-4" />
+                  PHA Type
+                </span>
+                <span 
+                  className="px-3 py-1 rounded-full text-sm font-medium border"
+                  style={{ 
+                    backgroundColor: getPHATypeColor(phaType) + '15',
+                    borderColor: getPHATypeColor(phaType) + '30',
+                    color: getPHATypeColor(phaType)
+                  }}
                 >
-                  <Phone className="w-4 h-4 mr-3 text-blue-600 flex-shrink-0" />
-                  <span className="text-blue-700 group-hover:text-blue-800 font-medium">
-                    {actualPhone}
-                  </span>
-                </a>
-              )}
-              
-              {office.email && (
-                <a 
-                  href={`mailto:${office.email}`}
-                  className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
-                >
-                  <FileText className="w-4 h-4 mr-3 text-purple-600 flex-shrink-0" />
-                  <span className="text-purple-700 group-hover:text-purple-800 font-medium text-sm">
-                    {office.email}
-                  </span>
-                </a>
-              )}
+                  {phaType}
+                </span>
+              </div>
 
-              {office.fax && (
-                <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                  <FileText className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
-                  <span className="text-gray-700 font-medium text-sm">
-                    Fax: {office.fax}
+              {office.phas_designation && (
+                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-100">
+                  <span className="text-sm font-medium text-gray-700">
+                    PHAS Designation
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700 border border-purple-200">
+                    {office.phas_designation}
                   </span>
                 </div>
               )}
-            </div>
-
-            {/* Office Hours - Compact */}
-            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-yellow-600" />
-                <span className="text-sm font-medium text-gray-700">Office Hours</span>
-              </div>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p>Monday - Friday: 8:00 AM - 4:30 PM</p>
-                <p>Saturday - Sunday: Closed</p>
-              </div>
             </div>
 
             {/* View Housing Button */}
@@ -178,63 +159,290 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               <Home className="w-4 h-4" />
               View Available Housing in Area
             </Button>
+          </CardContent>
+        </Card>
 
-            {/* Additional Information - Grid layout */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-gray-50 rounded-lg border">
-                <div className="flex items-center gap-2 mb-1">
-                  <DollarSign className="w-4 h-4 text-green-600" />
-                  <span className="text-xs font-medium text-gray-700">Section 8 Units</span>
-                </div>
-                <p className="text-sm text-gray-900 font-medium">
-                  {office.section8_units_count || 'N/A'}
-                </p>
+        {/* Housing Units Overview */}
+        <Card className="shadow-sm border-0">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Housing Units Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 text-center">
+                <div className="text-2xl font-bold text-blue-700">{formatNumber(office.total_units)}</div>
+                <div className="text-xs text-gray-600 mt-1">Total Units</div>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg border">
-                <div className="flex items-center gap-2 mb-1">
-                  <FileText className="w-4 h-4 text-blue-600" />
-                  <span className="text-xs font-medium text-gray-700">PHA Code</span>
-                </div>
-                <p className="text-sm text-gray-900 font-medium">{office.pha_code || 'N/A'}</p>
+              <div className="p-3 bg-green-50 rounded-lg border border-green-100 text-center">
+                <div className="text-2xl font-bold text-green-700">{formatNumber(office.total_occupied)}</div>
+                <div className="text-xs text-gray-600 mt-1">Total Occupied</div>
               </div>
-            </div>
-
-            {/* Available Programs - Cleaner list */}
-            <div className="pt-3 border-t border-gray-100">
-              <h4 className="font-medium text-gray-900 mb-3 text-sm">Available Programs</h4>
-              <div className="space-y-2 text-sm">
-                {office.section8_units_count && office.section8_units_count > 0 && (
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                    Section 8 Housing Choice Vouchers ({office.section8_units_count} units)
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-gray-700">
-                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                  Public Housing Units
-                </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
-                  Emergency Housing Assistance
-                </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
-                  Senior Housing Programs
-                </div>
+              <div className="p-3 bg-orange-50 rounded-lg border border-orange-100 text-center">
+                <div className="text-2xl font-bold text-orange-700">{formatNumber(office.section8_units_count)}</div>
+                <div className="text-xs text-gray-600 mt-1">Section 8 Units</div>
+              </div>
+              <div className="p-3 bg-purple-50 rounded-lg border border-purple-100 text-center">
+                <div className="text-2xl font-bold text-purple-700">{formatNumber(office.ph_occupied)}</div>
+                <div className="text-xs text-gray-600 mt-1">Public Housing Occupied</div>
               </div>
             </div>
 
-            {/* Data Source - Footer */}
-            <div className="pt-3 border-t border-gray-100">
-              <p className="text-xs text-gray-500">
-                Data sourced from HUD PHA Contact Information API
-                {office.last_updated && (
-                  <span className="block mt-1">
-                    Last updated: {new Date(office.last_updated).toLocaleDateString()}
+            {/* Additional Unit Details */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+              {office.total_dwelling_units && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">Dwelling Units</span>
+                  <span className="text-sm font-medium">{formatNumber(office.total_dwelling_units)}</span>
+                </div>
+              )}
+              {office.section8_occupied && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">Section 8 Occupied</span>
+                  <span className="text-sm font-medium">{formatNumber(office.section8_occupied)}</span>
+                </div>
+              )}
+              {office.regular_vacant && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">Regular Vacant</span>
+                  <span className="text-sm font-medium">{formatNumber(office.regular_vacant)}</span>
+                </div>
+              )}
+              {office.acc_units && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">ACC Units</span>
+                  <span className="text-sm font-medium">{formatNumber(office.acc_units)}</span>
+                </div>
+              )}
+              {office.pha_total_units && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">PHA Total Units</span>
+                  <span className="text-sm font-medium">{formatNumber(office.pha_total_units)}</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Occupancy & Reporting Statistics */}
+        <Card className="shadow-sm border-0">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Occupancy & Reporting Statistics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {office.pct_occupied && (
+                <div className="p-3 bg-green-50 rounded-lg border border-green-100 text-center">
+                  <div className="text-2xl font-bold text-green-700">{formatPercentage(office.pct_occupied)}</div>
+                  <div className="text-xs text-gray-600 mt-1">Occupancy Rate</div>
+                </div>
+              )}
+              {office.pct_reported && (
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 text-center">
+                  <div className="text-2xl font-bold text-blue-700">{formatPercentage(office.pct_reported)}</div>
+                  <div className="text-xs text-gray-600 mt-1">Reporting Rate</div>
+                </div>
+              )}
+              {office.number_reported && (
+                <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100 text-center">
+                  <div className="text-2xl font-bold text-yellow-700">{formatNumber(office.number_reported)}</div>
+                  <div className="text-xs text-gray-600 mt-1">Number Reported</div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Financial Information */}
+        <Card className="shadow-sm border-0">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              Financial Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {office.opfund_amount && (
+                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-100">
+                  <span className="text-sm font-medium text-gray-700">Operating Fund Amount</span>
+                  <span className="text-sm font-bold text-green-700">{formatCurrency(office.opfund_amount)}</span>
+                </div>
+              )}
+              {office.opfund_amount_prev_yr && (
+                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100">
+                  <span className="text-sm font-medium text-gray-700">Operating Fund (Previous Year)</span>
+                  <span className="text-sm font-bold text-blue-700">{formatCurrency(office.opfund_amount_prev_yr)}</span>
+                </div>
+              )}
+              {office.capfund_amount && (
+                <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg border border-purple-100">
+                  <span className="text-sm font-medium text-gray-700">Capital Fund Amount</span>
+                  <span className="text-sm font-bold text-purple-700">{formatCurrency(office.capfund_amount)}</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Size Categories */}
+        <Card className="shadow-sm border-0">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              Size Categories
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {office.combined_size_category && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">Combined Size Category</span>
+                  <span className="text-sm font-medium">{office.combined_size_category}</span>
+                </div>
+              )}
+              {office.low_rent_size_category && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">Low Rent Size Category</span>
+                  <span className="text-sm font-medium">{office.low_rent_size_category}</span>
+                </div>
+              )}
+              {office.section8_size_category && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">Section 8 Size Category</span>
+                  <span className="text-sm font-medium">{office.section8_size_category}</span>
+                </div>
+              )}
+              {office.program_type && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">Program Type</span>
+                  <span className="text-sm font-medium">{office.program_type}</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Contact Information */}
+        <Card className="shadow-sm border-0">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Phone className="w-5 h-5" />
+              Contact Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {actualPhone && (
+              <a 
+                href={`tel:${actualPhone}`}
+                className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
+              >
+                <Phone className="w-4 h-4 mr-3 text-blue-600 flex-shrink-0" />
+                <span className="text-blue-700 group-hover:text-blue-800 font-medium">
+                  {actualPhone}
+                </span>
+              </a>
+            )}
+            
+            {office.email && (
+              <a 
+                href={`mailto:${office.email}`}
+                className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
+              >
+                <FileText className="w-4 h-4 mr-3 text-purple-600 flex-shrink-0" />
+                <span className="text-purple-700 group-hover:text-purple-800 font-medium text-sm">
+                  {office.email}
+                </span>
+              </a>
+            )}
+
+            {office.fax && (
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <FileText className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
+                <span className="text-gray-700 font-medium text-sm">
+                  Fax: {office.fax}
+                </span>
+              </div>
+            )}
+
+            {/* Executive Director Contact */}
+            {(office.exec_dir_phone || office.exec_dir_email || office.exec_dir_fax) && (
+              <div className="pt-3 border-t">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Executive Director</h4>
+                <div className="space-y-2">
+                  {office.exec_dir_phone && (
+                    <div className="flex items-center p-2 bg-gray-50 rounded">
+                      <Phone className="w-3 h-3 mr-2 text-gray-500" />
+                      <span className="text-sm">{office.exec_dir_phone}</span>
+                    </div>
+                  )}
+                  {office.exec_dir_email && (
+                    <div className="flex items-center p-2 bg-gray-50 rounded">
+                      <FileText className="w-3 h-3 mr-2 text-gray-500" />
+                      <span className="text-sm">{office.exec_dir_email}</span>
+                    </div>
+                  )}
+                  {office.exec_dir_fax && (
+                    <div className="flex items-center p-2 bg-gray-50 rounded">
+                      <FileText className="w-3 h-3 mr-2 text-gray-500" />
+                      <span className="text-sm">Fax: {office.exec_dir_fax}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Administrative Information */}
+        <Card className="shadow-sm border-0">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Administrative Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {office.fiscal_year_end && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">Fiscal Year End</span>
+                  <span className="text-sm font-medium">{office.fiscal_year_end}</span>
+                </div>
+              )}
+              {office.last_updated && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">Last Updated</span>
+                  <span className="text-sm font-medium">
+                    {new Date(office.last_updated).toLocaleDateString()}
                   </span>
-                )}
-              </p>
+                </div>
+              )}
+              {office.created_at && (
+                <div className="flex justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">Record Created</span>
+                  <span className="text-sm font-medium">
+                    {new Date(office.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Data Source Footer */}
+        <Card className="shadow-sm border-0">
+          <CardContent className="pt-4">
+            <p className="text-xs text-gray-500 text-center">
+              Data sourced from HUD PHA Contact Information API
+              <br />
+              Record ID: {office.id}
+            </p>
           </CardContent>
         </Card>
       </div>
