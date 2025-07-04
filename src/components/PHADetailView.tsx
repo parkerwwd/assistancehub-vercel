@@ -21,9 +21,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
 
   // Build full address from the single address field
   const fullAddress = office.address || '';
-  
-  // Use phone for contact only if it's actually a phone number
-  const actualPhone = office.phone && /^[\d\s\-\(\)\+\.]+$/.test(office.phone) ? office.phone : null;
 
   const phaType = getPHATypeFromData(office);
 
@@ -43,7 +40,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
     }
   };
 
-  // Helper function to check if value exists and is not null/undefined
+  // Helper function to check if value exists and is not null/undefined/empty
   const hasValue = (value: any) => {
     return value !== null && value !== undefined && value !== '' && value !== 0;
   };
@@ -98,7 +95,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                      hasValue(office.section8_size_category) || 
                      hasValue(office.program_type);
 
-  // Check if we have contact data - properly check each field
+  // Check if we have contact data - these should match the imported CSV fields (HA_PHN_NUM, HA_FAX_NUM, HA_EMAIL_ADDR_TEXT)
   const hasContactData = hasValue(office.phone) || 
                         hasValue(office.email) || 
                         hasValue(office.fax) ||
@@ -110,6 +107,17 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
   const hasAdminData = hasValue(office.fiscal_year_end) || 
                       hasValue(office.last_updated) || 
                       hasValue(office.created_at);
+
+  // Debug logging to check what contact data we have
+  console.log('Contact data check:', {
+    phone: office.phone,
+    email: office.email,
+    fax: office.fax,
+    exec_dir_phone: office.exec_dir_phone,
+    exec_dir_email: office.exec_dir_email,
+    exec_dir_fax: office.exec_dir_fax,
+    hasContactData
+  });
 
   return (
     <div className="h-full bg-gray-50">
@@ -401,15 +409,19 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {/* Main PHA Contact - Data from HA_PHN_NUM, HA_FAX_NUM, HA_EMAIL_ADDR_TEXT fields */}
               {hasValue(office.phone) && (
                 <a 
                   href={`tel:${office.phone}`}
                   className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
                 >
                   <Phone className="w-4 h-4 mr-3 text-blue-600 flex-shrink-0" />
-                  <span className="text-blue-700 group-hover:text-blue-800 font-medium">
-                    {office.phone}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-blue-700 group-hover:text-blue-800 font-medium">
+                      {office.phone}
+                    </span>
+                    <span className="text-xs text-blue-600">Main Phone (HA_PHN_NUM)</span>
+                  </div>
                 </a>
               )}
               
@@ -419,18 +431,24 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
                 >
                   <Mail className="w-4 h-4 mr-3 text-purple-600 flex-shrink-0" />
-                  <span className="text-purple-700 group-hover:text-purple-800 font-medium text-sm">
-                    {office.email}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-purple-700 group-hover:text-purple-800 font-medium text-sm">
+                      {office.email}
+                    </span>
+                    <span className="text-xs text-purple-600">Main Email (HA_EMAIL_ADDR_TEXT)</span>
+                  </div>
                 </a>
               )}
 
               {hasValue(office.fax) && (
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                   <FileText className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
-                  <span className="text-gray-700 font-medium text-sm">
-                    Fax: {office.fax}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-gray-700 font-medium text-sm">
+                      {office.fax}
+                    </span>
+                    <span className="text-xs text-gray-600">Main Fax (HA_FAX_NUM)</span>
+                  </div>
                 </div>
               )}
 
