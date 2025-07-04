@@ -95,9 +95,8 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
           {phaAgencies.map((office) => (
             <PHAOfficeCard
               key={office.id}
-              office={office}
-              isSelected={selectedOffice?.id === office.id}
-              onClick={() => onOfficeClick(office)}
+              agency={office}
+              onOfficeClick={() => onOfficeClick(office)}
             />
           ))}
         </div>
