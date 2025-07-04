@@ -41,8 +41,12 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
     }
   };
 
-  // Default waitlist status since the field doesn't exist in current schema
-  const waitlistStatus = 'Unknown';
+  // Determine Section 8 availability based on actual data
+  const hasSection8 = office.section8_units_count && office.section8_units_count > 0;
+  const section8Status = hasSection8 ? 'Available' : 'Not Available';
+
+  // Determine waitlist status - we'll show as "Check with PHA" since we don't have this data
+  const waitlistStatus = 'Check with PHA';
 
   return (
     <div className="h-full bg-gray-50">
@@ -199,8 +203,13 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   <span className="text-xs font-medium text-gray-700">Section 8 Support</span>
                 </div>
                 <p className="text-sm text-gray-900 font-medium">
-                  {office.section8_units_count && office.section8_units_count > 0 ? 'Available' : 'Not Available'}
+                  {section8Status}
                 </p>
+                {hasSection8 && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    {office.section8_units_count} units available
+                  </p>
+                )}
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border">
                 <div className="flex items-center gap-2 mb-1">
@@ -211,11 +220,35 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </div>
             </div>
 
+            {/* Housing Units Information */}
+            {(office.total_units || office.pha_total_units || office.total_dwelling_units) && (
+              <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <Home className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-gray-700">Housing Units</span>
+                </div>
+                <div className="space-y-1 text-xs text-gray-600">
+                  {office.total_units && (
+                    <p>Total Units: {office.total_units.toLocaleString()}</p>
+                  )}
+                  {office.pha_total_units && office.pha_total_units !== office.total_units && (
+                    <p>PHA Total Units: {office.pha_total_units.toLocaleString()}</p>
+                  )}
+                  {office.total_dwelling_units && (
+                    <p>Dwelling Units: {office.total_dwelling_units.toLocaleString()}</p>
+                  )}
+                  {office.section8_units_count && (
+                    <p>Section 8 Units: {office.section8_units_count.toLocaleString()}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Available Programs - Mobile optimized */}
             <div className="pt-3 border-t border-gray-100">
               <h4 className="font-medium text-gray-900 mb-3 text-sm">Available Programs</h4>
               <div className="space-y-2 text-sm">
-                {office.section8_units_count && office.section8_units_count > 0 && (
+                {hasSection8 && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                     <span className="text-xs">Section 8 Housing Choice Vouchers</span>
