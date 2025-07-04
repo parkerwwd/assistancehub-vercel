@@ -14,10 +14,10 @@ export const getWaitlistColor = (status: string) => {
 };
 
 export const getPHATypeFromData = (agency: any) => {
-  // First check if we have program_type field
-  if (agency.program_type) {
+  // First check if we have HA_PROGRAM_TYPE field
+  if (agency.ha_program_type) {
     // Map various program types to our two simplified categories
-    const programType = agency.program_type.toLowerCase();
+    const programType = agency.ha_program_type.toLowerCase();
     if (programType.includes('combined') || programType.includes('both')) {
       return "Combined PHA";
     } else {
@@ -25,8 +25,13 @@ export const getPHATypeFromData = (agency: any) => {
     }
   }
   
-  // Fallback - assume Combined PHA if no specific program type info
-  return "Combined PHA";
+  // Fallback to existing logic using supports_hcv
+  if (agency.supports_hcv) {
+    return "Section 8 PHA";
+  } else {
+    // If they don't support HCV, they likely have public housing too, so Combined
+    return "Combined PHA";
+  }
 };
 
 export const getPHATypeColor = (phaType: string) => {
@@ -55,8 +60,8 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 
 /**
  * Filters PHA agencies based on the selected location from search
- * - For states: matches agencies using location search terms
- * - For cities: matches all agencies within 25 miles (requires geocoding)
+ * - For states: matches agencies using location search terms (like counties)
+ * - For cities: matches all agencies within 25 miles of the city
  * - For counties: matches agencies in that county and state
  */
 export const filterPHAAgenciesByLocation = (
@@ -83,16 +88,41 @@ export const filterPHAAgenciesByLocation = (
   }
 
   if (selectedLocation.type === 'city') {
-    // For cities, we would need to geocode addresses to calculate distances
-    // Since we removed lat/lng columns, we'll fall back to text-based matching for now
-    const searchTerms = getLocationSearchTerms(selectedLocation);
-    console.log('🔍 City search terms (text-based):', searchTerms);
-
+    // For cities, show all agencies within 25 miles
     const filteredAgencies = agencies.filter(agency => {
-      return searchTerms.some(term => matchesAgencyLocation(agency, term));
+      // Get agency coordinates
+      let agencyLat = agency.latitude;
+      let agencyLng = agency.longitude;
+      
+      // Try geocoded coordinates if primary ones are missing
+      if (!agencyLat || !agencyLng) {
+        agencyLat = (agency as any).geocoded_latitude;
+        agencyLng = (agency as any).geocoded_longitude;
+      }
+      
+      // Skip agencies without coordinates
+      if (!agencyLat || !agencyLng) {
+        console.log('⚠️ No coordinates for agency:', agency.name);
+        return false;
+      }
+      
+      // Calculate distance
+      const distance = calculateDistance(
+        selectedLocation.latitude,
+        selectedLocation.longitude,
+        agencyLat,
+        agencyLng
+      );
+      
+      const withinRange = distance <= 25;
+      if (withinRange) {
+        console.log('✅ Agency within 25 miles:', agency.name, `(${distance.toFixed(1)} miles)`);
+      }
+      
+      return withinRange;
     });
 
-    console.log('🔍 City filter (text-based) - found agencies:', filteredAgencies.length, 'out of', agencies.length);
+    console.log('🔍 City filter (25 miles) - found agencies:', filteredAgencies.length, 'out of', agencies.length);
     return filteredAgencies;
   }
 
@@ -167,6 +197,10 @@ const getLocationSearchTerms = (location: USLocation): string[] => {
 const matchesAgencyLocation = (agency: PHAAgency, searchTerm: string): boolean => {
   const fieldsToSearch = [
     agency.address,
+    agency.city,
+    agency.state,
+    agency.zip,
+    // Also check phone field as it sometimes contains city info
     agency.phone
   ];
 

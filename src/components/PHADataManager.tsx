@@ -3,7 +3,6 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { usePHAImport } from "./PHADataManager/hooks/usePHAImport";
 import { usePHACount } from "./PHADataManager/hooks/usePHACount";
 import { usePHAStats } from "./PHADataManager/hooks/usePHAStats";
@@ -13,21 +12,22 @@ import { ImportProgressComponent } from "./PHADataManager/components/ImportProgr
 import { ImportControls } from "./PHADataManager/components/ImportControls";
 import { ImportResults } from "./PHADataManager/components/ImportResults";
 import { HUDFormatInfo } from "./PHADataManager/components/HUDFormatInfo";
+import { FieldMappingDialog } from "./PHADataManager/components/FieldMappingDialog";
 import { SecurityNotice } from "./SecurityNotice";
-import { deleteAllPHAData } from "@/services/phaDataService";
-import { useToast } from "@/hooks/use-toast";
 
 const PHADataManager: React.FC = () => {
   console.log('PHADataManager component rendering...');
-  
-  const { toast } = useToast();
   
   const { 
     isImporting, 
     importProgress, 
     importResult, 
     startImport,
-    setImportResult: resetImportState
+    setImportResult: resetImportState,
+    showMappingDialog,
+    setShowMappingDialog,
+    csvHeaders,
+    handleMappingConfirm
   } = usePHAImport();
 
   const { 
@@ -51,11 +51,14 @@ const PHADataManager: React.FC = () => {
   });
 
   const handleFileImport = async (file: File) => {
-    console.log('Starting direct file import:', file.name);
+    console.log('Starting file import:', file.name);
     resetImportState();
-    
+    await startImport(file);
+  };
+
+  const handleMappingComplete = async (mappings: any) => {
     try {
-      await startImport(file);
+      await handleMappingConfirm(mappings);
       setLastImport(new Date());
       
       // Update stats with import results
@@ -71,35 +74,6 @@ const PHADataManager: React.FC = () => {
     }
   };
 
-  const handleResetStats = async () => {
-    try {
-      console.log('Starting complete reset - clearing stats and database...');
-      
-      // Clear all PHA data from database
-      await deleteAllPHAData();
-      
-      // Reset local stats
-      resetStats();
-      
-      // Refresh PHA count
-      await fetchPHACount();
-      
-      toast({
-        title: "Reset Complete",
-        description: "All PHA data and statistics have been cleared successfully.",
-      });
-      
-      console.log('✅ Complete reset successful');
-    } catch (error) {
-      console.error('❌ Reset failed:', error);
-      toast({
-        title: "Reset Failed",
-        description: "Failed to clear all data. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const totals = getTotals();
   console.log('Calculated totals:', totals);
 
@@ -111,32 +85,15 @@ const PHADataManager: React.FC = () => {
             <Database className="w-5 h-5" />
             HUD PHA Data Management
           </CardTitle>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <RotateCcw className="w-4 h-4" />
-                Reset All Data
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Reset All PHA Data</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action will permanently delete all PHA records from the database and reset all import statistics. This cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleResetStats} className="bg-red-600 hover:bg-red-700">
-                  Delete All Data
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            onClick={resetStats}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset Stats
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -164,6 +121,13 @@ const PHADataManager: React.FC = () => {
         <PHAUploadsTable uploads={importStats?.fileUploads || []} />
 
         <HUDFormatInfo />
+
+        <FieldMappingDialog
+          open={showMappingDialog}
+          onOpenChange={setShowMappingDialog}
+          csvHeaders={csvHeaders}
+          onMappingConfirm={handleMappingComplete}
+        />
       </CardContent>
     </Card>
   );
