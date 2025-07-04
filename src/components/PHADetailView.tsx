@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
-import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
+import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
@@ -19,30 +19,11 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
   const [imageError, setImageError] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
 
-  // Build full address, handling the case where city might be in phone field
-  const addressParts = [office.address];
-  
-  // Check if phone field contains city name (non-numeric data)
-  const phoneContainsCity = office.phone && !/^[\d\s\-\(\)\+\.]+$/.test(office.phone);
-  
-  if (phoneContainsCity) {
-    addressParts.push(office.phone);
-  } else if (office.city) {
-    addressParts.push(office.city);
-  }
-  
-  if (office.state) {
-    addressParts.push(office.state);
-  }
-  
-  if (office.zip) {
-    addressParts.push(office.zip);
-  }
-  
-  const fullAddress = addressParts.filter(Boolean).join(', ');
+  // Build full address from the single address field
+  const fullAddress = office.address || '';
   
   // Use phone for contact only if it's actually a phone number
-  const actualPhone = phoneContainsCity ? null : office.phone;
+  const actualPhone = office.phone && /^[\d\s\-\(\)\+\.]+$/.test(office.phone) ? office.phone : null;
 
   const phaType = getPHATypeFromData(office);
 
@@ -128,21 +109,14 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </span>
             </div>
 
-            {/* Waitlist Status */}
+            {/* Unit Information */}
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
               <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                Waitlist Status
+                Total Units
               </span>
-              <span 
-                className="px-3 py-1 rounded-full text-sm font-medium border"
-                style={{ 
-                  backgroundColor: getWaitlistColor(office.waitlist_status || 'Unknown') + '15',
-                  borderColor: getWaitlistColor(office.waitlist_status || 'Unknown') + '30',
-                  color: getWaitlistColor(office.waitlist_status || 'Unknown')
-                }}
-              >
-                {office.waitlist_status || 'Unknown'}
+              <span className="px-3 py-1 rounded-full text-sm font-medium border bg-blue-50 border-blue-100 text-blue-700">
+                {office.total_units || 'N/A'}
               </span>
             </div>
 
@@ -162,20 +136,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                 </a>
               )}
               
-              {office.website && (
-                <a 
-                  href={office.website.startsWith('http') ? office.website : `https://${office.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group border border-green-100"
-                >
-                  <ExternalLink className="w-4 h-4 mr-3 text-green-600 flex-shrink-0" />
-                  <span className="text-green-700 group-hover:text-green-800 font-medium">
-                    Visit Website
-                  </span>
-                </a>
-              )}
-
               {office.email && (
                 <a 
                   href={`mailto:${office.email}`}
@@ -186,6 +146,15 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                     {office.email}
                   </span>
                 </a>
+              )}
+
+              {office.fax && (
+                <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <FileText className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
+                  <span className="text-gray-700 font-medium text-sm">
+                    Fax: {office.fax}
+                  </span>
+                </div>
               )}
             </div>
 
@@ -215,10 +184,10 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               <div className="p-3 bg-gray-50 rounded-lg border">
                 <div className="flex items-center gap-2 mb-1">
                   <DollarSign className="w-4 h-4 text-green-600" />
-                  <span className="text-xs font-medium text-gray-700">HCV Support</span>
+                  <span className="text-xs font-medium text-gray-700">Section 8 Units</span>
                 </div>
                 <p className="text-sm text-gray-900 font-medium">
-                  {office.supports_hcv ? 'Yes' : 'No'}
+                  {office.section8_units_count || 'N/A'}
                 </p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border">
@@ -234,10 +203,10 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             <div className="pt-3 border-t border-gray-100">
               <h4 className="font-medium text-gray-900 mb-3 text-sm">Available Programs</h4>
               <div className="space-y-2 text-sm">
-                {office.supports_hcv && (
+                {office.section8_units_count && office.section8_units_count > 0 && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                    Section 8 Housing Choice Vouchers
+                    Section 8 Housing Choice Vouchers ({office.section8_units_count} units)
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-gray-700">

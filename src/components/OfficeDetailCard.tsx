@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, ExternalLink, Users, ArrowRight, Building, Image } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
-import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
+import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
@@ -18,30 +18,11 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
   const [imageError, setImageError] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
 
-  // Build full address, handling the case where city might be in phone field
-  const addressParts = [office.address];
-  
-  // Check if phone field contains city name (non-numeric data)
-  const phoneContainsCity = office.phone && !/^[\d\s\-\(\)\+\.]+$/.test(office.phone);
-  
-  if (phoneContainsCity) {
-    addressParts.push(office.phone);
-  } else if (office.city) {
-    addressParts.push(office.city);
-  }
-  
-  if (office.state) {
-    addressParts.push(office.state);
-  }
-  
-  if (office.zip) {
-    addressParts.push(office.zip);
-  }
-  
-  const fullAddress = addressParts.filter(Boolean).join(', ');
+  // Build full address from the single address field
+  const fullAddress = office.address || '';
   
   // Use phone for contact only if it's actually a phone number
-  const actualPhone = phoneContainsCity ? null : office.phone;
+  const actualPhone = office.phone && /^[\d\s\-\(\)\+\.]+$/.test(office.phone) ? office.phone : null;
 
   const phaType = getPHATypeFromData(office);
 
@@ -83,10 +64,12 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
 
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-gray-900 leading-tight pr-2">{office.name}</CardTitle>
-          <CardDescription className="flex items-start text-sm text-gray-600">
-            <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-blue-600" />
-            <span className="leading-relaxed">{fullAddress}</span>
-          </CardDescription>
+          {fullAddress && (
+            <CardDescription className="flex items-start text-sm text-gray-600">
+              <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-blue-600" />
+              <span className="leading-relaxed">{fullAddress}</span>
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           {/* PHA Type Badge */}
@@ -106,20 +89,14 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
             </span>
           </div>
 
-          {/* Waitlist Status Badge */}
+          {/* Unit Count Information */}
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Waitlist Status:
+              Total Units:
             </span>
-            <span 
-              className="px-3 py-1 rounded-full text-sm font-medium"
-              style={{ 
-                backgroundColor: getWaitlistColor(office.waitlist_status || 'Unknown') + '20',
-                color: getWaitlistColor(office.waitlist_status || 'Unknown')
-              }}
-            >
-              {office.waitlist_status || 'Unknown'}
+            <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+              {office.total_units || 'N/A'}
             </span>
           </div>
           
@@ -137,16 +114,14 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
               </a>
             )}
             
-            {office.website && (
+            {office.email && (
               <a 
-                href={office.website.startsWith('http') ? office.website : `https://${office.website}`}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`mailto:${office.email}`}
                 className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group"
               >
                 <ExternalLink className="w-4 h-4 mr-3 text-green-600" />
                 <span className="text-green-700 group-hover:text-green-800 font-medium">
-                  Visit Website
+                  {office.email}
                 </span>
               </a>
             )}
@@ -167,8 +142,8 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
           <div className="pt-4 border-t border-gray-100">
             <h4 className="font-medium text-gray-900 mb-3">Available Services</h4>
             <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
-              {office.supports_hcv && (
-                <div>• Section 8 Housing Vouchers</div>
+              {office.section8_units_count && office.section8_units_count > 0 && (
+                <div>• Section 8 Housing Vouchers ({office.section8_units_count} units)</div>
               )}
               <div>• Public Housing Units</div>
               <div>• Housing Assistance Programs</div>
