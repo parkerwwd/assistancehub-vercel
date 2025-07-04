@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, Map } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
@@ -13,9 +13,10 @@ interface PHADetailViewProps {
   office: PHAAgency;
   onViewHousing: (office: PHAAgency) => void;
   onBack: () => void;
+  onShowMap?: () => void;
 }
 
-const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, onBack }) => {
+const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, onBack, onShowMap }) => {
   const [imageError, setImageError] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
 
@@ -85,12 +86,29 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             {fullAddress && (
               <CardDescription className="flex items-start text-sm text-gray-600 mt-2">
                 <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-blue-600" />
-                <span className="leading-relaxed">{fullAddress}</span>
+                <button
+                  onClick={onShowMap}
+                  className="leading-relaxed hover:text-blue-600 hover:underline text-left"
+                >
+                  {fullAddress}
+                </button>
               </CardDescription>
             )}
           </CardHeader>
 
           <CardContent className="space-y-3 px-4">
+            {/* Show Map Button */}
+            {onShowMap && (
+              <Button
+                onClick={onShowMap}
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+              >
+                <Map className="w-4 h-4" />
+                View on Map
+              </Button>
+            )}
+
             {/* PHA Type - Compact mobile design */}
             <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
               <span className="text-sm font-medium text-gray-700 flex items-center gap-2">

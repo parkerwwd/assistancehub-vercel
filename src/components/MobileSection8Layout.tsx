@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import PHADetailView from "@/components/PHADetailView";
 import HousingListings from "@/components/HousingListings";
 import MapContainer from "@/components/MapContainer";
 import { Database } from "@/integrations/supabase/types";
+import { X } from "lucide-react";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
@@ -55,6 +56,20 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
   setTokenError,
   selectedLocation,
 }) => {
+  const [showMap, setShowMap] = useState(false);
+
+  const handleShowMap = (office?: PHAAgency) => {
+    if (office) {
+      setSelectedOffice(office);
+    }
+    setShowMap(true);
+  };
+
+  const handleCloseMap = () => {
+    setShowMap(false);
+    setSelectedOffice(null);
+  };
+
   const renderContent = () => {
     switch (viewState) {
       case 'pha-detail':
@@ -63,6 +78,7 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
             office={detailOffice}
             onViewHousing={handleViewHousing}
             onBack={handleBackToOverview}
+            onShowMap={() => handleShowMap(detailOffice)}
           />
         ) : null;
       
@@ -88,28 +104,50 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
             onShowAll={clearLocationFilter}
             hasFilter={!!filteredLocation}
             filteredLocation={filteredLocation}
+            onShowMap={handleShowMap}
           />
         );
     }
   };
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* Map Section - Small fixed height */}
-      <div className="flex-shrink-0 h-32 w-full border-b border-gray-200">
-        <MapContainer
-          ref={mapRef}
-          mapboxToken={mapboxToken}
-          phaAgencies={phaAgencies}
-          onOfficeSelect={handleOfficeClick}
-          onTokenError={setTokenError}
-          selectedOffice={selectedOffice}
-          selectedLocation={selectedLocation}
-        />
+  if (showMap) {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Map Header with Close Button */}
+        <div className="flex-shrink-0 bg-white border-b px-4 py-3 flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900">
+            {selectedOffice ? selectedOffice.name : 'Map View'}
+          </h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCloseMap}
+            className="p-2"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+        
+        {/* Full Screen Map */}
+        <div className="flex-1">
+          <MapContainer
+            ref={mapRef}
+            mapboxToken={mapboxToken}
+            phaAgencies={phaAgencies}
+            onOfficeSelect={handleOfficeClick}
+            onTokenError={setTokenError}
+            selectedOffice={selectedOffice}
+            selectedLocation={selectedLocation}
+          />
+        </div>
       </div>
+    );
+  }
 
-      {/* List Section - Takes remaining space and scrollable */}
-      <div className="flex-1 overflow-y-auto bg-white">
+  return (
+    <div className="h-full bg-white">
+      {/* Full height list - no map */}
+      <div className="h-full overflow-y-auto">
         {renderContent()}
       </div>
     </div>
