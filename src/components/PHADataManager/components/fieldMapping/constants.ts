@@ -31,7 +31,7 @@ export const DATABASE_FIELDS = [
   { key: 'fiscal_year_end', label: 'Fiscal Year End', description: 'Fiscal year end date' },
 ];
 
-// Updated field mappings based on your specific CSV format
+// Updated field mappings with removed city, state, zip mappings
 export const COMMON_MAPPINGS = {
   // Basic PHA Information
   'PARTICIPANT_CODE': 'pha_code',
