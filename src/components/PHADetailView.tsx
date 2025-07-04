@@ -91,16 +91,9 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           )}
 
           <CardContent className="p-6">
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-              <Button
-                onClick={() => onViewHousing(office)}
-                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 h-12"
-              >
-                <Home className="w-5 h-5" />
-                View Available Housing
-              </Button>
-              {onShowMap && (
+            {/* Quick Actions - Only show Map button if onShowMap is available */}
+            {onShowMap && (
+              <div className="grid grid-cols-1 gap-3 mb-6">
                 <Button
                   onClick={onShowMap}
                   variant="outline"
@@ -109,8 +102,8 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   <Map className="w-5 h-5" />
                   Show on Map
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Status Badges */}
             <div className="grid grid-cols-2 gap-4 mb-6">
