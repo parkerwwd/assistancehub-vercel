@@ -68,6 +68,25 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
     return `${value!.toFixed(2)}%`;
   };
 
+  // Helper function to validate phone number format
+  const isValidPhone = (phone: string | null) => {
+    if (!phone) return false;
+    // Check if it looks like a phone number (contains digits and common phone characters)
+    return /^[\d\s\-\(\)\+\.x]+$/.test(phone) && phone.replace(/\D/g, '').length >= 7;
+  };
+
+  // Helper function to validate email format
+  const isValidEmail = (email: string | null) => {
+    if (!email) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  // Helper function to validate fax format (similar to phone)
+  const isValidFax = (fax: string | null) => {
+    if (!fax) return false;
+    return /^[\d\s\-\(\)\+\.x]+$/.test(fax) && fax.replace(/\D/g, '').length >= 7;
+  };
+
   // Check if we have any housing unit data to show
   const hasHousingData = hasValue(office.total_units) || 
                         hasValue(office.total_occupied) || 
@@ -95,13 +114,13 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                      hasValue(office.section8_size_category) || 
                      hasValue(office.program_type);
 
-  // Check if we have contact data - these should match the imported CSV fields (HA_PHN_NUM, HA_FAX_NUM, HA_EMAIL_ADDR_TEXT)
-  const hasContactData = hasValue(office.phone) || 
-                        hasValue(office.email) || 
-                        hasValue(office.fax) ||
-                        hasValue(office.exec_dir_phone) ||
-                        hasValue(office.exec_dir_email) ||
-                        hasValue(office.exec_dir_fax);
+  // Check if we have valid contact data
+  const hasContactData = isValidPhone(office.phone) || 
+                        isValidEmail(office.email) || 
+                        isValidFax(office.fax) ||
+                        isValidPhone(office.exec_dir_phone) ||
+                        isValidEmail(office.exec_dir_email) ||
+                        isValidFax(office.exec_dir_fax);
 
   // Check if we have admin data
   const hasAdminData = hasValue(office.fiscal_year_end) || 
@@ -109,13 +128,13 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                       hasValue(office.created_at);
 
   // Debug logging to check what contact data we have
-  console.log('Contact data check:', {
-    phone: office.phone,
-    email: office.email,
-    fax: office.fax,
-    exec_dir_phone: office.exec_dir_phone,
-    exec_dir_email: office.exec_dir_email,
-    exec_dir_fax: office.exec_dir_fax,
+  console.log('Contact data analysis:', {
+    phone: { value: office.phone, isValid: isValidPhone(office.phone) },
+    email: { value: office.email, isValid: isValidEmail(office.email) },
+    fax: { value: office.fax, isValid: isValidFax(office.fax) },
+    exec_dir_phone: { value: office.exec_dir_phone, isValid: isValidPhone(office.exec_dir_phone) },
+    exec_dir_email: { value: office.exec_dir_email, isValid: isValidEmail(office.exec_dir_email) },
+    exec_dir_fax: { value: office.exec_dir_fax, isValid: isValidFax(office.exec_dir_fax) },
     hasContactData
   });
 
@@ -399,7 +418,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           </Card>
         )}
 
-        {/* Contact Information - Only show if we have data */}
+        {/* Contact Information - Only show if we have valid data */}
         {hasContactData && (
           <Card className="shadow-sm border-0">
             <CardHeader>
@@ -409,8 +428,8 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {/* Main PHA Contact - Data from HA_PHN_NUM, HA_FAX_NUM, HA_EMAIL_ADDR_TEXT fields */}
-              {hasValue(office.phone) && (
+              {/* Main PHA Contact - Only show if data is valid */}
+              {isValidPhone(office.phone) && (
                 <a 
                   href={`tel:${office.phone}`}
                   className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
@@ -425,7 +444,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                 </a>
               )}
               
-              {hasValue(office.email) && (
+              {isValidEmail(office.email) && (
                 <a 
                   href={`mailto:${office.email}`}
                   className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
@@ -440,7 +459,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                 </a>
               )}
 
-              {hasValue(office.fax) && (
+              {isValidFax(office.fax) && (
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                   <FileText className="w-4 h-4 mr-3 text-gray-600 flex-shrink-0" />
                   <div className="flex flex-col">
@@ -452,12 +471,12 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                 </div>
               )}
 
-              {/* Executive Director Contact - Only show if we have any exec director data */}
-              {(hasValue(office.exec_dir_phone) || hasValue(office.exec_dir_email) || hasValue(office.exec_dir_fax)) && (
+              {/* Executive Director Contact - Only show if we have any valid exec director data */}
+              {(isValidPhone(office.exec_dir_phone) || isValidEmail(office.exec_dir_email) || isValidFax(office.exec_dir_fax)) && (
                 <div className="pt-3 border-t">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Executive Director</h4>
                   <div className="space-y-2">
-                    {hasValue(office.exec_dir_phone) && (
+                    {isValidPhone(office.exec_dir_phone) && (
                       <a 
                         href={`tel:${office.exec_dir_phone}`}
                         className="flex items-center p-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors group"
@@ -466,7 +485,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                         <span className="text-sm text-blue-700 group-hover:text-blue-800">{office.exec_dir_phone}</span>
                       </a>
                     )}
-                    {hasValue(office.exec_dir_email) && (
+                    {isValidEmail(office.exec_dir_email) && (
                       <a 
                         href={`mailto:${office.exec_dir_email}`}
                         className="flex items-center p-2 bg-purple-50 rounded hover:bg-purple-100 transition-colors group"
@@ -475,7 +494,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                         <span className="text-sm text-purple-700 group-hover:text-purple-800">{office.exec_dir_email}</span>
                       </a>
                     )}
-                    {hasValue(office.exec_dir_fax) && (
+                    {isValidFax(office.exec_dir_fax) && (
                       <div className="flex items-center p-2 bg-gray-50 rounded">
                         <FileText className="w-3 h-3 mr-2 text-gray-500" />
                         <span className="text-sm">Fax: {office.exec_dir_fax}</span>
