@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 <img 
                   src="/lovable-uploads/221b75b2-2ed8-4872-b9ef-18b878e8e8fe.png" 
                   alt="AssistanceHub Logo" 
-                  className="h-8 w-auto"
+                  className="h-12 w-auto"
                 />
               </Link>
             </div>
