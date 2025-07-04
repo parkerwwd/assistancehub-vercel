@@ -71,9 +71,9 @@ export const ImportControls: React.FC<ImportControlsProps> = ({
   };
 
   const downloadSampleCSV = () => {
-    const sampleData = `PARTICIPANT_CODE,FORMAL_PARTICIPANT_NAME,STD_ADDR,STD_CITY,STD_ST,STD_ZIP5,HA_PHN_NUM,HA_EMAIL_ADDR_TEXT,HA_PROGRAM_TYPE,LAT,LON
-CA001,Sample Housing Authority,123 Main St,Los Angeles,CA,90210,555-123-4567,info@sample.gov,Section 8,34.0522,-118.2437
-NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov,Public Housing,40.7128,-74.0060`;
+    const sampleData = `PARTICIPANT_CODE,FORMAL_PARTICIPANT_NAME,FULL_ADDRESS,HA_PHN_NUM,HA_FAX_NUM,HA_EMAIL_ADDR_TEXT,EXEC_DIR_PHONE,EXEC_DIR_FAX,EXEC_DIR_EMAIL,PHAS_DESIGNATION,HA_PROGRAM_TYPE,HA_LOW_RENT_SIZE_CATEGORY,HA_SECTION_8_SIZE_CATEGORY,HA_COMBINED_SIZE_CATEGORY,HA_FYE,TOTAL_UNITS,TOTAL_DWELLING_UNITS,PH_OCCUPIED,SECTION8_UNITS_CNT,SECTION8_OCCUPIED
+CA001,Sample Housing Authority,123 Main St Los Angeles CA 90210,555-123-4567,555-123-4568,info@sample.gov,555-123-4569,555-123-4570,director@sample.gov,High Performer,Both,Large,Large,Large,12/31,1500,1200,1100,800,750
+NY002,Another PHA,456 Oak Ave New York NY 10001,555-987-6543,555-987-6544,contact@another.gov,555-987-6545,555-987-6546,exec@another.gov,Standard Performer,Section 8,Medium,Large,Large,06/30,2000,1800,1600,1200,1150`;
     
     const blob = new Blob([sampleData], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -103,7 +103,7 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
         </div>
         <p className="text-xs text-amber-700">
           Data imports now require authentication and are subject to enhanced security validation. 
-          Files are limited to 50MB and 100,000 records maximum.
+          Files are limited to 50MB and 100,000 records maximum. Field mapping is automatic for HUD format.
         </p>
       </div>
       
@@ -114,7 +114,7 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
         size="lg"
       >
         <Upload className="w-4 h-4" />
-        {isImporting ? `Importing HUD Data... (${Math.round(progressPercentage)}%)` : 'Import HUD CSV File (Authentication Required)'}
+        {isImporting ? `Importing HUD Data... (${Math.round(progressPercentage)}%)` : 'Import HUD CSV File (Direct Processing)'}
       </Button>
 
       <Button
@@ -127,10 +127,10 @@ NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov
       </Button>
 
       <p className="text-xs text-gray-600 text-center">
-        Upload HUD PHA Contact Information CSV data. The system automatically maps HUD field names
-        like PARTICIPANT_CODE, FORMAL_PARTICIPANT_NAME, STD_ADDR, LAT/LON, etc.
+        Upload HUD PHA Contact Information CSV data. The system automatically processes all HUD standard fields
+        including PARTICIPANT_CODE, FORMAL_PARTICIPANT_NAME, contact details, program information, and unit counts.
         <br />
-        <strong>Note:</strong> Authentication is required for data imports.
+        <strong>Note:</strong> Authentication is required for data imports. No field mapping required.
       </p>
     </div>
   );
