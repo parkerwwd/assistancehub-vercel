@@ -49,20 +49,38 @@ export const upsertPHARecord = async (phaData: any) => {
     throw new Error('PHA name is required');
   }
 
-  const { error } = await supabase
-    .from('pha_agencies')
-    .upsert(phaData, { 
-      onConflict: 'pha_code',
-      ignoreDuplicates: false 
-    });
+  // If pha_code is null, empty, or whitespace, we can't use ON CONFLICT
+  // In this case, we'll just insert normally
+  if (!phaData.pha_code || phaData.pha_code.trim().length === 0) {
+    const { error } = await supabase
+      .from('pha_agencies')
+      .insert(phaData);
 
-  if (error) {
-    console.error('Error upserting PHA record:', error);
-    // Check if it's an authentication error
-    if (error.message.includes('row-level security policy')) {
-      throw new Error('Authentication required for data import. Please ensure you are logged in.');
+    if (error) {
+      console.error('Error inserting PHA record:', error);
+      // Check if it's an authentication error
+      if (error.message.includes('row-level security policy')) {
+        throw new Error('Authentication required for data import. Please ensure you are logged in.');
+      }
+      throw error;
     }
-    throw error;
+  } else {
+    // Use upsert with ON CONFLICT only when pha_code is valid
+    const { error } = await supabase
+      .from('pha_agencies')
+      .upsert(phaData, { 
+        onConflict: 'pha_code',
+        ignoreDuplicates: false 
+      });
+
+    if (error) {
+      console.error('Error upserting PHA record:', error);
+      // Check if it's an authentication error
+      if (error.message.includes('row-level security policy')) {
+        throw new Error('Authentication required for data import. Please ensure you are logged in.');
+      }
+      throw error;
+    }
   }
 
   return true;
