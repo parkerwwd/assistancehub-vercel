@@ -6,7 +6,7 @@ import { sanitizeInput } from '../utils/dataValidation';
 export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => {
   // Apply field mappings to build PHA data object
   const phaData: any = {
-    last_updated: new Date().toISOString()
+    updated_at: new Date().toISOString()
   };
 
   // Map fields based on user configuration (only checked fields)
