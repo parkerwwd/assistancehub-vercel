@@ -126,7 +126,7 @@ export type Database = {
           new_data: Json | null
           old_data: Json | null
           record_id: string | null
-          table_name: string | null
+          table_name: string
           user_agent: string | null
           user_id: string | null
         }
@@ -138,7 +138,7 @@ export type Database = {
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string | null
-          table_name?: string | null
+          table_name?: string
           user_agent?: string | null
           user_id?: string | null
         }
@@ -150,7 +150,7 @@ export type Database = {
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string | null
-          table_name?: string | null
+          table_name?: string
           user_agent?: string | null
           user_id?: string | null
         }
