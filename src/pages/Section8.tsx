@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
@@ -5,7 +6,9 @@ import PHADetailView from "@/components/PHADetailView";
 import HousingListings from "@/components/HousingListings";
 import MapContainer from "@/components/MapContainer";
 import Header from "@/components/Header";
+import MobileSection8Layout from "@/components/MobileSection8Layout";
 import { useMapLogic } from "@/hooks/useMapLogic";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Database } from "@/integrations/supabase/types";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
@@ -37,6 +40,7 @@ const Section8 = () => {
 
   const [viewState, setViewState] = React.useState<ViewState>('overview');
   const [detailOffice, setDetailOffice] = React.useState<PHAAgency | null>(null);
+  const isMobile = useIsMobile();
 
   const handleOfficeClick = (office: PHAAgency) => {
     console.log('🎯 Office clicked from panel:', office.name);
@@ -130,32 +134,57 @@ const Section8 = () => {
       
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal" className="h-full">
-          {/* Left Panel - Map */}
-          <ResizablePanel defaultSize={60} minSize={40}>
-            <div className="h-full bg-gray-100">
-              <MapContainer
-                ref={mapRef}
-                mapboxToken={mapboxToken}
-                phaAgencies={phaAgencies}
-                onOfficeSelect={handleOfficeClick}
-                onTokenError={setTokenError}
-                selectedOffice={selectedOffice}
-                selectedLocation={selectedLocation}
-              />
-            </div>
-          </ResizablePanel>
-          
-          {/* Resize Handle */}
-          <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-1" />
-          
-          {/* Right Panel - PHA List */}
-          <ResizablePanel defaultSize={40} minSize={30} maxSize={60}>
-            <div className="h-full overflow-y-auto border-l bg-white">
-              {renderRightPanel()}
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+        {isMobile ? (
+          <MobileSection8Layout
+            mapboxToken={mapboxToken}
+            selectedOffice={selectedOffice}
+            filteredLocation={filteredLocation}
+            mapRef={mapRef}
+            phaAgencies={phaAgencies}
+            loading={loading}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            viewState={viewState}
+            detailOffice={detailOffice}
+            setSelectedOffice={setSelectedOffice}
+            handleOfficeClick={handleOfficeClick}
+            handleViewHousing={handleViewHousing}
+            handleBackToOverview={handleBackToOverview}
+            handleBackToPHADetail={handleBackToPHADetail}
+            handlePageChange={handlePageChange}
+            clearLocationFilter={clearLocationFilter}
+            setTokenError={setTokenError}
+            selectedLocation={selectedLocation}
+          />
+        ) : (
+          <ResizablePanelGroup direction="horizontal" className="h-full">
+            {/* Left Panel - Map */}
+            <ResizablePanel defaultSize={60} minSize={40}>
+              <div className="h-full bg-gray-100">
+                <MapContainer
+                  ref={mapRef}
+                  mapboxToken={mapboxToken}
+                  phaAgencies={phaAgencies}
+                  onOfficeSelect={handleOfficeClick}
+                  onTokenError={setTokenError}
+                  selectedOffice={selectedOffice}
+                  selectedLocation={selectedLocation}
+                />
+              </div>
+            </ResizablePanel>
+            
+            {/* Resize Handle */}
+            <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-1" />
+            
+            {/* Right Panel - PHA List */}
+            <ResizablePanel defaultSize={40} minSize={30} maxSize={60}>
+              <div className="h-full overflow-y-auto border-l bg-white">
+                {renderRightPanel()}
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
       </div>
     </div>
   );
