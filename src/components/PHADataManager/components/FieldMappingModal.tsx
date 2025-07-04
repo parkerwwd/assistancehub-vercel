@@ -9,8 +9,9 @@ import { Upload, FileText, CheckCircle2 } from "lucide-react";
 import { parseCSV, extractCSVHeaders } from "../utils/csvParser";
 
 interface FieldMapping {
-  originField: string;
-  mappedField: string;
+  csvHeaderName: string | null; // The actual CSV header name
+  originField: string; // The expected field name we're looking for
+  mappedField: string; // What we're mapping it to
   isSelected: boolean;
   group: string;
 }
@@ -57,6 +58,9 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
       setCsvHeaders(headers);
       setCsvData(data);
       
+      console.log('CSV Headers:', headers);
+      console.log('First row of data:', data[0]);
+      
       // Create field mappings - only for predefined fields
       const mappings: FieldMapping[] = [];
       
@@ -68,8 +72,11 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
             field.origin.toUpperCase().includes(h.toUpperCase())
           );
           
+          console.log(`Mapping ${field.origin} to header: ${foundHeader || 'NOT FOUND'}`);
+          
           mappings.push({
-            originField: foundHeader || field.origin,
+            csvHeaderName: foundHeader || null,
+            originField: field.origin,
             mappedField: field.mapped,
             isSelected: !!foundHeader,
             group: groupName
@@ -173,12 +180,17 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
                       <TableBody>
                         {mappings.map((mapping, index) => {
                           const globalIndex = fieldMappings.findIndex(m => m === mapping);
-                          const sampleValue = csvData[0]?.[mapping.originField] || 'N/A';
+                          // Use the actual CSV header name to get the sample data
+                          const sampleValue = mapping.csvHeaderName && csvData[0] 
+                            ? csvData[0][mapping.csvHeaderName] || 'N/A'
+                            : 'N/A';
+                          
+                          console.log(`Sample for ${mapping.originField} (CSV header: ${mapping.csvHeaderName}):`, sampleValue);
                           
                           return (
                             <TableRow key={globalIndex}>
                               <TableCell className="font-mono text-sm">
-                                {mapping.originField}
+                                {mapping.csvHeaderName || mapping.originField}
                               </TableCell>
                               <TableCell>
                                 <Select
