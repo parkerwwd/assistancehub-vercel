@@ -1,7 +1,7 @@
 export const DATABASE_FIELDS = [
   { key: 'pha_code', label: 'PHA Code', description: 'Unique identifier for the PHA' },
   { key: 'name', label: 'PHA Name', description: 'Official name of the housing authority', required: true },
-  { key: 'address', label: 'Address', description: 'Full street address' },
+  { key: 'address', label: 'Address', description: 'Full street address including city, state, zip' },
   { key: 'phone', label: 'Phone', description: 'Contact phone number' },
   { key: 'fax', label: 'Fax', description: 'Fax number' },
   { key: 'email', label: 'Email', description: 'Contact email address' },
@@ -31,7 +31,7 @@ export const DATABASE_FIELDS = [
   { key: 'fiscal_year_end', label: 'Fiscal Year End', description: 'Fiscal year end date' },
 ];
 
-// Updated field mappings with removed city, state, zip mappings
+// Fixed field mappings based on actual HUD CSV format
 export const COMMON_MAPPINGS = {
   // Basic PHA Information
   'PARTICIPANT_CODE': 'pha_code',
@@ -45,12 +45,12 @@ export const COMMON_MAPPINGS = {
   'NAME': 'name',
   'AGENCY_NAME': 'name',
   
-  // Address - Full address since CSV doesn't separate city/state/zip
-  'FULL_ADDRESS': 'address',
+  // Address Components - Build full address from separate fields
   'STD_ADDR': 'address',
   'ADDRESS': 'address',
   'STREET_ADDRESS': 'address',
   'MAILING_ADDRESS': 'address',
+  'FULL_ADDRESS': 'address',
   
   // Contact Information
   'HA_PHN_NUM': 'phone',

@@ -8,14 +8,24 @@ interface FieldMapping {
 }
 
 export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => {
+  console.log('Processing PHA record:', record);
+  console.log('Field mappings:', fieldMappings);
+  
   // Apply field mappings to build PHA data object
   const phaData: any = {
     last_updated: new Date().toISOString()
   };
 
+  // First, collect address components for building full address
+  let streetAddress = '';
+  let city = '';
+  let state = '';
+  let zip = '';
+
   // Map fields based on auto-generated configuration
   fieldMappings.forEach(mapping => {
     const csvValue = record[mapping.csvField];
+    console.log(`Mapping ${mapping.csvField} -> ${mapping.dbField}: "${csvValue}"`);
     
     switch (mapping.dbField) {
       case 'pha_code':
@@ -25,7 +35,10 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
         phaData.name = sanitizeInput(csvValue, 255);
         break;
       case 'address':
-        phaData.address = sanitizeInput(csvValue, 500);
+        // Handle various address field names
+        if (csvValue && csvValue.trim()) {
+          streetAddress = sanitizeInput(csvValue, 500);
+        }
         break;
       case 'phone':
         phaData.phone = sanitizeInput(csvValue, 20);
@@ -111,6 +124,33 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
     }
   });
 
+  // Handle special case: look for city, state, zip in CSV to build full address
+  Object.keys(record).forEach(key => {
+    const upperKey = key.toUpperCase().trim();
+    const value = record[key];
+    
+    if (value && value.toString().trim()) {
+      if (upperKey.includes('CITY') || upperKey === 'HA_CITY') {
+        city = value.toString().trim();
+      } else if (upperKey.includes('STATE') || upperKey === 'HA_STATE') {
+        state = value.toString().trim();
+      } else if (upperKey.includes('ZIP') || upperKey.includes('POSTAL') || upperKey === 'HA_ZIP') {
+        zip = value.toString().trim();
+      }
+    }
+  });
+
+  // Build full address if we have components
+  if (streetAddress || city || state || zip) {
+    const addressParts = [];
+    if (streetAddress) addressParts.push(streetAddress);
+    if (city) addressParts.push(city);
+    if (state) addressParts.push(state);
+    if (zip) addressParts.push(zip);
+    phaData.address = addressParts.join(' ').trim();
+  }
+
+  console.log('Final processed PHA data:', phaData);
   return phaData;
 };
 

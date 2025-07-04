@@ -15,20 +15,26 @@ export const usePHAImport = () => {
 
   // Create automatic field mappings based on CSV headers
   const createAutoMappings = (csvHeaders: string[]) => {
+    console.log('Creating auto mappings for headers:', csvHeaders);
     const mappings: Array<{ csvField: string; dbField: string }> = [];
     
     csvHeaders.forEach(csvField => {
       const normalizedField = csvField.toUpperCase().trim();
       const dbField = COMMON_MAPPINGS[normalizedField];
       
+      console.log(`Checking field: "${csvField}" -> normalized: "${normalizedField}" -> mapped to: "${dbField}"`);
+      
       if (dbField) {
         mappings.push({
           csvField,
           dbField
         });
+      } else {
+        console.log(`No mapping found for field: "${csvField}"`);
       }
     });
     
+    console.log('Final auto mappings:', mappings);
     return mappings;
   };
 
@@ -57,12 +63,20 @@ export const usePHAImport = () => {
         throw new Error('CSV file appears to be empty or invalid.');
       }
 
+      console.log('First CSV record sample:', csvData[0]);
+
       // Create automatic field mappings
       const csvHeaders = Object.keys(csvData[0]);
+      console.log('CSV headers detected:', csvHeaders);
+      
       const autoMappings = createAutoMappings(csvHeaders);
       
       console.log('Auto-generated field mappings:', autoMappings);
       console.log('Total records to process:', csvData.length);
+      
+      if (autoMappings.length === 0) {
+        throw new Error('No field mappings could be created. Please check your CSV format and headers.');
+      }
       
       setImportProgress({ current: 0, total: csvData.length });
       
@@ -90,11 +104,20 @@ export const usePHAImport = () => {
             // Process the record using auto-mapped fields
             const phaData = processPHARecord(record, autoMappings);
 
+            // Only proceed if we have essential data
+            if (!phaData.name) {
+              console.warn(`Skipping record ${currentIndex + 1}: No name found`);
+              errorCount++;
+              continue;
+            }
+
             // Save to database
             await upsertPHARecord(phaData);
             processedCount++;
+            
+            console.log(`✅ Successfully processed record ${currentIndex + 1}: ${phaData.name}`);
           } catch (recordError) {
-            console.error('Error processing PHA record:', recordError);
+            console.error(`Error processing PHA record ${currentIndex + 1}:`, recordError);
             errorCount++;
             
             // If we get too many errors, stop the import
