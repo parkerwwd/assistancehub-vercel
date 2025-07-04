@@ -293,7 +293,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                     color: getWaitlistColor(office.waitlist_status)
                   }}
                 >
-                  {office.waitlist_status}
+                  {office.waitlist_open}
                 </span>
               </div>
             )}
