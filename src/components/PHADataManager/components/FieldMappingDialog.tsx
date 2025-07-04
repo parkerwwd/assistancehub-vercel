@@ -7,7 +7,7 @@ import { AlertCircle, Download, Upload } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { downloadMappingTemplate, getRequiredFieldStatus } from './fieldMapping/utils';
-import { COMMON_MAPPINGS, ESSENTIAL_FIELDS } from './fieldMapping/constants';
+import { COMMON_MAPPINGS, ESSENTIAL_FIELDS, DATABASE_FIELDS } from './fieldMapping/constants';
 
 export interface FieldMapping {
   csvField: string;
@@ -39,9 +39,51 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
   // Memoize the default mappings to prevent unnecessary re-renders
   const memoizedDefaultMappings = useMemo(() => defaultMappings, [JSON.stringify(defaultMappings)]);
 
+  // Enhanced auto-mapping function
+  const findBestMapping = (csvField: string): string => {
+    const normalizedField = csvField.toUpperCase().trim();
+    
+    // Direct mapping from COMMON_MAPPINGS
+    if (COMMON_MAPPINGS[normalizedField]) {
+      return COMMON_MAPPINGS[normalizedField];
+    }
+
+    // Fuzzy matching for common variations
+    const fieldLower = normalizedField.toLowerCase();
+    
+    // PHA Code variations
+    if (fieldLower.includes('participant') && fieldLower.includes('code')) return 'pha_code';
+    if (fieldLower.includes('pha') && fieldLower.includes('code')) return 'pha_code';
+    
+    // Name variations
+    if (fieldLower.includes('participant') && fieldLower.includes('name')) return 'name';
+    if (fieldLower.includes('formal') && fieldLower.includes('name')) return 'name';
+    if (fieldLower.includes('pha') && fieldLower.includes('name')) return 'name';
+    
+    // Address variations
+    if (fieldLower.includes('address') || fieldLower.includes('addr')) return 'address';
+    if (fieldLower.includes('full_address')) return 'address';
+    
+    // Phone variations
+    if (fieldLower.includes('phone') || fieldLower.includes('phn')) return 'phone';
+    
+    // Email variations
+    if (fieldLower.includes('email') && !fieldLower.includes('exec') && !fieldLower.includes('dir')) return 'email';
+    if (fieldLower.includes('email') && fieldLower.includes('addr')) return 'email';
+    
+    // Executive Director Email variations
+    if (fieldLower.includes('exec') && fieldLower.includes('email')) return 'exec_dir_email';
+    if (fieldLower.includes('director') && fieldLower.includes('email')) return 'exec_dir_email';
+    
+    // Program Type variations
+    if (fieldLower.includes('program') && fieldLower.includes('type')) return 'program_type';
+    if (fieldLower.includes('ha_program')) return 'program_type';
+    
+    return ''; // No mapping found
+  };
+
   useEffect(() => {
     if (csvHeaders.length > 0) {
-      // Create mappings for ALL CSV fields
       const newMappings: FieldMapping[] = [];
       let autoMapped = 0;
 
@@ -58,8 +100,8 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
           return;
         }
 
-        // Try to find a mapping for this field
-        const dbField = COMMON_MAPPINGS[normalizedField] || '';
+        // Find the best mapping for this field
+        const dbField = findBestMapping(csvField);
         
         // Auto-check if it's an essential field and has a valid mapping
         const shouldAutoCheck = dbField && ESSENTIAL_FIELDS.includes(dbField);
@@ -99,7 +141,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
   };
 
   const getCheckedMappings = () => {
-    return mappings.filter(m => m.checked && m.dbField);
+    return mappings.filter(m => m.checked);
   };
 
   const handleConfirm = () => {
@@ -109,6 +151,12 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
 
   const checkedMappings = getCheckedMappings();
   const { missingRequired, hasRequired } = getRequiredFieldStatus(checkedMappings.map(m => m.dbField));
+
+  // Get field description
+  const getFieldDescription = (dbField: string) => {
+    const field = DATABASE_FIELDS.find(f => f.key === dbField);
+    return field ? field.label : dbField;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -167,12 +215,12 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                     <p className="text-xs text-muted-foreground mt-1">
                       {mapping.dbField ? (
                         <>
-                          Maps to: <span className="font-medium">{mapping.dbField}</span>
+                          Maps to: <span className="font-medium">{getFieldDescription(mapping.dbField)}</span>
                           {mapping.dbField === 'name' && <span className="text-red-500 ml-1">(Required)</span>}
                           {ESSENTIAL_FIELDS.includes(mapping.dbField) && <span className="text-blue-500 ml-1">(Essential)</span>}
                         </>
                       ) : (
-                        <span className="text-orange-500">No mapping found - will be skipped if checked</span>
+                        <span className="text-orange-500">Available for import (no auto-mapping)</span>
                       )}
                     </p>
                   </div>

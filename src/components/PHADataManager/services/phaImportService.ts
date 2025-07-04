@@ -15,28 +15,35 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
     
     const csvValue = record[mapping.csvField];
     
-    switch (mapping.dbField) {
-      case 'pha_code':
-        phaData.pha_code = sanitizeInput(csvValue, 50);
-        break;
-      case 'name':
-        phaData.name = sanitizeInput(csvValue, 255);
-        break;
-      case 'address':
-        phaData.address = sanitizeInput(csvValue, 500);
-        break;
-      case 'phone':
-        phaData.phone = sanitizeInput(csvValue, 20);
-        break;
-      case 'email':
-        phaData.email = sanitizeInput(csvValue, 255);
-        break;
-      case 'exec_dir_email':
-        phaData.exec_dir_email = sanitizeInput(csvValue, 255);
-        break;
-      case 'program_type':
-        phaData.program_type = sanitizeInput(csvValue, 100);
-        break;
+    // Only process fields that have database mappings
+    if (mapping.dbField) {
+      switch (mapping.dbField) {
+        case 'pha_code':
+          phaData.pha_code = sanitizeInput(csvValue, 50);
+          break;
+        case 'name':
+          phaData.name = sanitizeInput(csvValue, 255);
+          break;
+        case 'address':
+          phaData.address = sanitizeInput(csvValue, 500);
+          break;
+        case 'phone':
+          phaData.phone = sanitizeInput(csvValue, 20);
+          break;
+        case 'email':
+          phaData.email = sanitizeInput(csvValue, 255);
+          break;
+        case 'exec_dir_email':
+          phaData.exec_dir_email = sanitizeInput(csvValue, 255);
+          break;
+        case 'program_type':
+          phaData.program_type = sanitizeInput(csvValue, 100);
+          break;
+        default:
+          // For unmapped fields that are checked, we could log them or handle them differently
+          console.log(`Field ${mapping.csvField} is checked but has no database mapping`);
+          break;
+      }
     }
   });
 
