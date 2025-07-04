@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Database, Upload, Download, RotateCcw, FileText, Shield, Lock, Eye, AlertCircle } from "lucide-react";
+import { FieldMappingModal } from "./PHADataManager/components/FieldMappingModal";
 
 const PHADataManager: React.FC = () => {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -37,6 +37,11 @@ const PHADataManager: React.FC = () => {
     fileInput.accept = '.csv';
     fileInput.onchange = handleFileUpload;
     fileInput.click();
+  };
+
+  const handleCloseModal = () => {
+    setIsImportModalOpen(false);
+    setSelectedFile(null);
   };
 
   const statsData = [
@@ -156,45 +161,13 @@ const PHADataManager: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="space-y-3">
-          <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
-            <Button 
-              onClick={handleImportClick}
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 text-base font-medium"
-            >
-              <Upload className="w-5 h-5 mr-2" />
-              Import HUD CSV File (Authentication Required)
-            </Button>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Import HUD CSV File</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="text-center py-8">
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-medium mb-2">File Selected</h3>
-                  {selectedFile && (
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-600 mb-2">
-                        <strong>File:</strong> {selectedFile.name}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-2">
-                        <strong>Size:</strong> {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
-                  )}
-                  <p className="text-sm text-gray-600 mb-4">
-                    Upload HUD PHA Contact Information CSV data. Maximum file size: 50MB
-                  </p>
-                  <Button className="mb-2">
-                    Process File
-                  </Button>
-                  <p className="text-xs text-gray-500">
-                    Authentication is required for data imports
-                  </p>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            onClick={handleImportClick}
+            className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 text-base font-medium"
+          >
+            <Upload className="w-5 h-5 mr-2" />
+            Import HUD CSV File (Authentication Required)
+          </Button>
 
           <Button variant="outline" className="w-full py-3 text-base font-medium">
             <Download className="w-5 h-5 mr-2" />
@@ -233,6 +206,13 @@ const PHADataManager: React.FC = () => {
           </CardContent>
         </Card>
       </CardContent>
+
+      {/* Field Mapping Modal */}
+      <FieldMappingModal 
+        isOpen={isImportModalOpen}
+        onClose={handleCloseModal}
+        file={selectedFile}
+      />
     </Card>
   );
 };

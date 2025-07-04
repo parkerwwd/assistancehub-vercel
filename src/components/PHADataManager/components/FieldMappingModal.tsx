@@ -1,0 +1,287 @@
+
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Upload, FileText, CheckCircle2, AlertCircle } from "lucide-react";
+import { parseCSV, extractCSVHeaders } from "../utils/csvParser";
+
+interface FieldMapping {
+  originField: string;
+  mappedField: string;
+  isSelected: boolean;
+  group: string;
+}
+
+interface FieldMappingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  file: File | null;
+}
+
+const FIELD_GROUPS = {
+  'Basic Information': [
+    { origin: 'PARTICIPANT_CODE', mapped: 'PHA Code' },
+    { origin: 'FORMAL_PARTICIPANT_NAME', mapped: 'PHA Name' },
+    { origin: 'HA_TYPE', mapped: 'Housing Authority Type' },
+  ],
+  'Address Information': [
+    { origin: 'STD_ADDR', mapped: 'Street Address' },
+    { origin: 'STD_CITY', mapped: 'City' },
+    { origin: 'STD_ST', mapped: 'State' },
+    { origin: 'STD_ZIP5', mapped: 'ZIP Code' },
+    { origin: 'STD_ZIP4', mapped: 'ZIP+4' },
+  ],
+  'Contact Information': [
+    { origin: 'HA_PHN_NUM', mapped: 'Phone Number' },
+    { origin: 'HA_EMAIL_ADDR_TEXT', mapped: 'Email Address' },
+    { origin: 'EXEC_DIR_EMAIL', mapped: 'Executive Director Email' },
+    { origin: 'HA_WEB_ADDR_TEXT', mapped: 'Website URL' },
+  ],
+  'Geographic Data': [
+    { origin: 'LAT', mapped: 'Latitude' },
+    { origin: 'LON', mapped: 'Longitude' },
+    { origin: 'GEOCODING_ACCURACY', mapped: 'Geocoding Accuracy' },
+  ],
+  'Program Information': [
+    { origin: 'HA_PROGRAM_TYPE', mapped: 'Program Type' },
+    { origin: 'SECTION8_UNITS_CNT', mapped: 'Section 8 Units Count' },
+    { origin: 'PH_UNITS_CNT', mapped: 'Public Housing Units Count' },
+    { origin: 'TOTAL_UNITS_CNT', mapped: 'Total Units Count' },
+  ],
+  'Additional Data': [
+    { origin: 'CLUSTER_CD', mapped: 'Cluster Code' },
+    { origin: 'CLUSTER_NAME', mapped: 'Cluster Name' },
+    { origin: 'PART_REGION', mapped: 'Participant Region' },
+    { origin: 'FIELD_OFFICE_NAME', mapped: 'Field Office Name' },
+  ]
+};
+
+export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, onClose, file }) => {
+  const [fieldMappings, setFieldMappings] = useState<FieldMapping[]>([]);
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [csvData, setCsvData] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (file && isOpen) {
+      analyzeFile();
+    }
+  }, [file, isOpen]);
+
+  const analyzeFile = async () => {
+    if (!file) return;
+    
+    setIsProcessing(true);
+    try {
+      const text = await file.text();
+      const headers = extractCSVHeaders(text);
+      const data = parseCSV(text);
+      
+      setCsvHeaders(headers);
+      setCsvData(data);
+      
+      // Create field mappings
+      const mappings: FieldMapping[] = [];
+      
+      Object.entries(FIELD_GROUPS).forEach(([groupName, fields]) => {
+        fields.forEach(field => {
+          const foundHeader = headers.find(h => 
+            h.toUpperCase() === field.origin.toUpperCase() ||
+            h.toUpperCase().includes(field.origin.toUpperCase()) ||
+            field.origin.toUpperCase().includes(h.toUpperCase())
+          );
+          
+          mappings.push({
+            originField: foundHeader || field.origin,
+            mappedField: field.mapped,
+            isSelected: !!foundHeader,
+            group: groupName
+          });
+        });
+      });
+      
+      // Add unmapped fields
+      const mappedOrigins = mappings.map(m => m.originField.toUpperCase());
+      const unmappedHeaders = headers.filter(h => 
+        !mappedOrigins.includes(h.toUpperCase())
+      );
+      
+      unmappedHeaders.forEach(header => {
+        mappings.push({
+          originField: header,
+          mappedField: 'Unmapped Field',
+          isSelected: false,
+          group: 'Unmapped Fields'
+        });
+      });
+      
+      setFieldMappings(mappings);
+    } catch (error) {
+      console.error('Error analyzing file:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const toggleFieldSelection = (index: number) => {
+    setFieldMappings(prev => prev.map((mapping, i) => 
+      i === index ? { ...mapping, isSelected: !mapping.isSelected } : mapping
+    ));
+  };
+
+  const updateFieldMapping = (index: number, newMappedField: string) => {
+    setFieldMappings(prev => prev.map((mapping, i) => 
+      i === index ? { ...mapping, mappedField: newMappedField } : mapping
+    ));
+  };
+
+  const getSelectedCount = () => fieldMappings.filter(m => m.isSelected).length;
+  const getTotalCount = () => fieldMappings.length;
+
+  const handleProcessFile = () => {
+    const selectedMappings = fieldMappings.filter(m => m.isSelected);
+    console.log('Processing file with mappings:', selectedMappings);
+    // TODO: Implement actual file processing logic
+    onClose();
+  };
+
+  const groupedMappings = fieldMappings.reduce((acc, mapping) => {
+    if (!acc[mapping.group]) {
+      acc[mapping.group] = [];
+    }
+    acc[mapping.group].push(mapping);
+    return acc;
+  }, {} as Record<string, FieldMapping[]>);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Field Mapping - {file?.name}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {/* File Info */}
+          <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <span className="font-medium">File Analysis Complete</span>
+              </div>
+              <div className="text-sm text-gray-600">
+                {getSelectedCount()} of {getTotalCount()} fields selected
+              </div>
+            </div>
+            <div className="mt-2 text-sm text-gray-600">
+              <span className="font-medium">Records:</span> {csvData.length.toLocaleString()} | 
+              <span className="font-medium ml-2">Size:</span> {(file?.size || 0 / 1024 / 1024).toFixed(2)} MB
+            </div>
+          </div>
+
+          {/* Field Mapping Table */}
+          <div className="flex-1 overflow-auto">
+            <div className="space-y-6">
+              {Object.entries(groupedMappings).map(([groupName, mappings]) => (
+                <Card key={groupName}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      {groupName === 'Unmapped Fields' ? (
+                        <AlertCircle className="w-5 h-5 text-orange-500" />
+                      ) : (
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      )}
+                      {groupName}
+                      <span className="text-sm font-normal text-gray-500">
+                        ({mappings.filter(m => m.isSelected).length}/{mappings.length})
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">Select</TableHead>
+                          <TableHead>Origin Field</TableHead>
+                          <TableHead>Mapped Field</TableHead>
+                          <TableHead>Sample Data</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {mappings.map((mapping, index) => {
+                          const globalIndex = fieldMappings.findIndex(m => m === mapping);
+                          const sampleValue = csvData[0]?.[mapping.originField] || 'N/A';
+                          
+                          return (
+                            <TableRow key={globalIndex}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={mapping.isSelected}
+                                  onCheckedChange={() => toggleFieldSelection(globalIndex)}
+                                />
+                              </TableCell>
+                              <TableCell className="font-mono text-sm">
+                                {mapping.originField}
+                              </TableCell>
+                              <TableCell>
+                                <Select
+                                  value={mapping.mappedField}
+                                  onValueChange={(value) => updateFieldMapping(globalIndex, value)}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {Object.values(FIELD_GROUPS).flat().map(field => (
+                                      <SelectItem key={field.mapped} value={field.mapped}>
+                                        {field.mapped}
+                                      </SelectItem>
+                                    ))}
+                                    <SelectItem value="Unmapped Field">Unmapped Field</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                              <TableCell className="text-sm text-gray-600 max-w-xs truncate">
+                                {sampleValue}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-between items-center pt-4 border-t">
+            <div className="text-sm text-gray-600">
+              Selected {getSelectedCount()} fields for import
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleProcessFile}
+                disabled={getSelectedCount() === 0}
+                className="flex items-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Process File ({getSelectedCount()} fields)
+              </Button>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
