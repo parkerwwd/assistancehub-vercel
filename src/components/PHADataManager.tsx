@@ -12,6 +12,7 @@ import { ImportProgressComponent } from "./PHADataManager/components/ImportProgr
 import { ImportControls } from "./PHADataManager/components/ImportControls";
 import { ImportResults } from "./PHADataManager/components/ImportResults";
 import { HUDFormatInfo } from "./PHADataManager/components/HUDFormatInfo";
+import { FieldMappingDialog } from "./PHADataManager/components/FieldMappingDialog";
 import { SecurityNotice } from "./SecurityNotice";
 
 const PHADataManager: React.FC = () => {
@@ -22,7 +23,11 @@ const PHADataManager: React.FC = () => {
     importProgress, 
     importResult, 
     startImport,
-    setImportResult: resetImportState
+    setImportResult: resetImportState,
+    showMappingDialog,
+    setShowMappingDialog,
+    csvHeaders,
+    handleMappingConfirm
   } = usePHAImport();
 
   const { 
@@ -46,18 +51,21 @@ const PHADataManager: React.FC = () => {
   });
 
   const handleFileImport = async (file: File) => {
-    console.log('Starting direct file import:', file.name);
+    console.log('Starting file import:', file.name);
     resetImportState();
-    
+    await startImport(file);
+  };
+
+  const handleMappingComplete = async (mappings: any) => {
     try {
-      const result = await startImport(file);
+      await handleMappingConfirm(mappings);
       setLastImport(new Date());
       
       // Update stats with import results
-      if (result && result.processedCount !== undefined) {
-        const recordsAdded = result.processedCount || 0;
-        const recordsEdited = result.errorCount || 0;
-        addFileUpload('HUD CSV Import', recordsAdded, recordsEdited);
+      if (importResult && importResult.processedCount !== undefined) {
+        const recordsAdded = importResult.processedCount || 0;
+        const recordsEdited = importResult.errorCount || 0;
+        addFileUpload('Latest Import', recordsAdded, recordsEdited);
       }
       
       await fetchPHACount();
@@ -113,6 +121,13 @@ const PHADataManager: React.FC = () => {
         <PHAUploadsTable uploads={importStats?.fileUploads || []} />
 
         <HUDFormatInfo />
+
+        <FieldMappingDialog
+          open={showMappingDialog}
+          onOpenChange={setShowMappingDialog}
+          csvHeaders={csvHeaders}
+          onMappingConfirm={handleMappingComplete}
+        />
       </CardContent>
     </Card>
   );

@@ -1,11 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import { FieldMapping } from '../components/FieldMappingDialog';
 import { sanitizeInput, parseCoordinate } from '../utils/dataValidation';
-
-interface FieldMapping {
-  csvField: string;
-  dbField: string;
-}
 
 export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => {
   // Apply field mappings to build PHA data object
@@ -13,7 +8,7 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
     last_updated: new Date().toISOString()
   };
 
-  // Map fields based on predefined HUD configuration
+  // Map fields based on user configuration
   fieldMappings.forEach(mapping => {
     const csvValue = record[mapping.csvField];
     
@@ -27,60 +22,38 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
       case 'address':
         phaData.address = sanitizeInput(csvValue, 500);
         break;
+      case 'city':
+        phaData.city = sanitizeInput(csvValue, 100);
+        break;
+      case 'state':
+        phaData.state = sanitizeInput(csvValue, 2)?.substring(0, 2) || null;
+        break;
+      case 'zip':
+        phaData.zip = sanitizeInput(csvValue, 10)?.substring(0, 10) || null;
+        break;
       case 'phone':
         phaData.phone = sanitizeInput(csvValue, 20);
-        break;
-      case 'fax':
-        phaData.fax = sanitizeInput(csvValue, 20);
         break;
       case 'email':
         phaData.email = sanitizeInput(csvValue, 255);
         break;
-      case 'exec_dir_phone':
-        phaData.exec_dir_phone = sanitizeInput(csvValue, 20);
+      case 'website':
+        phaData.website = sanitizeInput(csvValue, 255);
         break;
-      case 'exec_dir_fax':
-        phaData.exec_dir_fax = sanitizeInput(csvValue, 20);
-        break;
-      case 'exec_dir_email':
-        phaData.exec_dir_email = sanitizeInput(csvValue, 255);
-        break;
-      case 'performance_status':
-        phaData.performance_status = sanitizeInput(csvValue, 100);
-        break;
-      case 'program_type':
-        phaData.program_type = sanitizeInput(csvValue, 100);
-        // Also set supports_hcv based on program type
+      case 'supports_hcv':
         phaData.supports_hcv = csvValue?.toString().toLowerCase().includes('section 8') || 
-                             csvValue?.toString().toLowerCase().includes('both') || 
+                             csvValue?.toString().toLowerCase() === 'true' || 
+                             (csvValue && parseInt(csvValue.toString()) > 0) || 
                              false;
         break;
-      case 'low_rent_size_category':
-        phaData.low_rent_size_category = sanitizeInput(csvValue, 50);
+      case 'waitlist_status':
+        phaData.waitlist_status = sanitizeInput(csvValue, 50) || 'Unknown';
         break;
-      case 'section8_size_category':
-        phaData.section8_size_category = sanitizeInput(csvValue, 50);
+      case 'latitude':
+        phaData.latitude = parseCoordinate(csvValue, 'latitude');
         break;
-      case 'combined_size_category':
-        phaData.combined_size_category = sanitizeInput(csvValue, 50);
-        break;
-      case 'fiscal_year_end':
-        phaData.fiscal_year_end = sanitizeInput(csvValue, 20);
-        break;
-      case 'total_units':
-        phaData.total_units = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
-      case 'total_dwelling_units':
-        phaData.total_dwelling_units = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
-      case 'ph_occupied':
-        phaData.ph_occupied = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
-      case 'section8_units_count':
-        phaData.section8_units_count = csvValue ? parseInt(csvValue.toString()) || null : null;
-        break;
-      case 'section8_occupied':
-        phaData.section8_occupied = csvValue ? parseInt(csvValue.toString()) || null : null;
+      case 'longitude':
+        phaData.longitude = parseCoordinate(csvValue, 'longitude');
         break;
     }
   });

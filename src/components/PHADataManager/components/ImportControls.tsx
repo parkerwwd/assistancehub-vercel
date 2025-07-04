@@ -71,9 +71,9 @@ export const ImportControls: React.FC<ImportControlsProps> = ({
   };
 
   const downloadSampleCSV = () => {
-    const sampleData = `PARTICIPANT_CODE,FORMAL_PARTICIPANT_NAME,FULL_ADDRESS,HA_PHN_NUM,HA_FAX_NUM,HA_EMAIL_ADDR_TEXT,EXEC_DIR_PHONE,EXEC_DIR_FAX,EXEC_DIR_EMAIL,PHAS_DESIGNATION,HA_PROGRAM_TYPE,HA_LOW_RENT_SIZE_CATEGORY,HA_SECTION_8_SIZE_CATEGORY,HA_COMBINED_SIZE_CATEGORY,HA_FYE,TOTAL_UNITS,TOTAL_DWELLING_UNITS,PH_OCCUPIED,SECTION8_UNITS_CNT,SECTION8_OCCUPIED
-CA001,Sample Housing Authority,123 Main St Los Angeles CA 90210,555-123-4567,555-123-4568,info@sample.gov,555-123-4569,555-123-4570,director@sample.gov,High Performer,Both,Large,Large,Large,12/31,1500,1200,1100,800,750
-NY002,Another PHA,456 Oak Ave New York NY 10001,555-987-6543,555-987-6544,contact@another.gov,555-987-6545,555-987-6546,exec@another.gov,Standard Performer,Section 8,Medium,Large,Large,06/30,2000,1800,1600,1200,1150`;
+    const sampleData = `PARTICIPANT_CODE,FORMAL_PARTICIPANT_NAME,STD_ADDR,STD_CITY,STD_ST,STD_ZIP5,HA_PHN_NUM,HA_EMAIL_ADDR_TEXT,HA_PROGRAM_TYPE,LAT,LON
+CA001,Sample Housing Authority,123 Main St,Los Angeles,CA,90210,555-123-4567,info@sample.gov,Section 8,34.0522,-118.2437
+NY002,Another PHA,456 Oak Ave,New York,NY,10001,555-987-6543,contact@another.gov,Public Housing,40.7128,-74.0060`;
     
     const blob = new Blob([sampleData], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -103,7 +103,7 @@ NY002,Another PHA,456 Oak Ave New York NY 10001,555-987-6543,555-987-6544,contac
         </div>
         <p className="text-xs text-amber-700">
           Data imports now require authentication and are subject to enhanced security validation. 
-          Files are limited to 50MB and 100,000 records maximum. HUD field mapping is automatic.
+          Files are limited to 50MB and 100,000 records maximum.
         </p>
       </div>
       
@@ -114,7 +114,7 @@ NY002,Another PHA,456 Oak Ave New York NY 10001,555-987-6543,555-987-6544,contac
         size="lg"
       >
         <Upload className="w-4 h-4" />
-        {isImporting ? `Processing HUD Data... (${Math.round(progressPercentage)}%)` : 'Import HUD CSV File'}
+        {isImporting ? `Importing HUD Data... (${Math.round(progressPercentage)}%)` : 'Import HUD CSV File (Authentication Required)'}
       </Button>
 
       <Button
@@ -123,40 +123,15 @@ NY002,Another PHA,456 Oak Ave New York NY 10001,555-987-6543,555-987-6544,contac
         className="w-full flex items-center gap-2"
       >
         <Download className="w-4 h-4" />
-        Download HUD Format Sample CSV
+        Download HUD Format Sample
       </Button>
 
-      <div className="text-xs text-gray-600 text-center space-y-2">
-        <p>
-          Upload HUD PHA Contact Information CSV data. The system automatically processes all HUD standard fields:
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-left bg-gray-50 p-3 rounded">
-          <div>
-            <strong>📋 Code & Name:</strong><br />
-            • PARTICIPANT_CODE<br />
-            • FORMAL_PARTICIPANT_NAME
-          </div>
-          <div>
-            <strong>📍 Address:</strong><br />
-            • FULL_ADDRESS
-          </div>
-          <div>
-            <strong>☎️ Contact Info:</strong><br />
-            • HA_PHN_NUM, HA_FAX_NUM<br />
-            • HA_EMAIL_ADDR_TEXT<br />
-            • EXEC_DIR_PHONE/FAX/EMAIL
-          </div>
-          <div>
-            <strong>🏢 PHA Details:</strong><br />
-            • PHAS_DESIGNATION<br />
-            • HA_PROGRAM_TYPE<br />
-            • Size categories & units
-          </div>
-        </div>
-        <p className="text-amber-700">
-          <strong>Note:</strong> Authentication required for imports. All 20 HUD fields supported automatically.
-        </p>
-      </div>
+      <p className="text-xs text-gray-600 text-center">
+        Upload HUD PHA Contact Information CSV data. The system automatically maps HUD field names
+        like PARTICIPANT_CODE, FORMAL_PARTICIPANT_NAME, STD_ADDR, LAT/LON, etc.
+        <br />
+        <strong>Note:</strong> Authentication is required for data imports.
+      </p>
     </div>
   );
 };

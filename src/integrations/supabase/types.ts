@@ -13,33 +13,18 @@ export type Database = {
         Row: {
           address: string | null
           city: string | null
-          combined_size_category: string | null
           created_at: string
           email: string | null
-          exec_dir_email: string | null
-          exec_dir_fax: string | null
-          exec_dir_phone: string | null
-          fax: string | null
-          fiscal_year_end: string | null
           id: string
           jurisdictions: string[] | null
           last_updated: string | null
           latitude: number | null
           longitude: number | null
-          low_rent_size_category: string | null
           name: string
-          performance_status: string | null
-          ph_occupied: number | null
           pha_code: string | null
           phone: string | null
-          program_type: string | null
-          section8_occupied: number | null
-          section8_size_category: string | null
-          section8_units_count: number | null
           state: string | null
           supports_hcv: boolean | null
-          total_dwelling_units: number | null
-          total_units: number | null
           waitlist_open: boolean | null
           waitlist_status: string | null
           website: string | null
@@ -48,33 +33,18 @@ export type Database = {
         Insert: {
           address?: string | null
           city?: string | null
-          combined_size_category?: string | null
           created_at?: string
           email?: string | null
-          exec_dir_email?: string | null
-          exec_dir_fax?: string | null
-          exec_dir_phone?: string | null
-          fax?: string | null
-          fiscal_year_end?: string | null
           id?: string
           jurisdictions?: string[] | null
           last_updated?: string | null
           latitude?: number | null
           longitude?: number | null
-          low_rent_size_category?: string | null
           name: string
-          performance_status?: string | null
-          ph_occupied?: number | null
           pha_code?: string | null
           phone?: string | null
-          program_type?: string | null
-          section8_occupied?: number | null
-          section8_size_category?: string | null
-          section8_units_count?: number | null
           state?: string | null
           supports_hcv?: boolean | null
-          total_dwelling_units?: number | null
-          total_units?: number | null
           waitlist_open?: boolean | null
           waitlist_status?: string | null
           website?: string | null
@@ -83,33 +53,18 @@ export type Database = {
         Update: {
           address?: string | null
           city?: string | null
-          combined_size_category?: string | null
           created_at?: string
           email?: string | null
-          exec_dir_email?: string | null
-          exec_dir_fax?: string | null
-          exec_dir_phone?: string | null
-          fax?: string | null
-          fiscal_year_end?: string | null
           id?: string
           jurisdictions?: string[] | null
           last_updated?: string | null
           latitude?: number | null
           longitude?: number | null
-          low_rent_size_category?: string | null
           name?: string
-          performance_status?: string | null
-          ph_occupied?: number | null
           pha_code?: string | null
           phone?: string | null
-          program_type?: string | null
-          section8_occupied?: number | null
-          section8_size_category?: string | null
-          section8_units_count?: number | null
           state?: string | null
           supports_hcv?: boolean | null
-          total_dwelling_units?: number | null
-          total_units?: number | null
           waitlist_open?: boolean | null
           waitlist_status?: string | null
           website?: string | null
