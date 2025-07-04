@@ -8,9 +8,9 @@ export interface USLocation {
   longitude: number;
 }
 
-// All US States including territories and DC
+// US States (excluding Puerto Rico and other territories)
 export const usStates: USLocation[] = [
-  // Mainland US States
+  // Mainland US States only
   { name: "Alabama", type: "state", stateCode: "AL", latitude: 32.3617, longitude: -86.2792 },
   { name: "Alaska", type: "state", stateCode: "AK", latitude: 64.0685, longitude: -152.2782 },
   { name: "Arizona", type: "state", stateCode: "AZ", latitude: 34.2744, longitude: -111.2847 },
@@ -62,32 +62,13 @@ export const usStates: USLocation[] = [
   { name: "Wisconsin", type: "state", stateCode: "WI", latitude: 43.7844, longitude: -88.7879 },
   { name: "Wyoming", type: "state", stateCode: "WY", latitude: 42.7475, longitude: -107.2085 },
   
-  // US Territories and DC
-  { name: "Puerto Rico", type: "state", stateCode: "PR", latitude: 18.2208, longitude: -66.5901 },
-  { name: "US Virgin Islands", type: "state", stateCode: "VI", latitude: 18.3358, longitude: -64.8963 },
-  { name: "Guam", type: "state", stateCode: "GU", latitude: 13.4443, longitude: 144.7937 },
-  { name: "American Samoa", type: "state", stateCode: "AS", latitude: -14.2710, longitude: -170.1322 },
-  { name: "Northern Mariana Islands", type: "state", stateCode: "MP", latitude: 17.3308, longitude: 145.3846 },
+  // Only DC from territories
   { name: "District of Columbia", type: "state", stateCode: "DC", latitude: 38.8974, longitude: -77.0365 }
 ];
 
-// Major counties for territories and DC
+// Major counties (excluding Puerto Rico counties)
 export const usCounties: USLocation[] = [
-  // Puerto Rico counties (sample)
-  { name: "San Juan County", type: "county", state: "Puerto Rico", stateCode: "PR", latitude: 18.4655, longitude: -66.1057 },
-  { name: "Bayamón County", type: "county", state: "Puerto Rico", stateCode: "PR", latitude: 18.3988, longitude: -66.1614 },
-  { name: "Carolina County", type: "county", state: "Puerto Rico", stateCode: "PR", latitude: 18.3809, longitude: -65.9574 },
-  
-  // US Virgin Islands counties
-  { name: "St. Thomas County", type: "county", state: "US Virgin Islands", stateCode: "VI", latitude: 18.3381, longitude: -64.8941 },
-  { name: "St. John County", type: "county", state: "US Virgin Islands", stateCode: "VI", latitude: 18.3312, longitude: -64.7440 },
-  { name: "St. Croix County", type: "county", state: "US Virgin Islands", stateCode: "VI", latitude: 17.7178, longitude: -64.7510 },
-  
-  // Guam counties
-  { name: "Hagåtña County", type: "county", state: "Guam", stateCode: "GU", latitude: 13.4745, longitude: 144.7504 },
-  { name: "Dededo County", type: "county", state: "Guam", stateCode: "GU", latitude: 13.5158, longitude: 144.8386 },
-  
-  // Sample major counties from mainland states
+  // Sample major counties from mainland states only
   { name: "Los Angeles County", type: "county", state: "California", stateCode: "CA", latitude: 34.0522, longitude: -118.2437 },
   { name: "Cook County", type: "county", state: "Illinois", stateCode: "IL", latitude: 41.8781, longitude: -87.6298 },
   { name: "Harris County", type: "county", state: "Texas", stateCode: "TX", latitude: 29.7604, longitude: -95.3698 },
@@ -95,19 +76,21 @@ export const usCounties: USLocation[] = [
   { name: "Miami-Dade County", type: "county", state: "Florida", stateCode: "FL", latitude: 25.7617, longitude: -80.1918 }
 ];
 
-// Convert existing cities to new format, now including ALL states
+// Convert existing cities to new format, filtering out Puerto Rico cities
 import { usCities } from './usCities';
 
-export const usCitiesAsLocations: USLocation[] = usCities.map(city => ({
-  name: city.name,
-  type: 'city' as const,
-  state: city.state,
-  stateCode: city.stateCode,
-  latitude: city.latitude,
-  longitude: city.longitude
-}));
+export const usCitiesAsLocations: USLocation[] = usCities
+  .filter(city => city.stateCode !== 'PR') // Filter out Puerto Rico cities
+  .map(city => ({
+    name: city.name,
+    type: 'city' as const,
+    state: city.state,
+    stateCode: city.stateCode,
+    latitude: city.latitude,
+    longitude: city.longitude
+  }));
 
-// Combined locations - now includes all US states, territories, counties, and cities
+// Combined locations - now includes only mainland US states, DC, counties, and cities (no Puerto Rico)
 export const allUSLocations: USLocation[] = [
   ...usStates,
   ...usCounties,
