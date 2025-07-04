@@ -3,7 +3,7 @@ import { PHAOffice } from "@/types/phaOffice";
 
 export const phaOffices: PHAOffice[] = [
   {
-    id: 1,
+    id: "1",
     name: "Los Angeles Housing Authority",
     address: "2600 Wilshire Blvd, Los Angeles, CA 90057",
     phone: "(213) 252-2500",
@@ -12,7 +12,7 @@ export const phaOffices: PHAOffice[] = [
     coordinates: [-118.2871, 34.0628]
   },
   {
-    id: 2,
+    id: "2",
     name: "New York City Housing Authority",
     address: "250 Broadway, New York, NY 10007",
     phone: "(212) 306-3000",
@@ -21,7 +21,7 @@ export const phaOffices: PHAOffice[] = [
     coordinates: [-74.0070, 40.7128]
   },
   {
-    id: 3,
+    id: "3",
     name: "Chicago Housing Authority",
     address: "60 E Van Buren St, Chicago, IL 60605",
     phone: "(312) 742-8500",
@@ -30,7 +30,7 @@ export const phaOffices: PHAOffice[] = [
     coordinates: [-87.6244, 41.8781]
   },
   {
-    id: 4,
+    id: "4",
     name: "Miami-Dade Public Housing Authority",
     address: "701 NW 1st Ct, Miami, FL 33136",
     phone: "(305) 375-1313",
@@ -39,7 +39,7 @@ export const phaOffices: PHAOffice[] = [
     coordinates: [-80.1918, 25.7617]
   },
   {
-    id: 5,
+    id: "5",
     name: "Houston Housing Authority",
     address: "2640 Fountain View Dr, Houston, TX 77057",
     phone: "(713) 260-0300",
@@ -48,7 +48,7 @@ export const phaOffices: PHAOffice[] = [
     coordinates: [-95.3698, 29.7604]
   },
   {
-    id: 6,
+    id: "6",
     name: "Phoenix Housing Authority",
     address: "914 N 1st Ave, Phoenix, AZ 85003",
     phone: "(602) 262-6251",
