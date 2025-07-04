@@ -6,28 +6,62 @@ import { ImportResult, ImportProgress } from '../types';
 import { parseCSV, validateCSVFile } from '../utils/csvParser';
 import { processPHARecord, upsertPHARecord } from '../services/phaImportService';
 
-// Predefined HUD field mappings
+// Updated HUD field mappings to match actual HUD CSV format
 const HUD_FIELD_MAPPINGS = [
   { csvField: 'PARTICIPANT_CODE', dbField: 'pha_code' },
   { csvField: 'FORMAL_PARTICIPANT_NAME', dbField: 'name' },
-  { csvField: 'FULL_ADDRESS', dbField: 'address' },
+  { csvField: 'PARTICIPANT_NAME', dbField: 'name' }, // Alternative name field
+  
+  // Address components (separate fields in actual HUD CSV)
+  { csvField: 'STD_ADDR', dbField: 'address' },
+  { csvField: 'ADDRESS', dbField: 'address' }, // Alternative address field
+  { csvField: 'FULL_ADDRESS', dbField: 'address' }, // Fallback for combined address
+  { csvField: 'STD_CITY', dbField: 'city' },
+  { csvField: 'CITY', dbField: 'city' }, // Alternative city field
+  { csvField: 'STD_ST', dbField: 'state' },
+  { csvField: 'STATE', dbField: 'state' }, // Alternative state field
+  { csvField: 'STD_ZIP5', dbField: 'zip' },
+  { csvField: 'ZIP', dbField: 'zip' }, // Alternative zip field
+  
+  // Contact information
   { csvField: 'HA_PHN_NUM', dbField: 'phone' },
+  { csvField: 'PHONE', dbField: 'phone' }, // Alternative phone field
   { csvField: 'HA_FAX_NUM', dbField: 'fax' },
   { csvField: 'HA_EMAIL_ADDR_TEXT', dbField: 'email' },
+  { csvField: 'EMAIL', dbField: 'email' }, // Alternative email field
   { csvField: 'EXEC_DIR_PHONE', dbField: 'exec_dir_phone' },
   { csvField: 'EXEC_DIR_FAX', dbField: 'exec_dir_fax' },
   { csvField: 'EXEC_DIR_EMAIL', dbField: 'exec_dir_email' },
+  { csvField: 'WEBSITE', dbField: 'website' },
+  
+  // Geographic coordinates
+  { csvField: 'LAT', dbField: 'latitude' },
+  { csvField: 'LATITUDE', dbField: 'latitude' },
+  { csvField: 'LON', dbField: 'longitude' },
+  { csvField: 'LONGITUDE', dbField: 'longitude' },
+  
+  // PHA details and performance
   { csvField: 'PHAS_DESIGNATION', dbField: 'performance_status' },
+  { csvField: 'PERFORMANCE_STATUS', dbField: 'performance_status' }, // Alternative field
   { csvField: 'HA_PROGRAM_TYPE', dbField: 'program_type' },
+  { csvField: 'PROGRAM_TYPE', dbField: 'program_type' }, // Alternative field
+  
+  // Size categories
   { csvField: 'HA_LOW_RENT_SIZE_CATEGORY', dbField: 'low_rent_size_category' },
   { csvField: 'HA_SECTION_8_SIZE_CATEGORY', dbField: 'section8_size_category' },
   { csvField: 'HA_COMBINED_SIZE_CATEGORY', dbField: 'combined_size_category' },
+  
+  // Financial and operational data
   { csvField: 'HA_FYE', dbField: 'fiscal_year_end' },
+  { csvField: 'FISCAL_YEAR_END', dbField: 'fiscal_year_end' }, // Alternative field
   { csvField: 'TOTAL_UNITS', dbField: 'total_units' },
   { csvField: 'TOTAL_DWELLING_UNITS', dbField: 'total_dwelling_units' },
   { csvField: 'PH_OCCUPIED', dbField: 'ph_occupied' },
   { csvField: 'SECTION8_UNITS_CNT', dbField: 'section8_units_count' },
-  { csvField: 'SECTION8_OCCUPIED', dbField: 'section8_occupied' }
+  { csvField: 'SECTION8_OCCUPIED', dbField: 'section8_occupied' },
+  
+  // Waitlist status
+  { csvField: 'WAITLIST_STATUS', dbField: 'waitlist_status' }
 ];
 
 export const usePHAImport = () => {
@@ -62,6 +96,7 @@ export const usePHAImport = () => {
       }
       
       console.log('Total records to process:', csvData.length);
+      console.log('Sample CSV headers:', Object.keys(csvData[0] || {}));
       setImportProgress({ current: 0, total: csvData.length });
       
       let processedCount = 0;
@@ -78,15 +113,27 @@ export const usePHAImport = () => {
           
           try {
             // Update progress
-            const recordName = record['FORMAL_PARTICIPANT_NAME'] || record['PARTICIPANT_CODE'] || `Record ${currentIndex + 1}`;
+            const recordName = record['FORMAL_PARTICIPANT_NAME'] || record['PARTICIPANT_NAME'] || record['PARTICIPANT_CODE'] || `Record ${currentIndex + 1}`;
             setImportProgress({ 
               current: currentIndex + 1, 
               total: csvData.length, 
               currentRecord: recordName 
             });
             
-            // Process the record using predefined HUD field mappings
+            // Process the record using updated HUD field mappings
             const phaData = processPHARecord(record, HUD_FIELD_MAPPINGS);
+
+            // Enhanced Section 8 support detection
+            if (!phaData.supports_hcv) {
+              const programType = record['HA_PROGRAM_TYPE'] || record['PROGRAM_TYPE'] || '';
+              const section8Units = parseInt(record['SECTION8_UNITS_CNT'] || '0');
+              
+              phaData.supports_hcv = 
+                programType.toLowerCase().includes('section 8') ||
+                programType.toLowerCase().includes('section8') ||
+                programType.toLowerCase().includes('both') ||
+                section8Units > 0;
+            }
 
             // Save to database
             await upsertPHARecord(phaData);
