@@ -13,6 +13,7 @@ import { ImportControls } from "./PHADataManager/components/ImportControls";
 import { ImportResults } from "./PHADataManager/components/ImportResults";
 import { HUDFormatInfo } from "./PHADataManager/components/HUDFormatInfo";
 import { FieldMappingDialog } from "./PHADataManager/components/FieldMappingDialog";
+import { AuditLogViewer } from "./PHADataManager/components/AuditLogViewer";
 import { SecurityNotice } from "./SecurityNotice";
 
 const PHADataManager: React.FC = () => {
@@ -119,6 +120,8 @@ const PHADataManager: React.FC = () => {
         <ImportResults importResult={importResult} />
 
         <PHAUploadsTable uploads={importStats?.fileUploads || []} />
+
+        <AuditLogViewer />
 
         <HUDFormatInfo />
 
