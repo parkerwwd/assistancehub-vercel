@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, BarChart3, TrendingUp, Calendar } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, BarChart3, TrendingUp, Calendar, Mail } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
@@ -98,8 +98,8 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                      hasValue(office.section8_size_category) || 
                      hasValue(office.program_type);
 
-  // Check if we have contact data
-  const hasContactData = actualPhone || 
+  // Check if we have contact data - properly check each field
+  const hasContactData = hasValue(office.phone) || 
                         hasValue(office.email) || 
                         hasValue(office.fax) ||
                         hasValue(office.exec_dir_phone) ||
@@ -401,14 +401,14 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {actualPhone && (
+              {hasValue(office.phone) && (
                 <a 
-                  href={`tel:${actualPhone}`}
+                  href={`tel:${office.phone}`}
                   className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
                 >
                   <Phone className="w-4 h-4 mr-3 text-blue-600 flex-shrink-0" />
                   <span className="text-blue-700 group-hover:text-blue-800 font-medium">
-                    {actualPhone}
+                    {office.phone}
                   </span>
                 </a>
               )}
@@ -418,7 +418,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   href={`mailto:${office.email}`}
                   className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
                 >
-                  <FileText className="w-4 h-4 mr-3 text-purple-600 flex-shrink-0" />
+                  <Mail className="w-4 h-4 mr-3 text-purple-600 flex-shrink-0" />
                   <span className="text-purple-700 group-hover:text-purple-800 font-medium text-sm">
                     {office.email}
                   </span>
@@ -440,16 +440,22 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Executive Director</h4>
                   <div className="space-y-2">
                     {hasValue(office.exec_dir_phone) && (
-                      <div className="flex items-center p-2 bg-gray-50 rounded">
-                        <Phone className="w-3 h-3 mr-2 text-gray-500" />
-                        <span className="text-sm">{office.exec_dir_phone}</span>
-                      </div>
+                      <a 
+                        href={`tel:${office.exec_dir_phone}`}
+                        className="flex items-center p-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors group"
+                      >
+                        <Phone className="w-3 h-3 mr-2 text-blue-500" />
+                        <span className="text-sm text-blue-700 group-hover:text-blue-800">{office.exec_dir_phone}</span>
+                      </a>
                     )}
                     {hasValue(office.exec_dir_email) && (
-                      <div className="flex items-center p-2 bg-gray-50 rounded">
-                        <FileText className="w-3 h-3 mr-2 text-gray-500" />
-                        <span className="text-sm">{office.exec_dir_email}</span>
-                      </div>
+                      <a 
+                        href={`mailto:${office.exec_dir_email}`}
+                        className="flex items-center p-2 bg-purple-50 rounded hover:bg-purple-100 transition-colors group"
+                      >
+                        <Mail className="w-3 h-3 mr-2 text-purple-500" />
+                        <span className="text-sm text-purple-700 group-hover:text-purple-800">{office.exec_dir_email}</span>
+                      </a>
                     )}
                     {hasValue(office.exec_dir_fax) && (
                       <div className="flex items-center p-2 bg-gray-50 rounded">
