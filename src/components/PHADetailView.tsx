@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -202,7 +203,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                 <p className="text-sm text-gray-900 font-medium">
                   {section8Status}
                 </p>
-                {hasSection8 && (
+                {hasSection8 && office.section8_units_count && (
                   <p className="text-xs text-gray-600 mt-1">
                     {office.section8_units_count} units available
                   </p>

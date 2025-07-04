@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { MapPin, Heart, Phone, Building2 } from "lucide-react";
