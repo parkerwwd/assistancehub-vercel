@@ -25,8 +25,8 @@ export const getPHATypeFromData = (agency: any) => {
     }
   }
   
-  // Fallback to existing logic using supports_hcv
-  if (agency.supports_hcv) {
+  // Fallback to existing logic using section8_units_count
+  if (agency.section8_units_count && agency.section8_units_count > 0) {
     return "Section 8 PHA";
   } else {
     // If they don't support HCV, they likely have public housing too, so Combined
@@ -90,15 +90,9 @@ export const filterPHAAgenciesByLocation = (
   if (selectedLocation.type === 'city') {
     // For cities, show all agencies within 25 miles
     const filteredAgencies = agencies.filter(agency => {
-      // Get agency coordinates
-      let agencyLat = agency.latitude;
-      let agencyLng = agency.longitude;
-      
-      // Try geocoded coordinates if primary ones are missing
-      if (!agencyLat || !agencyLng) {
-        agencyLat = (agency as any).geocoded_latitude;
-        agencyLng = (agency as any).geocoded_longitude;
-      }
+      // Get agency coordinates using geocoded coordinates
+      let agencyLat = (agency as any).geocoded_latitude;
+      let agencyLng = (agency as any).geocoded_longitude;
       
       // Skip agencies without coordinates
       if (!agencyLat || !agencyLng) {
@@ -197,9 +191,6 @@ const getLocationSearchTerms = (location: USLocation): string[] => {
 const matchesAgencyLocation = (agency: PHAAgency, searchTerm: string): boolean => {
   const fieldsToSearch = [
     agency.address,
-    agency.city,
-    agency.state,
-    agency.zip,
     // Also check phone field as it sometimes contains city info
     agency.phone
   ];
