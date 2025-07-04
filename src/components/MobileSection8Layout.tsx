@@ -95,8 +95,8 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Map Section - Further reduced height */}
-      <div className="h-32 w-full flex-shrink-0 relative">
+      {/* Map Section - Very small height for mobile */}
+      <div className="h-24 w-full flex-shrink-0 relative">
         <MapContainer
           ref={mapRef}
           mapboxToken={mapboxToken}
@@ -109,7 +109,7 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
       </div>
 
       {/* List Section - Takes remaining space and scrollable */}
-      <div className="flex-1 bg-white min-h-0">
+      <div className="flex-1 bg-white min-h-0 overflow-hidden">
         {renderContent()}
       </div>
     </div>
