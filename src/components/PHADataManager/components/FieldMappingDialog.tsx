@@ -7,7 +7,7 @@ import { AlertCircle, Download, Upload } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { downloadMappingTemplate, getRequiredFieldStatus } from './fieldMapping/utils';
-import { COMMON_MAPPINGS } from './fieldMapping/constants';
+import { COMMON_MAPPINGS, ESSENTIAL_FIELDS } from './fieldMapping/constants';
 
 export interface FieldMapping {
   csvField: string;
@@ -41,28 +41,39 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
 
   useEffect(() => {
     if (csvHeaders.length > 0) {
-      // Auto-map based on common field names
+      // Create mappings for ALL CSV fields
       const newMappings: FieldMapping[] = [];
       let autoMapped = 0;
 
       csvHeaders.forEach(csvField => {
         const normalizedField = csvField.toUpperCase().trim();
-        const dbField = COMMON_MAPPINGS[normalizedField] || '';
         
         // Check if this field should be excluded
         const shouldExclude = excludedFields.some(excluded => 
           normalizedField.toLowerCase().includes(excluded.toLowerCase())
         );
 
-        // Only include if not excluded and has a valid mapping
-        if (!shouldExclude && dbField) {
-          newMappings.push({
-            csvField,
-            dbField,
-            checked: true // Auto-check mapped fields
-          });
+        // Skip excluded fields entirely
+        if (shouldExclude) {
+          return;
+        }
+
+        // Try to find a mapping for this field
+        const dbField = COMMON_MAPPINGS[normalizedField] || '';
+        
+        // Auto-check if it's an essential field and has a valid mapping
+        const shouldAutoCheck = dbField && ESSENTIAL_FIELDS.includes(dbField);
+        
+        if (shouldAutoCheck) {
           autoMapped++;
         }
+
+        // Add all non-excluded fields to mappings
+        newMappings.push({
+          csvField,
+          dbField,
+          checked: shouldAutoCheck // Only auto-check essential fields
+        });
       });
 
       // Apply default mappings if provided
@@ -108,14 +119,14 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
             Select Fields to Import
           </DialogTitle>
           <DialogDescription>
-            Select which fields you want to import from your CSV. Required fields must be selected to proceed.
+            Select which fields you want to import from your CSV. Essential fields are pre-selected. Required fields must be selected to proceed.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              {autoMappedCount} fields available for import ({checkedMappings.length} selected)
+              {mappings.length} fields available ({checkedMappings.length} selected, {autoMappedCount} essential)
             </div>
             <Button 
               variant="outline" 
@@ -154,16 +165,23 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                       {mapping.csvField}
                     </label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Maps to: <span className="font-medium">{mapping.dbField}</span>
-                      {mapping.dbField === 'name' && <span className="text-red-500 ml-1">(Required)</span>}
+                      {mapping.dbField ? (
+                        <>
+                          Maps to: <span className="font-medium">{mapping.dbField}</span>
+                          {mapping.dbField === 'name' && <span className="text-red-500 ml-1">(Required)</span>}
+                          {ESSENTIAL_FIELDS.includes(mapping.dbField) && <span className="text-blue-500 ml-1">(Essential)</span>}
+                        </>
+                      ) : (
+                        <span className="text-orange-500">No mapping found - will be skipped if checked</span>
+                      )}
                     </p>
                   </div>
                 </div>
               ))}
               {mappings.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No mappable fields found in your CSV.</p>
-                  <p className="text-sm mt-2">Please ensure your CSV contains the expected field names.</p>
+                  <p>No fields found in your CSV.</p>
+                  <p className="text-sm mt-2">Please ensure your CSV contains valid field names.</p>
                 </div>
               )}
             </div>

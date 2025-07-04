@@ -25,3 +25,14 @@ export const COMMON_MAPPINGS: { [key: string]: string } = {
   'HA_PROGRAM_TYPE': 'program_type',
   'PROGRAM_TYPE': 'program_type',
 };
+
+// Essential fields that should be auto-checked
+export const ESSENTIAL_FIELDS = [
+  'pha_code',
+  'name', 
+  'address',
+  'phone',
+  'email',
+  'exec_dir_email',
+  'program_type'
+];
