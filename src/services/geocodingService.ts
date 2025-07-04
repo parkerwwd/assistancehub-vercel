@@ -1,4 +1,3 @@
-
 import { Database } from "@/integrations/supabase/types";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];

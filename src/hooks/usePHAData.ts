@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Database } from "@/integrations/supabase/types";
 import { fetchAllPHAData } from "@/services/phaService";
