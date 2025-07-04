@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, Mail, Calendar, TrendingUp, BarChart3, Fax } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, Mail, Calendar, TrendingUp, BarChart3 } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
@@ -319,7 +318,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                 {contactInfo.fax && (
                   <div className="flex items-center p-4 bg-white rounded-lg border border-green-100 shadow-sm">
                     <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-4">
-                      <Fax className="w-5 h-5 text-gray-600" />
+                      <Phone className="w-5 h-5 text-gray-600" />
                     </div>
                     <div className="flex-1">
                       <span className="text-gray-700 font-semibold text-lg block">{contactInfo.fax}</span>
@@ -394,7 +393,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   {contactInfo.execDirFax && (
                     <div className="flex items-center p-4 bg-white rounded-lg border border-purple-100 shadow-sm">
                       <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-4">
-                        <Fax className="w-5 h-5 text-gray-600" />
+                        <Phone className="w-5 h-5 text-gray-600" />
                       </div>
                       <div className="flex-1">
                         <span className="text-gray-700 font-semibold text-lg block">{contactInfo.execDirFax}</span>
