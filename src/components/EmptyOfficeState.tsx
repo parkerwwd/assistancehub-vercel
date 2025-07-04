@@ -7,22 +7,61 @@ interface EmptyOfficeStateProps {
   loading: boolean;
   onShowAll?: () => void;
   hasFilter?: boolean;
+  filteredLocation?: any;
 }
 
-const EmptyOfficeState = ({ loading, onShowAll, hasFilter }: EmptyOfficeStateProps) => {
+const EmptyOfficeState = ({ loading, onShowAll, hasFilter, filteredLocation }: EmptyOfficeStateProps) => {
+  const getSearchDescription = () => {
+    if (!filteredLocation) return "";
+    
+    switch (filteredLocation.type) {
+      case 'state':
+        return `Showing all PHA offices in ${filteredLocation.name}`;
+      case 'city':
+        return `Showing PHA offices within 25 miles of ${filteredLocation.name}, ${filteredLocation.stateCode}`;
+      case 'county':
+        return `Showing PHA offices in ${filteredLocation.name}, ${filteredLocation.stateCode}`;
+      default:
+        return `Showing PHA offices for ${filteredLocation.name}`;
+    }
+  };
+
+  const getEmptyMessage = () => {
+    if (loading) return "Loading PHA offices...";
+    
+    if (hasFilter && filteredLocation) {
+      switch (filteredLocation.type) {
+        case 'state':
+          return `No PHA offices found in ${filteredLocation.name}. Try a different state or view all offices.`;
+        case 'city':
+          return `No PHA offices found within 25 miles of ${filteredLocation.name}. Try a different city or view all offices.`;
+        case 'county':
+          return `No PHA offices found in ${filteredLocation.name}. Try a different county or view all offices.`;
+        default:
+          return "No PHA offices found for the selected location. Try a different search or view all offices.";
+      }
+    }
+    
+    return "Click on a map marker or search above to view PHA office details and available housing options.";
+  };
+
   return (
     <div className="h-full p-4 overflow-y-auto">
       <Card className="h-fit shadow-sm border-0">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-gray-900">Find PHA Offices & Housing</CardTitle>
           <CardDescription className="text-sm text-gray-600 leading-relaxed">
-            {loading
-              ? "Loading PHA offices..."
-              : hasFilter
-                ? "No PHA offices found for the selected location. Try a different search or view all offices."
-                : "Click on a map marker or search above to view PHA office details and available housing options."
-            }
+            {getEmptyMessage()}
           </CardDescription>
+
+          {/* Show search description when there's an active filter */}
+          {hasFilter && filteredLocation && !loading && (
+            <div className="mt-2 p-2 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800 font-medium">
+                {getSearchDescription()}
+              </p>
+            </div>
+          )}
 
           {/* Show All button when there's a filter but no results */}
           {!loading && hasFilter && onShowAll && (
@@ -39,12 +78,14 @@ const EmptyOfficeState = ({ loading, onShowAll, hasFilter }: EmptyOfficeStatePro
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Integration Info */}
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">New Feature</h4>
-              <p className="text-sm text-blue-800">
-                Click on any PHA to view detailed information and browse available low-income housing options in that area.
-              </p>
+            {/* Search Logic Info */}
+            <div className="p-3 bg-green-50 rounded-lg">
+              <h4 className="font-medium text-green-900 mb-2">Smart Search</h4>
+              <div className="text-sm text-green-800 space-y-1">
+                <p><strong>States:</strong> Shows all PHA offices in the state</p>
+                <p><strong>Cities:</strong> Shows offices within 25 miles</p>
+                <p><strong>Counties:</strong> Shows offices in the county</p>
+              </div>
             </div>
             
             {/* Legend */}
