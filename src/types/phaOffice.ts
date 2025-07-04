@@ -22,8 +22,8 @@ export const convertPHAAgencyToPHAOffice = (agency: PHAAgency): PHAOffice => {
     name: agency.name,
     address: agency.address || '',
     phone: agency.phone || '',
-    website: agency.website || '',
-    waitlistStatus: agency.waitlist_status || 'Unknown',
-    coordinates: [agency.longitude || 0, agency.latitude || 0] as [number, number]
+    website: '', // Field doesn't exist in current schema
+    waitlistStatus: 'Unknown', // Field doesn't exist in current schema
+    coordinates: [(agency as any).geocoded_longitude || 0, (agency as any).geocoded_latitude || 0] as [number, number]
   };
 };
