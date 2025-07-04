@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { ImportResult, ImportProgress } from '../types';
 import { parseCSV, validateCSVFile } from '../utils/csvParser';
 import { processPHARecord, upsertPHARecord } from '../services/phaImportService';
-import { analyzeCSVStructure } from '../components/fieldMapping/constants';
 
 export const usePHAImport = () => {
   const [isImporting, setIsImporting] = useState(false);
@@ -39,15 +38,6 @@ export const usePHAImport = () => {
 
       console.log('CSV parsing complete. Records found:', csvData.length);
       console.log('Sample record:', csvData[0]);
-
-      // Create field mappings based on CSV structure
-      const fieldMappings = analyzeCSVStructure(csvData);
-      
-      if (fieldMappings.length === 0) {
-        throw new Error('No valid field mappings could be created from the CSV structure.');
-      }
-      
-      console.log(`✅ Created ${fieldMappings.length} field mappings`);
       
       setImportProgress({ current: 0, total: csvData.length });
       
@@ -65,7 +55,13 @@ export const usePHAImport = () => {
           const currentIndex = i + j;
           
           try {
-            const recordName = record['FORMAL_PARTICIPANT_NAME'] || `Record ${currentIndex + 1}`;
+            // Try to find name field dynamically
+            const nameField = Object.keys(record).find(key => 
+              key.toLowerCase().includes('name') || 
+              key.toLowerCase().includes('participant')
+            );
+            const recordName = nameField ? record[nameField] : `Record ${currentIndex + 1}`;
+            
             setImportProgress({ 
               current: currentIndex + 1, 
               total: csvData.length, 
@@ -74,8 +70,8 @@ export const usePHAImport = () => {
             
             console.log(`\n--- Processing record ${currentIndex + 1}/${csvData.length}: ${recordName} ---`);
             
-            // Process the record using field mappings
-            const phaData = processPHARecord(record, fieldMappings);
+            // Process the record using intelligent mapping (no predefined mappings)
+            const phaData = processPHARecord(record);
             
             // Validate minimum required data
             if (!phaData.name || phaData.name.trim().length === 0) {
