@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MapPin } from "lucide-react";
 import { allUSLocations, USLocation } from "@/data/usLocations";
@@ -132,7 +131,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
         />
         
         {showSuggestions && filteredLocations.length > 0 && (
-          <div className="absolute top-full right-0 left-0 z-50 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl min-w-[280px] sm:min-w-[320px] max-h-80 overflow-y-auto">
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 z-50 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl w-80 sm:w-96 max-h-80 overflow-y-auto">
             {filteredLocations.map((location, index) => (
               <div
                 key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
@@ -173,7 +172,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
       />
       
       {showSuggestions && filteredLocations.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl min-w-[280px] max-h-64 overflow-y-auto">
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl w-80 max-h-64 overflow-y-auto">
           {filteredLocations.map((location, index) => (
             <div
               key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
