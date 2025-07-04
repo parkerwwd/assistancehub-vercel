@@ -1,3 +1,4 @@
+
 import { Database } from "@/integrations/supabase/types";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
@@ -9,37 +10,11 @@ export interface GeocodedPHA extends PHAAgency {
 
 // Basic geocoding using city names from US cities data
 export const geocodePHAs = async (phas: PHAAgency[]): Promise<GeocodedPHA[]> => {
-  // Import US cities data
-  const { usCities } = await import("@/data/usCities");
-  
-  return phas.map(pha => {
-    // Skip if already has coordinates
-    if (pha.latitude && pha.longitude) {
-      return pha;
-    }
-
-    // Extract city name from phone field (where city names are stored)
-    const cityName = pha.phone?.toLowerCase().trim();
-    
-    if (cityName) {
-      // Find matching city in US cities data
-      const matchingCity = usCities.find(city => 
-        city.name.toLowerCase() === cityName ||
-        city.name.toLowerCase().includes(cityName) ||
-        cityName.includes(city.name.toLowerCase())
-      );
-
-      if (matchingCity) {
-        return {
-          ...pha,
-          geocoded_latitude: matchingCity.latitude,
-          geocoded_longitude: matchingCity.longitude
-        };
-      }
-    }
-
-    return pha;
-  });
+  // Since lat/lng columns were removed, we'll just return the PHAs as-is
+  // The geocoding will happen on-demand when markers are created
+  return phas.map(pha => ({
+    ...pha
+  }));
 };
 
 // Get coordinates for city search to center the map

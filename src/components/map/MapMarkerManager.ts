@@ -52,21 +52,16 @@ export class MapMarkerManager {
     
     console.log('📍 Adding marker for selected office:', office.name);
     
-    let lat = office.latitude || (office as any).geocoded_latitude;
-    let lng = office.longitude || (office as any).geocoded_longitude;
+    // Since lat/lng columns were removed, we'll need to geocode the address
+    let lat: number | null = null;
+    let lng: number | null = null;
     
-    // If no coordinates, try to geocode the address
-    if ((!lat || !lng) && office.address) {
-      console.log('🗺️ No coordinates found, trying to geocode address:', office.address);
+    // Try to geocode the address if available
+    if (office.address) {
+      console.log('🗺️ Geocoding address:', office.address);
       
       try {
-        const addressParts = [office.address];
-        if (office.city) addressParts.push(office.city);
-        if (office.state) addressParts.push(office.state);
-        if (office.zip) addressParts.push(office.zip);
-        
-        const fullAddress = addressParts.join(', ');
-        const encodedAddress = encodeURIComponent(fullAddress);
+        const encodedAddress = encodeURIComponent(office.address);
         const response = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
         );
@@ -137,9 +132,8 @@ export class MapMarkerManager {
       <div style="padding: 12px; font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
         <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #1f2937; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">🏢 ${office.name}</h3>
         ${office.address ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #6b7280;">📍 ${office.address}</p>` : ''}
-        ${office.city && office.state ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #6b7280;">🏙️ ${office.city}, ${office.state} ${office.zip || ''}</p>` : ''}
         ${office.phone ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #6b7280;">📞 ${office.phone}</p>` : ''}
-        ${office.waitlist_status ? `<p style="margin: 0; font-size: 13px; color: #ef4444; font-weight: 600;">Status: ${office.waitlist_status}</p>` : ''}
+        <p style="margin: 0; font-size: 13px; color: #ef4444; font-weight: 600;">PHA Office</p>
       </div>
     `);
   }
@@ -195,7 +189,7 @@ export class MapMarkerManager {
     if (agencies.length > 0) {
       // Found agencies - show markers for all found agencies
       console.log('✅ Found', agencies.length, 'agencies, showing agency markers');
-      this.addAllAgencyMarkers(map, agencies, onOfficeSelect);
+      this.addAllAgencyMarkers(map, agencies, mapboxToken, onOfficeSelect);
     } else if (selectedLocation) {
       // No agencies found - show only the selected location marker
       console.log('📍 No agencies found, showing only location marker for:', selectedLocation.name);
@@ -206,7 +200,7 @@ export class MapMarkerManager {
   /**
    * Add markers for all filtered agencies
    */
-  addAllAgencyMarkers(map: mapboxgl.Map, agencies: PHAAgency[], onOfficeSelect: (office: PHAAgency) => void): void {
+  async addAllAgencyMarkers(map: mapboxgl.Map, agencies: PHAAgency[], mapboxToken: string, onOfficeSelect: (office: PHAAgency) => void): Promise<void> {
     if (!map || !agencies || agencies.length === 0) return;
 
     console.log('📍 Adding markers for', agencies.length, 'filtered agencies');
@@ -214,20 +208,54 @@ export class MapMarkerManager {
     // Clear existing agency markers
     this.clearAllAgencyMarkers();
 
-    agencies.forEach(agency => {
-      const lat = agency.latitude || (agency as any).geocoded_latitude;
-      const lng = agency.longitude || (agency as any).geocoded_longitude;
-
-      if (lat && lng) {
+    for (const agency of agencies) {
+      if (agency.address) {
         try {
-          const marker = MarkerUtils.createOfficeMarker(agency, onOfficeSelect);
-          marker.addTo(map);
-          this.allAgencyMarkers.push(marker);
+          // Geocode each agency's address
+          const encodedAddress = encodeURIComponent(agency.address);
+          const response = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.features && data.features.length > 0) {
+              const [lng, lat] = data.features[0].center;
+              
+              const marker = new mapboxgl.Marker({
+                color: '#3b82f6',
+                scale: 1.0
+              }).setLngLat([lng, lat]);
+
+              // Add click handler
+              marker.getElement().addEventListener('click', () => {
+                console.log('🎯 Marker clicked:', agency.name);
+                onOfficeSelect(agency);
+              });
+
+              // Add hover effects
+              const element = marker.getElement();
+              element.style.cursor = 'pointer';
+              element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease';
+
+              element.addEventListener('mouseenter', () => {
+                element.style.filter = 'brightness(1.2) saturate(1.3)';
+                element.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+              });
+              element.addEventListener('mouseleave', () => {
+                element.style.filter = 'brightness(1) saturate(1)';
+                element.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+              });
+
+              marker.addTo(map);
+              this.allAgencyMarkers.push(marker);
+            }
+          }
         } catch (error) {
-          console.warn('⚠️ Failed to create marker for agency:', agency.name, error);
+          console.warn('⚠️ Failed to geocode agency:', agency.name, error);
         }
       }
-    });
+    }
 
     console.log('✅ Added', this.allAgencyMarkers.length, 'agency markers to map');
   }
