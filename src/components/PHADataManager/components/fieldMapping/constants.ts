@@ -1,3 +1,4 @@
+
 export const DATABASE_FIELDS = [
   { key: 'pha_code', label: 'PHA Code', description: 'Unique identifier for the PHA' },
   { key: 'name', label: 'PHA Name', description: 'Official name of the housing authority', required: true },
@@ -14,8 +15,7 @@ export const COMMON_MAPPINGS: { [key: string]: string } = {
   'FORMAL_PARTICIPANT_NAME': 'name',
   'FULL_ADDRESS': 'address',
   'PHAS_DESIGNATION': 'phone',  // This contains "(787) 712-1100" - the actual phone number
-  'EXEC_DIR_EMAIL': 'email',    // This contains "djesus@gurabopr.com" - the actual email
+  'HA_EMAIL_ADDR_TEXT': 'email',    // This contains general email field
+  'EXEC_DIR_EMAIL': 'exec_dir_email', // This contains "djesus@gurabopr.com" - executive director email
   'HA_PROGRAM_TYPE': 'program_type',
-  // Keep exec_dir_email mapping separate
-  'EXEC_DIR_EMAIL': 'exec_dir_email',
 };
