@@ -7,15 +7,15 @@ type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export class MarkerUtils {
   static createOfficeMarker(office: PHAAgency, onOfficeSelect: (office: PHAAgency) => void): mapboxgl.Marker {
-    const lat = office.latitude || (office as any).geocoded_latitude;
-    const lng = office.longitude || (office as any).geocoded_longitude;
+    const lat = (office as any).geocoded_latitude;
+    const lng = (office as any).geocoded_longitude;
     
     if (!lat || !lng) {
       throw new Error(`No coordinates for office: ${office.name}`);
     }
 
     const marker = new mapboxgl.Marker({
-      color: getWaitlistColor(office.waitlist_status || 'Unknown'),
+      color: getWaitlistColor('Unknown'), // Use default since waitlist_status doesn't exist
       scale: 1.0
     }).setLngLat([lng, lat]);
 

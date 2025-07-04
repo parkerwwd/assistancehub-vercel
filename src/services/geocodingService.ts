@@ -1,3 +1,4 @@
+
 import { Database } from "@/integrations/supabase/types";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
@@ -13,8 +14,8 @@ export const geocodePHAs = async (phas: PHAAgency[]): Promise<GeocodedPHA[]> => 
   const { usCities } = await import("@/data/usCities");
   
   return phas.map(pha => {
-    // Skip if already has coordinates
-    if (pha.latitude && pha.longitude) {
+    // Skip if already has geocoded coordinates
+    if ((pha as any).geocoded_latitude && (pha as any).geocoded_longitude) {
       return pha;
     }
 

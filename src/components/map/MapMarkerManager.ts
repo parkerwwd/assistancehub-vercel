@@ -52,20 +52,16 @@ export class MapMarkerManager {
     
     console.log('📍 Adding marker for selected office:', office.name);
     
-    let lat = office.latitude || (office as any).geocoded_latitude;
-    let lng = office.longitude || (office as any).geocoded_longitude;
+    // Use geocoded coordinates since latitude/longitude fields don't exist
+    let lat = (office as any).geocoded_latitude;
+    let lng = (office as any).geocoded_longitude;
     
     // If no coordinates, try to geocode the address
     if ((!lat || !lng) && office.address) {
       console.log('🗺️ No coordinates found, trying to geocode address:', office.address);
       
       try {
-        const addressParts = [office.address];
-        if (office.city) addressParts.push(office.city);
-        if (office.state) addressParts.push(office.state);
-        if (office.zip) addressParts.push(office.zip);
-        
-        const fullAddress = addressParts.join(', ');
+        const fullAddress = office.address;
         const encodedAddress = encodeURIComponent(fullAddress);
         const response = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
@@ -137,9 +133,8 @@ export class MapMarkerManager {
       <div style="padding: 12px; font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
         <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #1f2937; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">🏢 ${office.name}</h3>
         ${office.address ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #6b7280;">📍 ${office.address}</p>` : ''}
-        ${office.city && office.state ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #6b7280;">🏙️ ${office.city}, ${office.state} ${office.zip || ''}</p>` : ''}
         ${office.phone ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #6b7280;">📞 ${office.phone}</p>` : ''}
-        ${office.waitlist_status ? `<p style="margin: 0; font-size: 13px; color: #ef4444; font-weight: 600;">Status: ${office.waitlist_status}</p>` : ''}
+        <p style="margin: 0; font-size: 13px; color: #ef4444; font-weight: 600;">Status: Unknown</p>
       </div>
     `);
   }
@@ -215,8 +210,8 @@ export class MapMarkerManager {
     this.clearAllAgencyMarkers();
 
     agencies.forEach(agency => {
-      const lat = agency.latitude || (agency as any).geocoded_latitude;
-      const lng = agency.longitude || (agency as any).geocoded_longitude;
+      const lat = (agency as any).geocoded_latitude;
+      const lng = (agency as any).geocoded_longitude;
 
       if (lat && lng) {
         try {

@@ -122,23 +122,16 @@ export const useMapLogic = () => {
     // Clear location marker when selecting an office
     setSelectedLocation(null);
     
-    // Get coordinates from the office data
-    let lat = office.latitude || (office as any).geocoded_latitude;
-    let lng = office.longitude || (office as any).geocoded_longitude;
+    // Get coordinates from the office data (use geocoded coordinates)
+    let lat = (office as any).geocoded_latitude;
+    let lng = (office as any).geocoded_longitude;
     
     // If no coordinates, try to geocode the address
     if (!lat || !lng) {
       console.log('🗺️ No coordinates found, trying to geocode address:', office.address);
       
       if (office.address) {
-        // Build full address string
-        const addressParts = [office.address];
-        if (office.city) addressParts.push(office.city);
-        if (office.state) addressParts.push(office.state);
-        if (office.zip) addressParts.push(office.zip);
-        
-        const fullAddress = addressParts.join(', ');
-        const coordinates = await geocodeAddress(fullAddress);
+        const coordinates = await geocodeAddress(office.address);
         
         if (coordinates) {
           lat = coordinates.lat;
