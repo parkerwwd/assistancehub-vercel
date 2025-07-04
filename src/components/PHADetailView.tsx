@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, Map } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, Map, Mail } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
@@ -145,30 +145,56 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </span>
             </div>
 
-            {/* Contact Information - Mobile optimized */}
-            {office.phone && (
-              <a 
-                href={`tel:${office.phone}`}
-                className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
-              >
-                <Phone className="w-4 h-4 mr-3 text-blue-600 flex-shrink-0" />
-                <span className="text-blue-700 group-hover:text-blue-800 font-medium text-sm">
-                  {office.phone}
-                </span>
-              </a>
-            )}
-            
-            {office.email && (
-              <a 
-                href={`mailto:${office.email}`}
-                className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
-              >
-                <FileText className="w-4 h-4 mr-3 text-purple-600 flex-shrink-0" />
-                <span className="text-purple-700 group-hover:text-purple-800 font-medium text-sm">
-                  {office.email}
-                </span>
-              </a>
-            )}
+            {/* Contact Information - All 7 fields properly displayed */}
+            <div className="space-y-3">
+              {/* Phone Number */}
+              {office.phone && (
+                <a 
+                  href={`tel:${office.phone}`}
+                  className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
+                >
+                  <Phone className="w-4 h-4 mr-3 text-blue-600 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Phone</div>
+                    <span className="text-blue-700 group-hover:text-blue-800 font-medium text-sm">
+                      {office.phone}
+                    </span>
+                  </div>
+                </a>
+              )}
+              
+              {/* Email */}
+              {office.email && (
+                <a 
+                  href={`mailto:${office.email}`}
+                  className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group border border-green-100"
+                >
+                  <Mail className="w-4 h-4 mr-3 text-green-600 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Email</div>
+                    <span className="text-green-700 group-hover:text-green-800 font-medium text-sm">
+                      {office.email}
+                    </span>
+                  </div>
+                </a>
+              )}
+
+              {/* Executive Director Email */}
+              {office.exec_dir_email && (
+                <a 
+                  href={`mailto:${office.exec_dir_email}`}
+                  className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
+                >
+                  <Mail className="w-4 h-4 mr-3 text-purple-600 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Executive Director Email</div>
+                    <span className="text-purple-700 group-hover:text-purple-800 font-medium text-sm">
+                      {office.exec_dir_email}
+                    </span>
+                  </div>
+                </a>
+              )}
+            </div>
 
             {/* Office Hours - Compact for mobile */}
             <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
@@ -191,17 +217,20 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               View Available Housing
             </Button>
 
-            {/* Additional Information - Single column for mobile */}
+            {/* Additional Information - All fields displayed */}
             <div className="space-y-3">
+              {/* Program Type */}
               <div className="p-3 bg-gray-50 rounded-lg border">
                 <div className="flex items-center gap-2 mb-1">
                   <DollarSign className="w-4 h-4 text-green-600" />
-                  <span className="text-xs font-medium text-gray-700">Section 8 Support</span>
+                  <span className="text-xs font-medium text-gray-700">Program Type</span>
                 </div>
                 <p className="text-sm text-gray-900 font-medium">
-                  {office.program_type?.toLowerCase().includes('section') ? 'Available' : 'Contact for Details'}
+                  {office.program_type || 'Contact for Details'}
                 </p>
               </div>
+
+              {/* PHA Code */}
               <div className="p-3 bg-gray-50 rounded-lg border">
                 <div className="flex items-center gap-2 mb-1">
                   <FileText className="w-4 h-4 text-blue-600" />
