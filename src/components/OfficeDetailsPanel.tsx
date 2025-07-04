@@ -22,6 +22,7 @@ interface OfficeDetailsPanelProps {
   onShowAll?: () => void;
   hasFilter?: boolean;
   filteredLocation?: USLocation | null;
+  onShowMap?: (office?: PHAAgency) => void;
 }
 
 const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
@@ -35,7 +36,8 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
   onPageChange,
   onShowAll,
   hasFilter,
-  filteredLocation
+  filteredLocation,
+  onShowMap
 }) => {
   // Show empty state when no agencies are available
   if (phaAgencies.length === 0) {
