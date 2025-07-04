@@ -50,7 +50,7 @@ const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
               </div>
             )}
             
-            {/* Bottom row with PHA Type and additional info */}
+            {/* Bottom row with PHA Type */}
             <div className="flex items-center justify-between gap-3">
               {/* PHA Type badge */}
               <div className="flex items-center gap-2">
@@ -66,13 +66,6 @@ const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
                   {phaType}
                 </span>
               </div>
-              
-              {/* Units count if available */}
-              {agency.total_units && (
-                <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                  {agency.total_units.toLocaleString()} units
-                </div>
-              )}
             </div>
           </div>
           

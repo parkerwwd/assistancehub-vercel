@@ -199,7 +199,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   <span className="text-xs font-medium text-gray-700">Section 8 Support</span>
                 </div>
                 <p className="text-sm text-gray-900 font-medium">
-                  {office.section8_units_count && office.section8_units_count > 0 ? 'Available' : 'Not Available'}
+                  {office.program_type?.toLowerCase().includes('section') ? 'Available' : 'Contact for Details'}
                 </p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border">
@@ -215,7 +215,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             <div className="pt-3 border-t border-gray-100">
               <h4 className="font-medium text-gray-900 mb-3 text-sm">Available Programs</h4>
               <div className="space-y-2 text-sm">
-                {office.section8_units_count && office.section8_units_count > 0 && (
+                {office.program_type?.toLowerCase().includes('section') && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                     <span className="text-xs">Section 8 Housing Choice Vouchers</span>
@@ -240,11 +240,9 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             <div className="pt-3 border-t border-gray-100">
               <p className="text-xs text-gray-500">
                 Data from HUD PHA Contact Information API
-                {office.last_updated && (
-                  <span className="block mt-1">
-                    Updated: {new Date(office.last_updated).toLocaleDateString()}
-                  </span>
-                )}
+                <span className="block mt-1">
+                  Updated: {new Date(office.updated_at).toLocaleDateString()}
+                </span>
               </p>
             </div>
           </CardContent>

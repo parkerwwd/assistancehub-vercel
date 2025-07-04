@@ -136,10 +136,8 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
           <div className="pt-4 border-t border-gray-100">
             <h4 className="font-medium text-gray-900 mb-3">Available Services</h4>
             <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
-              {/* Check section8_units_count instead of supports_hcv since that field doesn't exist */}
-              {office.section8_units_count && office.section8_units_count > 0 && (
-                <div>• Section 8 Housing Vouchers</div>
-              )}
+              {/* Display general services since we don't have specific unit counts */}
+              <div>• Section 8 Housing Vouchers</div>
               <div>• Public Housing Units</div>
               <div>• Housing Assistance Programs</div>
               <div>• Rental Assistance</div>
