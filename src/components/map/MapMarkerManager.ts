@@ -172,6 +172,38 @@ export class MapMarkerManager {
   }
 
   /**
+   * Add markers for all filtered agencies OR just the location marker if no agencies found
+   */
+  handleLocationSearch(
+    map: mapboxgl.Map, 
+    agencies: PHAAgency[], 
+    selectedLocation: { lat: number; lng: number; name: string } | null,
+    mapboxToken: string,
+    onOfficeSelect: (office: PHAAgency) => void
+  ): void {
+    if (!map) return;
+
+    console.log('🔍 Handling location search:', {
+      agenciesFound: agencies.length,
+      hasSelectedLocation: !!selectedLocation
+    });
+
+    // Clear existing markers
+    this.clearAllAgencyMarkers();
+    this.clearLocationMarker();
+
+    if (agencies.length > 0) {
+      // Found agencies - show markers for all found agencies
+      console.log('✅ Found', agencies.length, 'agencies, showing agency markers');
+      this.addAllAgencyMarkers(map, agencies, onOfficeSelect);
+    } else if (selectedLocation) {
+      // No agencies found - show only the selected location marker
+      console.log('📍 No agencies found, showing only location marker for:', selectedLocation.name);
+      this.setLocationMarker(map, selectedLocation.lat, selectedLocation.lng, selectedLocation.name, mapboxToken);
+    }
+  }
+
+  /**
    * Add markers for all filtered agencies
    */
   addAllAgencyMarkers(map: mapboxgl.Map, agencies: PHAAgency[], onOfficeSelect: (office: PHAAgency) => void): void {

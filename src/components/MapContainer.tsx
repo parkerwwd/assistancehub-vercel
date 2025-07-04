@@ -120,25 +120,24 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     }
   }, [selectedOffice, mapboxToken, onOfficeSelect]);
 
-  // Handle selected location changes
+  // Handle location search flow: show found agencies OR just the location if no agencies found
   useEffect(() => {
-    if (map.current?.loaded() && selectedLocation) {
-      console.log('🗺️ Selected location changed, adding 3D location marker');
-    } else if (map.current?.loaded() && !selectedLocation) {
+    if (map.current?.loaded() && !selectedOffice) {
+      console.log('🔍 Location search flow - agencies:', phaAgencies?.length || 0, 'selectedLocation:', !!selectedLocation);
+      
+      markerManager.current.handleLocationSearch(
+        map.current,
+        phaAgencies || [],
+        selectedLocation,
+        mapboxToken,
+        onOfficeSelect
+      );
+    } else if (map.current?.loaded() && selectedOffice) {
+      // Clear location search markers when an office is selected
+      markerManager.current.clearAllAgencyMarkers();
       markerManager.current.clearLocationMarker();
     }
-  }, [selectedLocation]);
-
-  // Handle PHA agencies changes - show markers for all filtered agencies
-  useEffect(() => {
-    if (map.current?.loaded() && phaAgencies && phaAgencies.length > 0 && !selectedOffice) {
-      console.log('🗺️ Updating agency markers for', phaAgencies.length, 'agencies');
-      markerManager.current.addAllAgencyMarkers(map.current, phaAgencies, onOfficeSelect);
-    } else if (map.current?.loaded() && (!phaAgencies || phaAgencies.length === 0 || selectedOffice)) {
-      // Clear agency markers when no agencies or when an office is selected
-      markerManager.current.clearAllAgencyMarkers();
-    }
-  }, [phaAgencies, selectedOffice, onOfficeSelect]);
+  }, [phaAgencies, selectedLocation, selectedOffice, mapboxToken, onOfficeSelect]);
 
   return (
     <div className="relative w-full h-full">
