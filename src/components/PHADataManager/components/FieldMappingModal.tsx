@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Upload, FileText, CheckCircle2, AlertCircle } from "lucide-react";
+import { Upload, FileText, CheckCircle2 } from "lucide-react";
 import { parseCSV, extractCSVHeaders } from "../utils/csvParser";
 
 interface FieldMapping {
@@ -58,7 +58,7 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
       setCsvHeaders(headers);
       setCsvData(data);
       
-      // Create field mappings
+      // Create field mappings - only for predefined fields
       const mappings: FieldMapping[] = [];
       
       Object.entries(FIELD_GROUPS).forEach(([groupName, fields]) => {
@@ -75,21 +75,6 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
             isSelected: !!foundHeader,
             group: groupName
           });
-        });
-      });
-      
-      // Add unmapped fields from CSV that don't match our required fields
-      const mappedOrigins = mappings.map(m => m.originField.toUpperCase());
-      const unmappedHeaders = headers.filter(h => 
-        !mappedOrigins.includes(h.toUpperCase())
-      );
-      
-      unmappedHeaders.forEach(header => {
-        mappings.push({
-          originField: header,
-          mappedField: 'Unmapped Field',
-          isSelected: false,
-          group: 'Unmapped Fields'
         });
       });
       
@@ -138,8 +123,7 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
     'Email Address',
     'Executive Director Email',
     'PHA Code',
-    'PHA Classification',
-    'Unmapped Field'
+    'PHA Classification'
   ];
 
   return (
@@ -177,11 +161,7 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
                 <Card key={groupName}>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
-                      {groupName === 'Unmapped Fields' ? (
-                        <AlertCircle className="w-5 h-5 text-orange-500" />
-                      ) : (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      )}
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
                       {groupName}
                       <span className="text-sm font-normal text-gray-500">
                         ({mappings.filter(m => m.isSelected).length}/{mappings.length})
