@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
         </p>
       </div>
       
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
+      <header className="bg-header backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -59,13 +59,13 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
             )}
             
             <nav className="hidden md:flex space-x-8">
-              <Link to="/section8" className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-blue-50">
+              <Link to="/section8" className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10">
                 Section 8
               </Link>
-              <Link to="/snap" className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-blue-50">
+              <Link to="/snap" className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10">
                 SNAP
               </Link>
-              <Link to="/auth" className="text-gray-700 hover:text-blue-600 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-blue-50">
+              <Link to="/auth" className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10">
                 Admin Login
               </Link>
             </nav>
