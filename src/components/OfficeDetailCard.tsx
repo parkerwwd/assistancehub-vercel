@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, ExternalLink, Users, ArrowRight, Building, Image } from "lucide-react";
-import { PHAAgency } from "@/types/phaOffice";
+import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
+
+type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 interface OfficeDetailCardProps {
   office: PHAAgency;
@@ -134,7 +136,7 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
           <div className="pt-4 border-t border-gray-100">
             <h4 className="font-medium text-gray-900 mb-3">Available Services</h4>
             <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
-              {/* Check section8_units_count if it exists */}
+              {/* Check section8_units_count instead of supports_hcv since that field doesn't exist */}
               {office.section8_units_count && office.section8_units_count > 0 && (
                 <div>• Section 8 Housing Vouchers</div>
               )}

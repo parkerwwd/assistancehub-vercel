@@ -1,12 +1,14 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import PHADetailView from "@/components/PHADetailView";
 import HousingListings from "@/components/HousingListings";
 import MapContainer from "@/components/MapContainer";
-import { PHAAgency } from "@/types/phaOffice";
+import { Database } from "@/integrations/supabase/types";
 import { X } from "lucide-react";
 
+type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
 
 interface MobileSection8LayoutProps {
