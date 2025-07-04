@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Upload, FileText, CheckCircle2 } from "lucide-react";
@@ -86,12 +85,6 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
     }
   };
 
-  const toggleFieldSelection = (index: number) => {
-    setFieldMappings(prev => prev.map((mapping, i) => 
-      i === index ? { ...mapping, isSelected: !mapping.isSelected } : mapping
-    ));
-  };
-
   const updateFieldMapping = (index: number, newMappedField: string) => {
     setFieldMappings(prev => prev.map((mapping, i) => 
       i === index ? { ...mapping, mappedField: newMappedField } : mapping
@@ -145,7 +138,7 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
                 <span className="font-medium">File Analysis Complete</span>
               </div>
               <div className="text-sm text-gray-600">
-                {getSelectedCount()} of {getTotalCount()} fields selected
+                {getSelectedCount()} of {getTotalCount()} fields mapped
               </div>
             </div>
             <div className="mt-2 text-sm text-gray-600">
@@ -172,7 +165,6 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-12">Select</TableHead>
                           <TableHead>Origin Field</TableHead>
                           <TableHead>Mapped Field</TableHead>
                           <TableHead>Sample Data</TableHead>
@@ -185,12 +177,6 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
                           
                           return (
                             <TableRow key={globalIndex}>
-                              <TableCell>
-                                <Checkbox
-                                  checked={mapping.isSelected}
-                                  onCheckedChange={() => toggleFieldSelection(globalIndex)}
-                                />
-                              </TableCell>
                               <TableCell className="font-mono text-sm">
                                 {mapping.originField}
                               </TableCell>
@@ -228,7 +214,7 @@ export const FieldMappingModal: React.FC<FieldMappingModalProps> = ({ isOpen, on
           {/* Actions */}
           <div className="flex justify-between items-center pt-4 border-t">
             <div className="text-sm text-gray-600">
-              Selected {getSelectedCount()} fields for import
+              {getSelectedCount()} fields mapped for import
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={onClose}>
