@@ -18,30 +18,8 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
   const [imageError, setImageError] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
 
-  // Build full address, handling the case where city might be in phone field
-  const addressParts = [office.address];
-  
-  // Check if phone field contains city name (non-numeric data)
-  const phoneContainsCity = office.phone && !/^[\d\s\-\(\)\+\.]+$/.test(office.phone);
-  
-  if (phoneContainsCity) {
-    addressParts.push(office.phone);
-  } else if (office.city) {
-    addressParts.push(office.city);
-  }
-  
-  if (office.state) {
-    addressParts.push(office.state);
-  }
-  
-  if (office.zip) {
-    addressParts.push(office.zip);
-  }
-  
-  const fullAddress = addressParts.filter(Boolean).join(', ');
-  
-  // Use phone for contact only if it's actually a phone number
-  const actualPhone = phoneContainsCity ? null : office.phone;
+  // Build full address using only the address field since city, state, zip don't exist in current schema
+  const fullAddress = office.address || 'Address not available';
 
   const phaType = getPHATypeFromData(office);
 
@@ -60,6 +38,9 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
       setImageError(true);
     }
   };
+
+  // Default waitlist status since the field doesn't exist in current schema
+  const waitlistStatus = 'Unknown';
 
   return (
     <div className="h-full p-4 overflow-y-auto">
@@ -115,41 +96,29 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
             <span 
               className="px-3 py-1 rounded-full text-sm font-medium"
               style={{ 
-                backgroundColor: getWaitlistColor(office.waitlist_status || 'Unknown') + '20',
-                color: getWaitlistColor(office.waitlist_status || 'Unknown')
+                backgroundColor: getWaitlistColor(waitlistStatus) + '20',
+                color: getWaitlistColor(waitlistStatus)
               }}
             >
-              {office.waitlist_status || 'Unknown'}
+              {waitlistStatus}
             </span>
           </div>
           
           {/* Contact Information */}
           <div className="space-y-3">
-            {actualPhone && (
+            {office.phone && (
               <a 
-                href={`tel:${actualPhone}`}
+                href={`tel:${office.phone}`}
                 className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group"
               >
                 <Phone className="w-4 h-4 mr-3 text-blue-600" />
                 <span className="text-blue-700 group-hover:text-blue-800 font-medium">
-                  {actualPhone}
+                  {office.phone}
                 </span>
               </a>
             )}
             
-            {office.website && (
-              <a 
-                href={office.website.startsWith('http') ? office.website : `https://${office.website}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group"
-              >
-                <ExternalLink className="w-4 h-4 mr-3 text-green-600" />
-                <span className="text-green-700 group-hover:text-green-800 font-medium">
-                  Visit Website
-                </span>
-              </a>
-            )}
+            {/* Website functionality disabled since field doesn't exist in current schema */}
           </div>
 
           {/* View Details Button */}
@@ -167,7 +136,8 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
           <div className="pt-4 border-t border-gray-100">
             <h4 className="font-medium text-gray-900 mb-3">Available Services</h4>
             <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
-              {office.supports_hcv && (
+              {/* Check section8_units_count instead of supports_hcv since that field doesn't exist */}
+              {office.section8_units_count && office.section8_units_count > 0 && (
                 <div>• Section 8 Housing Vouchers</div>
               )}
               <div>• Public Housing Units</div>

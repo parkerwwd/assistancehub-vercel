@@ -13,27 +13,8 @@ interface PHAOfficeCardProps {
 }
 
 const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
-  // Build full address, handling the case where city might be in phone field
-  const addressParts = [agency.address];
-  
-  // Check if phone field contains city name (non-numeric data)
-  const phoneContainsCity = agency.phone && !/^[\d\s\-\(\)\+\.]+$/.test(agency.phone);
-  
-  if (phoneContainsCity) {
-    addressParts.push(agency.phone);
-  } else if (agency.city) {
-    addressParts.push(agency.city);
-  }
-  
-  if (agency.state) {
-    addressParts.push(agency.state);
-  }
-  
-  if (agency.zip) {
-    addressParts.push(agency.zip);
-  }
-  
-  const fullAddress = addressParts.filter(Boolean).join(', ');
+  // Build full address using only the address field since city, state, zip don't exist in current schema
+  const fullAddress = agency.address || 'Address not available';
 
   const phaType = getPHATypeFromData(agency);
 

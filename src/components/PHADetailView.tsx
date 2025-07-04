@@ -19,30 +19,8 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
   const [imageError, setImageError] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
 
-  // Build full address, handling the case where city might be in phone field
-  const addressParts = [office.address];
-  
-  // Check if phone field contains city name (non-numeric data)
-  const phoneContainsCity = office.phone && !/^[\d\s\-\(\)\+\.]+$/.test(office.phone);
-  
-  if (phoneContainsCity) {
-    addressParts.push(office.phone);
-  } else if (office.city) {
-    addressParts.push(office.city);
-  }
-  
-  if (office.state) {
-    addressParts.push(office.state);
-  }
-  
-  if (office.zip) {
-    addressParts.push(office.zip);
-  }
-  
-  const fullAddress = addressParts.filter(Boolean).join(', ');
-  
-  // Use phone for contact only if it's actually a phone number
-  const actualPhone = phoneContainsCity ? null : office.phone;
+  // Build full address using only the address field since city, state, zip don't exist in current schema
+  const fullAddress = office.address || 'Address not available';
 
   const phaType = getPHATypeFromData(office);
 
@@ -61,6 +39,9 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
       setImageError(true);
     }
   };
+
+  // Default waitlist status since the field doesn't exist in current schema
+  const waitlistStatus = 'Unknown';
 
   return (
     <div className="h-full bg-gray-50">
@@ -137,12 +118,12 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               <span 
                 className="px-3 py-1 rounded-full text-sm font-medium border"
                 style={{ 
-                  backgroundColor: getWaitlistColor(office.waitlist_status || 'Unknown') + '15',
-                  borderColor: getWaitlistColor(office.waitlist_status || 'Unknown') + '30',
-                  color: getWaitlistColor(office.waitlist_status || 'Unknown')
+                  backgroundColor: getWaitlistColor(waitlistStatus) + '15',
+                  borderColor: getWaitlistColor(waitlistStatus) + '30',
+                  color: getWaitlistColor(waitlistStatus)
                 }}
               >
-                {office.waitlist_status || 'Unknown'}
+                {waitlistStatus}
               </span>
             </div>
 
@@ -150,31 +131,19 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             <div className="space-y-2">
               <h4 className="font-medium text-gray-900 text-sm mb-3">Contact Information</h4>
               
-              {actualPhone && (
+              {office.phone && (
                 <a 
-                  href={`tel:${actualPhone}`}
+                  href={`tel:${office.phone}`}
                   className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group border border-blue-100"
                 >
                   <Phone className="w-4 h-4 mr-3 text-blue-600 flex-shrink-0" />
                   <span className="text-blue-700 group-hover:text-blue-800 font-medium">
-                    {actualPhone}
+                    {office.phone}
                   </span>
                 </a>
               )}
               
-              {office.website && (
-                <a 
-                  href={office.website.startsWith('http') ? office.website : `https://${office.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group border border-green-100"
-                >
-                  <ExternalLink className="w-4 h-4 mr-3 text-green-600 flex-shrink-0" />
-                  <span className="text-green-700 group-hover:text-green-800 font-medium">
-                    Visit Website
-                  </span>
-                </a>
-              )}
+              {/* Website functionality disabled since field doesn't exist in current schema */}
 
               {office.email && (
                 <a 
@@ -218,7 +187,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   <span className="text-xs font-medium text-gray-700">HCV Support</span>
                 </div>
                 <p className="text-sm text-gray-900 font-medium">
-                  {office.supports_hcv ? 'Yes' : 'No'}
+                  {office.section8_units_count && office.section8_units_count > 0 ? 'Yes' : 'No'}
                 </p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg border">
@@ -234,7 +203,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             <div className="pt-3 border-t border-gray-100">
               <h4 className="font-medium text-gray-900 mb-3 text-sm">Available Programs</h4>
               <div className="space-y-2 text-sm">
-                {office.supports_hcv && (
+                {office.section8_units_count && office.section8_units_count > 0 && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                     Section 8 Housing Choice Vouchers
