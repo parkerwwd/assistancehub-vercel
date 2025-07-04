@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, Download, Upload } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FieldMappingRow } from './fieldMapping/FieldMappingRow';
+import { Checkbox } from "@/components/ui/checkbox";
 import { downloadMappingTemplate, getRequiredFieldStatus } from './fieldMapping/utils';
 import { COMMON_MAPPINGS } from './fieldMapping/constants';
 
 export interface FieldMapping {
   csvField: string;
   dbField: string;
+  checked: boolean;
 }
 
 interface FieldMappingDialogProps {
@@ -32,6 +33,9 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
   const [mappings, setMappings] = useState<FieldMapping[]>([]);
   const [autoMappedCount, setAutoMappedCount] = useState(0);
 
+  // Fields to exclude from mapping
+  const excludedFields = ['state', 'city', 'zip', 'std_st', 'std_city', 'std_zip5'];
+
   // Memoize the default mappings to prevent unnecessary re-renders
   const memoizedDefaultMappings = useMemo(() => defaultMappings, [JSON.stringify(defaultMappings)]);
 
@@ -45,12 +49,20 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
         const normalizedField = csvField.toUpperCase().trim();
         const dbField = COMMON_MAPPINGS[normalizedField] || '';
         
-        newMappings.push({
-          csvField,
-          dbField
-        });
+        // Check if this field should be excluded
+        const shouldExclude = excludedFields.some(excluded => 
+          normalizedField.toLowerCase().includes(excluded.toLowerCase())
+        );
 
-        if (dbField) autoMapped++;
+        // Only include if not excluded and has a valid mapping
+        if (!shouldExclude && dbField) {
+          newMappings.push({
+            csvField,
+            dbField,
+            checked: true // Auto-check mapped fields
+          });
+          autoMapped++;
+        }
       });
 
       // Apply default mappings if provided
@@ -59,6 +71,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
           const index = newMappings.findIndex(m => m.csvField === defaultMapping.csvField);
           if (index >= 0) {
             newMappings[index].dbField = defaultMapping.dbField;
+            newMappings[index].checked = defaultMapping.checked;
           }
         });
       }
@@ -68,22 +81,23 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
     }
   }, [csvHeaders, memoizedDefaultMappings]);
 
-  const updateMapping = (csvField: string, dbField: string) => {
+  const updateMapping = (csvField: string, checked: boolean) => {
     setMappings(prev => prev.map(m => 
-      m.csvField === csvField ? { ...m, dbField } : m
+      m.csvField === csvField ? { ...m, checked } : m
     ));
   };
 
-  const getUsedDbFields = () => {
-    return mappings.filter(m => m.dbField && m.dbField !== 'skip').map(m => m.dbField);
+  const getCheckedMappings = () => {
+    return mappings.filter(m => m.checked && m.dbField);
   };
 
   const handleConfirm = () => {
-    const validMappings = mappings.filter(m => m.dbField && m.dbField !== 'skip');
-    onMappingConfirm(validMappings);
+    const checkedMappings = getCheckedMappings();
+    onMappingConfirm(checkedMappings);
   };
 
-  const { missingRequired, hasRequired } = getRequiredFieldStatus(getUsedDbFields());
+  const checkedMappings = getCheckedMappings();
+  const { missingRequired, hasRequired } = getRequiredFieldStatus(checkedMappings.map(m => m.dbField));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -91,17 +105,17 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="w-5 h-5" />
-            Map CSV Fields to Database
+            Select Fields to Import
           </DialogTitle>
           <DialogDescription>
-            Map your CSV columns to the corresponding database fields. Required fields must be mapped to proceed.
+            Select which fields you want to import from your CSV. Required fields must be selected to proceed.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              {autoMappedCount} of {csvHeaders.length} fields auto-mapped
+              {autoMappedCount} fields available for import ({checkedMappings.length} selected)
             </div>
             <Button 
               variant="outline" 
@@ -126,13 +140,32 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
           <ScrollArea className="h-[400px] border rounded-lg p-4">
             <div className="space-y-4">
               {mappings.map((mapping, index) => (
-                <FieldMappingRow
-                  key={index}
-                  csvField={mapping.csvField}
-                  dbField={mapping.dbField}
-                  onMappingChange={updateMapping}
-                />
+                <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg">
+                  <Checkbox
+                    id={`field-${index}`}
+                    checked={mapping.checked}
+                    onCheckedChange={(checked) => updateMapping(mapping.csvField, checked as boolean)}
+                  />
+                  <div className="flex-1">
+                    <label
+                      htmlFor={`field-${index}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {mapping.csvField}
+                    </label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Maps to: <span className="font-medium">{mapping.dbField}</span>
+                      {mapping.dbField === 'name' && <span className="text-red-500 ml-1">(Required)</span>}
+                    </p>
+                  </div>
+                </div>
               ))}
+              {mappings.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No mappable fields found in your CSV.</p>
+                  <p className="text-sm mt-2">Please ensure your CSV contains the expected field names.</p>
+                </div>
+              )}
             </div>
           </ScrollArea>
         </div>
@@ -143,9 +176,9 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
           </Button>
           <Button 
             onClick={handleConfirm}
-            disabled={!hasRequired}
+            disabled={!hasRequired || checkedMappings.length === 0}
           >
-            Apply Mapping & Continue Import
+            Import Selected Fields ({checkedMappings.length})
           </Button>
         </DialogFooter>
       </DialogContent>

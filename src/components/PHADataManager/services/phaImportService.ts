@@ -1,6 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { FieldMapping } from '../components/FieldMappingDialog';
-import { sanitizeInput, parseCoordinate } from '../utils/dataValidation';
+import { sanitizeInput } from '../utils/dataValidation';
 
 export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => {
   // Apply field mappings to build PHA data object
@@ -8,8 +9,10 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
     last_updated: new Date().toISOString()
   };
 
-  // Map fields based on user configuration
+  // Map fields based on user configuration (only checked fields)
   fieldMappings.forEach(mapping => {
+    if (!mapping.checked) return; // Skip unchecked fields
+    
     const csvValue = record[mapping.csvField];
     
     switch (mapping.dbField) {
@@ -22,38 +25,17 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
       case 'address':
         phaData.address = sanitizeInput(csvValue, 500);
         break;
-      case 'city':
-        phaData.city = sanitizeInput(csvValue, 100);
-        break;
-      case 'state':
-        phaData.state = sanitizeInput(csvValue, 2)?.substring(0, 2) || null;
-        break;
-      case 'zip':
-        phaData.zip = sanitizeInput(csvValue, 10)?.substring(0, 10) || null;
-        break;
       case 'phone':
         phaData.phone = sanitizeInput(csvValue, 20);
         break;
       case 'email':
         phaData.email = sanitizeInput(csvValue, 255);
         break;
-      case 'website':
-        phaData.website = sanitizeInput(csvValue, 255);
+      case 'exec_dir_email':
+        phaData.exec_dir_email = sanitizeInput(csvValue, 255);
         break;
-      case 'supports_hcv':
-        phaData.supports_hcv = csvValue?.toString().toLowerCase().includes('section 8') || 
-                             csvValue?.toString().toLowerCase() === 'true' || 
-                             (csvValue && parseInt(csvValue.toString()) > 0) || 
-                             false;
-        break;
-      case 'waitlist_status':
-        phaData.waitlist_status = sanitizeInput(csvValue, 50) || 'Unknown';
-        break;
-      case 'latitude':
-        phaData.latitude = parseCoordinate(csvValue, 'latitude');
-        break;
-      case 'longitude':
-        phaData.longitude = parseCoordinate(csvValue, 'longitude');
+      case 'program_type':
+        phaData.program_type = sanitizeInput(csvValue, 100);
         break;
     }
   });
