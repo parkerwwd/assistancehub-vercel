@@ -96,7 +96,7 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
   return (
     <div className="flex flex-col h-full">
       {/* Map Section - Fixed height */}
-      <div className="h-80 w-full flex-shrink-0 relative">
+      <div className="h-40 w-full ">
         <MapContainer
           ref={mapRef}
           mapboxToken={mapboxToken}
