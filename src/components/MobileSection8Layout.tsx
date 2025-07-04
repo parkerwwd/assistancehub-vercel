@@ -1,9 +1,6 @@
 
 import React from 'react';
-import { useState } from 'react';
-import { Menu, X, Map, List } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import PHADetailView from "@/components/PHADetailView";
 import HousingListings from "@/components/HousingListings";
@@ -58,10 +55,7 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
   setTokenError,
   selectedLocation,
 }) => {
-  const [activeTab, setActiveTab] = useState<'map' | 'list'>('map');
-  const [showSheet, setShowSheet] = useState(false);
-
-  const renderRightPanel = () => {
+  const renderContent = () => {
     switch (viewState) {
       case 'pha-detail':
         return detailOffice ? (
@@ -101,66 +95,23 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Mobile Tab Navigation */}
-      <div className="flex border-b bg-white sticky top-0 z-10">
-        <Button
-          variant={activeTab === 'map' ? 'default' : 'ghost'}
-          className="flex-1 rounded-none border-r"
-          onClick={() => setActiveTab('map')}
-        >
-          <Map className="w-4 h-4 mr-2" />
-          Map
-        </Button>
-        <Button
-          variant={activeTab === 'list' ? 'default' : 'ghost'}
-          className="flex-1 rounded-none"
-          onClick={() => setActiveTab('list')}
-        >
-          <List className="w-4 h-4 mr-2" />
-          List
-        </Button>
+      {/* Map Section - Fixed height for mobile */}
+      <div className="h-64 w-full flex-shrink-0">
+        <MapContainer
+          ref={mapRef}
+          mapboxToken={mapboxToken}
+          phaAgencies={phaAgencies}
+          onOfficeSelect={handleOfficeClick}
+          onTokenError={setTokenError}
+          selectedOffice={selectedOffice}
+          selectedLocation={selectedLocation}
+        />
       </div>
 
-      {/* Content */}
-      <div className="flex-1 relative">
-        {/* Map View */}
-        <div className={`absolute inset-0 ${activeTab === 'map' ? 'block' : 'hidden'}`}>
-          <MapContainer
-            ref={mapRef}
-            mapboxToken={mapboxToken}
-            phaAgencies={phaAgencies}
-            onOfficeSelect={handleOfficeClick}
-            onTokenError={setTokenError}
-            selectedOffice={selectedOffice}
-            selectedLocation={selectedLocation}
-          />
-          
-          {/* Floating Action Button for List */}
-          <Button
-            className="absolute bottom-4 right-4 rounded-full w-14 h-14 shadow-lg"
-            onClick={() => setShowSheet(true)}
-          >
-            <List className="w-6 h-6" />
-          </Button>
-        </div>
-
-        {/* List View */}
-        <div className={`absolute inset-0 ${activeTab === 'list' ? 'block' : 'hidden'} bg-white overflow-y-auto`}>
-          {renderRightPanel()}
-        </div>
+      {/* List Section - Scrollable */}
+      <div className="flex-1 bg-white overflow-y-auto">
+        {renderContent()}
       </div>
-
-      {/* Bottom Sheet for List when on Map */}
-      <Sheet open={showSheet} onOpenChange={setShowSheet}>
-        <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Housing Authorities</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4">
-            {renderRightPanel()}
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 };
