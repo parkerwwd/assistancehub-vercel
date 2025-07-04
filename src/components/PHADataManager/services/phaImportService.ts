@@ -7,6 +7,15 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
   console.log('🔄 Processing PHA record:', record);
   console.log('📋 Field mappings:', fieldMappings);
   
+  // Debug: Check all email-related fields in the CSV record
+  console.log('📧 EMAIL FIELD ANALYSIS:');
+  const emailFields = ['HA_EMAIL_ADDR_TEXT', 'EXEC_DIR_EMAIL', 'EMAIL', 'E_MAIL'];
+  emailFields.forEach(field => {
+    if (record[field] !== undefined) {
+      console.log(`  - ${field}: "${record[field]}"`);
+    }
+  });
+  
   // Apply field mappings to build PHA data object
   const phaData: any = {
     updated_at: new Date().toISOString()
@@ -21,6 +30,15 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
     
     const csvValue = record[mapping.csvField];
     console.log(`🔄 Mapping ${mapping.csvField} (${csvValue}) -> ${mapping.dbField}`);
+    
+    // Special debug for email fields
+    if (mapping.dbField === 'email' || mapping.dbField === 'exec_dir_email') {
+      console.log(`📧 EMAIL MAPPING DEBUG:`);
+      console.log(`  - CSV Field: ${mapping.csvField}`);
+      console.log(`  - CSV Value: "${csvValue}"`);
+      console.log(`  - DB Field: ${mapping.dbField}`);
+      console.log(`  - Is Email Format: ${/\S+@\S+\.\S+/.test(csvValue || '')}`);
+    }
     
     switch (mapping.dbField) {
       case 'pha_code':

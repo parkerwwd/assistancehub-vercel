@@ -46,6 +46,15 @@ export const parseCSV = (csvText: string) => {
   });
   console.log('📑 Headers found:', headers);
   
+  // Debug: Look for email-related headers
+  console.log('📧 EMAIL HEADERS ANALYSIS:');
+  const emailRelatedHeaders = headers.filter(header => 
+    header.toLowerCase().includes('email') || 
+    header.toLowerCase().includes('e_mail') ||
+    header.toLowerCase().includes('mail')
+  );
+  console.log('  - Email-related headers found:', emailRelatedHeaders);
+  
   const data = [];
 
   for (let i = 1; i < lines.length; i++) {
@@ -58,6 +67,15 @@ export const parseCSV = (csvText: string) => {
       headers.forEach((header, index) => {
         row[header] = values[index] || null;
       });
+      
+      // Debug: Log email values for first few records
+      if (i <= 3) {
+        console.log(`📧 Record ${i} email fields:`);
+        emailRelatedHeaders.forEach(emailHeader => {
+          console.log(`  - ${emailHeader}: "${row[emailHeader]}"`);
+        });
+      }
+      
       data.push(row);
     }
   }
