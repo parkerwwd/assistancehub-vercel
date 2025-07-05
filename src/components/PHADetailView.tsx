@@ -206,12 +206,16 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           </CardHeader>
           <CardContent className="space-y-2 pt-0">
             {office.program_type && (
-              <div className="p-2 bg-purple-50 rounded-lg border border-purple-100">
-                <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center p-2 bg-purple-50 rounded-lg border border-purple-100">
+                <div className="w-6 h-6 bg-purple-100 rounded-md flex items-center justify-center mr-2">
                   <Home className="w-3 h-3 text-purple-600" />
-                  <span className="font-medium text-gray-900 text-xs">Program Type</span>
                 </div>
-                <p className="text-sm font-semibold text-purple-700">{office.program_type}</p>
+                <div>
+                  <div className="text-xs font-medium text-gray-900">Program Type</div>
+                  <div className="text-sm font-semibold text-purple-700">
+                    {office.program_type}
+                  </div>
+                </div>
               </div>
             )}
 
