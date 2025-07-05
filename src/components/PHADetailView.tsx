@@ -39,76 +39,77 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="px-4 py-4">
+        <div className="px-3 py-2">
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={onBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors text-sm"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3 h-3" />
             Back to Search
           </Button>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
-        {/* Hero Image Section - Separated */}
+      <div className="max-w-3xl mx-auto p-3 space-y-3">
+        {/* Hero Image Section */}
         {fullAddress && !imageError && (
-          <Card className="overflow-hidden shadow-lg border-0 bg-white">
-            <div className="relative h-48 md:h-64 overflow-hidden">
+          <Card className="overflow-hidden shadow-sm border-0 bg-white">
+            <div className="relative h-32 overflow-hidden">
               <img
                 src={showFallback ? staticMapImageUrl : streetViewImageUrl}
                 alt={`View of ${office.name}`}
                 className="w-full h-full object-cover"
                 onError={handleImageError}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 shadow-sm">
-                <Image className="w-3 h-3" />
-                {showFallback ? 'Map View' : 'Street View'}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+              <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-gray-800 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-sm">
+                <Image className="w-2 h-2" />
+                {showFallback ? 'Map' : 'Street'}
               </div>
             </div>
           </Card>
         )}
 
         {/* Basic Information Section */}
-        <Card className="shadow-lg border-0 bg-white">
-          <CardContent className="p-6">
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 mb-3">
+        <Card className="shadow-sm border-0 bg-white">
+          <CardContent className="p-4">
+            <div className="mb-3">
+              <h1 className="text-xl font-bold text-gray-900 mb-2">
                 {office.name}
               </h1>
               {fullAddress && (
-                <div className="flex items-start gap-2 text-gray-600 mb-4">
-                  <MapPin className="w-5 h-5 mt-0.5 text-blue-600" />
-                  <span className="text-lg">{fullAddress}</span>
+                <div className="flex items-start gap-2 text-gray-600 mb-3">
+                  <MapPin className="w-4 h-4 mt-0.5 text-blue-600" />
+                  <span className="text-sm">{fullAddress}</span>
                 </div>
               )}
             </div>
 
-            {/* Show Map Button - Only if onShowMap is available */}
+            {/* Show Map Button */}
             {onShowMap && (
               <Button
                 onClick={onShowMap}
                 variant="outline"
-                className="flex items-center justify-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 h-12 mb-6"
+                size="sm"
+                className="flex items-center justify-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 h-8 mb-3 text-sm"
               >
-                <Map className="w-5 h-5" />
+                <Map className="w-3 h-3" />
                 Show on Map
               </Button>
             )}
 
-            {/* PHA Type Badge - Single centered badge */}
+            {/* PHA Type Badge */}
             <div className="flex justify-center">
-              <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
-                <Building className="w-6 h-6 mx-auto mb-2 text-blue-600" />
+              <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <Building className="w-4 h-4 mx-auto mb-1 text-blue-600" />
                 <div className="text-xs text-gray-500 mb-1">PHA Type</div>
                 <div 
-                  className="px-3 py-1 rounded-full text-sm font-medium inline-block"
+                  className="px-2 py-1 rounded-full text-xs font-medium inline-block"
                   style={{ 
                     backgroundColor: getPHATypeColor(phaType) + '20',
                     color: getPHATypeColor(phaType)
@@ -122,26 +123,26 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
         </Card>
 
         {/* Contact Information Section */}
-        <Card className="shadow-lg border-0 bg-white">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Phone className="w-5 h-5 text-blue-600" />
+        <Card className="shadow-sm border-0 bg-white">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Phone className="w-4 h-4 text-blue-600" />
               Contact Information
             </CardTitle>
-            <CardDescription>Get in touch with this housing authority</CardDescription>
+            <CardDescription className="text-sm">Get in touch with this housing authority</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-2 pt-0">
             {office.phone && (
               <a 
                 href={`tel:${office.phone}`}
-                className="flex items-center p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-all group border border-blue-100 hover:border-blue-200"
+                className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all group border border-blue-100 hover:border-blue-200"
               >
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-blue-200 transition-colors">
-                  <Phone className="w-5 h-5 text-blue-600" />
+                <div className="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors">
+                  <Phone className="w-3 h-3 text-blue-600" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-gray-900">Main Phone</div>
-                  <div className="text-lg font-semibold text-blue-700 group-hover:text-blue-800">
+                  <div className="text-xs font-medium text-gray-900">Main Phone</div>
+                  <div className="text-sm font-semibold text-blue-700 group-hover:text-blue-800">
                     {office.phone}
                   </div>
                 </div>
@@ -151,14 +152,14 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             {office.email && (
               <a 
                 href={`mailto:${office.email}`}
-                className="flex items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-all group border border-green-100 hover:border-green-200"
+                className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-all group border border-green-100 hover:border-green-200"
               >
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-green-200 transition-colors">
-                  <Mail className="w-5 h-5 text-green-600" />
+                <div className="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center mr-3 group-hover:bg-green-200 transition-colors">
+                  <Mail className="w-3 h-3 text-green-600" />
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">General Email</div>
-                  <div className="text-lg font-semibold text-green-700 group-hover:text-green-800 break-all">
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium text-gray-900">General Email</div>
+                  <div className="text-sm font-semibold text-green-700 group-hover:text-green-800 break-all">
                     {office.email}
                   </div>
                 </div>
@@ -168,14 +169,14 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             {office.exec_dir_email && (
               <a 
                 href={`mailto:${office.exec_dir_email}`}
-                className="flex items-center p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-all group border border-purple-100 hover:border-purple-200"
+                className="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-all group border border-purple-100 hover:border-purple-200"
               >
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-purple-200 transition-colors">
-                  <Mail className="w-5 h-5 text-purple-600" />
+                <div className="w-8 h-8 bg-purple-100 rounded-md flex items-center justify-center mr-3 group-hover:bg-purple-200 transition-colors">
+                  <Mail className="w-3 h-3 text-purple-600" />
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">Executive Director</div>
-                  <div className="text-lg font-semibold text-purple-700 group-hover:text-purple-800 break-all">
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium text-gray-900">Executive Director</div>
+                  <div className="text-sm font-semibold text-purple-700 group-hover:text-purple-800 break-all">
                     {office.exec_dir_email}
                   </div>
                 </div>
@@ -185,72 +186,72 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
         </Card>
 
         {/* Program Information Section */}
-        <Card className="shadow-lg border-0 bg-white">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Home className="w-5 h-5 text-purple-600" />
+        <Card className="shadow-sm border-0 bg-white">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Home className="w-4 h-4 text-purple-600" />
               Housing Programs
             </CardTitle>
-            <CardDescription>Available housing assistance programs</CardDescription>
+            <CardDescription className="text-sm">Available housing assistance programs</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 pt-0">
             {office.program_type && (
-              <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
-                <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="w-5 h-5 text-purple-600" />
-                  <span className="font-medium text-gray-900">Program Type</span>
+              <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
+                <div className="flex items-center gap-2 mb-1">
+                  <DollarSign className="w-4 h-4 text-purple-600" />
+                  <span className="font-medium text-gray-900 text-sm">Program Type</span>
                 </div>
-                <p className="text-lg font-semibold text-purple-700">{office.program_type}</p>
+                <p className="text-sm font-semibold text-purple-700">{office.program_type}</p>
               </div>
             )}
 
-            <div className="grid gap-3">
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span className="text-sm font-medium">Section 8 Housing Choice Vouchers</span>
+            <div className="grid gap-2">
+              <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-xs font-medium">Section 8 Housing Choice Vouchers</span>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-sm font-medium">Public Housing Units</span>
+              <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-xs font-medium">Public Housing Units</span>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                <span className="text-sm font-medium">Emergency Housing Assistance</span>
+              <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <span className="text-xs font-medium">Emergency Housing Assistance</span>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span className="text-sm font-medium">Senior Housing Programs</span>
+              <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span className="text-xs font-medium">Senior Housing Programs</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Office Details Section */}
-        <Card className="shadow-lg border-0 bg-white">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <FileText className="w-5 h-5 text-gray-600" />
+        <Card className="shadow-sm border-0 bg-white">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <FileText className="w-4 h-4 text-gray-600" />
               Office Information
             </CardTitle>
-            <CardDescription>Additional office details</CardDescription>
+            <CardDescription className="text-sm">Additional office details</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 pt-0">
             {office.pha_code && (
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="w-5 h-5 text-gray-600" />
-                  <span className="font-medium text-gray-900">PHA Code</span>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 mb-1">
+                  <FileText className="w-4 h-4 text-gray-600" />
+                  <span className="font-medium text-gray-900 text-sm">PHA Code</span>
                 </div>
-                <p className="text-lg font-semibold text-gray-700">{office.pha_code}</p>
+                <p className="text-sm font-semibold text-gray-700">{office.pha_code}</p>
               </div>
             )}
 
-            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-5 h-5 text-blue-600" />
-                <span className="font-medium text-gray-900">Last Updated</span>
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="w-4 h-4 text-blue-600" />
+                <span className="font-medium text-gray-900 text-sm">Last Updated</span>
               </div>
-              <p className="text-sm text-blue-700">
+              <p className="text-xs text-blue-700">
                 {new Date(office.updated_at).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -262,10 +263,10 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
         </Card>
 
         {/* Data Source Footer */}
-        <Card className="shadow-lg border-0 bg-white">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Shield className="w-4 h-4" />
+        <Card className="shadow-sm border-0 bg-white">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <Shield className="w-3 h-3" />
               <span>Data sourced from HUD PHA Contact Information API</span>
             </div>
           </CardContent>
