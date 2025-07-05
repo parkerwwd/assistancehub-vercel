@@ -12,11 +12,11 @@ export const HUDFormatInfo: React.FC = () => {
       <ul className="text-sm text-blue-700 space-y-1">
         <li>• <strong>PARTICIPANT_CODE</strong> → PHA Code</li>
         <li>• <strong>FORMAL_PARTICIPANT_NAME</strong> → PHA Name</li>
-        <li>• <strong>STD_ADDR, STD_CITY, STD_ST, STD_ZIP5</strong> → Address (combined)</li>
+        <li>• <strong>STD_ADDR, STD_CITY, STD_ST, STD_ZIP5</strong> → Address</li>
         <li>• <strong>HA_PHN_NUM</strong> → Phone Number</li>
-        <li>• <strong>HA_EMAIL_ADDR_TEXT</strong> → Email</li>
-        <li>• <strong>EXEC_DIR_EMAIL</strong> → Executive Director Email</li>
-        <li>• <strong>HA_PROGRAM_TYPE</strong> → Program Type</li>
+        <li>• <strong>HA_EMAIL_ADDR_TEXT, EXEC_DIR_EMAIL</strong> → Email</li>
+        <li>• <strong>LAT, LON</strong> → Coordinates for mapping</li>
+        <li>• <strong>HA_PROGRAM_TYPE, SECTION8_UNITS_CNT</strong> → Section 8 support</li>
         <li>• Tab-separated or comma-separated formats supported</li>
       </ul>
     </div>
