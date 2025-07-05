@@ -53,7 +53,7 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
           <img 
             src={stateMapImage}
             alt={`Map of ${stateName}`}
-            className="w-full h-full object-cover opacity-70"
+            className="w-full h-full object-cover opacity-20"
             onError={(e) => {
               // Hide the map overlay if it fails to load
               e.currentTarget.parentElement!.style.display = 'none';
