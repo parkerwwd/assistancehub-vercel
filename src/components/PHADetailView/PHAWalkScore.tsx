@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Car, Bus, Bike, AlertCircle } from "lucide-react";
+import { Car, Bus, Bike, AlertCircle, ExternalLink } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { WalkScoreService } from "@/services/walkScoreService";
 import WalkScoreBreakdown from "./WalkScoreBreakdown";
@@ -79,6 +78,27 @@ const PHAWalkScore: React.FC<PHAWalkScoreProps> = ({ office }) => {
 
     fetchScores();
   }, [office]);
+
+  const generateWalkScoreUrl = (address: string) => {
+    if (!address) return '';
+    
+    // Format address for Walk Score URL - replace spaces with dashes and make lowercase
+    const formattedAddress = address
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and dashes
+      .replace(/\s+/g, '-') // Replace spaces with dashes
+      .replace(/-+/g, '-') // Replace multiple dashes with single dash
+      .replace(/^-|-$/g, ''); // Remove leading/trailing dashes
+    
+    return `https://www.walkscore.com/score/${formattedAddress}`;
+  };
+
+  const handleTitleClick = () => {
+    if (office.address) {
+      const walkScoreUrl = generateWalkScoreUrl(office.address);
+      window.open(walkScoreUrl, '_blank');
+    }
+  };
 
   const getScoreDescription = (score: number, type: 'walk' | 'transit' | 'bike') => {
     if (type === 'walk') {
@@ -165,9 +185,13 @@ const PHAWalkScore: React.FC<PHAWalkScoreProps> = ({ office }) => {
   return (
     <Card className="shadow-sm border-0 bg-white">
       <CardHeader className="pb-1">
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle 
+          className="flex items-center gap-2 text-base cursor-pointer hover:text-blue-600 transition-colors group"
+          onClick={handleTitleClick}
+        >
           <Car className="w-3 h-3 text-orange-600" />
           Walk Score
+          <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-blue-600 transition-colors" />
         </CardTitle>
         <CardDescription className="text-xs">
           Walk, Transit, and Bike Scores for this location • Click for details
