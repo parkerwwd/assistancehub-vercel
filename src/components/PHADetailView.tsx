@@ -59,7 +59,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
         {/* Hero Image Section - Bigger Height */}
         {fullAddress && !imageError && (
           <Card className="overflow-hidden shadow-sm border-0 bg-white">
-            <div className="relative h-32 overflow-hidden">
+            <div className="relative h-48 overflow-hidden">
               <img
                 src={showFallback ? staticMapImageUrl : streetViewImageUrl}
                 alt={`View of ${office.name}`}
