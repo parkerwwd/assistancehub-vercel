@@ -59,7 +59,7 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
               e.currentTarget.parentElement!.style.display = 'none';
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
+          <div className="absolute inset-0 "></div>
         </div>
       </div>
 
