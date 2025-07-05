@@ -44,8 +44,8 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
             alt={`Map of ${stateName}`}
             className="w-full h-full object-cover opacity-70"
             onError={(e) => {
-              // Fallback if map image fails to load
-              e.currentTarget.style.display = 'none';
+              // Fallback to uploaded image if map image fails to load
+              e.currentTarget.src = '/lovable-uploads/d59de317-8a9f-4fd0-8c83-78728a037803.png';
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
