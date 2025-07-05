@@ -18,37 +18,37 @@ interface StateCitiesSidebarProps {
 
 const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({ topCities, stateName }) => {
   return (
-    <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
-      <CardHeader>
-        <CardTitle className="text-xl text-gray-900 flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-blue-600" />
+    <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+          <MapPin className="w-4 h-4 text-blue-600" />
           Cities in {stateName}
         </CardTitle>
-        <CardDescription>Cities with housing authorities</CardDescription>
+        <CardDescription className="text-sm">Cities with housing authorities</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="pt-0">
+        <div className="space-y-3">
           {topCities.length > 0 ? topCities.map((city, index) => (
-            <div key={index} className="group p-4 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer">
-              <div className="flex justify-between items-start mb-2">
+            <div key={index} className="group p-3 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-lg hover:shadow-sm transition-all duration-200 cursor-pointer">
+              <div className="flex justify-between items-start mb-1">
                 <div>
-                  <div className="font-semibold text-gray-900">{city.name}</div>
-                  <div className="text-sm text-gray-600">{city.properties} authorities</div>
+                  <div className="font-medium text-gray-900 text-sm">{city.name}</div>
+                  <div className="text-xs text-gray-600">{city.properties} authorities</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold text-blue-600">{city.units}</div>
+                  <div className="font-semibold text-blue-600 text-sm">{city.units}</div>
                   <div className="text-xs text-gray-500">est. units</div>
                 </div>
               </div>
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex justify-between items-center text-xs">
                 <span className="text-gray-600">{city.properties} properties</span>
                 <span className="text-orange-600 font-medium">~{city.waitTime}</span>
               </div>
             </div>
           )) : (
-            <div className="text-center py-4 text-gray-500">
-              <MapPin className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-              <p>No cities found for {stateName}</p>
+            <div className="text-center py-3 text-gray-500">
+              <MapPin className="w-6 h-6 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm">No cities found for {stateName}</p>
             </div>
           )}
         </div>
