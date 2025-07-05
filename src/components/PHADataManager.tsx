@@ -135,7 +135,7 @@ const PHADataManager: React.FC = () => {
             disabled={isImporting}
           >
             <RotateCcw className="w-4 h-4" />
-            Reset Stats & Clear DB
+            Reset Stats
           </Button>
         </div>
       </CardHeader>
