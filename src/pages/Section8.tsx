@@ -48,32 +48,75 @@ const Section8 = () => {
   React.useEffect(() => {
     if (stateParam) {
       console.log('🏛️ State parameter detected:', stateParam);
-      // Create a mock location object for the state
-      const stateLocation = {
-        name: stateParam,
-        type: 'state' as const,
-        latitude: 0,
-        longitude: 0,
-        stateCode: getStateCode(stateParam)
-      };
-      handleCitySelect(stateLocation);
+      const stateInfo = getStateInfo(stateParam);
+      if (stateInfo) {
+        // Create a proper location object for the state with real coordinates
+        const stateLocation = {
+          name: stateParam,
+          type: 'state' as const,
+          latitude: stateInfo.latitude,
+          longitude: stateInfo.longitude,
+          stateCode: stateInfo.code
+        };
+        handleCitySelect(stateLocation);
+      }
     }
   }, [stateParam, handleCitySelect]);
 
-  const getStateCode = (stateName: string): string => {
-    const stateCodeMap: { [key: string]: string } = {
-      'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
-      'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE', 'Florida': 'FL', 'Georgia': 'GA',
-      'Hawaii': 'HI', 'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
-      'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
-      'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO',
-      'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
-      'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
-      'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
-      'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
-      'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
+  const getStateInfo = (stateName: string): { code: string; latitude: number; longitude: number } | null => {
+    const stateInfoMap: { [key: string]: { code: string; latitude: number; longitude: number } } = {
+      'Alabama': { code: 'AL', latitude: 32.806671, longitude: -86.791130 },
+      'Alaska': { code: 'AK', latitude: 61.370716, longitude: -152.404419 },
+      'Arizona': { code: 'AZ', latitude: 33.729759, longitude: -111.431221 },
+      'Arkansas': { code: 'AR', latitude: 34.969704, longitude: -92.373123 },
+      'California': { code: 'CA', latitude: 36.116203, longitude: -119.681564 },
+      'Colorado': { code: 'CO', latitude: 39.059811, longitude: -105.311104 },
+      'Connecticut': { code: 'CT', latitude: 41.597782, longitude: -72.755371 },
+      'Delaware': { code: 'DE', latitude: 39.318523, longitude: -75.507141 },
+      'Florida': { code: 'FL', latitude: 27.766279, longitude: -81.686783 },
+      'Georgia': { code: 'GA', latitude: 33.040619, longitude: -83.643074 },
+      'Hawaii': { code: 'HI', latitude: 21.094318, longitude: -157.498337 },
+      'Idaho': { code: 'ID', latitude: 44.240459, longitude: -114.478828 },
+      'Illinois': { code: 'IL', latitude: 40.349457, longitude: -88.986137 },
+      'Indiana': { code: 'IN', latitude: 39.849426, longitude: -86.258278 },
+      'Iowa': { code: 'IA', latitude: 42.011539, longitude: -93.210526 },
+      'Kansas': { code: 'KS', latitude: 38.526600, longitude: -96.726486 },
+      'Kentucky': { code: 'KY', latitude: 37.668140, longitude: -84.670067 },
+      'Louisiana': { code: 'LA', latitude: 31.169546, longitude: -91.867805 },
+      'Maine': { code: 'ME', latitude: 44.693947, longitude: -69.381927 },
+      'Maryland': { code: 'MD', latitude: 39.063946, longitude: -76.802101 },
+      'Massachusetts': { code: 'MA', latitude: 42.230171, longitude: -71.530106 },
+      'Michigan': { code: 'MI', latitude: 43.326618, longitude: -84.536095 },
+      'Minnesota': { code: 'MN', latitude: 45.694454, longitude: -93.900192 },
+      'Mississippi': { code: 'MS', latitude: 32.741646, longitude: -89.678696 },
+      'Missouri': { code: 'MO', latitude: 38.456085, longitude: -92.288368 },
+      'Montana': { code: 'MT', latitude: 47.012851, longitude: -110.362566 },
+      'Nebraska': { code: 'NE', latitude: 41.125370, longitude: -98.268082 },
+      'Nevada': { code: 'NV', latitude: 38.313515, longitude: -117.055374 },
+      'New Hampshire': { code: 'NH', latitude: 43.452492, longitude: -71.563896 },
+      'New Jersey': { code: 'NJ', latitude: 40.298904, longitude: -74.521011 },
+      'New Mexico': { code: 'NM', latitude: 34.840515, longitude: -106.248482 },
+      'New York': { code: 'NY', latitude: 42.165726, longitude: -74.948051 },
+      'North Carolina': { code: 'NC', latitude: 35.630066, longitude: -79.806419 },
+      'North Dakota': { code: 'ND', latitude: 47.528912, longitude: -99.784012 },
+      'Ohio': { code: 'OH', latitude: 40.388783, longitude: -82.764915 },
+      'Oklahoma': { code: 'OK', latitude: 35.565342, longitude: -96.928917 },
+      'Oregon': { code: 'OR', latitude: 44.931109, longitude: -123.029159 },
+      'Pennsylvania': { code: 'PA', latitude: 40.590752, longitude: -77.209755 },
+      'Rhode Island': { code: 'RI', latitude: 41.680893, longitude: -71.511780 },
+      'South Carolina': { code: 'SC', latitude: 33.856892, longitude: -80.945007 },
+      'South Dakota': { code: 'SD', latitude: 44.299782, longitude: -99.438828 },
+      'Tennessee': { code: 'TN', latitude: 35.747845, longitude: -86.692345 },
+      'Texas': { code: 'TX', latitude: 31.054487, longitude: -97.563461 },
+      'Utah': { code: 'UT', latitude: 40.150032, longitude: -111.862434 },
+      'Vermont': { code: 'VT', latitude: 44.045876, longitude: -72.710686 },
+      'Virginia': { code: 'VA', latitude: 37.769337, longitude: -78.169968 },
+      'Washington': { code: 'WA', latitude: 47.400902, longitude: -121.490494 },
+      'West Virginia': { code: 'WV', latitude: 38.491226, longitude: -80.954570 },
+      'Wisconsin': { code: 'WI', latitude: 44.268543, longitude: -89.616508 },
+      'Wyoming': { code: 'WY', latitude: 42.755966, longitude: -107.302490 }
     };
-    return stateCodeMap[stateName] || '';
+    return stateInfoMap[stateName] || null;
   };
 
   const handleOfficeClick = (office: PHAAgency) => {
