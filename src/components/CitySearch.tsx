@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { MapPin } from "lucide-react";
-import { allUSLocations, USLocation } from "@/data/expandedUSLocations";
+import { allUSLocations, USLocation } from "@/data/locations";
 
 interface CitySearchProps {
   onCitySelect: (location: USLocation) => void;
