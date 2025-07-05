@@ -66,7 +66,7 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
       <div className="relative container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto text-center">
           {/* State Badge */}
-          <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 px-8 py-4 rounded-full mb-8 shadow-2xl">
+          <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-2xl border border-white/20 px-8 py-4 rounded-full mb-8 shadow-2xl">
             <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
             <span className="text-white font-semibold text-lg">Live Housing Data for {stateName}</span>
           </div>
@@ -79,12 +79,12 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
             </span>
           </h1>
 
-          {/* Enhanced Stats Card with Blur Effect */}
-          <div className="bg-white/20 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30 mb-8">
+          {/* Enhanced Stats Card with More Blur Effect */}
+          <div className="bg-white/20 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/30 mb-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
               {stateData.quickStats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl ${stat.bgColor} flex items-center justify-center backdrop-blur-sm`}>
+                  <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl ${stat.bgColor} flex items-center justify-center backdrop-blur-xl`}>
                     <stat.icon className={`w-8 h-8 ${stat.color}`} />
                   </div>
                   <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
