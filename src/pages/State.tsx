@@ -10,7 +10,7 @@ import { Database } from '@/integrations/supabase/types';
 import StateHeroSection from '@/components/state/StateHeroSection';
 import StateKeyFeatures from '@/components/state/StateKeyFeatures';
 import StateAboutSection from '@/components/state/StateAboutSection';
-import StateHousingPrograms from '@/components/state/StateHousingPrograms';
+import StateSearchGuide from '@/components/state/StateSearchGuide';
 import StateCitiesSidebar from '@/components/state/StateCitiesSidebar';
 import StateContactHelp from '@/components/state/StateContactHelp';
 
@@ -218,7 +218,7 @@ const State = () => {
             
             <div className="lg:col-span-2 space-y-8">
               <StateAboutSection stateName={stateName} stateData={stateData} />
-              <StateHousingPrograms housingPrograms={housingPrograms} stateName={stateName} />
+              <StateSearchGuide stateName={stateName} />
             </div>
 
             <div className="space-y-6">
