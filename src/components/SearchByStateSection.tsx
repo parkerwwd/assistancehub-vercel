@@ -1,4 +1,6 @@
+
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import usaMapSvg from '@/assets/usa-map.svg';
@@ -6,6 +8,7 @@ import usaMapSvg from '@/assets/usa-map.svg';
 const SearchByStateSection = () => {
   const [selectedState, setSelectedState] = useState('');
   const [hoveredState, setHoveredState] = useState('');
+  const navigate = useNavigate();
 
   const states = [
     'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 
@@ -21,7 +24,7 @@ const SearchByStateSection = () => {
   const handleStateSelect = (state: string) => {
     setSelectedState(state);
     // Navigate to Section 8 page with state filter
-    window.location.href = `/section8?state=${encodeURIComponent(state)}`;
+    navigate(`/section8?state=${encodeURIComponent(state)}`);
   };
 
   return (
