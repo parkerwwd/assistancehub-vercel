@@ -28,76 +28,54 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
     const csvValue = record[mapping.csvField];
     console.log(`🔄 Mapping ${mapping.csvField} ("${csvValue}") -> ${mapping.dbField}`);
     
-    // Special handling for address field - combine multiple fields if needed
-    if (mapping.dbField === 'address') {
-      let fullAddress = csvValue || '';
-      
-      // Check if we need to combine address components
-      const addressComponents = [];
-      if (csvValue) addressComponents.push(csvValue);
-      
-      // Look for city, state, zip in other fields
-      const cityField = record['STD_CITY'] || record['CITY'];
-      const stateField = record['STD_ST'] || record['STATE'] || record['ST'];
-      const zipField = record['STD_ZIP5'] || record['ZIP'] || record['ZIP5'];
-      
-      if (cityField) addressComponents.push(cityField);
-      if (stateField) addressComponents.push(stateField);
-      if (zipField) addressComponents.push(zipField);
-      
-      // If we have multiple components, combine them
-      if (addressComponents.length > 1) {
-        fullAddress = addressComponents.join(', ');
-      }
-      
-      phaData.address = sanitizeInput(fullAddress, 500);
-      console.log(`✅ Mapped full address: ${phaData.address}`);
-      return;
-    }
-    
-    // Special debug for email fields
-    if (mapping.dbField === 'email' || mapping.dbField === 'exec_dir_email') {
-      console.log(`📧 EMAIL MAPPING DEBUG:`);
-      console.log(`  - CSV Field: ${mapping.csvField}`);
-      console.log(`  - CSV Value: "${csvValue}"`);
-      console.log(`  - DB Field: ${mapping.dbField}`);
-      console.log(`  - Is Email Format: ${/\S+@\S+\.\S+/.test(csvValue || '')}`);
-    }
-    
+    // Handle each database field type
     switch (mapping.dbField) {
       case 'pha_code':
         phaData.pha_code = sanitizeInput(csvValue, 50);
         console.log(`✅ Mapped pha_code: ${phaData.pha_code}`);
         break;
+        
       case 'name':
         phaData.name = sanitizeInput(csvValue, 255);
         console.log(`✅ Mapped name: ${phaData.name}`);
         break;
+        
+      case 'address':
+        // Use FULL_ADDRESS directly - don't separate or combine
+        phaData.address = sanitizeInput(csvValue, 500);
+        console.log(`✅ Mapped full address: ${phaData.address}`);
+        break;
+        
       case 'phone':
+        // Use HA_PHN_NUM directly - don't use city data
         phaData.phone = sanitizeInput(csvValue, 20);
         console.log(`✅ Mapped phone: ${phaData.phone}`);
         break;
+        
       case 'email':
+        // Use HA_EMAIL_ADDR_TEXT directly - don't use zip data
         phaData.email = sanitizeInput(csvValue, 255);
         console.log(`✅ Mapped email: ${phaData.email}`);
         break;
+        
       case 'exec_dir_email':
         phaData.exec_dir_email = sanitizeInput(csvValue, 255);
         console.log(`✅ Mapped exec_dir_email: ${phaData.exec_dir_email}`);
         break;
+        
       case 'program_type':
         phaData.program_type = sanitizeInput(csvValue, 100);
         console.log(`✅ Mapped program_type: ${phaData.program_type}`);
         break;
+        
       default:
         console.warn(`⚠️ Unknown database field: ${mapping.dbField}`);
     }
   });
 
-  // Validate that we have proper email format for email fields
+  // Validate email formats if present
   if (phaData.email && !/\S+@\S+\.\S+/.test(phaData.email)) {
     console.warn(`⚠️ Invalid email format detected: "${phaData.email}"`);
-    // Don't clear it, but log the warning
   }
   
   if (phaData.exec_dir_email && !/\S+@\S+\.\S+/.test(phaData.exec_dir_email)) {

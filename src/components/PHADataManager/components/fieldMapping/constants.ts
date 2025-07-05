@@ -13,22 +13,21 @@ export const COMMON_MAPPINGS: Record<string, string> = {
   'NAME': 'name',
   'AGENCY_NAME': 'name',
   
-  // Address mappings - handle full address field
+  // Address mappings - use FULL_ADDRESS directly, don't separate
   'FULL_ADDRESS': 'address',
   'FULLADDRESS': 'address',
-  'STD_ADDR': 'address',
   'ADDRESS': 'address',
   'MAILING_ADDRESS': 'address',
   'PHYSICAL_ADDRESS': 'address',
   
-  // Phone mappings
+  // Phone mappings - use HA_PHN_NUM specifically
   'HA_PHN_NUM': 'phone',
   'PHONE': 'phone',
   'PHONE_NUMBER': 'phone',
   'CONTACT_PHONE': 'phone',
   'PHA_PHONE': 'phone',
   
-  // Email mappings
+  // Email mappings - use HA_EMAIL_ADDR_TEXT specifically
   'HA_EMAIL_ADDR_TEXT': 'email',
   'EMAIL': 'email',
   'EMAIL_ADDRESS': 'email',
@@ -62,8 +61,9 @@ export const DATABASE_FIELDS = [
 // Required fields that must be present for import
 export const REQUIRED_FIELDS = ['name'];
 
-// Fields that should be excluded from automatic mapping
+// Fields that should be excluded from automatic mapping to prevent incorrect assignments
 export const EXCLUDED_FIELDS = [
+  'STD_ST', 'STD_CITY', 'STD_ZIP5', 'STD_ADDR', // Don't auto-map these address components
   'state', 'city', 'zip', 'std_st', 'std_city', 'std_zip5',
   'latitude', 'longitude', 'lat', 'lon', 'coords'
 ];

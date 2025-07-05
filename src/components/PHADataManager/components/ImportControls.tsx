@@ -72,9 +72,9 @@ export const ImportControls: React.FC<ImportControlsProps> = ({
 
   const downloadSampleCSV = () => {
     const sampleData = `PARTICIPANT_CODE,FORMAL_PARTICIPANT_NAME,FULL_ADDRESS,HA_PHN_NUM,HA_EMAIL_ADDR_TEXT,EXEC_DIR_EMAIL,HA_PROGRAM_TYPE
-CA001,Los Angeles Housing Authority,2600 Wilshire Blvd Los Angeles CA 90057,(213) 252-2500,info@hacla.org,director@hacla.org,Section 8
-NY002,New York City Housing Authority,250 Broadway New York NY 10007,(212) 306-3000,contact@nycha.nyc.gov,ceo@nycha.nyc.gov,Public Housing
-TX003,Houston Housing Authority,2640 Fountain View Dr Houston TX 77057,(713) 260-0500,info@housingforhouston.com,president@housingforhouston.com,Mixed Income`;
+CA001,Los Angeles Housing Authority,"2600 Wilshire Blvd, Los Angeles, CA, 90057",(213) 252-2500,info@hacla.org,director@hacla.org,Section 8
+NY002,New York City Housing Authority,"250 Broadway, New York, NY, 10007",(212) 306-3000,contact@nycha.nyc.gov,ceo@nycha.nyc.gov,Public Housing
+TX003,Houston Housing Authority,"2640 Fountain View Dr, Houston, TX, 77057",(713) 260-0500,info@housingforhouston.com,president@housingforhouston.com,Mixed Income`;
     
     const blob = new Blob([sampleData], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -130,13 +130,13 @@ TX003,Houston Housing Authority,2640 Fountain View Dr Houston TX 77057,(713) 260
       <p className="text-xs text-gray-600 text-center">
         Upload HUD PHA Contact Information CSV data. The system automatically maps these fields:
         <br />
-        <strong>PARTICIPANT_CODE → PHA Code</strong>, <strong>FORMAL_PARTICIPANT_NAME → Name</strong>, <strong>FULL_ADDRESS → Address</strong>
+        <strong>PARTICIPANT_CODE → PHA Code</strong>, <strong>FORMAL_PARTICIPANT_NAME → Name</strong>, <strong>FULL_ADDRESS → Complete Address</strong>
         <br />
         <strong>HA_PHN_NUM → Phone</strong>, <strong>HA_EMAIL_ADDR_TEXT → Email</strong>, <strong>EXEC_DIR_EMAIL → Executive Director Email</strong>
         <br />
         <strong>HA_PROGRAM_TYPE → Program Type</strong>
         <br />
-        <strong>Note:</strong> Authentication is required for data imports.
+        <strong>Note:</strong> Authentication is required for data imports. Tab-separated or comma-separated formats supported.
       </p>
     </div>
   );
