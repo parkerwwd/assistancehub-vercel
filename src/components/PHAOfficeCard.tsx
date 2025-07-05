@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { MapPin, Heart, Phone, Building2 } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
@@ -13,14 +14,21 @@ interface PHAOfficeCardProps {
 }
 
 const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
+  const navigate = useNavigate();
+  
   // Build full address using only the address field since city, state, zip don't exist in current schema
   const fullAddress = agency.address || 'Address not available';
   const phaType = getPHATypeFromData(agency);
 
+  const handleClick = () => {
+    // Navigate to the dedicated PHA detail page
+    navigate(`/pha/${agency.id}`);
+  };
+
   return (
     <Card 
       className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer border border-gray-200 bg-white active:shadow-md" 
-      onClick={() => onOfficeClick?.(agency)}
+      onClick={handleClick}
     >
       <div className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">

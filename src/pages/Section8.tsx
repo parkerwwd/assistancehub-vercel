@@ -1,8 +1,6 @@
 
 import React from 'react';
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
-import PHADetailView from "@/components/PHADetailView";
-import HousingListings from "@/components/HousingListings";
 import MapContainer from "@/components/MapContainer";
 import Header from "@/components/Header";
 import MobileSection8Layout from "@/components/MobileSection8Layout";
@@ -11,7 +9,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Database } from "@/integrations/supabase/types";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
-type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
 
 const Section8 = () => {
   console.log('Section8 component rendering...');
@@ -37,8 +34,6 @@ const Section8 = () => {
     clearLocationFilter,
   } = useMapLogic();
 
-  const [viewState, setViewState] = React.useState<ViewState>('overview');
-  const [detailOffice, setDetailOffice] = React.useState<PHAAgency | null>(null);
   const isMobile = useIsMobile();
 
   const handleOfficeClick = (office: PHAAgency) => {
@@ -46,70 +41,11 @@ const Section8 = () => {
     
     // First select the office on the map (this will fly to it and show marker)
     setSelectedOffice(office);
-    
-    // Then show detail view
-    setDetailOffice(office);
-    setViewState('pha-detail');
-  };
-
-  const handleViewHousing = (office: PHAAgency) => {
-    setDetailOffice(office);
-    setViewState('housing-listings');
-  };
-
-  const handleBackToOverview = () => {
-    setViewState('overview');
-    setDetailOffice(null);
-    // Clear the selected office and location to reset the search
-    setSelectedOffice(null);
-    setSelectedLocation(null);
-  };
-
-  const handleBackToPHADetail = () => {
-    setViewState('pha-detail');
   };
 
   const handleHeaderCitySelect = (location: any) => {
     console.log('🏙️ Section8 received location selection:', location);
     handleCitySelect(location);
-  };
-
-  const renderRightPanel = () => {
-    switch (viewState) {
-      case 'pha-detail':
-        return detailOffice ? (
-          <PHADetailView 
-            office={detailOffice}
-            onViewHousing={handleViewHousing}
-            onBack={handleBackToOverview}
-          />
-        ) : null;
-      
-      case 'housing-listings':
-        return detailOffice ? (
-          <HousingListings 
-            office={detailOffice}
-            onBack={handleBackToPHADetail}
-          />
-        ) : null;
-      
-      default:
-        return (
-          <OfficeDetailsPanel
-            selectedOffice={selectedOffice}
-            onOfficeClick={handleOfficeClick}
-            phaAgencies={phaAgencies}
-            loading={loading}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={totalCount}
-            onPageChange={handlePageChange}
-            onShowAll={clearLocationFilter}
-            hasFilter={!!filteredLocation}
-            filteredLocation={filteredLocation}
-          />
-        );
-    }
   };
 
   if (!mapboxToken) {
@@ -144,13 +80,13 @@ const Section8 = () => {
             currentPage={currentPage}
             totalPages={totalPages}
             totalCount={totalCount}
-            viewState={viewState}
-            detailOffice={detailOffice}
+            viewState="overview"
+            detailOffice={null}
             setSelectedOffice={setSelectedOffice}
             handleOfficeClick={handleOfficeClick}
-            handleViewHousing={handleViewHousing}
-            handleBackToOverview={handleBackToOverview}
-            handleBackToPHADetail={handleBackToPHADetail}
+            handleViewHousing={() => {}}
+            handleBackToOverview={() => {}}
+            handleBackToPHADetail={() => {}}
             handlePageChange={handlePageChange}
             clearLocationFilter={clearLocationFilter}
             setTokenError={setTokenError}
@@ -176,7 +112,19 @@ const Section8 = () => {
             
             {/* Right Panel - PHA List (Fixed 40% width) */}
             <div className="w-2/5 h-full overflow-y-auto bg-white">
-              {renderRightPanel()}
+              <OfficeDetailsPanel
+                selectedOffice={selectedOffice}
+                onOfficeClick={handleOfficeClick}
+                phaAgencies={phaAgencies}
+                loading={loading}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                onPageChange={handlePageChange}
+                onShowAll={clearLocationFilter}
+                hasFilter={!!filteredLocation}
+                filteredLocation={filteredLocation}
+              />
             </div>
           </div>
         )}
