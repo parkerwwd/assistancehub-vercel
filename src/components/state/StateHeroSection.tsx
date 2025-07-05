@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, TrendingUp, Clock, Home, Building, MapPin, Users } from 'lucide-react';
 import { GoogleMapsService } from '@/services/googleMapsService';
@@ -31,6 +30,14 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-blue-900 to-purple-900">
+      {/* Main Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+        style={{
+          backgroundImage: `url('/lovable-uploads/d59de317-8a9f-4fd0-8c83-78728a037803.png')`
+        }}
+      ></div>
+      
       {/* Background Pattern and Map Image */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_50%)]"></div>
@@ -44,8 +51,8 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
             alt={`Map of ${stateName}`}
             className="w-full h-full object-cover opacity-70"
             onError={(e) => {
-              // Fallback to uploaded image if map image fails to load
-              e.currentTarget.src = '/lovable-uploads/d59de317-8a9f-4fd0-8c83-78728a037803.png';
+              // Hide the map overlay if it fails to load
+              e.currentTarget.parentElement!.style.display = 'none';
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
