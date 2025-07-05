@@ -1,0 +1,55 @@
+
+import React from 'react';
+import { Home } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+interface StateAboutSectionProps {
+  stateName: string;
+  stateData: {
+    totalUnits: string;
+    agencies: string;
+    cities: string;
+  };
+}
+
+const StateAboutSection: React.FC<StateAboutSectionProps> = ({ stateName, stateData }) => {
+  return (
+    <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-3xl text-gray-900 flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+            <Home className="w-5 h-5 text-white" />
+          </div>
+          Housing Assistance in {stateName}
+        </CardTitle>
+        <CardDescription className="text-lg text-gray-600">
+          Comprehensive guide to affordable housing programs and opportunities
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid md:grid-cols-3 gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">{stateData.totalUnits}</div>
+            <div className="text-sm text-gray-600">Total Units Available</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">{stateData.agencies}</div>
+            <div className="text-sm text-gray-600">Housing Authorities</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-purple-600">{stateData.cities}</div>
+            <div className="text-sm text-gray-600">Cities Covered</div>
+          </div>
+        </div>
+        
+        <p className="text-gray-700 leading-relaxed">
+          {stateName} offers multiple pathways to affordable housing through federal, state, and local programs. 
+          Our comprehensive database includes {stateData.totalUnits} estimated housing units across {stateData.cities} cities, 
+          managed by {stateData.agencies} certified Public Housing Authorities.
+        </p>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default StateAboutSection;
