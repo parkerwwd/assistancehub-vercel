@@ -51,8 +51,8 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
         {/* Program Information Section */}
         <PHAHousingPrograms office={office} />
 
-        {/* Walk Score Section */}
-        <PHAWalkScore />
+        {/* Walk Score Section - Now with dynamic data */}
+        <PHAWalkScore office={office} />
 
         {/* Office Details Section */}
         <PHALastUpdated office={office} />
