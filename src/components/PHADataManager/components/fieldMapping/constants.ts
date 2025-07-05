@@ -48,6 +48,17 @@ export const COMMON_MAPPINGS: Record<string, string> = {
   'TYPE': 'program_type'
 };
 
+// Database fields available for mapping
+export const DATABASE_FIELDS = [
+  { key: 'pha_code', label: 'PHA Code', description: 'Unique identifier for the PHA', required: false },
+  { key: 'name', label: 'Agency Name', description: 'Official name of the housing authority', required: true },
+  { key: 'address', label: 'Address', description: 'Full mailing address', required: false },
+  { key: 'phone', label: 'Phone Number', description: 'Contact phone number', required: false },
+  { key: 'email', label: 'Email Address', description: 'General contact email', required: false },
+  { key: 'exec_dir_email', label: 'Executive Director Email', description: 'Direct email for executive director', required: false },
+  { key: 'program_type', label: 'Program Type', description: 'Type of housing program (e.g., Section 8, Public Housing)', required: false }
+];
+
 // Required fields that must be present for import
 export const REQUIRED_FIELDS = ['name'];
 
