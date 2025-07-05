@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { MapPin } from "lucide-react";
-import { allUSLocations, USLocation } from "@/data/usLocations";
+import { allUSLocations, USLocation } from "@/data/expandedUSLocations";
 
 interface CitySearchProps {
   onCitySelect: (location: USLocation) => void;
@@ -38,7 +39,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
             // Then sort alphabetically
             return a.name.localeCompare(b.name);
           })
-          .slice(0, 12); // Show more results since we have more types
+          .slice(0, 15); // Show more results since we have comprehensive data
         
         setFilteredLocations(filtered || []);
         setShowSuggestions(true);
