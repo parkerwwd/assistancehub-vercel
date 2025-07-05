@@ -41,7 +41,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Modern Header */}
+      {/* Header */}
       <div className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="px-4 py-4">
           <Button 
@@ -57,10 +57,9 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
       </div>
 
       <div className="max-w-4xl mx-auto p-4 space-y-6">
-        {/* Hero Section */}
-        <Card className="overflow-hidden shadow-lg border-0 bg-white">
-          {/* Hero Image */}
-          {fullAddress && !imageError && (
+        {/* Hero Image Section - Separated */}
+        {fullAddress && !imageError && (
+          <Card className="overflow-hidden shadow-lg border-0 bg-white">
             <div className="relative h-48 md:h-64 overflow-hidden">
               <img
                 src={showFallback ? staticMapImageUrl : streetViewImageUrl}
@@ -73,40 +72,39 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                 <Image className="w-3 h-3" />
                 {showFallback ? 'Map View' : 'Street View'}
               </div>
-              <div className="absolute bottom-4 left-4 right-4">
-                <h1 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">
-                  {office.name}
-                </h1>
-                {fullAddress && (
-                  <button
-                    onClick={onShowMap}
-                    className="flex items-center gap-2 text-white/90 hover:text-white transition-colors group"
-                  >
-                    <MapPin className="w-4 h-4" />
-                    <span className="text-sm group-hover:underline">{fullAddress}</span>
-                  </button>
-                )}
-              </div>
             </div>
-          )}
+          </Card>
+        )}
 
+        {/* Basic Information Section */}
+        <Card className="shadow-lg border-0 bg-white">
           <CardContent className="p-6">
-            {/* Quick Actions - Only show Map button if onShowMap is available */}
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                {office.name}
+              </h1>
+              {fullAddress && (
+                <div className="flex items-start gap-2 text-gray-600 mb-4">
+                  <MapPin className="w-5 h-5 mt-0.5 text-blue-600" />
+                  <span className="text-lg">{fullAddress}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Show Map Button - Only if onShowMap is available */}
             {onShowMap && (
-              <div className="grid grid-cols-1 gap-3 mb-6">
-                <Button
-                  onClick={onShowMap}
-                  variant="outline"
-                  className="flex items-center justify-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 h-12"
-                >
-                  <Map className="w-5 h-5" />
-                  Show on Map
-                </Button>
-              </div>
+              <Button
+                onClick={onShowMap}
+                variant="outline"
+                className="flex items-center justify-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 h-12 mb-6"
+              >
+                <Map className="w-5 h-5" />
+                Show on Map
+              </Button>
             )}
 
             {/* Status Badges */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
                 <Building className="w-6 h-6 mx-auto mb-2 text-blue-600" />
                 <div className="text-xs text-gray-500 mb-1">PHA Type</div>
