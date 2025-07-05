@@ -46,14 +46,22 @@ export const parseCSV = (csvText: string) => {
   });
   console.log('📑 Headers found:', headers);
   
-  // Debug: Look for email-related headers
-  console.log('📧 EMAIL HEADERS ANALYSIS:');
-  const emailRelatedHeaders = headers.filter(header => 
-    header.toLowerCase().includes('email') || 
-    header.toLowerCase().includes('e_mail') ||
-    header.toLowerCase().includes('mail')
-  );
-  console.log('  - Email-related headers found:', emailRelatedHeaders);
+  // Debug: Look for all field types
+  console.log('🔍 FIELD ANALYSIS:');
+  console.log('  - Address fields:', headers.filter(h => 
+    h.toLowerCase().includes('addr') || 
+    h.toLowerCase().includes('address') ||
+    h.toLowerCase().includes('full')
+  ));
+  console.log('  - Phone fields:', headers.filter(h => 
+    h.toLowerCase().includes('phone') || 
+    h.toLowerCase().includes('phn')
+  ));
+  console.log('  - Email fields:', headers.filter(h => 
+    h.toLowerCase().includes('email') || 
+    h.toLowerCase().includes('e_mail') ||
+    h.toLowerCase().includes('mail')
+  ));
   
   const data = [];
 
@@ -68,11 +76,15 @@ export const parseCSV = (csvText: string) => {
         row[header] = values[index] || null;
       });
       
-      // Debug: Log email values for first few records
+      // Debug: Log field values for first few records
       if (i <= 3) {
-        console.log(`📧 Record ${i} email fields:`);
-        emailRelatedHeaders.forEach(emailHeader => {
-          console.log(`  - ${emailHeader}: "${row[emailHeader]}"`);
+        console.log(`🔍 Record ${i} field analysis:`);
+        console.log(`  - Available fields: ${Object.keys(row).length}`);
+        headers.forEach(header => {
+          const value = row[header];
+          if (value && value.length > 0) {
+            console.log(`  - ${header}: "${value}"`);
+          }
         });
       }
       
@@ -82,7 +94,7 @@ export const parseCSV = (csvText: string) => {
 
   console.log('✅ CSV parsing completed:');
   console.log('  - Total data records:', data.length);
-  console.log('  - Sample record:', data[0]);
+  console.log('  - Sample record keys:', data[0] ? Object.keys(data[0]) : 'No records');
   
   return data;
 };

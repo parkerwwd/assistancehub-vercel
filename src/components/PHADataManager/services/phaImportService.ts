@@ -7,13 +7,10 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
   console.log('🔄 Processing PHA record:', record);
   console.log('📋 Field mappings:', fieldMappings);
   
-  // Debug: Check all email-related fields in the CSV record
-  console.log('📧 EMAIL FIELD ANALYSIS:');
-  const emailFields = ['HA_EMAIL_ADDR_TEXT', 'EXEC_DIR_EMAIL', 'EMAIL', 'E_MAIL'];
-  emailFields.forEach(field => {
-    if (record[field] !== undefined) {
-      console.log(`  - ${field}: "${record[field]}"`);
-    }
+  // Debug: Check all available fields in the CSV record
+  console.log('📊 AVAILABLE CSV FIELDS:');
+  Object.keys(record).forEach(key => {
+    console.log(`  - ${key}: "${record[key]}"`);
   });
   
   // Apply field mappings to build PHA data object
@@ -29,7 +26,34 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
     }
     
     const csvValue = record[mapping.csvField];
-    console.log(`🔄 Mapping ${mapping.csvField} (${csvValue}) -> ${mapping.dbField}`);
+    console.log(`🔄 Mapping ${mapping.csvField} ("${csvValue}") -> ${mapping.dbField}`);
+    
+    // Special handling for address field - combine multiple fields if needed
+    if (mapping.dbField === 'address') {
+      let fullAddress = csvValue || '';
+      
+      // Check if we need to combine address components
+      const addressComponents = [];
+      if (csvValue) addressComponents.push(csvValue);
+      
+      // Look for city, state, zip in other fields
+      const cityField = record['STD_CITY'] || record['CITY'];
+      const stateField = record['STD_ST'] || record['STATE'] || record['ST'];
+      const zipField = record['STD_ZIP5'] || record['ZIP'] || record['ZIP5'];
+      
+      if (cityField) addressComponents.push(cityField);
+      if (stateField) addressComponents.push(stateField);
+      if (zipField) addressComponents.push(zipField);
+      
+      // If we have multiple components, combine them
+      if (addressComponents.length > 1) {
+        fullAddress = addressComponents.join(', ');
+      }
+      
+      phaData.address = sanitizeInput(fullAddress, 500);
+      console.log(`✅ Mapped full address: ${phaData.address}`);
+      return;
+    }
     
     // Special debug for email fields
     if (mapping.dbField === 'email' || mapping.dbField === 'exec_dir_email') {
@@ -48,10 +72,6 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
       case 'name':
         phaData.name = sanitizeInput(csvValue, 255);
         console.log(`✅ Mapped name: ${phaData.name}`);
-        break;
-      case 'address':
-        phaData.address = sanitizeInput(csvValue, 500);
-        console.log(`✅ Mapped address: ${phaData.address}`);
         break;
       case 'phone':
         phaData.phone = sanitizeInput(csvValue, 20);
@@ -73,6 +93,16 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
         console.warn(`⚠️ Unknown database field: ${mapping.dbField}`);
     }
   });
+
+  // Validate that we have proper email format for email fields
+  if (phaData.email && !/\S+@\S+\.\S+/.test(phaData.email)) {
+    console.warn(`⚠️ Invalid email format detected: "${phaData.email}"`);
+    // Don't clear it, but log the warning
+  }
+  
+  if (phaData.exec_dir_email && !/\S+@\S+\.\S+/.test(phaData.exec_dir_email)) {
+    console.warn(`⚠️ Invalid exec_dir_email format detected: "${phaData.exec_dir_email}"`);
+  }
 
   console.log('✅ Final PHA data object:', phaData);
   return phaData;
