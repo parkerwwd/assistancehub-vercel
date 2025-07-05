@@ -42,8 +42,8 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
             // Set the location marker WITHOUT hover card (showHoverCard: false)
             mapRef.current.setLocationMarker(lat, lng, office.name, false);
             
-            // Fly to the location
-            mapRef.current.flyTo([lng, lat], 16);
+            // Fly to the location with very high zoom level for detailed street view
+            mapRef.current.flyTo([lng, lat], 19);
             
             console.log('✅ Successfully geocoded and marked location:', office.name, { lat, lng });
           } else {
