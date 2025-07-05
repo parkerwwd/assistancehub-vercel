@@ -65,6 +65,8 @@ export class MapMarkerManager {
     // Clear existing office location markers
     this.clearOfficeLocationMarkers();
     
+    let successfulMarkers = 0;
+    
     for (const office of offices) {
       if (!office.address) {
         console.log('⚠️ Skipping office without address:', office.name);
@@ -72,46 +74,76 @@ export class MapMarkerManager {
       }
       
       try {
-        // Geocode the office address
-        const encodedAddress = encodeURIComponent(office.address);
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
-        );
+        // First try to use existing geocoded coordinates if available
+        let lat = (office as any).geocoded_latitude;
+        let lng = (office as any).geocoded_longitude;
         
-        if (response.ok) {
-          const data = await response.json();
-          if (data.features && data.features.length > 0) {
-            const [lng, lat] = data.features[0].center;
-            
-            // Create YELLOW location marker for office (changed from blue to yellow)
-            const officeLocationMarker = this.locationMarkerHelper.create({
-              lat,
-              lng,
-              name: office.name,
-              mapboxToken,
-              showHoverCard: true,
-              color: 'yellow' // Yellow color for office location markers
-            });
-            
-            officeLocationMarker
-              .setPopup(this.createOfficeLocationPopup(office))
-              .addTo(map);
-            
-            this.officeLocationMarkers.push(officeLocationMarker);
-            
-            console.log('✅ Added YELLOW office location marker for:', office.name, 'at', { lat, lng });
-          } else {
-            console.log('⚠️ No geocoding results for:', office.name, office.address);
-          }
+        if (lat && lng) {
+          console.log('✅ Using existing coordinates for:', office.name, { lat, lng });
+          
+          // Create YELLOW location marker for office
+          const officeLocationMarker = this.locationMarkerHelper.create({
+            lat,
+            lng,
+            name: office.name,
+            mapboxToken,
+            showHoverCard: true,
+            color: 'yellow'
+          });
+          
+          officeLocationMarker
+            .setPopup(this.createOfficeLocationPopup(office))
+            .addTo(map);
+          
+          this.officeLocationMarkers.push(officeLocationMarker);
+          successfulMarkers++;
+          
+          console.log('✅ Added YELLOW office location marker for:', office.name, 'at', { lat, lng });
         } else {
-          console.log('⚠️ Geocoding API error for:', office.name, 'Status:', response.status);
+          // Fallback to geocoding if no coordinates available
+          console.log('🗺️ No existing coordinates, geocoding address for:', office.name, office.address);
+          
+          const encodedAddress = encodeURIComponent(office.address);
+          const response = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.features && data.features.length > 0) {
+              const [geocodedLng, geocodedLat] = data.features[0].center;
+              
+              // Create YELLOW location marker for office
+              const officeLocationMarker = this.locationMarkerHelper.create({
+                lat: geocodedLat,
+                lng: geocodedLng,
+                name: office.name,
+                mapboxToken,
+                showHoverCard: true,
+                color: 'yellow'
+              });
+              
+              officeLocationMarker
+                .setPopup(this.createOfficeLocationPopup(office))
+                .addTo(map);
+              
+              this.officeLocationMarkers.push(officeLocationMarker);
+              successfulMarkers++;
+              
+              console.log('✅ Added YELLOW office location marker (geocoded) for:', office.name, 'at', { lat: geocodedLat, lng: geocodedLng });
+            } else {
+              console.log('⚠️ No geocoding results for:', office.name, office.address);
+            }
+          } else {
+            console.log('⚠️ Geocoding API error for:', office.name, 'Status:', response.status);
+          }
         }
       } catch (error) {
-        console.warn('⚠️ Failed to geocode office address:', office.name, error);
+        console.warn('⚠️ Failed to add office location marker for:', office.name, error);
       }
     }
     
-    console.log('✅ Successfully added', this.officeLocationMarkers.length, 'office location markers (YELLOW)');
+    console.log('✅ Successfully added', successfulMarkers, 'out of', offices.length, 'office location markers (YELLOW)');
   }
 
   private createOfficeLocationPopup(office: PHAAgency): mapboxgl.Popup {
@@ -279,12 +311,16 @@ export class MapMarkerManager {
     if (agencies.length > 0) {
       // Found agencies - show YELLOW markers for all found offices
       console.log('✅ Found', agencies.length, 'agencies, adding YELLOW office location markers');
+      
+      // Add the YELLOW office location markers - this is the key fix
       await this.addOfficeLocationMarkers(map, agencies, mapboxToken);
       
-      // Also add the regular agency markers (blue pins)
+      // Also add the regular agency markers (blue pins) for the list
       this.addAllAgencyMarkers(map, agencies, onOfficeSelect);
+      
+      console.log('✅ Added both YELLOW office location markers and regular blue agency markers');
     } else {
-      console.log('📍 No agencies found for this location');
+      console.log('📍 No agencies found for this location - only showing selected location marker');
     }
   }
 
