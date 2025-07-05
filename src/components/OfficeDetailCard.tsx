@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, ExternalLink, Users, ArrowRight, Building, Image } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
-import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
+import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
@@ -39,9 +39,6 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
     }
   };
 
-  // Default waitlist status since the field doesn't exist in current schema
-  const waitlistStatus = 'Unknown';
-
   return (
     <div className="h-full p-4 overflow-y-auto">
       <Card className="h-fit shadow-sm border-0">
@@ -70,38 +67,25 @@ const OfficeDetailCard = ({ office, onOfficeClick }: OfficeDetailCardProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* PHA Type Badge */}
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Building className="w-4 h-4" />
-              PHA Type:
-            </span>
-            <span 
-              className="px-3 py-1 rounded-full text-sm font-medium"
-              style={{ 
-                backgroundColor: getPHATypeColor(phaType) + '20',
-                color: getPHATypeColor(phaType)
-              }}
-            >
-              {phaType}
-            </span>
-          </div>
-
-          {/* Waitlist Status Badge */}
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Waitlist Status:
-            </span>
-            <span 
-              className="px-3 py-1 rounded-full text-sm font-medium"
-              style={{ 
-                backgroundColor: getWaitlistColor(waitlistStatus) + '20',
-                color: getWaitlistColor(waitlistStatus)
-              }}
-            >
-              {waitlistStatus}
-            </span>
+          {/* PHA Type Badge - Single centered badge */}
+          <div className="flex justify-center">
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <span className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                <Building className="w-4 h-4" />
+                PHA Type:
+              </span>
+              <div className="text-center">
+                <span 
+                  className="px-3 py-1 rounded-full text-sm font-medium"
+                  style={{ 
+                    backgroundColor: getPHATypeColor(phaType) + '20',
+                    color: getPHATypeColor(phaType)
+                  }}
+                >
+                  {phaType}
+                </span>
+              </div>
+            </div>
           </div>
           
           {/* Contact Information */}

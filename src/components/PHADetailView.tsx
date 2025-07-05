@@ -22,7 +22,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
 
   const fullAddress = office.address || 'Address not available';
   const phaType = getPHATypeFromData(office);
-  const waitlistStatus = 'Unknown';
 
   const streetViewImageUrl = GoogleMapsService.getStreetViewImage({
     address: fullAddress,
@@ -103,8 +102,8 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </Button>
             )}
 
-            {/* Status Badges */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* PHA Type Badge - Single centered badge */}
+            <div className="flex justify-center">
               <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
                 <Building className="w-6 h-6 mx-auto mb-2 text-blue-600" />
                 <div className="text-xs text-gray-500 mb-1">PHA Type</div>
@@ -116,19 +115,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   }}
                 >
                   {phaType}
-                </div>
-              </div>
-              <div className="text-center p-4 bg-green-50 rounded-xl border border-green-100">
-                <Users className="w-6 h-6 mx-auto mb-2 text-green-600" />
-                <div className="text-xs text-gray-500 mb-1">Waitlist Status</div>
-                <div 
-                  className="px-3 py-1 rounded-full text-sm font-medium inline-block"
-                  style={{ 
-                    backgroundColor: getWaitlistColor(waitlistStatus) + '20',
-                    color: getWaitlistColor(waitlistStatus)
-                  }}
-                >
-                  {waitlistStatus}
                 </div>
               </div>
             </div>
@@ -243,10 +229,10 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
         <Card className="shadow-lg border-0 bg-white">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-xl">
-              <Clock className="w-5 h-5 text-orange-600" />
+              <FileText className="w-5 h-5 text-gray-600" />
               Office Information
             </CardTitle>
-            <CardDescription>Hours of operation and additional details</CardDescription>
+            <CardDescription>Additional office details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {office.pha_code && (
@@ -258,23 +244,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                 <p className="text-lg font-semibold text-gray-700">{office.pha_code}</p>
               </div>
             )}
-
-            <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-100">
-              <div className="flex items-center gap-2 mb-3">
-                <Clock className="w-5 h-5 text-yellow-600" />
-                <span className="font-medium text-gray-900">Office Hours</span>
-              </div>
-              <div className="space-y-2 text-sm text-gray-700">
-                <div className="flex justify-between">
-                  <span className="font-medium">Monday - Friday</span>
-                  <span>8:00 AM - 4:30 PM</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Saturday - Sunday</span>
-                  <span>Closed</span>
-                </div>
-              </div>
-            </div>
 
             <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
               <div className="flex items-center gap-2 mb-2">
