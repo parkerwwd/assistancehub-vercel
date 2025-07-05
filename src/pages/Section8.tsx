@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import PHADetailView from "@/components/PHADetailView";
 import HousingListings from "@/components/HousingListings";
@@ -158,32 +157,28 @@ const Section8 = () => {
             selectedLocation={selectedLocation}
           />
         ) : (
-          <ResizablePanelGroup direction="horizontal" className="h-full">
-            {/* Left Panel - Map */}
-            <ResizablePanel defaultSize={60} minSize={40}>
-              <div className="h-full bg-gray-100">
-                <MapContainer
-                  ref={mapRef}
-                  mapboxToken={mapboxToken}
-                  phaAgencies={phaAgencies}
-                  onOfficeSelect={handleOfficeClick}
-                  onTokenError={setTokenError}
-                  selectedOffice={selectedOffice}
-                  selectedLocation={selectedLocation}
-                />
-              </div>
-            </ResizablePanel>
+          <div className="flex h-full">
+            {/* Left Panel - Map (Fixed 60% width) */}
+            <div className="w-3/5 h-full bg-gray-100">
+              <MapContainer
+                ref={mapRef}
+                mapboxToken={mapboxToken}
+                phaAgencies={phaAgencies}
+                onOfficeSelect={handleOfficeClick}
+                onTokenError={setTokenError}
+                selectedOffice={selectedOffice}
+                selectedLocation={selectedLocation}
+              />
+            </div>
             
-            {/* Resize Handle */}
-            <ResizableHandle withHandle className="bg-gray-200 hover:bg-gray-300 transition-colors w-1" />
+            {/* Fixed Divider Line */}
+            <div className="w-px bg-gray-300 flex-shrink-0"></div>
             
-            {/* Right Panel - PHA List */}
-            <ResizablePanel defaultSize={40} minSize={30} maxSize={60}>
-              <div className="h-full overflow-y-auto border-l bg-white">
-                {renderRightPanel()}
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            {/* Right Panel - PHA List (Fixed 40% width) */}
+            <div className="w-2/5 h-full overflow-y-auto bg-white">
+              {renderRightPanel()}
+            </div>
+          </div>
         )}
       </div>
     </div>
