@@ -1,3 +1,4 @@
+
 import mapboxgl from 'mapbox-gl';
 import { GoogleMapsService } from '@/services/googleMapsService';
 
@@ -6,21 +7,22 @@ export interface LocationMarkerOptions {
   lng: number;
   name: string;
   mapboxToken?: string;
-  showHoverCard?: boolean; // New option to control hover card
+  showHoverCard?: boolean;
+  color?: 'red' | 'blue' | 'green'; // Add color option
 }
 
 export class LocationMarker {
   private marker: mapboxgl.Marker | null = null;
 
   create(options: LocationMarkerOptions): mapboxgl.Marker {
-    const { lat, lng, name, showHoverCard = true } = options;
+    const { lat, lng, name, showHoverCard = true, color = 'red' } = options;
     
     // Create marker container
     const markerElement = this.createMarkerElement();
     const innerContainer = this.createInnerContainer();
-    const pinShape = this.createPinShape();
+    const pinShape = this.createPinShape(color);
     const innerDot = this.createInnerDot();
-    const pulseRing = this.createPulseRing();
+    const pulseRing = this.createPulseRing(color);
     
     // Only create hover card if showHoverCard is true
     let hoverCard: HTMLDivElement | null = null;
@@ -77,12 +79,20 @@ export class LocationMarker {
     return container;
   }
 
-  private createPinShape(): HTMLDivElement {
+  private createPinShape(color: string): HTMLDivElement {
     const pin = document.createElement('div');
+    
+    // Define color gradients
+    const colorMap = {
+      red: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+      blue: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+      green: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+    };
+    
     pin.style.cssText = `
       width: 32px;
       height: 32px;
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      background: ${colorMap[color as keyof typeof colorMap] || colorMap.red};
       border: 3px solid white;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
@@ -107,16 +117,24 @@ export class LocationMarker {
     return dot;
   }
 
-  private createPulseRing(): HTMLDivElement {
+  private createPulseRing(color: string): HTMLDivElement {
     const ring = document.createElement('div');
     ring.className = 'pulse-ring';
+    
+    // Define pulse ring colors
+    const ringColorMap = {
+      red: '#ef4444',
+      blue: '#3b82f6',
+      green: '#10b981'
+    };
+    
     ring.style.cssText = `
       position: absolute;
       top: 50%;
       left: 50%;
       width: 40px;
       height: 40px;
-      border: 2px solid #ef4444;
+      border: 2px solid ${ringColorMap[color as keyof typeof ringColorMap] || ringColorMap.red};
       border-radius: 50%;
       transform: translate(-50%, -50%);
       animation: pulse 2s infinite;
