@@ -227,20 +227,6 @@ const State = () => {
                 </div>
               </div>
             </div>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/section8">
-                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-                  <Home className="w-5 h-5 mr-2" />
-                  Search Available Housing
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline" className="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-4 rounded-xl">
-                <Phone className="w-5 h-5 mr-2" />
-                Contact Housing Authority
-              </Button>
-            </div>
           </div>
         </div>
       </div>
