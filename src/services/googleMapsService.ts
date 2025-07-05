@@ -15,18 +15,22 @@ export class GoogleMapsService {
     const {
       address,
       size = '400x300',
-      fov = 80,
+      fov = 90,
       heading = 0,
       pitch = 0
     } = options;
 
+    // Clean and encode the address properly
+    const cleanAddress = address.trim().replace(/\s+/g, ' ');
+    
     const params = new URLSearchParams({
       size,
-      location: address,
+      location: cleanAddress,
       heading: heading.toString(),
       fov: fov.toString(),
       pitch: pitch.toString(),
-      key: this.API_KEY
+      key: this.API_KEY,
+      source: 'outdoor' // Prefer outdoor imagery
     });
 
     return `${this.STREET_VIEW_BASE_URL}?${params.toString()}`;
@@ -37,21 +41,25 @@ export class GoogleMapsService {
       size,
       location: `${lat},${lng}`,
       heading: '0',
-      fov: '80',
+      fov: '90',
       pitch: '0',
-      key: this.API_KEY
+      key: this.API_KEY,
+      source: 'outdoor'
     });
 
     return `${this.STREET_VIEW_BASE_URL}?${params.toString()}`;
   }
 
   static getStaticMapImage(address: string, size: string = '400x300'): string {
+    // Clean and encode the address properly
+    const cleanAddress = address.trim().replace(/\s+/g, ' ');
+    
     const params = new URLSearchParams({
-      center: address,
+      center: cleanAddress,
       zoom: '16',
       size,
       maptype: 'roadmap',
-      markers: `color:red|${address}`,
+      markers: `color:red|${cleanAddress}`,
       key: this.API_KEY
     });
 
@@ -82,5 +90,21 @@ export class GoogleMapsService {
       console.warn('Error checking Street View availability:', error);
       return false;
     }
+  }
+
+  // Enhanced method to get the best available image for an address
+  static getBestImageForAddress(address: string, size: string = '800x400'): { streetView: string; staticMap: string } {
+    if (!address || address.trim().length === 0) {
+      // Return placeholder URLs for empty addresses
+      return {
+        streetView: `https://via.placeholder.com/${size}/cccccc/666666?text=No+Address+Available`,
+        staticMap: `https://via.placeholder.com/${size}/cccccc/666666?text=No+Address+Available`
+      };
+    }
+
+    return {
+      streetView: this.getStreetViewImage({ address, size }),
+      staticMap: this.getStaticMapImage(address, size)
+    };
   }
 }

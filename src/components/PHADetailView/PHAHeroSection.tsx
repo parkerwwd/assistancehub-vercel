@@ -15,23 +15,23 @@ const PHAHeroSection: React.FC<PHAHeroSectionProps> = ({ office }) => {
   const [imageError, setImageError] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
 
-  const fullAddress = office.address || 'Address not available';
+  const fullAddress = office.address || '';
 
-  const streetViewImageUrl = GoogleMapsService.getStreetViewImage({
-    address: fullAddress,
-    size: '800x400'
-  });
-
-  const staticMapImageUrl = GoogleMapsService.getStaticMapImage(fullAddress, '800x400');
+  // Get both Street View and Static Map images
+  const { streetView: streetViewImageUrl, staticMap: staticMapImageUrl } = GoogleMapsService.getBestImageForAddress(fullAddress, '800x400');
 
   const handleImageError = () => {
+    console.log('Image error occurred, showFallback:', showFallback);
     if (!showFallback) {
+      console.log('Switching to static map fallback');
       setShowFallback(true);
     } else {
+      console.log('Static map also failed, showing default view');
       setImageError(true);
     }
   };
 
+  // If no address or both images failed, show default gradient view
   if (!fullAddress || imageError) {
     return (
       <Card className="overflow-hidden shadow-xl border-0 bg-gradient-to-r from-blue-600 to-purple-600">
@@ -39,7 +39,7 @@ const PHAHeroSection: React.FC<PHAHeroSectionProps> = ({ office }) => {
           <div className="text-center text-white">
             <Building2 className="w-16 h-16 mx-auto mb-4 opacity-80" />
             <h1 className="text-3xl lg:text-4xl font-bold mb-2">{office.name}</h1>
-            <p className="text-blue-100 text-lg">{fullAddress}</p>
+            <p className="text-blue-100 text-lg">{fullAddress || 'Address not available'}</p>
           </div>
         </div>
       </Card>
@@ -54,6 +54,7 @@ const PHAHeroSection: React.FC<PHAHeroSectionProps> = ({ office }) => {
           alt={`View of ${office.name}`}
           className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
           onError={handleImageError}
+          onLoad={() => console.log('✅ Image loaded successfully:', showFallback ? 'Static Map' : 'Street View')}
         />
         
         {/* Modern Overlay Gradient */}
