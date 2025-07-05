@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, DollarSign, FileText, ArrowLeft, Building, Image, Map, Mail, Shield, Calendar } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, FileText, ArrowLeft, Building, Image, Map, Mail, Shield, Calendar } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
@@ -56,10 +56,10 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
       </div>
 
       <div className="max-w-2xl mx-auto p-3 space-y-3">
-        {/* Hero Image Section - Bigger Height */}
+        {/* Hero Image Section */}
         {fullAddress && !imageError && (
           <Card className="overflow-hidden shadow-sm border-0 bg-white">
-            <div className="relative h-48 overflow-hidden">
+            <div className="relative h-32 overflow-hidden">
               <img
                 src={showFallback ? staticMapImageUrl : streetViewImageUrl}
                 alt={`View of ${office.name}`}
@@ -208,7 +208,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             {office.program_type && (
               <div className="p-2 bg-purple-50 rounded-lg border border-purple-100">
                 <div className="flex items-center gap-2 mb-1">
-                  <DollarSign className="w-3 h-3 text-purple-600" />
+                  <Home className="w-3 h-3 text-purple-600" />
                   <span className="font-medium text-gray-900 text-xs">Program Type</span>
                 </div>
                 <p className="text-sm font-semibold text-purple-700">{office.program_type}</p>
@@ -236,7 +236,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           </CardContent>
         </Card>
 
-        {/* Office Details Section - Removed PHA Code since it's now above */}
+        {/* Office Details Section */}
         <Card className="shadow-sm border-0 bg-white">
           <CardHeader className="pb-1">
             <CardTitle className="flex items-center gap-2 text-base">
