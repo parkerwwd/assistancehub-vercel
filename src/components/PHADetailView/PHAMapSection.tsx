@@ -14,11 +14,58 @@ interface PHAMapSectionProps {
 const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
   const mapRef = useRef<MapContainerRef>(null);
   const [tokenError, setTokenError] = useState("");
+  const [isGeocoding, setIsGeocoding] = useState(false);
   const mapboxToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjenhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
 
   const handleOfficeSelect = (selectedOffice: PHAAgency) => {
     console.log('Office selected on detail map:', selectedOffice.name);
   };
+
+  // Geocode address and set location marker
+  useEffect(() => {
+    const geocodeAndSetMarker = async () => {
+      if (!office.address || !mapRef.current) return;
+      
+      setIsGeocoding(true);
+      
+      try {
+        const encodedAddress = encodeURIComponent(office.address);
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.features && data.features.length > 0) {
+            const [lng, lat] = data.features[0].center;
+            
+            // Set the location marker using the MapContainer ref
+            mapRef.current.setLocationMarker(lat, lng, office.name);
+            
+            // Fly to the location
+            mapRef.current.flyTo([lng, lat], 16);
+            
+            console.log('✅ Successfully geocoded and marked location:', office.name, { lat, lng });
+          } else {
+            console.warn('⚠️ No geocoding results for address:', office.address);
+          }
+        } else {
+          console.warn('⚠️ Geocoding API error:', response.status);
+        }
+      } catch (error) {
+        console.error('❌ Geocoding error:', error);
+      } finally {
+        setIsGeocoding(false);
+      }
+    };
+
+    // Small delay to ensure map is fully loaded
+    const timer = setTimeout(() => {
+      geocodeAndSetMarker();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [office.address, office.name, mapboxToken]);
 
   return (
     <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
@@ -26,6 +73,9 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
         <CardTitle className="flex items-center gap-3 text-xl">
           <Map className="w-5 h-5 text-blue-600" />
           Office Location
+          {isGeocoding && (
+            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin ml-2"></div>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
@@ -34,10 +84,10 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
             <MapContainer
               ref={mapRef}
               mapboxToken={mapboxToken}
-              phaAgencies={[office]}
+              phaAgencies={[]}
               onOfficeSelect={handleOfficeSelect}
               onTokenError={setTokenError}
-              selectedOffice={office}
+              selectedOffice={null}
               selectedLocation={null}
             />
           ) : (
@@ -52,6 +102,14 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
         {tokenError && (
           <div className="p-4 bg-red-50 border-t border-red-200">
             <p className="text-red-600 text-sm">{tokenError}</p>
+          </div>
+        )}
+        {office.address && (
+          <div className="p-4 bg-blue-50 border-t border-blue-200">
+            <div className="flex items-center gap-2 text-blue-800">
+              <MapPin className="w-4 h-4" />
+              <p className="text-sm font-medium">{office.address}</p>
+            </div>
           </div>
         )}
       </CardContent>
