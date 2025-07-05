@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from "react-router-dom";
 import PHADataManager from "@/components/PHADataManager";
@@ -37,16 +36,13 @@ const DataAdmin = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link to="/" className="hover:opacity-80 transition-opacity mr-4">
+              <Link to="/" className="hover:opacity-80 transition-opacity">
                 <img 
                   src="/lovable-uploads/221b75b2-2ed8-4872-b9ef-18b878e8e8fe.png" 
                   alt="AssistanceHub Logo" 
                   className="h-12 w-auto"
                 />
               </Link>
-              <div className="text-xl font-bold text-header-foreground">
-                Data Administration
-              </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-sm text-header-foreground/80">
