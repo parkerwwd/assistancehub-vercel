@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -189,7 +190,11 @@ const PHAWalkScore: React.FC<PHAWalkScoreProps> = ({ office }) => {
           className="flex items-center gap-2 text-base cursor-pointer hover:text-blue-600 transition-colors group"
           onClick={handleTitleClick}
         >
-          <Car className="w-3 h-3 text-orange-600" />
+          <img 
+            src="/lovable-uploads/c30a91ac-2aa4-4263-a0e0-4be5156e797e.png" 
+            alt="Walk Score" 
+            className="w-4 h-4"
+          />
           Walk Score
           <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-blue-600 transition-colors" />
         </CardTitle>
