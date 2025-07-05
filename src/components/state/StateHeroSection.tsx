@@ -30,15 +30,7 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
   const stateMapImage = GoogleMapsService.getStaticMapImage(`${stateName}, USA`, '800x600');
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Main Background Image - Clearer and Darker */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('/lovable-uploads/a6f307a6-bd25-47c7-9da5-c7df148d00d2.png')`
-        }}
-      ></div>
-      
+    <div className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
       <div className="relative container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto text-center">
           {/* State Badge */}
