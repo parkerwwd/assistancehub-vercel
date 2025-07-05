@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import PHADetailView from "@/components/PHADetailView";
+import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -42,36 +43,45 @@ const PHADetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading office details...</p>
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading office details...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (error || !office) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Office Not Found</h2>
-          <p className="text-gray-600 mb-4">The requested PHA office could not be found.</p>
-          <Button onClick={handleBack} className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Search
-          </Button>
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Office Not Found</h2>
+            <p className="text-gray-600 mb-4">The requested PHA office could not be found.</p>
+            <Button onClick={handleBack} className="flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Search
+            </Button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <PHADetailView 
-      office={office}
-      onViewHousing={handleViewHousing}
-      onBack={handleBack}
-    />
+    <>
+      <Header />
+      <PHADetailView 
+        office={office}
+        onViewHousing={handleViewHousing}
+        onBack={handleBack}
+      />
+    </>
   );
 };
 
