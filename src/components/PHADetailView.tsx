@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, ExternalLink, Users, Clock, Home, FileText, ArrowLeft, Building, Image, Map, Mail, Shield, Calendar } from "lucide-react";
+import { MapPin, Phone, ExternalLink, Users, Clock, Home, FileText, ArrowLeft, Building, Image, Map, Mail, Shield, Calendar, Car, Bus, Bike } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getWaitlistColor, getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import { GoogleMapsService } from "@/services/googleMapsService";
@@ -59,7 +59,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
         {/* Hero Image Section */}
         {fullAddress && !imageError && (
           <Card className="overflow-hidden shadow-sm border-0 bg-white">
-            <div className="relative h-52 overflow-hidden">
+            <div className="relative h-32 overflow-hidden">
               <img
                 src={showFallback ? staticMapImageUrl : streetViewImageUrl}
                 alt={`View of ${office.name}`}
@@ -235,6 +235,38 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               <div className="flex items-center gap-2 p-1.5 bg-gray-50 rounded-md">
                 <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                 <span className="text-xs font-medium">Senior Housing Programs</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Walk Score Section */}
+        <Card className="shadow-sm border-0 bg-white">
+          <CardHeader className="pb-1">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Car className="w-3 h-3 text-orange-600" />
+              Walk Score
+            </CardTitle>
+            <CardDescription className="text-xs">Walk, Transit, and Bike Scores for this location</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="text-center p-2 bg-orange-50 rounded-lg border border-orange-100">
+                <Car className="w-3 h-3 mx-auto mb-1 text-orange-600" />
+                <div className="text-xs text-gray-500 mb-1">Walk Score</div>
+                <div className="text-xl font-bold text-orange-700 mb-1">24</div>
+              </div>
+              
+              <div className="text-center p-2 bg-blue-50 rounded-lg border border-blue-100">
+                <Bus className="w-3 h-3 mx-auto mb-1 text-blue-600" />
+                <div className="text-xs text-gray-500 mb-1">Transit Score</div>
+                <div className="text-xl font-bold text-blue-700 mb-1">21</div>
+              </div>
+              
+              <div className="text-center p-2 bg-green-50 rounded-lg border border-green-100">
+                <Bike className="w-3 h-3 mx-auto mb-1 text-green-600" />
+                <div className="text-xs text-gray-500 mb-1">Bike Score</div>
+                <div className="text-xl font-bold text-green-700 mb-1">59</div>
               </div>
             </div>
           </CardContent>
