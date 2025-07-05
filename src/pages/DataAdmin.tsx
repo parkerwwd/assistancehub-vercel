@@ -32,24 +32,31 @@ const DataAdmin = () => {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      {/* Header with logo and header background color */}
+      <header className="bg-header shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link to="/" className="text-xl font-bold text-blue-900 hover:text-blue-800 transition-colors">
-                AssistanceHub
+              <Link to="/" className="hover:opacity-80 transition-opacity mr-4">
+                <img 
+                  src="/lovable-uploads/221b75b2-2ed8-4872-b9ef-18b878e8e8fe.png" 
+                  alt="AssistanceHub Logo" 
+                  className="h-12 w-auto"
+                />
               </Link>
+              <div className="text-xl font-bold text-header-foreground">
+                Data Administration
+              </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-header-foreground/80">
                 Logged in as: <span className="font-medium">{user?.email}</span>
               </div>
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={handleSignOut}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-white/10 border-white/20 text-header-foreground hover:bg-white/20"
               >
                 <LogOut className="h-4 w-4" />
                 Sign Out
