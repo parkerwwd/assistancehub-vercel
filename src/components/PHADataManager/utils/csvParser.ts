@@ -28,62 +28,111 @@ export const parseCSV = (csvText: string) => {
   console.log('  - Total lines:', lines.length);
   console.log('  - First line (headers):', lines[0]);
   
-  // Try to detect delimiter (tab or comma)
+  // Enhanced CSV parsing to handle quoted fields properly
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    let i = 0;
+
+    while (i < line.length) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          // Handle escaped quotes ("")
+          current += '"';
+          i += 2;
+          continue;
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        // Field separator found outside quotes
+        result.push(current.trim());
+        current = '';
+      } else if (char === '\t' && !inQuotes) {
+        // Tab separator found outside quotes
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+      i++;
+    }
+    
+    // Add the last field
+    result.push(current.trim());
+    return result;
+  };
+
+  // Try to detect delimiter more accurately
   const firstLine = lines[0];
   const tabCount = (firstLine.match(/\t/g) || []).length;
   const commaCount = (firstLine.match(/,/g) || []).length;
-  const delimiter = tabCount > commaCount ? '\t' : ',';
+  
+  // Count commas outside of quotes for better detection
+  let commasOutsideQuotes = 0;
+  let inQuotes = false;
+  for (let i = 0; i < firstLine.length; i++) {
+    if (firstLine[i] === '"') {
+      inQuotes = !inQuotes;
+    } else if (firstLine[i] === ',' && !inQuotes) {
+      commasOutsideQuotes++;
+    }
+  }
+  
+  const delimiter = tabCount > commasOutsideQuotes ? '\t' : ',';
   
   console.log('🔍 Delimiter detection:');
   console.log('  - Tab count:', tabCount);
-  console.log('  - Comma count:', commaCount);
+  console.log('  - Comma count (total):', commaCount);
+  console.log('  - Comma count (outside quotes):', commasOutsideQuotes);
   console.log('  - Using delimiter:', delimiter === '\t' ? 'tab' : 'comma');
   
-  // Parse headers with sanitization
-  const headers = firstLine.split(delimiter).map(h => {
-    const sanitized = h.trim().replace(/"/g, '').replace(/[<>]/g, ''); // Basic XSS prevention
+  // Parse headers with proper CSV parsing
+  const headers = parseCSVLine(firstLine).map(h => {
+    const sanitized = h.replace(/^"|"$/g, '').replace(/[<>]/g, ''); // Remove surrounding quotes and XSS chars
     return sanitized.substring(0, 100); // Limit header length
   });
   console.log('📑 Headers found:', headers);
-  
-  // Debug: Look for all field types
-  console.log('🔍 FIELD ANALYSIS:');
-  console.log('  - Address fields:', headers.filter(h => 
-    h.toLowerCase().includes('addr') || 
-    h.toLowerCase().includes('address') ||
-    h.toLowerCase().includes('full')
-  ));
-  console.log('  - Phone fields:', headers.filter(h => 
-    h.toLowerCase().includes('phone') || 
-    h.toLowerCase().includes('phn')
-  ));
-  console.log('  - Email fields:', headers.filter(h => 
-    h.toLowerCase().includes('email') || 
-    h.toLowerCase().includes('e_mail') ||
-    h.toLowerCase().includes('mail')
-  ));
+  console.log('📑 Header count:', headers.length);
   
   const data = [];
 
   for (let i = 1; i < lines.length; i++) {
     if (lines[i].trim()) {
-      const values = lines[i].split(delimiter).map(v => {
-        const sanitized = v.trim().replace(/"/g, '').replace(/[<>]/g, ''); // Basic XSS prevention
-        return sanitized.substring(0, 500); // Limit field length
+      const values = parseCSVLine(lines[i]).map(v => {
+        // Remove surrounding quotes and sanitize
+        const cleaned = v.replace(/^"|"$/g, '').replace(/[<>]/g, '');
+        return cleaned.substring(0, 500) || null; // Limit field length, convert empty to null
       });
+      
       const row: any = {};
       headers.forEach((header, index) => {
-        row[header] = values[index] || null;
+        const value = values[index];
+        // Convert "nan", "null", empty strings to null
+        if (!value || value.toLowerCase() === 'nan' || value.toLowerCase() === 'null' || value.trim() === '') {
+          row[header] = null;
+        } else {
+          row[header] = value;
+        }
       });
       
       // Debug: Log field values for first few records
       if (i <= 3) {
         console.log(`🔍 Record ${i} field analysis:`);
         console.log(`  - Available fields: ${Object.keys(row).length}`);
-        headers.forEach(header => {
-          const value = row[header];
-          if (value && value.length > 0) {
-            console.log(`  - ${header}: "${value}"`);
+        console.log(`  - Values parsed: ${values.length}`);
+        console.log(`  - Headers expected: ${headers.length}`);
+        
+        // Log key fields we care about
+        const keyFields = ['PARTICIPANT_CODE', 'FORMAL_PARTICIPANT_NAME', 'FULL_ADDRESS', 'HA_PHN_NUM', 'HA_EMAIL_ADDR_TEXT', 'EXEC_DIR_EMAIL'];
+        keyFields.forEach(field => {
+          if (row[field] !== undefined) {
+            console.log(`  - ${field}: "${row[field]}"`);
           }
         });
       }
@@ -102,10 +151,43 @@ export const parseCSV = (csvText: string) => {
 export const extractCSVHeaders = (csvText: string): string[] => {
   console.log('📑 Extracting CSV headers');
   const firstLine = csvText.split('\n')[0];
-  const tabCount = (firstLine.match(/\t/g) || []).length;
-  const commaCount = (firstLine.match(/,/g) || []).length;
-  const delimiter = tabCount > commaCount ? '\t' : ',';
-  const headers = firstLine.split(delimiter).map(h => h.trim().replace(/"/g, ''));
+  
+  // Use the same parsing logic as parseCSV
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    let i = 0;
+
+    while (i < line.length) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          current += '"';
+          i += 2;
+          continue;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else if (char === '\t' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+      i++;
+    }
+    
+    result.push(current.trim());
+    return result;
+  };
+
+  const headers = parseCSVLine(firstLine).map(h => h.replace(/^"|"$/g, '').trim());
   console.log('✅ Extracted headers:', headers);
   return headers;
 };
