@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { FieldMapping } from '../components/FieldMappingDialog';
 import { sanitizeInput } from '../utils/dataValidation';
@@ -28,30 +27,40 @@ export const processPHARecord = (record: any, fieldMappings: FieldMapping[]) => 
     const csvValue = record[mapping.csvField];
     console.log(`🔄 Mapping ${mapping.csvField} ("${csvValue}") -> ${mapping.dbField}`);
     
-    // Special handling for address field - combine multiple fields if needed
+    // Special handling for address field - combine STD_ADDR, STD_CITY, STD_ST, STD_ZIP5
     if (mapping.dbField === 'address') {
-      let fullAddress = csvValue || '';
-      
-      // Check if we need to combine address components
+      // Build full address from components according to HUD format
       const addressComponents = [];
-      if (csvValue) addressComponents.push(csvValue);
       
-      // Look for city, state, zip in other fields
-      const cityField = record['STD_CITY'] || record['CITY'];
-      const stateField = record['STD_ST'] || record['STATE'] || record['ST'];
-      const zipField = record['STD_ZIP5'] || record['ZIP'] || record['ZIP5'];
-      
-      if (cityField) addressComponents.push(cityField);
-      if (stateField) addressComponents.push(stateField);
-      if (zipField) addressComponents.push(zipField);
-      
-      // If we have multiple components, combine them
-      if (addressComponents.length > 1) {
-        fullAddress = addressComponents.join(', ');
+      // Get the base address from STD_ADDR
+      const baseAddress = record['STD_ADDR'];
+      if (baseAddress && baseAddress.trim()) {
+        addressComponents.push(baseAddress.trim());
       }
       
+      // Add city from STD_CITY
+      const city = record['STD_CITY'];
+      if (city && city.trim()) {
+        addressComponents.push(city.trim());
+      }
+      
+      // Add state from STD_ST
+      const state = record['STD_ST'];
+      if (state && state.trim()) {
+        addressComponents.push(state.trim());
+      }
+      
+      // Add ZIP from STD_ZIP5
+      const zip = record['STD_ZIP5'];
+      if (zip && zip.trim()) {
+        addressComponents.push(zip.trim());
+      }
+      
+      // Combine all components with commas
+      const fullAddress = addressComponents.length > 0 ? addressComponents.join(', ') : '';
+      
       phaData.address = sanitizeInput(fullAddress, 500);
-      console.log(`✅ Mapped full address: ${phaData.address}`);
+      console.log(`✅ Mapped full address from components: ${phaData.address}`);
       return;
     }
     

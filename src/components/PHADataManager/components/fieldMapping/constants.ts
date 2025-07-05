@@ -1,4 +1,5 @@
 
+
 // Common field mappings for HUD PHA data
 export const COMMON_MAPPINGS: Record<string, string> = {
   // PHA Code mappings
@@ -13,22 +14,20 @@ export const COMMON_MAPPINGS: Record<string, string> = {
   'NAME': 'name',
   'AGENCY_NAME': 'name',
   
-  // Address mappings - handle full address field
-  'FULL_ADDRESS': 'address',
-  'FULLADDRESS': 'address',
+  // Address mappings - these will be combined into full address
   'STD_ADDR': 'address',
   'ADDRESS': 'address',
   'MAILING_ADDRESS': 'address',
   'PHYSICAL_ADDRESS': 'address',
   
-  // Phone mappings
+  // Phone mappings - ONLY HA_PHN_NUM should map to phone
   'HA_PHN_NUM': 'phone',
   'PHONE': 'phone',
   'PHONE_NUMBER': 'phone',
   'CONTACT_PHONE': 'phone',
   'PHA_PHONE': 'phone',
   
-  // Email mappings
+  // Email mappings - ONLY HA_EMAIL_ADDR_TEXT should map to email
   'HA_EMAIL_ADDR_TEXT': 'email',
   'EMAIL': 'email',
   'EMAIL_ADDRESS': 'email',
@@ -41,11 +40,10 @@ export const COMMON_MAPPINGS: Record<string, string> = {
   'DIRECTOR_EMAIL': 'exec_dir_email',
   'ED_EMAIL': 'exec_dir_email',
   
-  // Program Type mappings
+  // Program Type mappings - ONLY HA_PROGRAM_TYPE should map to program_type
   'HA_PROGRAM_TYPE': 'program_type',
   'PROGRAM_TYPE': 'program_type',
-  'PROGRAM': 'program_type',
-  'TYPE': 'program_type'
+  'PROGRAM': 'program_type'
 };
 
 // Database fields available for mapping
@@ -64,6 +62,7 @@ export const REQUIRED_FIELDS = ['name'];
 
 // Fields that should be excluded from automatic mapping
 export const EXCLUDED_FIELDS = [
-  'state', 'city', 'zip', 'std_st', 'std_city', 'std_zip5',
+  'std_st', 'std_city', 'std_zip5', 'city', 'state', 'zip',
   'latitude', 'longitude', 'lat', 'lon', 'coords'
 ];
+
