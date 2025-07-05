@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
-import { Image } from "lucide-react";
+import { Image, Building2 } from "lucide-react";
 import { GoogleMapsService } from "@/services/googleMapsService";
 import { Database } from "@/integrations/supabase/types";
 
@@ -19,10 +19,10 @@ const PHAHeroSection: React.FC<PHAHeroSectionProps> = ({ office }) => {
 
   const streetViewImageUrl = GoogleMapsService.getStreetViewImage({
     address: fullAddress,
-    size: '300x150'
+    size: '800x400'
   });
 
-  const staticMapImageUrl = GoogleMapsService.getStaticMapImage(fullAddress, '300x150');
+  const staticMapImageUrl = GoogleMapsService.getStaticMapImage(fullAddress, '800x400');
 
   const handleImageError = () => {
     if (!showFallback) {
@@ -32,21 +32,47 @@ const PHAHeroSection: React.FC<PHAHeroSectionProps> = ({ office }) => {
     }
   };
 
-  if (!fullAddress || imageError) return null;
+  if (!fullAddress || imageError) {
+    return (
+      <Card className="overflow-hidden shadow-xl border-0 bg-gradient-to-r from-blue-600 to-purple-600">
+        <div className="relative h-64 lg:h-80 flex items-center justify-center">
+          <div className="text-center text-white">
+            <Building2 className="w-16 h-16 mx-auto mb-4 opacity-80" />
+            <h1 className="text-3xl lg:text-4xl font-bold mb-2">{office.name}</h1>
+            <p className="text-blue-100 text-lg">{fullAddress}</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="overflow-hidden shadow-sm border-0 bg-white">
-      <div className="relative h-48 overflow-hidden">
+    <Card className="overflow-hidden shadow-2xl border-0 bg-white">
+      <div className="relative h-64 lg:h-80 overflow-hidden">
         <img
           src={showFallback ? staticMapImageUrl : streetViewImageUrl}
           alt={`View of ${office.name}`}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
           onError={handleImageError}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-        <div className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm text-gray-800 px-1.5 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 shadow-sm">
-          <Image className="w-2 h-2" />
-          {showFallback ? 'Map' : 'Street'}
+        
+        {/* Modern Overlay Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+        
+        {/* Content Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 text-white">
+          <h1 className="text-3xl lg:text-4xl font-bold mb-2 drop-shadow-lg">
+            {office.name}
+          </h1>
+          <p className="text-lg lg:text-xl text-white/90 mb-4 drop-shadow-md">
+            {fullAddress}
+          </p>
+        </div>
+        
+        {/* Image Type Badge */}
+        <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md text-white px-3 py-2 rounded-full text-sm font-medium flex items-center gap-2 shadow-lg">
+          <Image className="w-4 h-4" />
+          {showFallback ? 'Map View' : 'Street View'}
         </div>
       </div>
     </Card>
