@@ -22,7 +22,7 @@ interface MapContainerProps {
 export interface MapContainerRef {
   flyTo: (center: [number, number], zoom: number) => void;
   getBounds: () => mapboxgl.LngLatBounds | null;
-  setLocationMarker: (lat: number, lng: number, name: string) => void;
+  setLocationMarker: (lat: number, lng: number, name: string, showHoverCard?: boolean) => void;
 }
 
 const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({ 
@@ -55,9 +55,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     getBounds: () => {
       return map.current?.getBounds() || null;
     },
-    setLocationMarker: (lat: number, lng: number, name: string) => {
+    setLocationMarker: (lat: number, lng: number, name: string, showHoverCard: boolean = true) => {
       if (!map.current) return;
-      markerManager.current.setLocationMarker(map.current, lat, lng, name, mapboxToken);
+      markerManager.current.setLocationMarker(map.current, lat, lng, name, mapboxToken, showHoverCard);
     }
   }));
 

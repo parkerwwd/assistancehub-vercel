@@ -39,8 +39,8 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
           if (data.features && data.features.length > 0) {
             const [lng, lat] = data.features[0].center;
             
-            // Set the location marker using the MapContainer ref
-            mapRef.current.setLocationMarker(lat, lng, office.name);
+            // Set the location marker WITHOUT hover card (showHoverCard: false)
+            mapRef.current.setLocationMarker(lat, lng, office.name, false);
             
             // Fly to the location
             mapRef.current.flyTo([lng, lat], 16);

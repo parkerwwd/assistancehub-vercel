@@ -1,4 +1,3 @@
-
 import mapboxgl from 'mapbox-gl';
 import { Database } from "@/integrations/supabase/types";
 import { LocationMarker } from "./LocationMarker";
@@ -29,7 +28,7 @@ export class MapMarkerManager {
     }
   }
 
-  setLocationMarker(map: mapboxgl.Map, lat: number, lng: number, name: string, mapboxToken: string): void {
+  setLocationMarker(map: mapboxgl.Map, lat: number, lng: number, name: string, mapboxToken: string, showHoverCard: boolean = true): void {
     if (this.locationMarker) {
       this.locationMarker.remove();
     }
@@ -38,13 +37,14 @@ export class MapMarkerManager {
       lat, 
       lng, 
       name, 
-      mapboxToken 
+      mapboxToken,
+      showHoverCard // Pass the showHoverCard option
     });
     this.locationMarker
       .setPopup(MarkerUtils.createLocationPopup(name))
       .addTo(map);
       
-    console.log('📍 Added enhanced location marker with correct satellite image for:', name, 'at', { lat, lng });
+    console.log('📍 Added enhanced location marker for:', name, 'at', { lat, lng }, 'showHoverCard:', showHoverCard);
   }
 
   async addSelectedOfficeMarker(map: mapboxgl.Map, office: PHAAgency, mapboxToken: string, onOfficeSelect: (office: PHAAgency) => void): Promise<void> {

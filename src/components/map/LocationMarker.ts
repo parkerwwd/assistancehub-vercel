@@ -1,4 +1,3 @@
-
 import mapboxgl from 'mapbox-gl';
 import { GoogleMapsService } from '@/services/googleMapsService';
 
@@ -7,13 +6,14 @@ export interface LocationMarkerOptions {
   lng: number;
   name: string;
   mapboxToken?: string;
+  showHoverCard?: boolean; // New option to control hover card
 }
 
 export class LocationMarker {
   private marker: mapboxgl.Marker | null = null;
 
   create(options: LocationMarkerOptions): mapboxgl.Marker {
-    const { lat, lng, name } = options;
+    const { lat, lng, name, showHoverCard = true } = options;
     
     // Create marker container
     const markerElement = this.createMarkerElement();
@@ -21,17 +21,27 @@ export class LocationMarker {
     const pinShape = this.createPinShape();
     const innerDot = this.createInnerDot();
     const pulseRing = this.createPulseRing();
-    const hoverCard = this.createHoverCard(name, lat, lng);
+    
+    // Only create hover card if showHoverCard is true
+    let hoverCard: HTMLDivElement | null = null;
+    if (showHoverCard) {
+      hoverCard = this.createHoverCard(name, lat, lng);
+    }
     
     // Assemble marker
     pinShape.appendChild(innerDot);
     innerContainer.appendChild(pulseRing);
     innerContainer.appendChild(pinShape);
     markerElement.appendChild(innerContainer);
-    markerElement.appendChild(hoverCard);
     
-    // Add hover events
-    this.addHoverEvents(markerElement, innerContainer, hoverCard);
+    if (hoverCard) {
+      markerElement.appendChild(hoverCard);
+      // Add hover events only if hover card exists
+      this.addHoverEvents(markerElement, innerContainer, hoverCard);
+    } else {
+      // Add basic hover effect without card
+      this.addBasicHoverEffect(innerContainer);
+    }
     
     // Add CSS if not already added
     this.addStyles();
@@ -211,6 +221,18 @@ export class LocationMarker {
     markerElement.addEventListener('mouseleave', () => {
       hoverCard.style.opacity = '0';
       hoverCard.style.visibility = 'hidden';
+      // Reset filter effects
+      innerContainer.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))';
+    });
+  }
+
+  private addBasicHoverEffect(innerContainer: HTMLDivElement): void {
+    innerContainer.addEventListener('mouseenter', () => {
+      // Use filter effects instead of scale to avoid marker movement
+      innerContainer.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.3)) brightness(1.1) saturate(1.2)';
+    });
+
+    innerContainer.addEventListener('mouseleave', () => {
       // Reset filter effects
       innerContainer.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))';
     });
