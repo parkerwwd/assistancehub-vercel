@@ -24,6 +24,27 @@ export const usePHACount = () => {
     }
   };
 
+  const clearAllPHAData = async () => {
+    try {
+      console.log('🗑️ Clearing all PHA data from database...');
+      const { error } = await supabase
+        .from('pha_agencies')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records (using impossible condition to delete all)
+
+      if (error) {
+        console.error('❌ Error clearing PHA data:', error);
+        throw error;
+      }
+
+      console.log('✅ Successfully cleared all PHA data from database');
+      setTotalPHAs(0);
+    } catch (error) {
+      console.error('Error in clearAllPHAData:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchPHACount();
     
@@ -55,6 +76,7 @@ export const usePHACount = () => {
         resetLastImport();
       }
     },
-    fetchPHACount
+    fetchPHACount,
+    clearAllPHAData
   };
 };

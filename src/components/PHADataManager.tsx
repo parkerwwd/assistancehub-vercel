@@ -14,9 +14,11 @@ import { ImportResults } from "./PHADataManager/components/ImportResults";
 import { HUDFormatInfo } from "./PHADataManager/components/HUDFormatInfo";
 import { FieldMappingDialog } from "./PHADataManager/components/FieldMappingDialog";
 import { SecurityNotice } from "./SecurityNotice";
+import { useToast } from "@/hooks/use-toast";
 
 const PHADataManager: React.FC = () => {
   console.log('PHADataManager component rendering...');
+  const { toast } = useToast();
   
   const { 
     isImporting, 
@@ -35,7 +37,8 @@ const PHADataManager: React.FC = () => {
     lastImport, 
     setLastImport, 
     fetchPHACount,
-    setTotalPHAs
+    setTotalPHAs,
+    clearAllPHAData
   } = usePHACount();
 
   const {
@@ -75,17 +78,42 @@ const PHADataManager: React.FC = () => {
     }
   };
 
-  const handleResetAllStats = () => {
-    console.log('Resetting all statistics...');
-    // Reset import stats
-    resetStats();
-    // Reset PHA count
-    setTotalPHAs(0);
-    // Reset last import date
-    setLastImport(null);
-    // Reset any import results
-    resetImportState();
-    console.log('All statistics have been reset');
+  const handleResetAllStats = async () => {
+    try {
+      console.log('🗑️ Resetting all statistics and clearing database...');
+      
+      // Show loading toast
+      toast({
+        title: "Clearing Data",
+        description: "Removing all PHA records from database...",
+      });
+
+      // Clear database records
+      await clearAllPHAData();
+      
+      // Reset import stats
+      resetStats();
+      
+      // Reset last import date
+      setLastImport(null);
+      
+      // Reset any import results
+      resetImportState();
+      
+      console.log('✅ All statistics and database records have been reset');
+      
+      toast({
+        title: "Data Cleared",
+        description: "All PHA records and statistics have been successfully removed.",
+      });
+    } catch (error) {
+      console.error('❌ Error resetting data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear database records. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const totals = getTotals();
@@ -104,9 +132,10 @@ const PHADataManager: React.FC = () => {
             variant="outline"
             size="sm"
             className="flex items-center gap-2"
+            disabled={isImporting}
           >
             <RotateCcw className="w-4 h-4" />
-            Reset Stats
+            Reset Stats & Clear DB
           </Button>
         </div>
       </CardHeader>
