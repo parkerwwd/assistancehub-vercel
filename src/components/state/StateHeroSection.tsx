@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Calendar, TrendingUp, Clock, Home, Building, MapPin, Users } from 'lucide-react';
+import { GoogleMapsService } from '@/services/googleMapsService';
 
 interface StateData {
   totalUnits: string;
@@ -25,13 +26,30 @@ interface StateHeroSectionProps {
 }
 
 const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateData }) => {
+  // Get Google Maps static image for the state
+  const stateMapImage = GoogleMapsService.getStaticMapImage(`${stateName}, USA`, '800x600');
+
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-blue-900 to-purple-900">
-      {/* Background Pattern */}
+      {/* Background Pattern and Map Image */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_50%)]"></div>
         <div className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-20 w-80 h-80 bg-gradient-to-r from-indigo-400/20 to-cyan-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        
+        {/* Google Maps Image Overlay */}
+        <div className="absolute top-1/2 right-10 transform -translate-y-1/2 w-96 h-64 rounded-2xl overflow-hidden shadow-2xl border border-white/20">
+          <img 
+            src={stateMapImage}
+            alt={`Map of ${stateName}`}
+            className="w-full h-full object-cover opacity-70"
+            onError={(e) => {
+              // Fallback if map image fails to load
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
+        </div>
       </div>
 
       <div className="relative container mx-auto px-4 py-20">
