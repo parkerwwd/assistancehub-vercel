@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -122,36 +121,21 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
   // Handle location search flow: show found agencies OR just the location if no agencies found
   useEffect(() => {
-    const handleLocationSearchAsync = async () => {
-      if (map.current?.loaded() && !selectedOffice) {
-        console.log('🔍 Location search flow - agencies:', phaAgencies?.length || 0, 'selectedLocation:', !!selectedLocation);
-        console.log('🔍 PHA Agencies data:', phaAgencies);
-        
-        // Call the async handleLocationSearch method with await
-        await markerManager.current.handleLocationSearch(
-          map.current,
-          phaAgencies || [],
-          selectedLocation,
-          mapboxToken,
-          onOfficeSelect
-        );
-        
-        console.log('✅ Location search handling completed');
-      } else if (map.current?.loaded() && selectedOffice) {
-        // Clear location search markers when an office is selected
-        console.log('🧹 Clearing location search markers - office selected');
-        markerManager.current.clearAllAgencyMarkers();
-        markerManager.current.clearLocationMarker();
-        markerManager.current.clearOfficeLocationMarkers();
-      }
-    };
-
-    // Add a small delay to ensure map is fully ready
-    const timer = setTimeout(() => {
-      handleLocationSearchAsync();
-    }, 200);
-    
-    return () => clearTimeout(timer);
+    if (map.current?.loaded() && !selectedOffice) {
+      console.log('🔍 Location search flow - agencies:', phaAgencies?.length || 0, 'selectedLocation:', !!selectedLocation);
+      
+      markerManager.current.handleLocationSearch(
+        map.current,
+        phaAgencies || [],
+        selectedLocation,
+        mapboxToken,
+        onOfficeSelect
+      );
+    } else if (map.current?.loaded() && selectedOffice) {
+      // Clear location search markers when an office is selected
+      markerManager.current.clearAllAgencyMarkers();
+      markerManager.current.clearLocationMarker();
+    }
   }, [phaAgencies, selectedLocation, selectedOffice, mapboxToken, onOfficeSelect]);
 
   return (

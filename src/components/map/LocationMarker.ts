@@ -1,3 +1,4 @@
+
 import mapboxgl from 'mapbox-gl';
 import { GoogleMapsService } from '@/services/googleMapsService';
 
@@ -7,7 +8,7 @@ export interface LocationMarkerOptions {
   name: string;
   mapboxToken?: string;
   showHoverCard?: boolean;
-  color?: 'red' | 'blue' | 'green' | 'yellow'; // Add yellow color option
+  color?: 'red' | 'blue' | 'green'; // Add color option
 }
 
 export class LocationMarker {
@@ -81,12 +82,11 @@ export class LocationMarker {
   private createPinShape(color: string): HTMLDivElement {
     const pin = document.createElement('div');
     
-    // Define color gradients including yellow
+    // Define color gradients
     const colorMap = {
       red: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
       blue: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-      green: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      yellow: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' // Add yellow gradient
+      green: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
     };
     
     pin.style.cssText = `
@@ -121,12 +121,11 @@ export class LocationMarker {
     const ring = document.createElement('div');
     ring.className = 'pulse-ring';
     
-    // Define pulse ring colors including yellow
+    // Define pulse ring colors
     const ringColorMap = {
       red: '#ef4444',
       blue: '#3b82f6',
-      green: '#10b981',
-      yellow: '#fbbf24' // Add yellow ring color
+      green: '#10b981'
     };
     
     ring.style.cssText = `
