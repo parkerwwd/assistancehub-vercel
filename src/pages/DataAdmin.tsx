@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Database, FileText, Users, Activity, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import Header from "@/components/Header";
 
 const DataAdmin = () => {
   const { signOut, user } = useAuth();
@@ -32,14 +33,15 @@ const DataAdmin = () => {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      {/* Use the main Header component */}
+      <Header />
+
+      {/* Admin-specific header bar */}
+      <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link to="/" className="text-xl font-bold text-blue-900 hover:text-blue-800 transition-colors">
-                AssistanceHub
-              </Link>
+          <div className="flex justify-between items-center h-12">
+            <div className="text-sm text-gray-600">
+              Data Administration Dashboard
             </div>
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-500">
@@ -57,7 +59,7 @@ const DataAdmin = () => {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
