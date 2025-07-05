@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar, TrendingUp, Clock, Home, Building, MapPin, Users } from 'lucide-react';
 import { GoogleMapsService } from '@/services/googleMapsService';
@@ -30,13 +31,16 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
 
   return (
     <div className="relative overflow-hidden">
-      {/* Main Background Image */}
+      {/* Main Background Image - Clearer and Darker */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('/lovable-uploads/d59de317-8a9f-4fd0-8c83-78728a037803.png')`
+          backgroundImage: `url('/lovable-uploads/a6f307a6-bd25-47c7-9da5-c7df148d00d2.png')`
         }}
       ></div>
+      
+      {/* Dark Overlay for Better Text Visibility */}
+      <div className="absolute inset-0 bg-black/40"></div>
       
       {/* Background Pattern and Map Image */}
       <div className="absolute inset-0 opacity-10">
