@@ -39,8 +39,6 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
         }}
       ></div>
       
-      {/* Dark Overlay for Better Text Visibility */}
-      <div className="absolute inset-0 bg-black/40"></div>
       <div className="relative container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto text-center">
           {/* State Badge */}
