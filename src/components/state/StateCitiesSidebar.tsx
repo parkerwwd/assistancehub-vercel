@@ -1,9 +1,7 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { MapPin, ExternalLink } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 
 interface City {
   name: string | null;
@@ -54,11 +52,6 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({ topCities, stat
             </div>
           )}
         </div>
-        <Link to="/section8">
-          <Button variant="outline" className="w-full mt-4 hover:bg-blue-50">
-            View All Housing Options <ExternalLink className="w-4 h-4 ml-2" />
-          </Button>
-        </Link>
       </CardContent>
     </Card>
   );
