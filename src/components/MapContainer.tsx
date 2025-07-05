@@ -121,21 +121,27 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
   // Handle location search flow: show found agencies OR just the location if no agencies found
   useEffect(() => {
-    if (map.current?.loaded() && !selectedOffice) {
-      console.log('🔍 Location search flow - agencies:', phaAgencies?.length || 0, 'selectedLocation:', !!selectedLocation);
-      
-      markerManager.current.handleLocationSearch(
-        map.current,
-        phaAgencies || [],
-        selectedLocation,
-        mapboxToken,
-        onOfficeSelect
-      );
-    } else if (map.current?.loaded() && selectedOffice) {
-      // Clear location search markers when an office is selected
-      markerManager.current.clearAllAgencyMarkers();
-      markerManager.current.clearLocationMarker();
-    }
+    const handleLocationSearchAsync = async () => {
+      if (map.current?.loaded() && !selectedOffice) {
+        console.log('🔍 Location search flow - agencies:', phaAgencies?.length || 0, 'selectedLocation:', !!selectedLocation);
+        
+        // Call the async handleLocationSearch method with await
+        await markerManager.current.handleLocationSearch(
+          map.current,
+          phaAgencies || [],
+          selectedLocation,
+          mapboxToken,
+          onOfficeSelect
+        );
+      } else if (map.current?.loaded() && selectedOffice) {
+        // Clear location search markers when an office is selected
+        markerManager.current.clearAllAgencyMarkers();
+        markerManager.current.clearLocationMarker();
+        markerManager.current.clearOfficeLocationMarkers();
+      }
+    };
+
+    handleLocationSearchAsync();
   }, [phaAgencies, selectedLocation, selectedOffice, mapboxToken, onOfficeSelect]);
 
   return (

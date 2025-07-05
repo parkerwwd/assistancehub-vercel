@@ -44,8 +44,8 @@ export class MapMarkerManager {
       lng, 
       name, 
       mapboxToken,
-      showHoverCard, // Pass the showHoverCard option
-      color: 'red' // Default red color for location marker
+      showHoverCard,
+      color: 'red' // Red color for selected location marker
     });
     this.locationMarker
       .setPopup(MarkerUtils.createLocationPopup(name))
@@ -55,7 +55,10 @@ export class MapMarkerManager {
   }
 
   async addOfficeLocationMarkers(map: mapboxgl.Map, offices: PHAAgency[], mapboxToken: string): Promise<void> {
-    if (!map || !mapboxToken || !offices || offices.length === 0) return;
+    if (!map || !mapboxToken || !offices || offices.length === 0) {
+      console.log('⚠️ Cannot add office location markers - missing required params');
+      return;
+    }
     
     console.log('📍 Adding office location markers for', offices.length, 'offices');
     
@@ -63,7 +66,10 @@ export class MapMarkerManager {
     this.clearOfficeLocationMarkers();
     
     for (const office of offices) {
-      if (!office.address) continue;
+      if (!office.address) {
+        console.log('⚠️ Skipping office without address:', office.name);
+        continue;
+      }
       
       try {
         // Geocode the office address
@@ -77,14 +83,14 @@ export class MapMarkerManager {
           if (data.features && data.features.length > 0) {
             const [lng, lat] = data.features[0].center;
             
-            // Create blue location marker for office
+            // Create YELLOW location marker for office (changed from blue to yellow)
             const officeLocationMarker = this.locationMarkerHelper.create({
               lat,
               lng,
               name: office.name,
               mapboxToken,
               showHoverCard: true,
-              color: 'blue' // Blue color for office location markers
+              color: 'yellow' // Yellow color for office location markers
             });
             
             officeLocationMarker
@@ -93,15 +99,19 @@ export class MapMarkerManager {
             
             this.officeLocationMarkers.push(officeLocationMarker);
             
-            console.log('✅ Added office location marker for:', office.name, 'at', { lat, lng });
+            console.log('✅ Added YELLOW office location marker for:', office.name, 'at', { lat, lng });
+          } else {
+            console.log('⚠️ No geocoding results for:', office.name, office.address);
           }
+        } else {
+          console.log('⚠️ Geocoding API error for:', office.name, 'Status:', response.status);
         }
       } catch (error) {
         console.warn('⚠️ Failed to geocode office address:', office.name, error);
       }
     }
     
-    console.log('✅ Added', this.officeLocationMarkers.length, 'office location markers');
+    console.log('✅ Successfully added', this.officeLocationMarkers.length, 'office location markers (YELLOW)');
   }
 
   private createOfficeLocationPopup(office: PHAAgency): mapboxgl.Popup {
@@ -239,14 +249,15 @@ export class MapMarkerManager {
 
   /**
    * Add markers for all filtered agencies OR just the location marker if no agencies found
+   * This is the main method called when location search happens
    */
-  handleLocationSearch(
+  async handleLocationSearch(
     map: mapboxgl.Map, 
     agencies: PHAAgency[], 
     selectedLocation: { lat: number; lng: number; name: string } | null,
     mapboxToken: string,
     onOfficeSelect: (office: PHAAgency) => void
-  ): void {
+  ): Promise<void> {
     if (!map) return;
 
     console.log('🔍 Handling location search:', {
@@ -259,15 +270,21 @@ export class MapMarkerManager {
     this.clearLocationMarker();
     this.clearOfficeLocationMarkers();
 
-    if (agencies.length > 0) {
-      // Found agencies - show markers for all found agencies AND add office location markers
-      console.log('✅ Found', agencies.length, 'agencies, showing agency markers and office location markers');
-      this.addAllAgencyMarkers(map, agencies, onOfficeSelect);
-      this.addOfficeLocationMarkers(map, agencies, mapboxToken);
-    } else if (selectedLocation) {
-      // No agencies found - show only the selected location marker
-      console.log('📍 No agencies found, showing only location marker for:', selectedLocation.name);
+    // Always show the selected location marker (RED) if we have one
+    if (selectedLocation) {
+      console.log('📍 Adding RED location marker for selected location:', selectedLocation.name);
       this.setLocationMarker(map, selectedLocation.lat, selectedLocation.lng, selectedLocation.name, mapboxToken);
+    }
+
+    if (agencies.length > 0) {
+      // Found agencies - show YELLOW markers for all found offices
+      console.log('✅ Found', agencies.length, 'agencies, adding YELLOW office location markers');
+      await this.addOfficeLocationMarkers(map, agencies, mapboxToken);
+      
+      // Also add the regular agency markers (blue pins)
+      this.addAllAgencyMarkers(map, agencies, onOfficeSelect);
+    } else {
+      console.log('📍 No agencies found for this location');
     }
   }
 
@@ -277,7 +294,7 @@ export class MapMarkerManager {
   addAllAgencyMarkers(map: mapboxgl.Map, agencies: PHAAgency[], onOfficeSelect: (office: PHAAgency) => void): void {
     if (!map || !agencies || agencies.length === 0) return;
 
-    console.log('📍 Adding markers for', agencies.length, 'filtered agencies');
+    console.log('📍 Adding regular agency markers for', agencies.length, 'filtered agencies');
 
     // Clear existing agency markers
     this.clearAllAgencyMarkers();
@@ -297,7 +314,7 @@ export class MapMarkerManager {
       }
     });
 
-    console.log('✅ Added', this.allAgencyMarkers.length, 'agency markers to map');
+    console.log('✅ Added', this.allAgencyMarkers.length, 'regular agency markers to map');
   }
 
   cleanup(): void {
