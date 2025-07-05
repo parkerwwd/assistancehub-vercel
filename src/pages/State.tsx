@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -198,31 +197,31 @@ const State = () => {
               </span>
             </h1>
 
-            {/* Enhanced Stats Card */}
-            <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 mb-8">
+            {/* Enhanced Stats Card with Blur Effect */}
+            <div className="bg-white/20 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/30 mb-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                 {stateData.quickStats.map((stat, index) => (
                   <div key={index} className="text-center">
-                    <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl ${stat.bgColor} flex items-center justify-center`}>
+                    <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl ${stat.bgColor} flex items-center justify-center backdrop-blur-sm`}>
                       <stat.icon className={`w-8 h-8 ${stat.color}`} />
                     </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                    <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
+                    <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
+                    <div className="text-sm text-white/80 font-medium">{stat.label}</div>
                   </div>
                 ))}
               </div>
               
-              <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600 pt-6 border-t border-gray-200">
+              <div className="flex flex-wrap justify-center gap-6 text-sm text-white/70 pt-6 border-t border-white/20">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-blue-600" />
+                  <Calendar className="w-4 h-4 text-blue-300" />
                   <span>Last Updated: {stateData.lastUpdated}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-600" />
+                  <TrendingUp className="w-4 h-4 text-green-300" />
                   <span>Occupancy Rate: {stateData.occupancyRate}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-orange-600" />
+                  <Clock className="w-4 h-4 text-orange-300" />
                   <span>Avg. Wait: {stateData.averageWaitTime}</span>
                 </div>
               </div>
