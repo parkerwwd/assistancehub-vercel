@@ -56,10 +56,10 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
       </div>
 
       <div className="max-w-2xl mx-auto p-3 space-y-3">
-        {/* Hero Image Section - Smaller Preview Size */}
+        {/* Hero Image Section - Bigger Height */}
         {fullAddress && !imageError && (
           <Card className="overflow-hidden shadow-sm border-0 bg-white">
-            <div className="relative h-24 overflow-hidden">
+            <div className="relative h-32 overflow-hidden">
               <img
                 src={showFallback ? staticMapImageUrl : streetViewImageUrl}
                 alt={`View of ${office.name}`}
@@ -103,8 +103,8 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
               </Button>
             )}
 
-            {/* PHA Type Badge */}
-            <div className="flex justify-center">
+            {/* PHA Type and PHA Code Side by Side */}
+            <div className="grid grid-cols-2 gap-2">
               <div className="text-center p-2 bg-blue-50 rounded-lg border border-blue-100">
                 <Building className="w-3 h-3 mx-auto mb-1 text-blue-600" />
                 <div className="text-xs text-gray-500 mb-1">PHA Type</div>
@@ -118,6 +118,16 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
                   {phaType}
                 </div>
               </div>
+              
+              {office.pha_code && (
+                <div className="text-center p-2 bg-gray-50 rounded-lg border border-gray-100">
+                  <FileText className="w-3 h-3 mx-auto mb-1 text-gray-600" />
+                  <div className="text-xs text-gray-500 mb-1">PHA Code</div>
+                  <div className="px-2 py-0.5 rounded-full text-xs font-medium inline-block bg-gray-200 text-gray-700">
+                    {office.pha_code}
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -226,31 +236,17 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           </CardContent>
         </Card>
 
-        {/* Office Details Section */}
+        {/* Office Details Section - Removed PHA Code since it's now above */}
         <Card className="shadow-sm border-0 bg-white">
           <CardHeader className="pb-1">
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="w-3 h-3 text-gray-600" />
-              Office Information
+              <Calendar className="w-3 h-3 text-blue-600" />
+              Last Updated
             </CardTitle>
-            <CardDescription className="text-xs">Additional office details</CardDescription>
+            <CardDescription className="text-xs">Data information</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2 pt-0">
-            {office.pha_code && (
-              <div className="p-2 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2 mb-1">
-                  <FileText className="w-3 h-3 text-gray-600" />
-                  <span className="font-medium text-gray-900 text-xs">PHA Code</span>
-                </div>
-                <p className="text-sm font-semibold text-gray-700">{office.pha_code}</p>
-              </div>
-            )}
-
+          <CardContent className="pt-0">
             <div className="p-2 bg-blue-50 rounded-lg border border-blue-100">
-              <div className="flex items-center gap-2 mb-1">
-                <Calendar className="w-3 h-3 text-blue-600" />
-                <span className="font-medium text-gray-900 text-xs">Last Updated</span>
-              </div>
               <p className="text-xs text-blue-700">
                 {new Date(office.updated_at).toLocaleDateString('en-US', {
                   year: 'numeric',
