@@ -71,12 +71,9 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
             <span className="text-white font-semibold text-lg">Live Housing Data for {stateName}</span>
           </div>
 
-          {/* Main Title */}
+          {/* Main Title - Combined into one line */}
           <h1 className="text-6xl md:text-8xl font-bold text-white mb-8 leading-tight">
-            Section 8 Housing
-            <span className="block bg-gradient-to-r from-yellow-400 via-yellow-300 to-amber-300 bg-clip-text text-transparent">
-              in {stateName}
-            </span>
+            Section 8 Housing in {stateName}
           </h1>
 
           {/* Enhanced Stats Card with More Blur Effect */}
