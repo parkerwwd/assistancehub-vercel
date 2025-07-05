@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, TrendingUp, Clock, Home, Building, MapPin, Users } from 'lucide-react';
 import { GoogleMapsService } from '@/services/googleMapsService';
@@ -30,7 +29,18 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
   const stateMapImage = GoogleMapsService.getStaticMapImage(`${stateName}, USA`, '800x600');
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
+    <div className="relative overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/lovable-uploads/6fec7525-51b9-405f-a872-6143d0c0924a.png')`
+        }}
+      ></div>
+      
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/40"></div>
+      
       <div className="relative container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto text-center">
           {/* State Badge */}
