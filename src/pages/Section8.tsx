@@ -1,5 +1,5 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import MapContainer from "@/components/MapContainer";
 import Header from "@/components/Header";
@@ -12,6 +12,9 @@ type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 const Section8 = () => {
   console.log('Section8 component rendering...');
+  
+  const location = useLocation();
+  const searchLocation = location.state?.searchLocation;
   
   const {
     mapboxToken,
@@ -35,6 +38,28 @@ const Section8 = () => {
   } = useMapLogic();
 
   const isMobile = useIsMobile();
+
+  // Handle navigation from state page
+  useEffect(() => {
+    if (searchLocation && mapRef.current) {
+      console.log('🏛️ Received search location from state page:', searchLocation);
+      handleCitySelect(searchLocation);
+    }
+  }, [searchLocation, handleCitySelect]);
+
+  // Reset to US view when component mounts (only if no search location)
+  useEffect(() => {
+    if (!searchLocation) {
+      const timer = setTimeout(() => {
+        if (mapRef.current) {
+          console.log('🇺🇸 Initial page load - showing US map');
+          resetToUSView();
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [searchLocation]);
 
   const handleOfficeClick = (office: PHAAgency) => {
     console.log('🎯 Office clicked from panel:', office.name);
