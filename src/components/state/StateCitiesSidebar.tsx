@@ -18,7 +18,7 @@ interface StateCitiesSidebarProps {
 
 const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({ topCities, stateName }) => {
   return (
-    <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm sticky top-6">
+    <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm">
       <CardHeader className="pb-4">
         <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
           <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
@@ -32,7 +32,7 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({ topCities, stat
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {topCities.length > 0 ? topCities.map((city, index) => (
             <div key={index} className="group p-4 bg-gradient-to-r from-gray-50 to-blue-50/40 rounded-xl border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200 cursor-pointer">
-              <div className="flex justify-between items-start mb-2">
+              <div className="flex justify-between items-center">
                 <div className="flex-1">
                   <div className="font-semibold text-gray-900 text-sm mb-1">{city.name}</div>
                   <div className="flex items-center gap-1 text-xs text-gray-600">
@@ -44,12 +44,6 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({ topCities, stat
                   <div className="font-bold text-blue-600 text-sm">{city.units}</div>
                   <div className="text-xs text-gray-500">est. units</div>
                 </div>
-              </div>
-              <div className="flex justify-between items-center text-xs pt-2 border-t border-gray-200/50">
-                <span className="text-gray-600 font-medium">Pop: {city.population}</span>
-                <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-medium">
-                  ~{city.waitTime}
-                </span>
               </div>
             </div>
           )) : (
