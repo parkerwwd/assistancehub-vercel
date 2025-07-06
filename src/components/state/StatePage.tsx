@@ -55,7 +55,11 @@ const StatePage: React.FC<StatePageProps> = ({
             </div>
 
             <div className="space-y-6">
-              <StateCitiesSidebar topCities={topCities} stateName={stateName} />
+              <StateCitiesSidebar 
+                topCities={topCities} 
+                stateName={stateName} 
+                loading={phaLoading}
+              />
               <StateContactHelp />
             </div>
           </div>
