@@ -69,47 +69,74 @@ const calculateRealStatistics = (phaAgencies: any[]) => {
   };
 };
 
-// Extract city names from PHA agency addresses
+// Improved city extraction function
 const extractCityFromAddress = (address: string): string | null => {
   if (!address) return null;
   
-  // Split by comma and get the part that's likely the city
-  const parts = address.split(',').map(part => part.trim());
+  console.log('🔍 Extracting city from address:', address);
   
-  // Usually city is the second part: "Street Address, City, State ZIP"
-  if (parts.length >= 2) {
-    let cityPart = parts[1];
-    
-    // Clean up common prefixes/suffixes that might be in the city name
-    cityPart = cityPart.replace(/^\d+\s*/, ''); // Remove leading numbers
-    cityPart = cityPart.replace(/\s*\d+$/, ''); // Remove trailing numbers
-    cityPart = cityPart.trim();
-    
-    // Skip if it looks like a state abbreviation or ZIP code
-    if (cityPart.length === 2 || /^\d+$/.test(cityPart)) {
-      return null;
-    }
-    
-    return cityPart;
-  }
+  // Clean the address first
+  const cleanAddress = address.trim();
   
-  // If we can't parse the city from comma-separated format, try other approaches
-  // Look for common city patterns in the address
-  const addressLower = address.toLowerCase();
-  
-  // Try to extract city from various address formats
-  const cityPatterns = [
-    /(\w+\s*\w*)\s+[A-Z]{2}\s+\d{5}/, // City STATE ZIP
-    /(\w+\s*\w*)\s+[A-Z]{2}$/, // City STATE (end of string)
+  // Try different patterns to extract city
+  const patterns = [
+    // Pattern 1: "Street, City, State ZIP" or "Street, City, State"
+    /^[^,]+,\s*([^,]+),\s*[A-Z]{2}(?:\s+\d{5})?/i,
+    
+    // Pattern 2: "City, State ZIP" (when no street)
+    /^([^,]+),\s*[A-Z]{2}(?:\s+\d{5})?/i,
+    
+    // Pattern 3: "Street City State ZIP" (no commas)
+    /\b([A-Za-z\s]+)\s+[A-Z]{2}\s+\d{5}/,
+    
+    // Pattern 4: Look for city before state abbreviation
+    /\b([A-Za-z\s]+?)\s+(?:FL|AL|GA|SC|NC|TN|MS|LA|AR|TX|OK|KS|MO|IA|MN|WI|IL|IN|OH|KY|WV|VA|MD|DE|PA|NJ|NY|CT|RI|MA|VT|NH|ME|ND|SD|NE|CO|WY|MT|ID|UT|AZ|NV|CA|OR|WA|AK|HI)\b/i
   ];
   
-  for (const pattern of cityPatterns) {
-    const match = address.match(pattern);
-    if (match && match[1] && match[1].length > 2) {
-      return match[1].trim();
+  for (let i = 0; i < patterns.length; i++) {
+    const match = cleanAddress.match(patterns[i]);
+    if (match && match[1]) {
+      let cityName = match[1].trim();
+      
+      // Clean up the city name
+      cityName = cityName.replace(/^\d+\s*/, ''); // Remove leading numbers
+      cityName = cityName.replace(/\s*\d+$/, ''); // Remove trailing numbers
+      cityName = cityName.replace(/\s+/g, ' '); // Normalize spaces
+      cityName = cityName.trim();
+      
+      // Validate city name
+      if (cityName.length >= 2 && 
+          !/^\d+$/.test(cityName) && // Not just numbers
+          !/^[A-Z]{2}$/.test(cityName) && // Not state abbreviation
+          !cityName.toLowerCase().includes('po box')) { // Not PO Box
+        
+        console.log('✅ Extracted city:', cityName, 'using pattern', i + 1);
+        return cityName;
+      }
     }
   }
   
+  // If no pattern works, try to extract meaningful location info
+  // Look for recognizable city words
+  const cityWords = cleanAddress.split(/[,\s]+/).filter(word => {
+    const w = word.trim();
+    return w.length > 2 && 
+           !/^\d+$/.test(w) && 
+           !/^[A-Z]{2}$/.test(w) &&
+           !w.toLowerCase().includes('po') &&
+           !w.toLowerCase().includes('box') &&
+           !w.toLowerCase().includes('suite') &&
+           !w.toLowerCase().includes('apt');
+  });
+  
+  if (cityWords.length > 0) {
+    // Take the first meaningful word as potential city
+    const potentialCity = cityWords[0];
+    console.log('🎯 Using fallback city extraction:', potentialCity);
+    return potentialCity;
+  }
+  
+  console.log('❌ Could not extract city from:', address);
   return null;
 };
 
@@ -123,33 +150,44 @@ export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string)
 
   // Group agencies by city
   const cityGroups = new Map<string, any[]>();
-  let unprocessedAgencies = 0;
+  let processedAgencies = 0;
   
   phaAgencies.forEach(agency => {
-    const cityName = extractCityFromAddress(agency.address);
+    let cityName = extractCityFromAddress(agency.address);
     
-    if (cityName) {
-      console.log('🏙️ Found city:', cityName, 'for agency:', agency.name);
+    // If we still can't extract city, use agency name as fallback
+    if (!cityName) {
+      // Try to extract city from agency name
+      const agencyName = agency.name || '';
+      const nameWords = agencyName.split(/\s+/).filter(word => 
+        word.length > 2 && 
+        !word.toLowerCase().includes('housing') &&
+        !word.toLowerCase().includes('authority') &&
+        !word.toLowerCase().includes('county') &&
+        !word.toLowerCase().includes('city')
+      );
       
-      if (!cityGroups.has(cityName)) {
-        cityGroups.set(cityName, []);
+      if (nameWords.length > 0) {
+        cityName = nameWords[0];
+        console.log('🏢 Using agency name for city:', cityName, 'from agency:', agency.name);
+      } else {
+        // Final fallback
+        cityName = 'Other Locations';
+        console.log('🔄 Using fallback location for agency:', agency.name);
       }
-      cityGroups.get(cityName)!.push(agency);
-    } else {
-      console.log('⚠️ Could not extract city from address:', agency.address, 'for agency:', agency.name);
-      unprocessedAgencies++;
-      
-      // For agencies we can't parse, use "Other Locations" as fallback
-      const fallbackCity = 'Other Locations';
-      if (!cityGroups.has(fallbackCity)) {
-        cityGroups.set(fallbackCity, []);
-      }
-      cityGroups.get(fallbackCity)!.push(agency);
     }
+    
+    processedAgencies++;
+    console.log(`🏙️ [${processedAgencies}/${phaAgencies.length}] Assigned city:`, cityName, 'for agency:', agency.name);
+    
+    if (!cityGroups.has(cityName)) {
+      cityGroups.set(cityName, []);
+    }
+    cityGroups.get(cityName)!.push(agency);
   });
 
-  console.log('🏙️ Found cities:', Array.from(cityGroups.keys()));
-  console.log('🏙️ Unprocessed agencies:', unprocessedAgencies);
+  console.log('🏙️ Final city groups:', Array.from(cityGroups.keys()));
+  console.log('🏙️ Processed agencies:', processedAgencies, 'out of', phaAgencies.length);
 
   // Convert to array and calculate statistics for each city
   const cities = Array.from(cityGroups.entries())
@@ -176,7 +214,7 @@ export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string)
       };
     })
     .sort((a, b) => parseInt(b.properties) - parseInt(a.properties)) // Sort by office count
-    .slice(0, 10); // Top 10 cities
+    .slice(0, 15); // Show up to 15 cities
 
   // Verify totals match
   const totalOfficesInCities = cities.reduce((sum, city) => sum + parseInt(city.properties), 0);
@@ -190,6 +228,8 @@ export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string)
       totalInCities: totalOfficesInCities,
       difference: phaAgencies.length - totalOfficesInCities
     });
+  } else {
+    console.log('✅ Perfect match: All agencies accounted for in cities');
   }
   
   return cities;
