@@ -58,23 +58,47 @@ const State = () => {
   // Calculate real statistics from the fetched data
   const totalAgencies = phaAgencies.length;
   
-  // Extract unique cities from addresses
-  const uniqueCities = new Set(
-    phaAgencies
-      .map(agency => {
-        const address = agency.address || '';
-        const parts = address.split(',');
-        // Get the city part (usually second to last before state)
-        if (parts.length >= 2) {
-          const cityPart = parts[parts.length - 2].trim();
-          return cityPart;
+  // Extract cities from addresses more accurately
+  const extractCityFromAddress = (address: string, stateName: string): string | null => {
+    if (!address) return null;
+    
+    // Split address by commas
+    const parts = address.split(',').map(part => part.trim());
+    
+    // Look for the part that comes before the state name
+    for (let i = 0; i < parts.length - 1; i++) {
+      const currentPart = parts[i];
+      const nextPart = parts[i + 1];
+      
+      // If the next part contains the state name, current part is likely the city
+      if (nextPart && nextPart.toLowerCase().includes(stateName.toLowerCase())) {
+        // Clean up the city name - remove any numbers or extra characters
+        const cityName = currentPart.replace(/\d+/g, '').replace(/[^\w\s]/g, '').trim();
+        if (cityName.length > 2 && !cityName.toLowerCase().includes('po box')) {
+          return cityName;
         }
-        return null;
-      })
-      .filter(city => city && city !== stateName)
-  );
+      }
+    }
+    
+    return null;
+  };
+
+  // Extract unique cities from addresses
+  const cityData = new Map<string, { count: number; agencies: PHAAgency[] }>();
   
-  const citiesCount = uniqueCities.size;
+  phaAgencies.forEach(agency => {
+    const cityName = extractCityFromAddress(agency.address || '', stateName);
+    if (cityName) {
+      if (!cityData.has(cityName)) {
+        cityData.set(cityName, { count: 0, agencies: [] });
+      }
+      const data = cityData.get(cityName)!;
+      data.count += 1;
+      data.agencies.push(agency);
+    }
+  });
+  
+  const citiesCount = cityData.size;
 
   // Calculate program type distribution
   const programTypes = phaAgencies.reduce((acc, agency) => {
@@ -178,23 +202,20 @@ const State = () => {
     ]
   };
 
-  // Extract cities from PHA agencies data for sidebar
-  const topCities = Array.from(uniqueCities)
+  // Create cities data for sidebar from the cityData Map
+  const topCities = Array.from(cityData.entries())
+    .sort((a, b) => b[1].count - a[1].count) // Sort by number of agencies descending
     .slice(0, 6)
-    .map(city => {
-      const cityAgencies = phaAgencies.filter(agency => 
-        agency.address?.includes(city || '')
-      );
-      
-      const cityUnits = cityAgencies.reduce((total, agency) => {
+    .map(([cityName, data]) => {
+      const cityUnits = data.agencies.reduce((total, agency) => {
         const programType = agency.program_type || 'Unknown';
         return total + (estimatedUnitsPerAgency[programType as keyof typeof estimatedUnitsPerAgency] || 150);
       }, 0);
 
       return {
-        name: city,
+        name: cityName,
         units: cityUnits.toString(),
-        properties: cityAgencies.length.toString(),
+        properties: data.count.toString(),
         population: 'N/A',
         waitTime: getAverageWaitTime()
       };
