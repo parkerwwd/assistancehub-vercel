@@ -61,9 +61,9 @@ const PHABasicInfo: React.FC<PHABasicInfoProps> = ({ office, onShowMap }) => {
             <div 
               className="px-3 py-2 rounded-lg text-sm font-semibold text-center shadow-sm"
               style={{ 
-                backgroundColor: getPHATypeColor(agency.program_type) + '20',
-                color: getPHATypeColor(agency.program_type),
-                border: `1px solid ${getPHATypeColor(agency.program_type)}30`
+                backgroundColor: getPHATypeColor(office.program_type) + '20',
+                color: getPHATypeColor(office.program_type),
+                border: `1px solid ${getPHATypeColor(office.program_type)}30`
               }}
             >
               {phaType}
