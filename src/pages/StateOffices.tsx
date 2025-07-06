@@ -1,11 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { usePHAData } from '@/hooks/usePHAData';
 import { filterPHAAgenciesByState } from '@/utils/mapUtils';
-import { CheckCircle, MapPin, Phone, Mail, Heart, Building, ArrowLeft } from 'lucide-react';
+import { CheckCircle, MapPin, Phone, Mail, Heart, Building, ArrowLeft, ChevronDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -17,6 +17,7 @@ const StateOffices = () => {
   const cityFilter = searchParams.get('city');
   
   const { allPHAAgencies, loading } = usePHAData();
+  const [visibleCount, setVisibleCount] = useState(5);
   
   // Filter PHA agencies by state and optionally by city
   const statePHAAgencies = React.useMemo(() => {
@@ -36,6 +37,13 @@ const StateOffices = () => {
     
     return filtered;
   }, [stateName, allPHAAgencies, cityFilter]);
+
+  const visibleAgencies = statePHAAgencies.slice(0, visibleCount);
+  const hasMoreAgencies = visibleCount < statePHAAgencies.length;
+
+  const handleShowMore = () => {
+    setVisibleCount(prev => Math.min(prev + 5, statePHAAgencies.length));
+  };
 
   const handleBackClick = () => {
     navigate(-1); // Go back to previous page
@@ -131,7 +139,7 @@ const StateOffices = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {statePHAAgencies.map((agency, index) => (
+              {visibleAgencies.map((agency, index) => (
                 <Card key={agency.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-md">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row">
@@ -207,6 +215,21 @@ const StateOffices = () => {
                   </CardContent>
                 </Card>
               ))}
+              
+              {/* Show More Button */}
+              {hasMoreAgencies && (
+                <div className="text-center pt-8">
+                  <Button
+                    onClick={handleShowMore}
+                    variant="outline"
+                    size="lg"
+                    className="bg-white border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 px-8 py-3 text-lg font-medium transition-all duration-200 shadow-sm"
+                  >
+                    <ChevronDown className="w-5 h-5 mr-2" />
+                    Show More ({statePHAAgencies.length - visibleCount} remaining)
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
