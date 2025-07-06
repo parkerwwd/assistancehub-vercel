@@ -36,9 +36,9 @@ export const getPHATypeFromData = (agency: any) => {
 
 export const getPHATypeColor = (phaType: string) => {
   switch (phaType) {
-    case "Combined PHA": return "#a855f7"; // Purple-500 - more vibrant purple
-    case "Section 8 PHA": return "#3b82f6"; // Blue-500 - keep existing blue
-    case "Low-Rent PHA": return "#10b981"; // Emerald-500 - green
+    case "combined": return "#a855f7"; // Purple-500 - more vibrant purple
+    case "section 8": return "#3b82f6"; // Blue-500 - keep existing blue
+    case "low-rent": return "#10b981"; // Emerald-500 - green
     default: return "#6b7280";
   }
 };

@@ -66,9 +66,9 @@ const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
                 <span 
                   className="px-2.5 py-1 rounded-full text-xs font-semibold border"
                   style={{ 
-                    backgroundColor: getPHATypeColor(phaType) + '15',
-                    borderColor: getPHATypeColor(phaType) + '30',
-                    color: getPHATypeColor(phaType)
+                    backgroundColor: getPHATypeColor(agency.program_type) + '15',
+                    borderColor: getPHATypeColor(agency.program_type) + '30',
+                    color: getPHATypeColor(agency.program_type)
                   }}
                 >
                   {agency.program_type}
