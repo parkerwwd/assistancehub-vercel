@@ -1,13 +1,21 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, MousePointer, Accessibility, Users, UserCheck, Home, HelpCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface StateSearchGuideProps {
   stateName: string;
 }
 
 const StateSearchGuide: React.FC<StateSearchGuideProps> = ({ stateName }) => {
+  const navigate = useNavigate();
+
+  const handleShowAllOffices = () => {
+    navigate(`/state/${encodeURIComponent(stateName)}/offices`);
+  };
+
   const housingTypes = [
     {
       icon: Accessibility,
@@ -44,13 +52,23 @@ const StateSearchGuide: React.FC<StateSearchGuideProps> = ({ stateName }) => {
   return (
     <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-2xl text-gray-900 flex items-center gap-2">
-          <Search className="w-6 h-6 text-blue-600" />
-          How to Search
-        </CardTitle>
-        <CardDescription>
-          Learn how to navigate and find housing opportunities in {stateName}
-        </CardDescription>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-2xl text-gray-900 flex items-center gap-2">
+              <Search className="w-6 h-6 text-blue-600" />
+              How to Search
+            </CardTitle>
+            <CardDescription>
+              Learn how to navigate and find housing opportunities in {stateName}
+            </CardDescription>
+          </div>
+          <Button 
+            onClick={handleShowAllOffices}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+          >
+            Show All Offices →
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-8">
         {/* Expand Listing Details Section */}
