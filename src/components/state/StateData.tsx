@@ -27,32 +27,6 @@ export interface CityType {
   waitTime: string;
 }
 
-// Extract city name from address
-const extractCityFromAddress = (address: string): string => {
-  if (!address) return 'Unknown';
-  
-  // Split by comma and get the second part (city)
-  const parts = address.split(',');
-  if (parts.length >= 2) {
-    return parts[1].trim();
-  }
-  
-  // Fallback: try to extract city from various patterns
-  const cityPatterns = [
-    /,\s*([A-Za-z\s]+),\s*[A-Z]{2}/,  // ", City, ST"
-    /,\s*([A-Za-z\s]+)\s+[0-9]{5}/,   // ", City 12345"
-  ];
-  
-  for (const pattern of cityPatterns) {
-    const match = address.match(pattern);
-    if (match) {
-      return match[1].trim();
-    }
-  }
-  
-  return 'Unknown';
-};
-
 // Calculate real statistics from PHA agencies
 const calculateRealStatistics = (phaAgencies: any[]) => {
   if (!phaAgencies || phaAgencies.length === 0) {
@@ -100,24 +74,14 @@ export const createStateData = (stateName: string, phaAgencies: any[]): StateDat
   const phaCount = phaAgencies.length;
   const realStats = calculateRealStatistics(phaAgencies);
   
-  // Calculate unique cities from PHA addresses
-  const uniqueCities = new Set();
-  phaAgencies.forEach(agency => {
-    if (agency.address) {
-      const city = extractCityFromAddress(agency.address);
-      if (city !== 'Unknown') {
-        uniqueCities.add(city);
-      }
-    }
-  });
-  
-  const citiesCount = uniqueCities.size;
+  // Calculate estimated cities and properties based on PHA count
+  const estimatedCities = Math.max(Math.floor(phaCount * 0.8), 1).toString();
   const estimatedProperties = Math.max(Math.floor(phaCount * 1.2), 1).toString();
   
   return {
     totalUnits: phaCount.toString(),
     properties: estimatedProperties,
-    cities: citiesCount.toString(),
+    cities: estimatedCities,
     agencies: phaCount.toString(),
     averageWaitTime: realStats.averageWaitTime,
     lastUpdated: realStats.lastUpdated,
@@ -125,60 +89,49 @@ export const createStateData = (stateName: string, phaAgencies: any[]): StateDat
     quickStats: [
       { label: 'PHA Offices Found', value: phaCount.toString(), icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50' },
       { label: 'Housing Authorities', value: phaCount.toString(), icon: Building, color: 'text-green-600', bgColor: 'bg-green-50' },
-      { label: 'Cities Covered', value: citiesCount.toString(), icon: MapPin, color: 'text-purple-600', bgColor: 'bg-purple-50' },
+      { label: 'Estimated Cities', value: estimatedCities, icon: MapPin, color: 'text-purple-600', bgColor: 'bg-purple-50' },
       { label: 'Active Programs', value: Math.max(Math.floor(phaCount / 3), 1).toString(), icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-50' }
     ]
   };
 };
 
-// Generate cities data based on actual PHA agencies grouped by city
+// Generate dynamic cities data based on actual PHA agencies
 export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string): CityType[] => {
   if (!phaAgencies || phaAgencies.length === 0) {
     return [];
   }
 
-  // Group PHA agencies by city
-  const cityMap = new Map<string, { agencies: any[], totalEstimatedUnits: number }>();
+  // Extract city information from PHA addresses
+  const cityMap = new Map<string, { count: number, totalEstimatedUnits: number }>();
   
   phaAgencies.forEach(agency => {
     if (agency.address) {
-      const cityName = extractCityFromAddress(agency.address);
-      if (cityName !== 'Unknown') {
-        const existing = cityMap.get(cityName) || { agencies: [], totalEstimatedUnits: 0 };
-        existing.agencies.push(agency);
-        // Estimate units per agency based on city size and agency count
-        const unitsPerAgency = Math.floor(Math.random() * 150) + 50;
-        existing.totalEstimatedUnits += unitsPerAgency;
-        cityMap.set(cityName, existing);
+      // Try to extract city from address (assuming format: "Street, City, State, ZIP")
+      const addressParts = agency.address.split(',');
+      if (addressParts.length >= 2) {
+        const city = addressParts[1].trim();
+        if (city) {
+          const existing = cityMap.get(city) || { count: 0, totalEstimatedUnits: 0 };
+          cityMap.set(city, {
+            count: existing.count + 1,
+            totalEstimatedUnits: existing.totalEstimatedUnits + Math.floor(Math.random() * 200) + 50 // Estimate units per agency
+          });
+        }
       }
     }
   });
 
   // Convert to array and sort by agency count
   const cities = Array.from(cityMap.entries())
-    .map(([cityName, data]) => {
-      const agencyCount = data.agencies.length;
-      
-      // Calculate wait time based on number of agencies (more agencies = higher demand)
-      const waitTime = agencyCount > 5 ? '24-36 months' : 
-                      agencyCount > 2 ? '18-24 months' : 
-                      agencyCount > 1 ? '12-18 months' : '8-12 months';
-      
-      // Generate reasonable population estimate based on city having PHA offices
-      const populationEstimate = agencyCount > 5 ? Math.floor(Math.random() * 300000) + 100000 :
-                                agencyCount > 2 ? Math.floor(Math.random() * 150000) + 50000 :
-                                Math.floor(Math.random() * 75000) + 25000;
-
-      return {
-        name: cityName,
-        units: data.totalEstimatedUnits.toString(),
-        properties: agencyCount.toString(),
-        population: populationEstimate.toLocaleString(),
-        waitTime
-      };
-    })
+    .map(([cityName, data]) => ({
+      name: cityName,
+      units: data.totalEstimatedUnits.toString(),
+      properties: data.count.toString(),
+      population: (Math.floor(Math.random() * 500000) + 10000).toLocaleString(), // Generate reasonable population estimate
+      waitTime: data.count > 3 ? '18-36 months' : data.count > 1 ? '12-24 months' : '8-18 months'
+    }))
     .sort((a, b) => parseInt(b.properties) - parseInt(a.properties))
-    .slice(0, 8); // Top 8 cities
+    .slice(0, 5); // Top 5 cities
 
   return cities;
 };
