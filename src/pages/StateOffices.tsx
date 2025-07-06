@@ -204,7 +204,7 @@ const StateOffices = () => {
                     <CardContent className="p-0">
                       <div className="flex flex-col lg:flex-row">
                         {/* Compact Image Section */}
-                        <div className="w-full lg:w-64 h-auto bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-600 relative overflow-hidden">
+                        <div className="w-full lg:w-64 h-full lg:h-auto bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-600 relative overflow-hidden">
                           {/* Animated background patterns */}
                           <div className="absolute inset-0 opacity-30" style={{
                             backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
