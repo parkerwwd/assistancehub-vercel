@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { usePHAData } from '@/hooks/usePHAData';
 import { filterPHAAgenciesByState } from '@/utils/mapUtils';
-import { CheckCircle, MapPin, Phone, Mail, Heart, Building, ArrowLeft, ChevronDown } from 'lucide-react';
+import { CheckCircle, MapPin, Phone, Mail, Heart, Building, ArrowLeft, ChevronDown, Star, Clock, Users, Award } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -25,7 +25,6 @@ const StateOffices = () => {
     
     let filtered = filterPHAAgenciesByState(allPHAAgencies, stateName);
     
-    // If city filter is provided, filter by city
     if (cityFilter) {
       filtered = filtered.filter(agency => {
         const address = agency.address || '';
@@ -46,16 +45,14 @@ const StateOffices = () => {
   };
 
   const handleBackClick = () => {
-    navigate(-1); // Go back to previous page
+    navigate(-1);
   };
 
   const handleDetailView = (agency: any) => {
-    // Navigate to the individual PHA detail page
     navigate(`/pha/${agency.id}`);
   };
 
   const handleToggleFavorite = (agency: any) => {
-    // This would toggle the favorite status
     console.log('Toggle favorite for:', agency.name);
   };
 
@@ -80,57 +77,106 @@ const StateOffices = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <Header />
       
-      {/* Back Button */}
-      <div className="bg-white border-b border-gray-200">
+      {/* Modern Navigation Bar */}
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
-          <Button
-            onClick={handleBackClick}
-            variant="ghost"
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
+          <div className="flex items-center justify-between">
+            <Button
+              onClick={handleBackClick}
+              variant="ghost"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 px-4 py-2 rounded-xl transition-all duration-200"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="font-medium">Back</span>
+            </Button>
+            
+            {/* Breadcrumb */}
+            <div className="hidden md:flex items-center gap-2 text-sm text-gray-500">
+              <span>Housing</span>
+              <span>•</span>
+              <span className="text-blue-600 font-medium">{stateName}</span>
+              {cityFilter && (
+                <>
+                  <span>•</span>
+                  <span className="text-blue-600 font-medium">{cityFilter}</span>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
       
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-6">
-              <CheckCircle className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {cityFilter 
-                ? `Section 8 Offices in ${cityFilter}, ${stateName}`
-                : `Open Section 8 Waitlists In ${stateName}`
-              }
-            </h1>
-            <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-              {cityFilter 
-                ? `Showing offices specifically in ${cityFilter}. Contact PHAs directly for most up-to-date information.`
-                : 'Here are the waitlists our system has found for you. Please contact PHAs directly for most up-to-date information.'
-              }
-            </p>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 inline-block">
-              <div className="flex items-center justify-center gap-4 text-lg">
-                <Building className="w-6 h-6" />
-                <span className="font-semibold">{statePHAAgencies.length} Offices Found</span>
+      {/* Hero Section with Enhanced Design */}
+      <div className="relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+        </div>
+        
+        <div className="relative text-white py-20 md:py-24">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              {/* Status Badge */}
+              <div className="inline-flex items-center justify-center bg-green-500/20 backdrop-blur-sm border border-green-400/30 rounded-full px-4 py-2 mb-6">
+                <CheckCircle className="w-5 h-5 text-green-300 mr-2" />
+                <span className="text-green-100 font-medium">Active Listings</span>
+              </div>
+              
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+                {cityFilter 
+                  ? `Section 8 in ${cityFilter}`
+                  : `${stateName} Housing`
+                }
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto leading-relaxed">
+                {cityFilter 
+                  ? `Discover available housing opportunities in ${cityFilter}, ${stateName}`
+                  : `Find your next home with our comprehensive directory of housing authorities`
+                }
+              </p>
+              
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                  <div className="flex items-center justify-center mb-2">
+                    <Building className="w-8 h-8 text-blue-200" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">{statePHAAgencies.length}</div>
+                  <div className="text-blue-200 text-sm">Active Offices</div>
+                </div>
+                
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                  <div className="flex items-center justify-center mb-2">
+                    <Users className="w-8 h-8 text-purple-200" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">24/7</div>
+                  <div className="text-purple-200 text-sm">Support Available</div>
+                </div>
+                
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                  <div className="flex items-center justify-center mb-2">
+                    <Award className="w-8 h-8 text-green-200" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">Verified</div>
+                  <div className="text-green-200 text-sm">Information</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Offices List */}
+      {/* Enhanced Offices List */}
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
           {statePHAAgencies.length === 0 ? (
-            <div className="text-center py-16">
-              <Building className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-semibold text-gray-600 mb-2">No Offices Found</h3>
-              <p className="text-gray-500">
+            <div className="text-center py-20">
+              <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                <Building className="w-16 h-16 text-gray-400" />
+              </div>
+              <h3 className="text-3xl font-bold text-gray-600 mb-4">No Offices Found</h3>
+              <p className="text-gray-500 text-lg max-w-md mx-auto">
                 {cityFilter 
                   ? `We couldn't find any PHA offices in ${cityFilter}, ${stateName} at this time.`
                   : `We couldn't find any PHA offices for ${stateName} at this time.`
@@ -138,96 +184,150 @@ const StateOffices = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {visibleAgencies.map((agency, index) => (
-                <Card key={agency.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-md">
-                  <CardContent className="p-0">
-                    <div className="flex flex-col md:flex-row">
-                      {/* Image placeholder */}
-                      <div className="w-full md:w-80 h-48 md:h-auto bg-gradient-to-br from-blue-500 to-purple-600 relative">
-                        <div className="absolute inset-0 bg-black/20"></div>
-                        <div className="absolute bottom-4 left-4">
-                          <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                            Section 8 PHA
-                          </span>
-                        </div>
-                        <Building className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 text-white/30" />
-                      </div>
-                      
-                      {/* Content */}
-                      <div className="flex-1 p-6">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                              {agency.name}
-                            </h3>
-                            {agency.address && (
-                              <div className="flex items-center text-gray-600 mb-2">
-                                <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
-                                <span className="text-sm">{agency.address}</span>
-                              </div>
-                            )}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleToggleFavorite(agency)}
-                            className="text-gray-400 hover:text-red-500 transition-colors"
-                          >
-                            <Heart className="w-6 h-6" />
-                          </Button>
-                        </div>
+            <div className="space-y-8">
+              {/* Section Header */}
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  Available Housing Offices
+                </h2>
+                <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                  Connect directly with housing authorities in your area. Each office provides personalized assistance for your housing needs.
+                </p>
+              </div>
 
-                        {/* Contact Info */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                          {agency.phone && (
-                            <div className="flex items-center text-gray-600">
-                              <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
-                              <span className="text-sm">{agency.phone}</span>
-                            </div>
-                          )}
-                          {agency.email && (
-                            <div className="flex items-center text-gray-600">
-                              <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
-                              <span className="text-sm">{agency.email}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Action Button */}
-                        <div className="flex items-center justify-between">
-                          <Button
-                            onClick={() => handleDetailView(agency)}
-                            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            Detail View
-                          </Button>
+              {/* Modern Office Cards */}
+              <div className="grid gap-6">
+                {visibleAgencies.map((agency, index) => (
+                  <Card key={agency.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-[1.02]">
+                    <CardContent className="p-0">
+                      <div className="flex flex-col lg:flex-row">
+                        {/* Enhanced Image Section */}
+                        <div className="w-full lg:w-96 h-64 lg:h-auto bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-600 relative overflow-hidden">
+                          {/* Animated background patterns */}
+                          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Cpath d="M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+                          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-500"></div>
                           
-                          {agency.program_type && (
-                            <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                              {agency.program_type}
-                            </span>
-                          )}
+                          {/* Content overlay */}
+                          <div className="absolute inset-0 flex flex-col justify-between p-6">
+                            <div className="flex justify-between items-start">
+                              <span className="bg-white/90 backdrop-blur-sm text-purple-700 px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                                Section 8 PHA
+                              </span>
+                              <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                                <Star className="w-5 h-5 text-yellow-300" />
+                              </div>
+                            </div>
+                            
+                            <div className="text-center">
+                              <Building className="w-16 h-16 text-white/40 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300" />
+                              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 inline-block">
+                                <span className="text-white font-medium flex items-center gap-2">
+                                  <Clock className="w-4 h-4" />
+                                  Quick Response
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Enhanced Content Section */}
+                        <div className="flex-1 p-8">
+                          <div className="flex flex-col h-full">
+                            {/* Header */}
+                            <div className="flex justify-between items-start mb-6">
+                              <div className="flex-1">
+                                <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                                  {agency.name}
+                                </h3>
+                                {agency.address && (
+                                  <div className="flex items-start text-gray-600 mb-4">
+                                    <MapPin className="w-5 h-5 mr-3 flex-shrink-0 mt-1 text-blue-500" />
+                                    <span className="text-base leading-relaxed">{agency.address}</span>
+                                  </div>
+                                )}
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleToggleFavorite(agency)}
+                                className="text-gray-400 hover:text-red-500 transition-all duration-300 hover:scale-110 rounded-full"
+                              >
+                                <Heart className="w-6 h-6" />
+                              </Button>
+                            </div>
+
+                            {/* Contact Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                              {agency.phone && (
+                                <div className="flex items-center p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors cursor-pointer">
+                                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
+                                    <Phone className="w-5 h-5 text-white" />
+                                  </div>
+                                  <div>
+                                    <div className="text-sm text-green-600 font-medium">Phone</div>
+                                    <div className="text-green-700 font-semibold">{agency.phone}</div>
+                                  </div>
+                                </div>
+                              )}
+                              {agency.email && (
+                                <div className="flex items-center p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors cursor-pointer">
+                                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-4">
+                                    <Mail className="w-5 h-5 text-white" />
+                                  </div>
+                                  <div>
+                                    <div className="text-sm text-blue-600 font-medium">Email</div>
+                                    <div className="text-blue-700 font-semibold">{agency.email}</div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Enhanced Action Section */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-auto">
+                              <Button
+                                onClick={() => handleDetailView(agency)}
+                                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 group/btn"
+                              >
+                                <CheckCircle className="w-5 h-5 mr-2 group-hover/btn:scale-110 transition-transform" />
+                                View Details
+                              </Button>
+                              
+                              <div className="flex items-center gap-3">
+                                {agency.program_type && (
+                                  <span className="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-full font-medium">
+                                    {agency.program_type}
+                                  </span>
+                                )}
+                                <div className="flex items-center text-sm text-green-600 bg-green-50 px-3 py-1.5 rounded-full">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                  Available
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
               
-              {/* Show More Button */}
+              {/* Enhanced Show More Button */}
               {hasMoreAgencies && (
-                <div className="text-center pt-8">
-                  <Button
-                    onClick={handleShowMore}
-                    variant="outline"
-                    size="lg"
-                    className="bg-white border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 px-8 py-3 text-lg font-medium transition-all duration-200 shadow-sm"
-                  >
-                    <ChevronDown className="w-5 h-5 mr-2" />
-                    Show More ({statePHAAgencies.length - visibleCount} remaining)
-                  </Button>
+                <div className="text-center pt-12">
+                  <div className="inline-flex flex-col items-center gap-4">
+                    <Button
+                      onClick={handleShowMore}
+                      size="lg"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-12 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group/more"
+                    >
+                      <ChevronDown className="w-6 h-6 mr-3 group-hover/more:translate-y-1 transition-transform" />
+                      Load More Offices
+                    </Button>
+                    <p className="text-gray-500 text-sm">
+                      {statePHAAgencies.length - visibleCount} more offices available
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
