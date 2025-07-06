@@ -1,4 +1,7 @@
 
+import React from 'react';
+import { Home, Building, MapPin, Users } from 'lucide-react';
+
 export interface StateDataType {
   totalUnits: string;
   properties: string;
@@ -25,8 +28,6 @@ export interface CityType {
 }
 
 export const getStateData = (): StateDataType => {
-  const { Home, Building, MapPin, Users } = await import('lucide-react');
-  
   return {
     totalUnits: '1,250',
     properties: '8',
