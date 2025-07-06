@@ -210,16 +210,6 @@ const StateOffices = () => {
             </div>
           )}
         </div>
-
-        {/* Advertisement placeholders */}
-        {statePHAAgencies.length > 0 && (
-          <div className="max-w-6xl mx-auto mt-12 space-y-8">
-            <div className="text-center text-sm text-gray-500 mb-4">Advertisement</div>
-            <div className="h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-              <span className="text-gray-400">Advertisement Space</span>
-            </div>
-          </div>
-        )}
       </div>
 
       <Footer />
