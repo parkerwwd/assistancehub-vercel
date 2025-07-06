@@ -41,9 +41,9 @@ const StateOffices = () => {
     navigate(-1); // Go back to previous page
   };
 
-  const handleCheckWaitlist = (agency: any) => {
-    // This would navigate to the individual PHA detail page
-    console.log('Check waitlist for:', agency.name);
+  const handleDetailView = (agency: any) => {
+    // Navigate to the individual PHA detail page
+    navigate(`/pha/${agency.id}`);
   };
 
   const handleToggleFavorite = (agency: any) => {
@@ -189,11 +189,11 @@ const StateOffices = () => {
                         {/* Action Button */}
                         <div className="flex items-center justify-between">
                           <Button
-                            onClick={() => handleCheckWaitlist(agency)}
+                            onClick={() => handleDetailView(agency)}
                             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
                           >
                             <CheckCircle className="w-4 h-4" />
-                            Check Waitlist
+                            Detail View
                           </Button>
                           
                           {agency.program_type && (
