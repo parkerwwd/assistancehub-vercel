@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, RotateCcw, Shield, Zap, TrendingUp, Activity } from "lucide-react";
@@ -133,20 +134,20 @@ const PHADataManager: React.FC = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-3xl p-8 mb-8 border border-blue-100 shadow-xl">
+      {/* Mobile-optimized Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 border border-blue-100 shadow-xl">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
-                <Database className="w-8 h-8 text-white" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl shadow-lg">
+                <Database className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent mb-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent mb-1 sm:mb-2">
                   HUD PHA Data Management
                 </h1>
-                <p className="text-lg text-gray-600 max-w-2xl">
+                <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl">
                   Advanced data management platform for Public Housing Authority records with real-time processing and analytics
                 </p>
               </div>
@@ -154,48 +155,49 @@ const PHADataManager: React.FC = () => {
             <Button
               onClick={() => setShowResetDialog(true)}
               variant="outline"
-              size="lg"
-              className="flex items-center gap-3 bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-white hover:shadow-lg transition-all duration-200"
+              size="sm"
+              className="flex items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-white hover:shadow-lg transition-all duration-200 text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-3"
               disabled={isImporting}
             >
-              <RotateCcw className="w-5 h-5" />
-              Reset All Data
+              <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Reset All Data</span>
+              <span className="sm:hidden">Reset</span>
             </Button>
           </div>
 
-          {/* Key Features Pills */}
-          <div className="flex flex-wrap gap-3 mb-6">
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-blue-200">
-              <Shield className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">Secure Processing</span>
+          {/* Mobile-optimized Key Features Pills */}
+          <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-white/60 backdrop-blur-sm rounded-full border border-blue-200">
+              <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
+              <span className="text-xs sm:text-sm font-medium text-blue-700">Secure Processing</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-green-200">
-              <Zap className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-700">Real-time Import</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-white/60 backdrop-blur-sm rounded-full border border-green-200">
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+              <span className="text-xs sm:text-sm font-medium text-green-700">Real-time Import</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-purple-200">
-              <TrendingUp className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-medium text-purple-700">Advanced Analytics</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-white/60 backdrop-blur-sm rounded-full border border-purple-200">
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
+              <span className="text-xs sm:text-sm font-medium text-purple-700">Advanced Analytics</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-orange-200">
-              <Activity className="w-4 h-4 text-orange-600" />
-              <span className="text-sm font-medium text-orange-700">Audit Tracking</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-white/60 backdrop-blur-sm rounded-full border border-orange-200">
+              <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
+              <span className="text-xs sm:text-sm font-medium text-orange-700">Audit Tracking</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         <SecurityNotice />
         
         {/* Enhanced Stats Cards */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
-              <TrendingUp className="w-6 h-6 text-white" />
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 lg:p-8 border border-gray-100">
+          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg sm:rounded-xl shadow-lg">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Database Statistics</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Database Statistics</h2>
           </div>
           <PHAStatsCard 
             totalPHAs={totalPHAs || 0} 
@@ -206,12 +208,12 @@ const PHADataManager: React.FC = () => {
 
         {/* Import Progress Section */}
         {isImporting && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 border border-blue-200 shadow-lg">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg animate-pulse">
-                <Activity className="w-6 h-6 text-white" />
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-blue-200 shadow-lg">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl shadow-lg animate-pulse">
+                <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Import Progress</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Import Progress</h2>
             </div>
             <ImportProgressComponent 
               importProgress={importProgress || { current: 0, total: 0 }} 
@@ -221,12 +223,12 @@ const PHADataManager: React.FC = () => {
         )}
 
         {/* Import Controls Section */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
-              <Database className="w-6 h-6 text-white" />
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 lg:p-8 border border-gray-100">
+          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg sm:rounded-xl shadow-lg">
+              <Database className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Data Import Controls</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Data Import Controls</h2>
           </div>
           <ImportControls
             isImporting={isImporting || false}
@@ -238,12 +240,12 @@ const PHADataManager: React.FC = () => {
         <ImportResults importResult={importResult} />
 
         {/* Upload History Section */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
-              <Activity className="w-6 h-6 text-white" />
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 lg:p-8 border border-gray-100">
+          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg sm:rounded-xl shadow-lg">
+              <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Import History</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Import History</h2>
           </div>
           <PHAUploadsTable uploads={importStats?.fileUploads || []} />
         </div>
@@ -256,29 +258,29 @@ const PHADataManager: React.FC = () => {
         />
 
         <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
-          <AlertDialogContent className="max-w-md">
+          <AlertDialogContent className="max-w-md mx-4 sm:mx-auto">
             <AlertDialogHeader>
-              <AlertDialogTitle className="flex items-center gap-3 text-xl">
+              <AlertDialogTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl">
                 <div className="p-2 bg-red-100 rounded-lg">
-                  <RotateCcw className="w-5 h-5 text-red-600" />
+                  <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                 </div>
                 Reset All Data & Statistics
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-600 leading-relaxed">
+              <AlertDialogDescription className="text-gray-600 leading-relaxed text-sm sm:text-base">
                 This action will permanently delete all PHA records and import statistics from the database. 
                 This operation cannot be undone and will affect all users of the system.
                 <br /><br />
                 <span className="font-semibold text-red-600">Are you absolutely sure you want to continue?</span>
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter className="gap-3">
-              <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
+            <AlertDialogFooter className="gap-2 sm:gap-3 flex-col sm:flex-row">
+              <AlertDialogCancel className="flex-1 order-2 sm:order-1">Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
                   setShowResetDialog(false);
                   handleResetAllStats();
                 }}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold order-1 sm:order-2"
               >
                 Yes, Delete Everything
               </AlertDialogAction>
