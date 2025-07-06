@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { Upload, Download, Shield } from "lucide-react";
+import { Upload, Download, Shield, FileCheck, AlertTriangle, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImportProgress } from '../types';
 import { supabase } from "@/integrations/supabase/client";
@@ -88,7 +88,7 @@ TX003,Houston Housing Authority,"2640 Fountain View Dr, Houston, TX, 77057",(713
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       <input
         ref={fileInputRef}
         type="file"
@@ -97,47 +97,147 @@ TX003,Houston Housing Authority,"2640 Fountain View Dr, Houston, TX, 77057",(713
         className="hidden"
       />
       
-      <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-        <div className="flex items-center gap-2 mb-2">
-          <Shield className="w-4 h-4 text-amber-600" />
-          <span className="text-sm font-medium text-amber-800">Security Notice</span>
+      {/* Enhanced Security Notice */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-6 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-100/30 to-orange-100/30"></div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-lg">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-lg font-bold text-amber-900">Security Notice</h3>
+          </div>
+          <p className="text-amber-800 leading-relaxed">
+            Data imports now require <span className="font-semibold">authentication</span> and are subject to enhanced security validation. 
+            Files are limited to <span className="font-semibold">50MB</span> and <span className="font-semibold">100,000 records</span> maximum.
+          </p>
         </div>
-        <p className="text-xs text-amber-700">
-          Data imports now require authentication and are subject to enhanced security validation. 
-          Files are limited to 50MB and 100,000 records maximum.
-        </p>
       </div>
       
-      <Button
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isImporting}
-        className="w-full flex items-center gap-2"
-        size="lg"
-      >
-        <Upload className="w-4 h-4" />
-        {isImporting ? `Importing HUD Data... (${Math.round(progressPercentage)}%)` : 'Import HUD CSV File (Authentication Required)'}
-      </Button>
+      {/* Main Import Actions */}
+      <div className="space-y-4">
+        {/* Primary Import Button */}
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isImporting}
+            className="relative w-full h-16 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none disabled:opacity-70"
+            size="lg"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-xl">
+                <Upload className="w-6 h-6" />
+              </div>
+              <div className="text-left">
+                <div className="text-lg font-bold">
+                  {isImporting ? `Processing Data... ${Math.round(progressPercentage)}%` : 'Import HUD CSV File'}
+                </div>
+                <div className="text-sm opacity-90">Authentication Required</div>
+              </div>
+            </div>
+            {isImporting && (
+              <div className="absolute bottom-0 left-0 h-1 bg-white/30 rounded-full overflow-hidden w-full">
+                <div 
+                  className="h-full bg-white transition-all duration-300 rounded-full"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+            )}
+          </Button>
+        </div>
 
-      <Button
-        onClick={downloadSampleCSV}
-        variant="outline"
-        className="w-full flex items-center gap-2"
-      >
-        <Download className="w-4 h-4" />
-        Download HUD Format Sample
-      </Button>
+        {/* Secondary Download Button */}
+        <Button
+          onClick={downloadSampleCSV}
+          variant="outline"
+          className="w-full h-14 border-2 border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01]"
+          size="lg"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gray-100 rounded-xl">
+              <Download className="w-5 h-5 text-gray-600" />
+            </div>
+            <div className="text-left">
+              <div className="text-base font-semibold text-gray-900">Download HUD Format Sample</div>
+              <div className="text-sm text-gray-600">CSV template with example data</div>
+            </div>
+          </div>
+        </Button>
+      </div>
 
-      <p className="text-xs text-gray-600 text-center">
-        Upload HUD PHA Contact Information CSV data. The system automatically maps these fields:
-        <br />
-        <strong>PARTICIPANT_CODE → PHA Code</strong>, <strong>FORMAL_PARTICIPANT_NAME → Name</strong>, <strong>FULL_ADDRESS → Complete Address</strong>
-        <br />
-        <strong>HA_PHN_NUM → Phone</strong>, <strong>HA_EMAIL_ADDR_TEXT → Email</strong>, <strong>EXEC_DIR_EMAIL → Executive Director Email</strong>
-        <br />
-        <strong>HA_PROGRAM_TYPE → Program Type</strong>
-        <br />
-        <strong>Note:</strong> Authentication is required for data imports. Tab-separated or comma-separated formats supported.
-      </p>
+      {/* Enhanced Field Mapping Information */}
+      <div className="bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-200 rounded-2xl p-6 shadow-lg">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-lg">
+            <FileCheck className="w-5 h-5 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900">Automatic Field Mapping</h3>
+        </div>
+        
+        <div className="space-y-3">
+          <p className="text-slate-700 leading-relaxed">
+            The system automatically maps HUD PHA Contact Information CSV fields:
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-3 bg-white rounded-xl border border-slate-200">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="font-mono text-sm text-slate-600">PARTICIPANT_CODE</span>
+                <span className="text-slate-400">→</span>
+                <span className="font-semibold text-slate-800">PHA Code</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-white rounded-xl border border-slate-200">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="font-mono text-sm text-slate-600">FORMAL_PARTICIPANT_NAME</span>
+                <span className="text-slate-400">→</span>
+                <span className="font-semibold text-slate-800">Name</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-white rounded-xl border border-slate-200">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <span className="font-mono text-sm text-slate-600">FULL_ADDRESS</span>
+                <span className="text-slate-400">→</span>
+                <span className="font-semibold text-slate-800">Complete Address</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-white rounded-xl border border-slate-200">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span className="font-mono text-sm text-slate-600">HA_PHN_NUM</span>
+                <span className="text-slate-400">→</span>
+                <span className="font-semibold text-slate-800">Phone</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-3 bg-white rounded-xl border border-slate-200">
+                <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+                <span className="font-mono text-sm text-slate-600">HA_EMAIL_ADDR_TEXT</span>
+                <span className="text-slate-400">→</span>
+                <span className="font-semibold text-slate-800">Email</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-white rounded-xl border border-slate-200">
+                <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                <span className="font-mono text-sm text-slate-600">EXEC_DIR_EMAIL</span>
+                <span className="text-slate-400">→</span>
+                <span className="font-semibold text-slate-800">Executive Director Email</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-white rounded-xl border border-slate-200">
+                <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                <span className="font-mono text-sm text-slate-600">HA_PROGRAM_TYPE</span>
+                <span className="text-slate-400">→</span>
+                <span className="font-semibold text-slate-800">Program Type</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-start gap-3 mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+          <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-blue-800">
+            <span className="font-semibold">Note:</span> Authentication is required for data imports. 
+            Both tab-separated and comma-separated formats are supported for maximum compatibility.
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
