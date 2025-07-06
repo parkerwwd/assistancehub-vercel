@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, RotateCcw, Shield, Zap, TrendingUp, Activity } from "lucide-react";
@@ -21,7 +20,6 @@ import { PHAUploadsTable } from "./PHADataManager/components/PHAUploadsTable";
 import { ImportProgressComponent } from "./PHADataManager/components/ImportProgress";
 import { ImportControls } from "./PHADataManager/components/ImportControls";
 import { ImportResults } from "./PHADataManager/components/ImportResults";
-import { HUDFormatInfo } from "./PHADataManager/components/HUDFormatInfo";
 import { FieldMappingDialog } from "./PHADataManager/components/FieldMappingDialog";
 import { SecurityNotice } from "./SecurityNotice";
 import { useToast } from "@/hooks/use-toast";
@@ -249,8 +247,6 @@ const PHADataManager: React.FC = () => {
           </div>
           <PHAUploadsTable uploads={importStats?.fileUploads || []} />
         </div>
-
-        <HUDFormatInfo />
 
         <FieldMappingDialog
           open={showMappingDialog}
