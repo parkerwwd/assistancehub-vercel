@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Building2, ChevronRight, ChevronDown, ArrowRight } from 'lucide-react';
@@ -33,7 +34,6 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
 
   const handleShowAllOffices = () => {
     navigate(`/state/${encodeURIComponent(stateName)}/offices`);
-    });
   };
   
   const citiesToShow = topCities.slice(0, visibleCities);
