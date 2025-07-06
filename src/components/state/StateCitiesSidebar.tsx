@@ -46,14 +46,14 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
 
   return (
     <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-lg overflow-hidden">
-      <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b border-gray-100/50">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+      <CardHeader className="pb-3 md:pb-2 px-4 md:px-6 pt-4 md:pt-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b border-gray-100/50">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <CardTitle className="text-base md:text-lg text-gray-900 flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
               <MapPin className="w-4 h-4 text-white" />
             </div>
             <div>
-              <div className="text-base font-bold">Cities in {stateName}</div>
+              <div className="text-sm md:text-base font-bold leading-tight">Cities in {stateName}</div>
               <CardDescription className="text-xs text-gray-600 mt-0.5">Housing authorities by location</CardDescription>
             </div>
           </CardTitle>
@@ -61,35 +61,35 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
           <Button
             onClick={handleShowAllOffices}
             size="sm"
-            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-xs font-medium shadow-sm"
+            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-xs font-medium shadow-sm w-full sm:w-auto justify-center"
           >
             Show All Offices
             <ArrowRight className="w-3 h-3" />
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-3">
+      <CardContent className="p-3 md:p-3">
         {loading ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="relative overflow-hidden rounded-xl border border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50/30">
-                <div className="p-3">
+                <div className="p-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-8 w-8 rounded-lg" />
-                      <div className="space-y-1">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-3 w-16" />
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-lg" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-20" />
                       </div>
                     </div>
-                    <Skeleton className="h-5 w-5 rounded-full" />
+                    <Skeleton className="h-6 w-6 rounded-full" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {citiesToShow.length > 0 ? (
               <>
                 {citiesToShow.map((city, index) => (
@@ -104,20 +104,20 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
                     {/* Top accent line */}
                     <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                     
-                    <div className="relative p-3">
+                    <div className="relative p-4">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
                           {/* Modern icon container */}
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center group-hover:from-blue-200 group-hover:to-indigo-200 transition-all duration-300 shadow-sm">
-                            <Building2 className="w-4 h-4 text-blue-600 group-hover:text-blue-700 transition-colors" />
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center group-hover:from-blue-200 group-hover:to-indigo-200 transition-all duration-300 shadow-sm flex-shrink-0">
+                            <Building2 className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors" />
                           </div>
                           
-                          <div className="space-y-0.5">
-                            <h3 className="font-bold text-gray-900 text-sm group-hover:text-blue-700 transition-colors duration-300">
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <h3 className="font-bold text-gray-900 text-sm md:text-base group-hover:text-blue-700 transition-colors duration-300 truncate">
                               {city.name}
                             </h3>
                             <div className="flex items-center gap-1">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition-colors">
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition-colors">
                                 {city.properties} {parseInt(city.properties) === 1 ? 'office' : 'offices'}
                               </span>
                             </div>
@@ -125,8 +125,8 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
                         </div>
                         
                         {/* Arrow indicator */}
-                        <div className="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-all duration-300 group-hover:shadow-sm">
-                          <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300" />
+                        <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-all duration-300 group-hover:shadow-sm flex-shrink-0">
+                          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300" />
                         </div>
                       </div>
                     </div>
@@ -140,7 +140,7 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
                       onClick={handleShowMore}
                       variant="outline"
                       size="sm"
-                      className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
+                      className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 py-3"
                     >
                       <ChevronDown className="w-4 h-4 mr-2" />
                       Show More Cities ({topCities.length - visibleCities} remaining)
@@ -149,13 +149,13 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
                 )}
               </>
             ) : (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
-                  <MapPin className="w-8 h-8 text-gray-400" />
+              <div className="text-center py-12">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                  <MapPin className="w-10 h-10 text-gray-400" />
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-base font-semibold text-gray-600">No Cities Found</h3>
-                  <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold text-gray-600">No Cities Found</h3>
+                  <p className="text-sm text-gray-500 max-w-sm mx-auto leading-relaxed">
                     No PHA offices found in {stateName}. Check back later for updates.
                   </p>
                 </div>
