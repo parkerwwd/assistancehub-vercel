@@ -35,12 +35,21 @@ export const getPHATypeFromData = (agency: any) => {
 };
 
 export const getPHATypeColor = (phaType: string) => {
-  switch (phaType) {
-    case "combined": return "#a855f7"; // Purple-500 - more vibrant purple
-    case "section 8": return "#3b82f6"; // Blue-500 - keep existing blue
-    case "low-rent": return "#10b981"; // Emerald-500 - green
-    default: return "#6b7280";
+  if (!phaType) return "#6b7280";
+  
+  const typeToCheck = phaType.toLowerCase();
+  
+  // Handle both raw database values and formatted display values
+  if (typeToCheck.includes('combined')) {
+    return "#a855f7"; // Purple-500 - vibrant purple for Combined
+  } else if (typeToCheck.includes('section 8') || typeToCheck.includes('section8')) {
+    return "#3b82f6"; // Blue-500 - blue for Section 8
+  } else if (typeToCheck.includes('low-rent') || typeToCheck.includes('lowrent')) {
+    return "#10b981"; // Emerald-500 - green for Low-Rent
   }
+  
+  // Default fallback
+  return "#6b7280"; // Gray-500
 };
 
 /**
