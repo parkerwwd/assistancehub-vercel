@@ -8,8 +8,10 @@ const State = () => {
   const { state } = useParams<{ state: string }>();
   const stateName = state ? decodeURIComponent(state) : '';
   
-  const stateData = getStateData();
-  const topCities = getTopCities();
+  console.log('🏛️ State page loaded for:', stateName);
+  
+  const stateData = getStateData(stateName);
+  const topCities = getTopCities(stateName);
 
   return (
     <StatePage 

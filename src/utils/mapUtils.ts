@@ -59,8 +59,54 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 };
 
 /**
+ * Enhanced state filtering that matches agencies by state name or abbreviation
+ */
+const filterByStateName = (agencies: PHAAgency[], stateName: string): PHAAgency[] => {
+  const stateNameLower = stateName.toLowerCase();
+  
+  // Common state abbreviations mapping
+  const stateAbbreviations: Record<string, string> = {
+    'alabama': 'al', 'alaska': 'ak', 'arizona': 'az', 'arkansas': 'ar', 'california': 'ca',
+    'colorado': 'co', 'connecticut': 'ct', 'delaware': 'de', 'florida': 'fl', 'georgia': 'ga',
+    'hawaii': 'hi', 'idaho': 'id', 'illinois': 'il', 'indiana': 'in', 'iowa': 'ia',
+    'kansas': 'ks', 'kentucky': 'ky', 'louisiana': 'la', 'maine': 'me', 'maryland': 'md',
+    'massachusetts': 'ma', 'michigan': 'mi', 'minnesota': 'mn', 'mississippi': 'ms', 'missouri': 'mo',
+    'montana': 'mt', 'nebraska': 'ne', 'nevada': 'nv', 'new hampshire': 'nh', 'new jersey': 'nj',
+    'new mexico': 'nm', 'new york': 'ny', 'north carolina': 'nc', 'north dakota': 'nd', 'ohio': 'oh',
+    'oklahoma': 'ok', 'oregon': 'or', 'pennsylvania': 'pa', 'rhode island': 'ri', 'south carolina': 'sc',
+    'south dakota': 'sd', 'tennessee': 'tn', 'texas': 'tx', 'utah': 'ut', 'vermont': 'vt',
+    'virginia': 'va', 'washington': 'wa', 'west virginia': 'wv', 'wisconsin': 'wi', 'wyoming': 'wy'
+  };
+  
+  const stateAbbr = stateAbbreviations[stateNameLower];
+  
+  console.log('🔍 Filtering by state:', stateName, 'abbreviation:', stateAbbr);
+  
+  return agencies.filter(agency => {
+    if (!agency.address) return false;
+    
+    const addressLower = agency.address.toLowerCase();
+    
+    // Check for full state name
+    if (addressLower.includes(stateNameLower)) {
+      return true;
+    }
+    
+    // Check for state abbreviation (with word boundaries to avoid false matches)
+    if (stateAbbr) {
+      const abbrevRegex = new RegExp(`\\b${stateAbbr}\\b`, 'i');
+      if (abbrevRegex.test(agency.address)) {
+        return true;
+      }
+    }
+    
+    return false;
+  });
+};
+
+/**
  * Filters PHA agencies based on the selected location from search
- * - For states: matches agencies using location search terms (like counties)
+ * - For states: matches agencies using state name and abbreviation
  * - For cities: matches all agencies within 25 miles of the city
  * - For counties: matches agencies in that county and state
  */
@@ -75,14 +121,8 @@ export const filterPHAAgenciesByLocation = (
   console.log('🔍 Filtering PHA agencies for location:', selectedLocation.name, selectedLocation.type);
 
   if (selectedLocation.type === 'state') {
-    // For states, use the same logic as counties - search through location fields
-    const searchTerms = getLocationSearchTerms(selectedLocation);
-    console.log('🔍 State search terms:', searchTerms);
-
-    const filteredAgencies = agencies.filter(agency => {
-      return searchTerms.some(term => matchesAgencyLocation(agency, term));
-    });
-
+    // Enhanced state filtering
+    const filteredAgencies = filterByStateName(agencies, selectedLocation.name);
     console.log('🔍 State filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
     return filteredAgencies;
   }
@@ -143,6 +183,21 @@ export const filterPHAAgenciesByLocation = (
 
   console.log('🔍 Fallback filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
   return filteredAgencies;
+};
+
+/**
+ * Filter PHA agencies by state name directly (for state page integration)
+ */
+export const filterPHAAgenciesByState = (
+  agencies: PHAAgency[],
+  stateName: string
+): PHAAgency[] => {
+  if (!agencies || agencies.length === 0 || !stateName) {
+    return [];
+  }
+
+  console.log('🏛️ Filtering PHA agencies for state:', stateName);
+  return filterByStateName(agencies, stateName);
 };
 
 /**
