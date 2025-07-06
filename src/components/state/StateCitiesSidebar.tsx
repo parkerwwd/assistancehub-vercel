@@ -83,7 +83,7 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
                         </h3>
                         <div className="flex items-center gap-2">
                           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition-colors">
-                            {city.properties} authorities
+                            {city.properties} {parseInt(city.properties) === 1 ? 'office' : 'offices'}
                           </span>
                         </div>
                       </div>
