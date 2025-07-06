@@ -7,7 +7,6 @@ import StateAboutSection from '@/components/state/StateAboutSection';
 import StateSearchGuide from '@/components/state/StateSearchGuide';
 import StateCitiesSidebar from '@/components/state/StateCitiesSidebar';
 import StateContactHelp from '@/components/state/StateContactHelp';
-import StatePHASection from '@/components/state/StatePHASection';
 import { StateDataType, CityType } from './StateData';
 import { Database } from "@/integrations/supabase/types";
 
@@ -45,13 +44,6 @@ const StatePage: React.FC<StatePageProps> = ({
             <div className="lg:col-span-2 space-y-8">
               <StateAboutSection stateName={stateName} stateData={stateData} />
               <StateSearchGuide stateName={stateName} />
-              
-              {/* Add PHA Offices Section */}
-              <StatePHASection 
-                stateName={stateName}
-                phaAgencies={phaAgencies}
-                loading={phaLoading}
-              />
             </div>
 
             <div className="space-y-6">
