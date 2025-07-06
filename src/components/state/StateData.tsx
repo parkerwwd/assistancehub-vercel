@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Home, Building, MapPin, Users } from 'lucide-react';
 
@@ -87,6 +88,7 @@ export const createStateData = (stateName: string, phaAgencies: any[]): StateDat
     occupancyRate: realStats.occupancyRate,
     quickStats: [
       { label: 'PHA Offices Found', value: phaCount.toString(), icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+      { label: 'Housing Authorities', value: phaCount.toString(), icon: Building, color: 'text-green-600', bgColor: 'bg-green-50' },
       { label: 'Estimated Cities', value: estimatedCities, icon: MapPin, color: 'text-purple-600', bgColor: 'bg-purple-50' },
       { label: 'Active Programs', value: Math.max(Math.floor(phaCount / 3), 1).toString(), icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-50' }
     ]

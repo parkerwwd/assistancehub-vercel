@@ -59,7 +59,7 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
 
           {/* Enhanced Stats Card with More Blur Effect */}
           <div className="bg-white/20 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/30 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
               {stateData.quickStats.map((stat, index) => (
                 <div key={index} className="text-center">
                   <div className={`w-16 h-16 mx-auto mb-3 rounded-2xl ${stat.bgColor} flex items-center justify-center backdrop-blur-xl`}>
