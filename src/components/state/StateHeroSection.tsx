@@ -43,11 +43,6 @@ const StateHeroSection: React.FC<StateHeroSectionProps> = ({ stateName, stateDat
       
       <div className="relative container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto text-center">
-          {/* State Badge */}
-          <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-2xl border border-white/20 px-8 py-4 rounded-full mb-8 shadow-2xl">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-white font-semibold text-lg">Live Housing Data for {stateName}</span>
-          </div>
 
           {/* Main Title */}
           <h1 className="text-6xl md:text-8xl font-bold text-white mb-8 leading-tight">
