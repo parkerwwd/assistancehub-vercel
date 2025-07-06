@@ -1,4 +1,3 @@
-
 import { Database } from "@/integrations/supabase/types";
 import { USLocation } from "@/data/usLocations";
 
@@ -14,14 +13,15 @@ export const getWaitlistColor = (status: string) => {
 };
 
 export const getPHATypeFromData = (agency: any) => {
-  // First check if we have HA_PROGRAM_TYPE field
-  if (agency.ha_program_type) {
-    // Map various program types to our two simplified categories
-    const programType = agency.ha_program_type.toLowerCase();
-    if (programType.includes('combined') || programType.includes('both')) {
+  // Check if we have program_type field
+  if (agency.program_type) {
+    const programType = agency.program_type.toLowerCase();
+    if (programType.includes('combined')) {
       return "Combined PHA";
-    } else {
+    } else if (programType.includes('section 8')) {
       return "Section 8 PHA";
+    } else if (programType.includes('low-rent')) {
+      return "Low-Rent PHA";
     }
   }
   
@@ -29,7 +29,7 @@ export const getPHATypeFromData = (agency: any) => {
   if (agency.section8_units_count && agency.section8_units_count > 0) {
     return "Section 8 PHA";
   } else {
-    // If they don't support HCV, they likely have public housing too, so Combined
+    // Default fallback
     return "Combined PHA";
   }
 };
@@ -38,6 +38,7 @@ export const getPHATypeColor = (phaType: string) => {
   switch (phaType) {
     case "Combined PHA": return "#8b5cf6";
     case "Section 8 PHA": return "#3b82f6";
+    case "Low-Rent PHA": return "#10b981";
     default: return "#6b7280";
   }
 };
