@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, Building2, ChevronRight, Users, Clock } from 'lucide-react';
+import { MapPin, Building2, ChevronRight, Users, Clock, Home } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
