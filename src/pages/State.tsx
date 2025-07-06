@@ -13,6 +13,9 @@ import StateAboutSection from '@/components/state/StateAboutSection';
 import StateSearchGuide from '@/components/state/StateSearchGuide';
 import StateCitiesSidebar from '@/components/state/StateCitiesSidebar';
 import StateContactHelp from '@/components/state/StateContactHelp';
+import CitySearch from '@/components/CitySearch';
+import { USLocation } from '@/data/usLocations';
+import { filterPHAAgenciesByLocation } from '@/utils/mapUtils';
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -20,9 +23,11 @@ const State = () => {
   const { state } = useParams<{ state: string }>();
   const stateName = state ? decodeURIComponent(state) : '';
   
+  const [allPHAAgencies, setAllPHAAgencies] = useState<PHAAgency[]>([]);
   const [phaAgencies, setPHAAgencies] = useState<PHAAgency[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filteredLocation, setFilteredLocation] = useState<USLocation | null>(null);
 
   useEffect(() => {
     const fetchPHAData = async () => {
@@ -41,7 +46,9 @@ const State = () => {
         }
 
         console.log('Fetched PHA data:', data);
-        setPHAAgencies(data || []);
+        const agencies = data || [];
+        setAllPHAAgencies(agencies);
+        setPHAAgencies(agencies);
       } catch (err) {
         console.error('Error fetching PHA data:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch PHA data');
@@ -55,7 +62,22 @@ const State = () => {
     }
   }, [stateName]);
 
-  // Calculate real statistics from the fetched data
+  const handleCitySelect = (location: USLocation) => {
+    console.log('🏙️ Location selected in State page:', location.name);
+    setFilteredLocation(location);
+    
+    // Filter agencies based on selected location
+    const filtered = filterPHAAgenciesByLocation(allPHAAgencies, location);
+    setPHAAgencies(filtered);
+  };
+
+  const clearLocationFilter = () => {
+    console.log('🧹 Clearing location filter in State page');
+    setFilteredLocation(null);
+    setPHAAgencies(allPHAAgencies);
+  };
+
+  // Calculate real statistics from the displayed agencies (filtered or all)
   const totalAgencies = phaAgencies.length;
   
   // Extract cities from addresses more accurately
@@ -285,6 +307,33 @@ const State = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <Header />
+      
+      {/* Search Section - Same as Section8 page */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="max-w-md mx-auto">
+            <CitySearch 
+              onCitySelect={handleCitySelect}
+              placeholder="Search cities within this state..."
+            />
+            {filteredLocation && (
+              <div className="mt-2 flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg">
+                <span className="text-sm text-blue-700">
+                  Showing results for: <strong>{filteredLocation.name}</strong>
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearLocationFilter}
+                  className="text-blue-600 hover:text-blue-800 h-auto p-1"
+                >
+                  Clear
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       
       <StateHeroSection stateName={stateName} stateData={stateData} />
 
