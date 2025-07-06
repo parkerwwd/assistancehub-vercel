@@ -9,8 +9,8 @@ import { geocodePHAAddress } from "@/services/geocodingService";
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export const useMapLogic = () => {
-  // Use your provided token
-  const mapboxToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjenhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
+  // Use environment variable for Mapbox token
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || "";
   const [selectedOffice, setSelectedOffice] = useState<PHAAgency | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; name: string } | null>(null);
   const [tokenError, setTokenError] = useState("");
@@ -29,10 +29,14 @@ export const useMapLogic = () => {
     clearLocationFilter
   } = usePHAData();
 
-  // Token is now hardcoded, so this function is a no-op
+  // Handle token changes if needed
   const handleTokenChange = (token: string) => {
-    console.log('🔑 Token change requested but using hardcoded token:', token ? 'Present' : 'Empty');
-    // No-op since we're using a hardcoded token
+    console.log('🔑 Token change requested:', token ? 'Present' : 'Empty');
+    if (!token) {
+      setTokenError("Mapbox token is required");
+    } else {
+      setTokenError("");
+    }
   };
 
   const handlePageChange = (page: number) => {

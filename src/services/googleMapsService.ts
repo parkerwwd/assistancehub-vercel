@@ -8,7 +8,7 @@ export interface StreetViewImageOptions {
 }
 
 export class GoogleMapsService {
-  private static readonly API_KEY = 'AIzaSyDldtppRX48PKyBUvlP7mnRFzO_vb6sVgU';
+  private static readonly API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
   private static readonly STREET_VIEW_BASE_URL = 'https://maps.googleapis.com/maps/api/streetview';
 
   static getStreetViewImage(options: StreetViewImageOptions): string {
