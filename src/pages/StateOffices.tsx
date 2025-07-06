@@ -223,7 +223,7 @@ const StateOffices = () => {
                             </div>
                             
                             <div className="text-center">
-                              <Building className="w-8 h-8 text-white/40 mx-auto mb-2 group-hover:scale-110 transition-transform duration-300" />
+                              <Building className="w-8 h-8 text-white/40 mx-auto mb-3 group-hover:scale-110 transition-transform duration-300" />
                               <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1 inline-block">
                                 <span className="text-white text-xs font-medium flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
