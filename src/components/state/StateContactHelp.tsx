@@ -8,7 +8,7 @@ const StateContactHelp: React.FC = () => {
     { label: 'Section 8 Housing', icon: Home, highlight: false },
     { label: 'Income Restricted Apartments', icon: Building2, highlight: false },
     { label: 'Townhomes', icon: Home, highlight: false },
-    { label: 'Open Section 8 Waiting Lists', icon: FileText, highlight: true },
+    { label: 'Open Section 8 Waiting Lists', icon: FileText, highlight: false },
     { label: 'Low Income Rentals', icon: MapPin, highlight: false },
     { label: 'Public Housing', icon: Building2, highlight: false },
     { label: 'Public Housing Agencies (PHA)', icon: Users, highlight: false }
@@ -32,26 +32,26 @@ const StateContactHelp: React.FC = () => {
               key={index} 
               className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:shadow-md ${
                 type.highlight 
-                  ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100' 
+                  ? 'bg-green-50 border border-green-200 hover:bg-green-100' 
                   : 'bg-white/70 hover:bg-white'
               }`}
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                 type.highlight 
-                  ? 'bg-blue-500 text-white' 
+                  ? 'bg-green-500 text-white' 
                   : 'bg-green-500 text-white'
               }`}>
                 <CheckCircle className="w-4 h-4" />
               </div>
               <div className="flex-1">
                 <span className={`font-medium ${
-                  type.highlight ? 'text-blue-700' : 'text-green-700'
+                  type.highlight ? 'text-green-700' : 'text-green-700'
                 }`}>
                   {type.label}
                 </span>
               </div>
               <type.icon className={`w-4 h-4 ${
-                type.highlight ? 'text-blue-500' : 'text-green-500'
+                type.highlight ? 'text-green-500' : 'text-green-500'
               }`} />
             </div>
           ))}
