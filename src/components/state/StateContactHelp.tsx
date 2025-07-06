@@ -50,7 +50,7 @@ const StateContactHelp: React.FC = () => {
               }`}
               onClick={type.onClick}
               style={{
-                animationDuration: type.highlight ? '2s' : undefined,
+                animationDuration: type.highlight ? '3s' : undefined,
                 animationIterationCount: type.highlight ? 'infinite' : undefined
               }}
             >
@@ -62,7 +62,7 @@ const StateContactHelp: React.FC = () => {
                 type.clickable ? 'group-hover:rotate-12' : ''
               }`}
               style={{
-                animationDuration: type.highlight ? '3s' : undefined,
+                animationDuration: type.highlight ? '4s' : undefined,
                 animationIterationCount: type.highlight ? 'infinite' : undefined
               }}>
                 <CheckCircle className="w-4 h-4" />
@@ -72,7 +72,11 @@ const StateContactHelp: React.FC = () => {
                   type.highlight ? 'text-blue-700 animate-pulse' : 'text-green-700'
                 } ${
                   type.clickable ? 'hover:text-blue-800' : ''
-                }`}>
+                }`}
+                style={{
+                  animationDuration: type.highlight ? '2.5s' : undefined,
+                  animationIterationCount: type.highlight ? 'infinite' : undefined
+                }}>
                   {type.label}
                 </span>
               </div>
@@ -83,7 +87,7 @@ const StateContactHelp: React.FC = () => {
               }`}
               style={{
                 animationDelay: type.highlight ? '0.5s' : undefined,
-                animationDuration: type.highlight ? '1.5s' : undefined,
+                animationDuration: type.highlight ? '2s' : undefined,
                 animationIterationCount: type.highlight ? 'infinite' : undefined
               }} />
             </div>
