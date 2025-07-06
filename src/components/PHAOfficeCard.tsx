@@ -71,7 +71,7 @@ const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
                     color: getPHATypeColor(phaType)
                   }}
                 >
-                  {phaType}
+                  {agency.program_type}
                 </span>
               </div>
             </div>
