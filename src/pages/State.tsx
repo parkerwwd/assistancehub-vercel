@@ -25,7 +25,9 @@ const State = () => {
 
   // Generate state data with actual PHA count
   const stateData = getStateData(stateName, statePHAAgencies.length);
-  const topCities = getTopCities(stateName);
+  
+  // Generate cities data from actual PHA agencies
+  const topCities = getTopCities(stateName, statePHAAgencies);
 
   return (
     <StatePage 

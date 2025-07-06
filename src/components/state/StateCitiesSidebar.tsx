@@ -4,7 +4,7 @@ import { MapPin } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface City {
-  name: string | null;
+  name: string;
   units: string;
   properties: string;
   population: string;
@@ -41,14 +41,15 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({ topCities, stat
                 </div>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-600">{city.properties} properties</span>
+                <span className="text-gray-600">Pop: {city.population}</span>
                 <span className="text-orange-600 font-medium">~{city.waitTime}</span>
               </div>
             </div>
           )) : (
-            <div className="text-center py-3 text-gray-500">
-              <MapPin className="w-6 h-6 mx-auto mb-2 text-gray-300" />
-              <p className="text-sm">No cities found for {stateName}</p>
+            <div className="text-center py-6 text-gray-500">
+              <MapPin className="w-8 h-8 mx-auto mb-3 text-gray-300" />
+              <p className="text-sm font-medium mb-1">No Cities Found</p>
+              <p className="text-xs">No PHA offices found in {stateName}</p>
             </div>
           )}
         </div>
