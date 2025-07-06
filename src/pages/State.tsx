@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -7,7 +6,6 @@ import { Home, Building, MapPin, Users, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePHAData } from '@/hooks/usePHAData';
 import StateHeroSection from '@/components/state/StateHeroSection';
-import StateKeyFeatures from '@/components/state/StateKeyFeatures';
 import StateAboutSection from '@/components/state/StateAboutSection';
 import StateSearchGuide from '@/components/state/StateSearchGuide';
 import StateCitiesSidebar from '@/components/state/StateCitiesSidebar';
@@ -205,8 +203,6 @@ const State = () => {
       <StateHeroSection stateName={stateName} stateData={stateData} />
 
       <div className="container mx-auto px-4 py-16">
-        <StateKeyFeatures />
-
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-3 gap-8">
             
