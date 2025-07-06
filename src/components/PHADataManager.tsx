@@ -134,30 +134,6 @@ const PHADataManager: React.FC = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-      {/* Mobile-First Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl sm:rounded-2xl lg:rounded-3xl p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-8 border border-blue-100 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
-        <div className="relative z-10">
-          <div className="flex flex-col space-y-3 sm:space-y-4 mb-3 sm:mb-4 lg:mb-6">
-            <div className="flex items-start justify-between gap-2 sm:gap-4">
-              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl shadow-lg flex-shrink-0">
-                  <Database className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent leading-tight">
-                    HUD PHA Data Management
-                  </h1>
-                  <p className="text-xs sm:text-sm lg:text-base text-gray-600 mt-1 line-clamp-2">
-                    Advanced data management platform for Public Housing Authority records
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="space-y-4 sm:space-y-6 lg:space-y-8">
         <SecurityNotice />
