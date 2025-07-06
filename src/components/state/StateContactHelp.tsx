@@ -45,7 +45,7 @@ const StateContactHelp: React.FC = () => {
                   : 'bg-white/70 hover:bg-white'
               } ${
                 type.clickable 
-                  ? 'cursor-pointer hover:shadow-lg hover:scale-105 active:scale-95 transform' 
+                  ? 'cursor-pointer hover:shadow-lg hover:scale-110 active:scale-95 transform animate-bounce' 
                   : ''
               }`}
               onClick={type.onClick}
@@ -56,9 +56,15 @@ const StateContactHelp: React.FC = () => {
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                 type.highlight 
-                  ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                  ? 'bg-blue-500 text-white hover:bg-blue-600 animate-spin' 
                   : 'bg-green-500 text-white'
-              }`}>
+              } ${
+                type.clickable ? 'group-hover:rotate-12' : ''
+              }`}
+              style={{
+                animationDuration: type.highlight ? '3s' : undefined,
+                animationIterationCount: type.highlight ? 'infinite' : undefined
+              }}>
                 <CheckCircle className="w-4 h-4" />
               </div>
               <div className="flex-1">
@@ -66,19 +72,20 @@ const StateContactHelp: React.FC = () => {
                   type.highlight ? 'text-blue-700 animate-pulse' : 'text-green-700'
                 } ${
                   type.clickable ? 'hover:text-blue-800' : ''
-                }`}
-                style={{
-                  animationDuration: type.highlight ? '2.5s' : undefined,
-                  animationIterationCount: type.highlight ? 'infinite' : undefined
-                }}>
+                }`}>
                   {type.label}
                 </span>
               </div>
               <type.icon className={`w-4 h-4 transition-all duration-300 ${
-                type.highlight ? 'text-blue-500' : 'text-green-500'
+                type.highlight ? 'text-blue-500 animate-bounce' : 'text-green-500'
               } ${
                 type.clickable ? 'hover:text-blue-600 hover:translate-x-2' : ''
-              }`} />
+              }`}
+              style={{
+                animationDelay: type.highlight ? '0.5s' : undefined,
+                animationDuration: type.highlight ? '1.5s' : undefined,
+                animationIterationCount: type.highlight ? 'infinite' : undefined
+              }} />
             </div>
           ))}
         </div>

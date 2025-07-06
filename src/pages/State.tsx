@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -13,9 +12,6 @@ import StateAboutSection from '@/components/state/StateAboutSection';
 import StateSearchGuide from '@/components/state/StateSearchGuide';
 import StateCitiesSidebar from '@/components/state/StateCitiesSidebar';
 import StateContactHelp from '@/components/state/StateContactHelp';
-import CitySearch from '@/components/CitySearch';
-import { USLocation } from '@/data/usLocations';
-import { filterPHAAgenciesByLocation } from '@/utils/mapUtils';
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -23,11 +19,9 @@ const State = () => {
   const { state } = useParams<{ state: string }>();
   const stateName = state ? decodeURIComponent(state) : '';
   
-  const [allPHAAgencies, setAllPHAAgencies] = useState<PHAAgency[]>([]);
   const [phaAgencies, setPHAAgencies] = useState<PHAAgency[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filteredLocation, setFilteredLocation] = useState<USLocation | null>(null);
 
   useEffect(() => {
     const fetchPHAData = async () => {
@@ -35,7 +29,7 @@ const State = () => {
         setLoading(true);
         console.log('Fetching PHA data for state:', stateName);
         
-        // Fetch PHA agencies that contain the state name in their address
+        // Fetch all PHA agencies and filter by state name in the address
         const { data, error } = await supabase
           .from('pha_agencies')
           .select('*')
@@ -46,9 +40,7 @@ const State = () => {
         }
 
         console.log('Fetched PHA data:', data);
-        const agencies = data || [];
-        setAllPHAAgencies(agencies);
-        setPHAAgencies(agencies);
+        setPHAAgencies(data || []);
       } catch (err) {
         console.error('Error fetching PHA data:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch PHA data');
@@ -62,85 +54,25 @@ const State = () => {
     }
   }, [stateName]);
 
-  const handleCitySelect = (location: USLocation) => {
-    console.log('🏙️ Location selected in State page:', location.name);
-    setFilteredLocation(location);
-    
-    // Filter agencies based on selected location
-    const filtered = filterPHAAgenciesByLocation(allPHAAgencies, location);
-    setPHAAgencies(filtered);
-  };
-
-  const clearLocationFilter = () => {
-    console.log('🧹 Clearing location filter in State page');
-    setFilteredLocation(null);
-    setPHAAgencies(allPHAAgencies);
-  };
-
-  // Calculate real statistics from the displayed agencies (filtered or all)
+  // Calculate real statistics from the fetched data
   const totalAgencies = phaAgencies.length;
-  
-  // Extract cities from addresses more accurately
-  const extractCityFromAddress = (address: string, stateName: string): string | null => {
-    if (!address) return null;
-    
-    // Split address by commas
-    const parts = address.split(',').map(part => part.trim());
-    
-    // Look for the part that comes before the state name
-    for (let i = 0; i < parts.length - 1; i++) {
-      const currentPart = parts[i];
-      const nextPart = parts[i + 1];
-      
-      // If the next part contains the state name, current part is likely the city
-      if (nextPart && nextPart.toLowerCase().includes(stateName.toLowerCase())) {
-        // Clean up the city name - remove any numbers or extra characters
-        const cityName = currentPart.replace(/\d+/g, '').replace(/[^\w\s]/g, '').trim();
-        if (cityName.length > 2 && !cityName.toLowerCase().includes('po box')) {
-          return cityName;
-        }
-      }
-    }
-    
-    return null;
-  };
+  const totalUnits = totalAgencies * 150; // Estimate 150 units per agency on average
+  const citiesCount = new Set(
+    phaAgencies
+      .map(agency => {
+        const address = agency.address || '';
+        const parts = address.split(',');
+        return parts.length > 1 ? parts[parts.length - 2].trim() : '';
+      })
+      .filter(city => city && city !== stateName)
+  ).size;
 
-  // Extract unique cities from addresses
-  const cityData = new Map<string, { count: number; agencies: PHAAgency[] }>();
-  
-  phaAgencies.forEach(agency => {
-    const cityName = extractCityFromAddress(agency.address || '', stateName);
-    if (cityName) {
-      if (!cityData.has(cityName)) {
-        cityData.set(cityName, { count: 0, agencies: [] });
-      }
-      const data = cityData.get(cityName)!;
-      data.count += 1;
-      data.agencies.push(agency);
-    }
-  });
-  
-  const citiesCount = cityData.size;
-
-  // Calculate program type distribution
+  // Calculate program types
   const programTypes = phaAgencies.reduce((acc, agency) => {
     const type = agency.program_type || 'Unknown';
     acc[type] = (acc[type] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-
-  // Calculate realistic estimates based on actual data
-  const estimatedUnitsPerAgency = {
-    'Section 8': 200,
-    'Combined': 300,
-    'Low-Rent': 100,
-    'Unknown': 150
-  };
-
-  const totalEstimatedUnits = phaAgencies.reduce((total, agency) => {
-    const programType = agency.program_type || 'Unknown';
-    return total + (estimatedUnitsPerAgency[programType as keyof typeof estimatedUnitsPerAgency] || 150);
-  }, 0);
 
   // Get current date for last updated
   const currentDate = new Date();
@@ -149,22 +81,11 @@ const State = () => {
     year: 'numeric' 
   });
 
-  // Calculate occupancy rate based on program mix
-  const getOccupancyRate = () => {
-    if (totalAgencies === 0) return '92%';
-    
-    const section8Count = programTypes['Section 8'] || 0;
-    const combinedCount = programTypes['Combined'] || 0;
-    const lowRentCount = programTypes['Low-Rent'] || 0;
-    
-    // Section 8 typically has higher occupancy
-    const weightedOccupancy = 
-      (section8Count * 95 + combinedCount * 90 + lowRentCount * 88) / Math.max(totalAgencies, 1);
-    
-    return Math.round(weightedOccupancy) + '%';
-  };
+  // Calculate occupancy rate (using a realistic range based on data availability)
+  const occupancyRate = totalAgencies > 0 ? 
+    Math.min(95, Math.max(85, 90 + (totalAgencies % 10))) + '%' : '92%';
 
-  // Calculate average wait time based on program types and demand
+  // Calculate average wait time based on agency count and program types
   const getAverageWaitTime = () => {
     if (totalAgencies === 0) return '18-36 months';
     
@@ -172,76 +93,54 @@ const State = () => {
     const combinedCount = programTypes['Combined'] || 0;
     const lowRentCount = programTypes['Low-Rent'] || 0;
     
-    // More Section 8 programs typically mean longer wait times due to higher demand
-    const baseWaitTime = 18;
-    const additionalWait = Math.min(30, 
-      (section8Count * 4) + (combinedCount * 2) + (lowRentCount * 1)
-    );
+    // More Section 8 programs typically mean longer wait times
+    const waitTimeMonths = Math.max(12, Math.min(48, 
+      18 + (section8Count * 3) + (combinedCount * 2) + (lowRentCount * 1)
+    ));
     
-    const minWait = baseWaitTime + additionalWait;
-    const maxWait = minWait + 12;
-    
-    return `${minWait}-${maxWait} months`;
+    return `${waitTimeMonths}-${waitTimeMonths + 18} months`;
   };
 
   const stateData = {
-    totalUnits: totalEstimatedUnits.toLocaleString(),
+    totalUnits: totalUnits.toLocaleString(),
     properties: totalAgencies.toString(),
     cities: Math.max(citiesCount, 1).toString(),
     agencies: totalAgencies.toString(),
     averageWaitTime: getAverageWaitTime(),
     lastUpdated: lastUpdated,
-    occupancyRate: getOccupancyRate(),
+    occupancyRate: occupancyRate,
     quickStats: [
-      { 
-        label: 'Available Units', 
-        value: totalEstimatedUnits.toLocaleString(), 
-        icon: Home, 
-        color: 'text-blue-600', 
-        bgColor: 'bg-blue-50' 
-      },
-      { 
-        label: 'Housing Authorities', 
-        value: totalAgencies.toString(), 
-        icon: Building, 
-        color: 'text-green-600', 
-        bgColor: 'bg-green-50' 
-      },
-      { 
-        label: 'Cities Served', 
-        value: Math.max(citiesCount, 1).toString(), 
-        icon: MapPin, 
-        color: 'text-purple-600', 
-        bgColor: 'bg-purple-50' 
-      },
-      { 
-        label: 'Active Programs', 
-        value: Object.keys(programTypes).length.toString(), 
-        icon: Users, 
-        color: 'text-orange-600', 
-        bgColor: 'bg-orange-50' 
-      }
+      { label: 'Available Units', value: totalUnits.toLocaleString(), icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+      { label: 'Housing Authorities', value: totalAgencies.toString(), icon: Building, color: 'text-green-600', bgColor: 'bg-green-50' },
+      { label: 'Cities Served', value: Math.max(citiesCount, 1).toString(), icon: MapPin, color: 'text-purple-600', bgColor: 'bg-purple-50' },
+      { label: 'Active Programs', value: Object.keys(programTypes).length.toString(), icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-50' }
     ]
   };
 
-  // Create cities data for sidebar from the cityData Map
-  const topCities = Array.from(cityData.entries())
-    .sort((a, b) => b[1].count - a[1].count) // Sort by number of agencies descending
-    .slice(0, 6)
-    .map(([cityName, data]) => {
-      const cityUnits = data.agencies.reduce((total, agency) => {
-        const programType = agency.program_type || 'Unknown';
-        return total + (estimatedUnitsPerAgency[programType as keyof typeof estimatedUnitsPerAgency] || 150);
-      }, 0);
-
-      return {
-        name: cityName,
-        units: cityUnits.toString(),
-        properties: data.count.toString(),
-        population: 'N/A',
-        waitTime: getAverageWaitTime()
-      };
-    });
+  // Extract cities from PHA agencies data
+  const topCities = Array.from(new Set(
+    phaAgencies
+      .map(agency => {
+        const address = agency.address || '';
+        const parts = address.split(',');
+        const city = parts.length > 1 ? parts[parts.length - 2].trim() : '';
+        return city && city !== stateName ? city : null;
+      })
+      .filter(Boolean)
+  ))
+  .slice(0, 6)
+  .map(city => {
+    const cityAgencies = phaAgencies.filter(agency => 
+      agency.address?.includes(city || '')
+    );
+    return {
+      name: city,
+      units: (cityAgencies.length * 150).toString(),
+      properties: cityAgencies.length.toString(),
+      population: 'N/A',
+      waitTime: getAverageWaitTime()
+    };
+  });
 
   // Create housing programs based on actual data
   const housingPrograms = [
@@ -250,7 +149,7 @@ const State = () => {
       description: 'Portable rental assistance allowing families to choose their housing',
       availability: (programTypes['Section 8'] || 0) > 0 ? 'Available' : 'Limited Openings',
       status: (programTypes['Section 8'] || 0) > 0 ? 'available' : 'limited',
-      participants: Math.floor(totalEstimatedUnits * 0.6).toLocaleString() + '+',
+      participants: Math.floor(totalUnits * 0.6).toLocaleString() + '+',
       fundingLevel: 'Federally Funded',
       agencyCount: programTypes['Section 8'] || 0
     },
@@ -259,7 +158,7 @@ const State = () => {
       description: 'Government-owned affordable housing developments',
       availability: (programTypes['Low-Rent'] || 0) > 0 ? 'Available' : 'Limited Openings',
       status: (programTypes['Low-Rent'] || 0) > 0 ? 'available' : 'limited',
-      participants: Math.floor(totalEstimatedUnits * 0.3).toLocaleString() + '+',
+      participants: Math.floor(totalUnits * 0.3).toLocaleString() + '+',
       fundingLevel: 'HUD Funded',
       agencyCount: programTypes['Low-Rent'] || 0
     },
@@ -268,7 +167,7 @@ const State = () => {
       description: 'Multiple housing assistance programs under one authority',
       availability: (programTypes['Combined'] || 0) > 0 ? 'Available' : 'Not Available',
       status: (programTypes['Combined'] || 0) > 0 ? 'available' : 'unavailable',
-      participants: Math.floor(totalEstimatedUnits * 0.1).toLocaleString() + '+',
+      participants: Math.floor(totalUnits * 0.1).toLocaleString() + '+',
       fundingLevel: 'Federal & State Funded',
       agencyCount: programTypes['Combined'] || 0
     }
@@ -307,33 +206,6 @@ const State = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <Header />
-      
-      {/* Search Section - Same as Section8 page */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="max-w-md mx-auto">
-            <CitySearch 
-              onCitySelect={handleCitySelect}
-              placeholder="Search cities within this state..."
-            />
-            {filteredLocation && (
-              <div className="mt-2 flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg">
-                <span className="text-sm text-blue-700">
-                  Showing results for: <strong>{filteredLocation.name}</strong>
-                </span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={clearLocationFilter}
-                  className="text-blue-600 hover:text-blue-800 h-auto p-1"
-                >
-                  Clear
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
       
       <StateHeroSection stateName={stateName} stateData={stateData} />
 
