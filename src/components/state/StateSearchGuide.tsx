@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Search, MousePointer, Accessibility, Users, UserCheck, Home, HelpCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,11 +9,7 @@ interface StateSearchGuideProps {
 }
 
 const StateSearchGuide: React.FC<StateSearchGuideProps> = ({ stateName }) => {
-  const navigate = useNavigate();
 
-  const handleShowAllOffices = () => {
-    navigate(`/state/${encodeURIComponent(stateName)}/offices`);
-  };
 
   const housingTypes = [
     {
@@ -62,12 +57,6 @@ const StateSearchGuide: React.FC<StateSearchGuideProps> = ({ stateName }) => {
               Learn how to navigate and find housing opportunities in {stateName}
             </CardDescription>
           </div>
-          <Button 
-            onClick={handleShowAllOffices}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-          >
-            Show All Offices →
-          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-8">

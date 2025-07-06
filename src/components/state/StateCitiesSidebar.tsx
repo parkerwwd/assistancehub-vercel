@@ -32,13 +32,7 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
   };
 
   const handleShowAllOffices = () => {
-    navigate('/section8', { 
-      state: { 
-        searchLocation: { 
-          name: stateName, 
-          type: 'state' 
-        } 
-      } 
+    navigate(`/state/${encodeURIComponent(stateName)}/offices`);
     });
   };
   
