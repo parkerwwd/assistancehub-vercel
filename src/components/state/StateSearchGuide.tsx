@@ -62,10 +62,10 @@ const StateSearchGuide: React.FC<StateSearchGuideProps> = ({ stateName }) => {
           
           <div className="relative p-6 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-xl">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+              <div className="w-16 h-12 bg-gray-200 rounded-lg "></div>
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-3 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded "></div>
+                <div className="h-3 bg-gray-200 rounded w-2/3 "></div>
               </div>
               <MousePointer className="w-8 h-8 text-gray-700 animate-bounce" />
             </div>
