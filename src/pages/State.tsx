@@ -5,61 +5,55 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Home, Building, MapPin, Users, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import { usePHAData } from '@/hooks/usePHAData';
 import StateHeroSection from '@/components/state/StateHeroSection';
 import StateKeyFeatures from '@/components/state/StateKeyFeatures';
 import StateAboutSection from '@/components/state/StateAboutSection';
 import StateSearchGuide from '@/components/state/StateSearchGuide';
 import StateCitiesSidebar from '@/components/state/StateCitiesSidebar';
 import StateContactHelp from '@/components/state/StateContactHelp';
-
-type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
+import { USLocation } from '@/data/usLocations';
+import { filterPHAAgenciesByLocation } from '@/utils/mapUtils';
 
 const State = () => {
   const { state } = useParams<{ state: string }>();
   const stateName = state ? decodeURIComponent(state) : '';
   
-  const [phaAgencies, setPHAAgencies] = useState<PHAAgency[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    allPHAAgencies,
+    loading,
+    error,
+    applyLocationFilter,
+    clearLocationFilter
+  } = usePHAData();
 
+  const [filteredAgencies, setFilteredAgencies] = useState(allPHAAgencies);
+
+  // Filter agencies by state when data loads or state changes
   useEffect(() => {
-    const fetchPHAData = async () => {
-      try {
-        setLoading(true);
-        console.log('Fetching PHA data for state:', stateName);
-        
-        // Fetch all PHA agencies and filter by state name in the address
-        const { data, error } = await supabase
-          .from('pha_agencies')
-          .select('*')
-          .ilike('address', `%${stateName}%`);
+    if (allPHAAgencies.length > 0 && stateName) {
+      console.log('Filtering PHA data for state:', stateName);
+      
+      // Create a state location object for filtering
+      const stateLocation: USLocation = {
+        name: stateName,
+        type: 'state',
+        stateCode: '', // We'll match by state name
+        latitude: 0,
+        longitude: 0
+      };
 
-        if (error) {
-          throw error;
-        }
-
-        console.log('Fetched PHA data:', data);
-        setPHAAgencies(data || []);
-      } catch (err) {
-        console.error('Error fetching PHA data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch PHA data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (stateName) {
-      fetchPHAData();
+      const filtered = filterPHAAgenciesByLocation(allPHAAgencies, stateLocation);
+      console.log('Filtered PHA data for state:', filtered.length, 'agencies');
+      setFilteredAgencies(filtered);
     }
-  }, [stateName]);
+  }, [allPHAAgencies, stateName]);
 
-  // Calculate real statistics from the fetched data
-  const totalAgencies = phaAgencies.length;
-  const totalUnits = totalAgencies * 150; // Estimate 150 units per agency on average
+  // Calculate real statistics from the filtered data
+  const totalAgencies = filteredAgencies.length;
+  const totalUnits = totalAgencies; // Show actual count of agencies found, not estimated units
   const citiesCount = new Set(
-    phaAgencies
+    filteredAgencies
       .map(agency => {
         const address = agency.address || '';
         const parts = address.split(',');
@@ -68,8 +62,8 @@ const State = () => {
       .filter(city => city && city !== stateName)
   ).size;
 
-  // Calculate program types
-  const programTypes = phaAgencies.reduce((acc, agency) => {
+  // Calculate program types from filtered data
+  const programTypes = filteredAgencies.reduce((acc, agency) => {
     const type = agency.program_type || 'Unknown';
     acc[type] = (acc[type] || 0) + 1;
     return acc;
@@ -103,7 +97,7 @@ const State = () => {
   };
 
   const stateData = {
-    totalUnits: totalUnits.toLocaleString(),
+    totalUnits: totalUnits.toString(), // Show actual count of agencies found
     properties: totalAgencies.toString(),
     cities: Math.max(citiesCount, 1).toString(),
     agencies: totalAgencies.toString(),
@@ -111,16 +105,16 @@ const State = () => {
     lastUpdated: lastUpdated,
     occupancyRate: occupancyRate,
     quickStats: [
-      { label: 'Available Units', value: totalUnits.toLocaleString(), icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+      { label: 'Available Units', value: totalUnits.toString(), icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50' },
       { label: 'Housing Authorities', value: totalAgencies.toString(), icon: Building, color: 'text-green-600', bgColor: 'bg-green-50' },
       { label: 'Cities Served', value: Math.max(citiesCount, 1).toString(), icon: MapPin, color: 'text-purple-600', bgColor: 'bg-purple-50' },
       { label: 'Active Programs', value: Object.keys(programTypes).length.toString(), icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-50' }
     ]
   };
 
-  // Extract cities from PHA agencies data
+  // Extract cities from filtered PHA agencies data
   const topCities = Array.from(new Set(
-    phaAgencies
+    filteredAgencies
       .map(agency => {
         const address = agency.address || '';
         const parts = address.split(',');
@@ -131,26 +125,26 @@ const State = () => {
   ))
   .slice(0, 6)
   .map(city => {
-    const cityAgencies = phaAgencies.filter(agency => 
+    const cityAgencies = filteredAgencies.filter(agency => 
       agency.address?.includes(city || '')
     );
     return {
       name: city,
-      units: (cityAgencies.length * 150).toString(),
+      units: cityAgencies.length.toString(), // Show actual count of agencies, not estimated units
       properties: cityAgencies.length.toString(),
       population: 'N/A',
       waitTime: getAverageWaitTime()
     };
   });
 
-  // Create housing programs based on actual data
+  // Create housing programs based on actual filtered data
   const housingPrograms = [
     {
       title: 'Section 8 Housing Choice Vouchers',
       description: 'Portable rental assistance allowing families to choose their housing',
       availability: (programTypes['Section 8'] || 0) > 0 ? 'Available' : 'Limited Openings',
       status: (programTypes['Section 8'] || 0) > 0 ? 'available' : 'limited',
-      participants: Math.floor(totalUnits * 0.6).toLocaleString() + '+',
+      participants: Math.floor(totalUnits * 0.6).toString() + '+',
       fundingLevel: 'Federally Funded',
       agencyCount: programTypes['Section 8'] || 0
     },
@@ -159,7 +153,7 @@ const State = () => {
       description: 'Government-owned affordable housing developments',
       availability: (programTypes['Low-Rent'] || 0) > 0 ? 'Available' : 'Limited Openings',
       status: (programTypes['Low-Rent'] || 0) > 0 ? 'available' : 'limited',
-      participants: Math.floor(totalUnits * 0.3).toLocaleString() + '+',
+      participants: Math.floor(totalUnits * 0.3).toString() + '+',
       fundingLevel: 'HUD Funded',
       agencyCount: programTypes['Low-Rent'] || 0
     },
@@ -168,7 +162,7 @@ const State = () => {
       description: 'Multiple housing assistance programs under one authority',
       availability: (programTypes['Combined'] || 0) > 0 ? 'Available' : 'Not Available',
       status: (programTypes['Combined'] || 0) > 0 ? 'available' : 'unavailable',
-      participants: Math.floor(totalUnits * 0.1).toLocaleString() + '+',
+      participants: Math.floor(totalUnits * 0.1).toString() + '+',
       fundingLevel: 'Federal & State Funded',
       agencyCount: programTypes['Combined'] || 0
     }
