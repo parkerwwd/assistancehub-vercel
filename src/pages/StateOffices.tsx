@@ -1,16 +1,17 @@
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { usePHAData } from '@/hooks/usePHAData';
 import { filterPHAAgenciesByState } from '@/utils/mapUtils';
-import { CheckCircle, MapPin, Phone, Mail, Heart, Building } from 'lucide-react';
+import { CheckCircle, MapPin, Phone, Mail, Heart, Building, ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 const StateOffices = () => {
   const { state } = useParams<{ state: string }>();
+  const navigate = useNavigate();
   const stateName = state ? decodeURIComponent(state) : '';
   
   const { allPHAAgencies, loading } = usePHAData();
@@ -20,6 +21,10 @@ const StateOffices = () => {
     if (!stateName || !allPHAAgencies.length) return [];
     return filterPHAAgenciesByState(allPHAAgencies, stateName);
   }, [stateName, allPHAAgencies]);
+
+  const handleBackClick = () => {
+    navigate(-1); // Go back to previous page
+  };
 
   const handleCheckWaitlist = (agency: any) => {
     // This would navigate to the individual PHA detail page
@@ -51,6 +56,20 @@ const StateOffices = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <Header />
+      
+      {/* Back Button */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="container mx-auto px-4 py-4">
+          <Button
+            onClick={handleBackClick}
+            variant="ghost"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+        </div>
+      </div>
       
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white py-16">
