@@ -346,9 +346,9 @@ const StateOffices = () => {
                                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
                                       <Mail className="w-4 h-4 text-white" />
                                     </div>
-                                    <div>
+                                    <div className="min-w-0 flex-1">
                                       <div className="text-xs text-blue-600 font-medium">Email</div>
-                                      <div className="text-blue-700 font-semibold text-sm truncate max-w-[120px]">{agency.email}</div>
+                                      <div className="text-blue-700 font-semibold text-sm break-all">{agency.email}</div>
                                     </div>
                                   </div>
                                 )}
