@@ -40,10 +40,6 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({ topCities, stat
                     <span>{city.properties} authorities</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-bold text-blue-600 text-sm">{city.units}</div>
-                  <div className="text-xs text-gray-500">est. units</div>
-                </div>
               </div>
             </div>
           )) : (
