@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -13,6 +12,7 @@ import StateAboutSection from '@/components/state/StateAboutSection';
 import StateSearchGuide from '@/components/state/StateSearchGuide';
 import StateCitiesSidebar from '@/components/state/StateCitiesSidebar';
 import StateContactHelp from '@/components/state/StateContactHelp';
+import StateWaitlistButton from '@/components/state/StateWaitlistButton';
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -211,6 +211,10 @@ const State = () => {
       <StateHeroSection stateName={stateName} stateData={stateData} />
 
       <div className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto mb-12">
+          <StateWaitlistButton stateName={stateName} />
+        </div>
+
         <StateKeyFeatures />
 
         <div className="max-w-7xl mx-auto">
