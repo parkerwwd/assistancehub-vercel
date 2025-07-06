@@ -23,8 +23,8 @@ const State = () => {
 
   console.log('🏛️ Found', statePHAAgencies.length, 'PHA agencies for', stateName);
 
-  // Generate state data with actual PHA count
-  const stateData = getStateData(stateName, statePHAAgencies.length);
+  // Generate state data with actual PHA agencies (not just count)
+  const stateData = getStateData(stateName, statePHAAgencies);
   
   // Generate cities data from actual PHA agencies
   const topCities = getTopCities(stateName, statePHAAgencies);
