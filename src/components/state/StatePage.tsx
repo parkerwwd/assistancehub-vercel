@@ -5,7 +5,6 @@ import Footer from '@/components/Footer';
 import StateHeroSection from '@/components/state/StateHeroSection';
 import StateAboutSection from '@/components/state/StateAboutSection';
 import StateSearchGuide from '@/components/state/StateSearchGuide';
-import StateCitiesSidebar from '@/components/state/StateCitiesSidebar';
 import StateContactHelp from '@/components/state/StateContactHelp';
 import StatePHASection from '@/components/state/StatePHASection';
 import { StateDataType, CityType } from './StateData';
@@ -55,11 +54,6 @@ const StatePage: React.FC<StatePageProps> = ({
             </div>
 
             <div className="space-y-6">
-              <StateCitiesSidebar 
-                topCities={topCities} 
-                stateName={stateName} 
-                loading={phaLoading}
-              />
               <StateContactHelp />
             </div>
           </div>
