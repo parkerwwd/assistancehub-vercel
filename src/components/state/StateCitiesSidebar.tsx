@@ -1,8 +1,9 @@
 
-import React from 'react';
-import { MapPin, Building2, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapPin, Building2, ChevronRight, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 interface City {
   name: string;
@@ -23,6 +24,15 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
   stateName, 
   loading = false 
 }) => {
+  const [visibleCities, setVisibleCities] = useState(4);
+  
+  const handleShowMore = () => {
+    setVisibleCities(prev => Math.min(prev + 2, topCities.length));
+  };
+  
+  const citiesToShow = topCities.slice(0, visibleCities);
+  const hasMoreCities = visibleCities < topCities.length;
+
   return (
     <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-lg overflow-hidden">
       <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b border-gray-100/50">
@@ -58,45 +68,64 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
           </div>
         ) : (
           <div className="space-y-2">
-            {topCities.length > 0 ? topCities.map((city, index) => (
-              <div 
-                key={index} 
-                className="group relative overflow-hidden rounded-xl border border-gray-100 bg-gradient-to-r from-white via-blue-50/20 to-indigo-50/30 hover:shadow-lg hover:shadow-blue-100/50 transition-all duration-300 cursor-pointer hover:border-blue-200/60"
-              >
-                {/* Animated background gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                
-                {/* Top accent line */}
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-                
-                <div className="relative p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {/* Modern icon container */}
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center group-hover:from-blue-200 group-hover:to-indigo-200 transition-all duration-300 shadow-sm">
-                        <Building2 className="w-4 h-4 text-blue-600 group-hover:text-blue-700 transition-colors" />
-                      </div>
-                      
-                      <div className="space-y-0.5">
-                        <h3 className="font-bold text-gray-900 text-sm group-hover:text-blue-700 transition-colors duration-300">
-                          {city.name}
-                        </h3>
-                        <div className="flex items-center gap-1">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition-colors">
-                            {city.properties} {parseInt(city.properties) === 1 ? 'office' : 'offices'}
-                          </span>
+            {citiesToShow.length > 0 ? (
+              <>
+                {citiesToShow.map((city, index) => (
+                  <div 
+                    key={index} 
+                    className="group relative overflow-hidden rounded-xl border border-gray-100 bg-gradient-to-r from-white via-blue-50/20 to-indigo-50/30 hover:shadow-lg hover:shadow-blue-100/50 transition-all duration-300 cursor-pointer hover:border-blue-200/60"
+                  >
+                    {/* Animated background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    {/* Top accent line */}
+                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                    
+                    <div className="relative p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {/* Modern icon container */}
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center group-hover:from-blue-200 group-hover:to-indigo-200 transition-all duration-300 shadow-sm">
+                            <Building2 className="w-4 h-4 text-blue-600 group-hover:text-blue-700 transition-colors" />
+                          </div>
+                          
+                          <div className="space-y-0.5">
+                            <h3 className="font-bold text-gray-900 text-sm group-hover:text-blue-700 transition-colors duration-300">
+                              {city.name}
+                            </h3>
+                            <div className="flex items-center gap-1">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition-colors">
+                                {city.properties} {parseInt(city.properties) === 1 ? 'office' : 'offices'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Arrow indicator */}
+                        <div className="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-all duration-300 group-hover:shadow-sm">
+                          <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300" />
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Arrow indicator */}
-                    <div className="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-all duration-300 group-hover:shadow-sm">
-                      <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300" />
-                    </div>
                   </div>
-                </div>
-              </div>
-            )) : (
+                ))}
+                
+                {/* Show More Button */}
+                {hasMoreCities && (
+                  <div className="pt-2">
+                    <Button
+                      onClick={handleShowMore}
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200"
+                    >
+                      <ChevronDown className="w-4 h-4 mr-2" />
+                      Show More Cities ({topCities.length - visibleCities} remaining)
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
               <div className="text-center py-8">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
                   <MapPin className="w-8 h-8 text-gray-400" />
