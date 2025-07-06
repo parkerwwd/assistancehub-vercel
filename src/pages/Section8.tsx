@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
@@ -35,6 +36,7 @@ const Section8 = () => {
     handleCitySelect,
     setSelectedLocation,
     clearLocationFilter,
+    resetToUSView,
   } = useMapLogic();
 
   const isMobile = useIsMobile();
