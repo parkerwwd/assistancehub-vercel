@@ -30,7 +30,7 @@ const StateAboutSection: React.FC<StateAboutSectionProps> = ({ stateName, stateD
         <div className="grid md:grid-cols-3 gap-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">{stateData.totalUnits}</div>
-            <div className="text-sm text-gray-600">Total Units Available</div>
+            <div className="text-sm text-gray-600">PHA Offices Found</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{stateData.agencies}</div>
@@ -38,14 +38,14 @@ const StateAboutSection: React.FC<StateAboutSectionProps> = ({ stateName, stateD
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600">{stateData.cities}</div>
-            <div className="text-sm text-gray-600">Cities Covered</div>
+            <div className="text-sm text-gray-600">Estimated Cities</div>
           </div>
         </div>
         
         <p className="text-gray-700 leading-relaxed">
-          {stateName} offers multiple pathways to affordable housing through federal, state, and local programs. 
-          Our comprehensive database includes {stateData.totalUnits} estimated housing units across {stateData.cities} cities, 
-          managed by {stateData.agencies} certified Public Housing Authorities.
+          {stateName} has {stateData.totalUnits} Public Housing Agencies in our database. 
+          Our comprehensive search covers {stateData.cities} estimated cities across the state, 
+          with {stateData.agencies} certified Public Housing Authorities providing Section 8 and other affordable housing programs.
         </p>
       </CardContent>
     </Card>

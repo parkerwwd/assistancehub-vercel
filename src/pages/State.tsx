@@ -11,9 +11,6 @@ const State = () => {
   const stateName = state ? decodeURIComponent(state) : '';
   
   console.log('🏛️ State page loaded for:', stateName);
-  
-  const stateData = getStateData(stateName);
-  const topCities = getTopCities(stateName);
 
   // Get PHA data for the state
   const { allPHAAgencies, loading: phaLoading } = usePHAData();
@@ -25,6 +22,10 @@ const State = () => {
   }, [stateName, allPHAAgencies]);
 
   console.log('🏛️ Found', statePHAAgencies.length, 'PHA agencies for', stateName);
+
+  // Generate state data with actual PHA count
+  const stateData = getStateData(stateName, statePHAAgencies.length);
+  const topCities = getTopCities(stateName);
 
   return (
     <StatePage 

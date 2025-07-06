@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Home, Building, MapPin, Users } from 'lucide-react';
 
@@ -27,56 +26,30 @@ export interface CityType {
   waitTime: string;
 }
 
-// State-specific data mapping
-const stateDataMap: Record<string, StateDataType> = {
-  'Hawaii': {
-    totalUnits: '1,250',
-    properties: '8',
-    cities: '6',
-    agencies: '8',
-    averageWaitTime: '12-24 months',
+// Create dynamic state data based on actual PHA count
+export const createStateData = (stateName: string, phaCount: number): StateDataType => {
+  // Calculate estimated cities and properties based on PHA count
+  const estimatedCities = Math.max(Math.floor(phaCount * 0.8), 1).toString();
+  const estimatedProperties = Math.max(Math.floor(phaCount * 1.2), 1).toString();
+  
+  return {
+    totalUnits: phaCount.toString(),
+    properties: estimatedProperties,
+    cities: estimatedCities,
+    agencies: phaCount.toString(),
+    averageWaitTime: phaCount > 20 ? '18-36 months' : phaCount > 10 ? '12-24 months' : '8-18 months',
     lastUpdated: 'December 2024',
-    occupancyRate: '94%',
+    occupancyRate: phaCount > 15 ? '97%' : phaCount > 5 ? '94%' : '89%',
     quickStats: [
-      { label: 'Available Units', value: '1,250', icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-      { label: 'Housing Authorities', value: '8', icon: Building, color: 'text-green-600', bgColor: 'bg-green-50' },
-      { label: 'Cities Served', value: '6', icon: MapPin, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-      { label: 'Active Programs', value: '3', icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-50' }
+      { label: 'PHA Offices Found', value: phaCount.toString(), icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+      { label: 'Housing Authorities', value: phaCount.toString(), icon: Building, color: 'text-green-600', bgColor: 'bg-green-50' },
+      { label: 'Estimated Cities', value: estimatedCities, icon: MapPin, color: 'text-purple-600', bgColor: 'bg-purple-50' },
+      { label: 'Active Programs', value: Math.max(Math.floor(phaCount / 3), 1).toString(), icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-50' }
     ]
-  },
-  'California': {
-    totalUnits: '45,800',
-    properties: '125',
-    cities: '58',
-    agencies: '95',
-    averageWaitTime: '18-36 months',
-    lastUpdated: 'December 2024',
-    occupancyRate: '97%',
-    quickStats: [
-      { label: 'Available Units', value: '45,800', icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-      { label: 'Housing Authorities', value: '95', icon: Building, color: 'text-green-600', bgColor: 'bg-green-50' },
-      { label: 'Cities Served', value: '58', icon: MapPin, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-      { label: 'Active Programs', value: '12', icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-50' }
-    ]
-  },
-  'Alaska': {
-    totalUnits: '850',
-    properties: '6',
-    cities: '4',
-    agencies: '5',
-    averageWaitTime: '8-18 months',
-    lastUpdated: 'December 2024',
-    occupancyRate: '89%',
-    quickStats: [
-      { label: 'Available Units', value: '850', icon: Home, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-      { label: 'Housing Authorities', value: '5', icon: Building, color: 'text-green-600', bgColor: 'bg-green-50' },
-      { label: 'Cities Served', value: '4', icon: MapPin, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-      { label: 'Active Programs', value: '2', icon: Users, color: 'text-orange-600', bgColor: 'bg-orange-50' }
-    ]
-  }
+  };
 };
 
-// State-specific cities data
+// State-specific cities data (keeping existing mock data for cities sidebar)
 const stateCitiesMap: Record<string, CityType[]> = {
   'Hawaii': [
     { name: 'Honolulu', units: '650', properties: '4', population: '345,064', waitTime: '18-30 months' },
@@ -100,12 +73,13 @@ const stateCitiesMap: Record<string, CityType[]> = {
   ]
 };
 
-export const getStateData = (stateName?: string): StateDataType => {
-  if (stateName && stateDataMap[stateName]) {
-    return stateDataMap[stateName];
+// Legacy function - now creates dynamic data instead of using static mapping
+export const getStateData = (stateName?: string, phaCount: number = 0): StateDataType => {
+  if (stateName && phaCount > 0) {
+    return createStateData(stateName, phaCount);
   }
-  // Default fallback data
-  return stateDataMap['Hawaii'];
+  // Fallback to Hawaii data if no state name or count provided
+  return createStateData('Hawaii', 8);
 };
 
 export const getTopCities = (stateName?: string): CityType[] => {
