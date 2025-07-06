@@ -93,6 +93,23 @@ const extractCityFromAddress = (address: string): string | null => {
     return cityPart;
   }
   
+  // If we can't parse the city from comma-separated format, try other approaches
+  // Look for common city patterns in the address
+  const addressLower = address.toLowerCase();
+  
+  // Try to extract city from various address formats
+  const cityPatterns = [
+    /(\w+\s*\w*)\s+[A-Z]{2}\s+\d{5}/, // City STATE ZIP
+    /(\w+\s*\w*)\s+[A-Z]{2}$/, // City STATE (end of string)
+  ];
+  
+  for (const pattern of cityPatterns) {
+    const match = address.match(pattern);
+    if (match && match[1] && match[1].length > 2) {
+      return match[1].trim();
+    }
+  }
+  
   return null;
 };
 
@@ -106,6 +123,7 @@ export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string)
 
   // Group agencies by city
   const cityGroups = new Map<string, any[]>();
+  let unprocessedAgencies = 0;
   
   phaAgencies.forEach(agency => {
     const cityName = extractCityFromAddress(agency.address);
@@ -118,11 +136,20 @@ export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string)
       }
       cityGroups.get(cityName)!.push(agency);
     } else {
-      console.log('⚠️ Could not extract city from address:', agency.address);
+      console.log('⚠️ Could not extract city from address:', agency.address, 'for agency:', agency.name);
+      unprocessedAgencies++;
+      
+      // For agencies we can't parse, use "Other Locations" as fallback
+      const fallbackCity = 'Other Locations';
+      if (!cityGroups.has(fallbackCity)) {
+        cityGroups.set(fallbackCity, []);
+      }
+      cityGroups.get(fallbackCity)!.push(agency);
     }
   });
 
   console.log('🏙️ Found cities:', Array.from(cityGroups.keys()));
+  console.log('🏙️ Unprocessed agencies:', unprocessedAgencies);
 
   // Convert to array and calculate statistics for each city
   const cities = Array.from(cityGroups.entries())
@@ -151,7 +178,20 @@ export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string)
     .sort((a, b) => parseInt(b.properties) - parseInt(a.properties)) // Sort by office count
     .slice(0, 10); // Top 10 cities
 
+  // Verify totals match
+  const totalOfficesInCities = cities.reduce((sum, city) => sum + parseInt(city.properties), 0);
+  console.log('🏙️ Total PHA agencies:', phaAgencies.length);
+  console.log('🏙️ Total offices in cities:', totalOfficesInCities);
   console.log('🏙️ Final cities data:', cities);
+  
+  if (totalOfficesInCities !== phaAgencies.length) {
+    console.warn('⚠️ Mismatch: Total agencies vs city offices', {
+      totalAgencies: phaAgencies.length,
+      totalInCities: totalOfficesInCities,
+      difference: phaAgencies.length - totalOfficesInCities
+    });
+  }
+  
   return cities;
 };
 
