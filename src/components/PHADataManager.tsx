@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, RotateCcw, Shield, Zap, TrendingUp, Activity } from "lucide-react";
+import { Database, RotateCcw, TrendingUp, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -153,32 +153,6 @@ const PHADataManager: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <Button
-                onClick={() => setShowResetDialog(true)}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-1 sm:gap-2 bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-white hover:shadow-lg transition-all duration-200 text-xs px-2 sm:px-3 py-1.5 sm:py-2 h-auto flex-shrink-0"
-                disabled={isImporting}
-              >
-                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Reset</span>
-              </Button>
-            </div>
-
-            {/* Mobile-First Feature Pills */}
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-white/60 backdrop-blur-sm rounded-full border border-blue-200">
-                <Shield className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-600" />
-                <span className="text-xs font-medium text-blue-700">Secure</span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-white/60 backdrop-blur-sm rounded-full border border-green-200">
-                <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-600" />
-                <span className="text-xs font-medium text-green-700">Real-time</span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-white/60 backdrop-blur-sm rounded-full border border-purple-200">
-                <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-purple-600" />
-                <span className="text-xs font-medium text-purple-700">Analytics</span>
-              </div>
             </div>
           </div>
         </div>
@@ -190,11 +164,23 @@ const PHADataManager: React.FC = () => {
         
         {/* Enhanced Stats Cards */}
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 lg:p-6 border border-gray-100">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 lg:mb-6">
-            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-lg">
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+          <div className="flex items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 lg:mb-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shadow-lg">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">Database Statistics</h2>
             </div>
-            <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">Database Statistics</h2>
+            <Button
+              onClick={() => setShowResetDialog(true)}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1 sm:gap-2 bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-white hover:shadow-lg transition-all duration-200 text-xs px-2 sm:px-3 py-1.5 sm:py-2 h-auto flex-shrink-0"
+              disabled={isImporting}
+            >
+              <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Reset</span>
+            </Button>
           </div>
           <PHAStatsCard 
             totalPHAs={totalPHAs || 0} 
