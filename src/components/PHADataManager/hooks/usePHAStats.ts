@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 
 export interface FileUploadRecord {
   fileName: string;
@@ -18,30 +19,50 @@ export const usePHAStats = () => {
     fileUploads: []
   });
 
-  // Load stats from localStorage on mount
-  useEffect(() => {
-    const savedStats = localStorage.getItem('pha_import_stats');
-    if (savedStats) {
-      try {
-        const parsed = JSON.parse(savedStats);
-        // Handle legacy format
-        if (parsed.filesUploaded !== undefined) {
-          setImportStats({ fileUploads: [] });
-        } else {
-          setImportStats(parsed);
-        }
-      } catch (error) {
-        console.error('Error parsing saved stats:', error);
-        setImportStats({ fileUploads: [] });
-      }
-    }
-  }, []);
+  // Fetch real data from audit log
+  const fetchRealStats = async () => {
+    try {
+      const { data: auditLogs } = await supabase
+        .from('pha_audit_log')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-  // Save stats to localStorage whenever they change
-  const updateStats = (newStats: ImportStats) => {
-    setImportStats(newStats);
-    localStorage.setItem('pha_import_stats', JSON.stringify(newStats));
+      if (auditLogs) {
+        // Group audit logs by day to simulate file imports
+        const groupedLogs = auditLogs.reduce((acc: any, log) => {
+          const date = new Date(log.created_at).toDateString();
+          if (!acc[date]) {
+            acc[date] = { inserts: 0, updates: 0 };
+          }
+          if (log.action === 'INSERT') {
+            acc[date].inserts++;
+          } else if (log.action === 'UPDATE') {
+            acc[date].updates++;
+          }
+          return acc;
+        }, {});
+
+        // Convert to FileUploadRecord format
+        const fileUploads: FileUploadRecord[] = Object.entries(groupedLogs).map(([date, stats]: [string, any]) => ({
+          fileName: `Import ${date}`,
+          uploadDate: new Date(date).toISOString(),
+          recordsAdded: stats.inserts,
+          recordsEdited: stats.updates,
+          totalRecords: stats.inserts + stats.updates
+        }));
+
+        setImportStats({ fileUploads });
+      }
+    } catch (error) {
+      console.error('Error fetching real stats:', error);
+    }
   };
+
+  // Load real stats on mount
+  useEffect(() => {
+    fetchRealStats();
+  }, []);
 
   const addFileUpload = (fileName: string, recordsAdded: number, recordsEdited: number) => {
     const newUpload: FileUploadRecord = {
@@ -56,12 +77,15 @@ export const usePHAStats = () => {
       fileUploads: [...importStats.fileUploads, newUpload]
     };
 
-    updateStats(updatedStats);
+    setImportStats(updatedStats);
+    // Also refresh real stats after adding
+    setTimeout(fetchRealStats, 1000);
   };
 
-  const resetStats = () => {
-    const emptyStats = { fileUploads: [] };
-    updateStats(emptyStats);
+  const resetStats = async () => {
+    setImportStats({ fileUploads: [] });
+    // Refresh real stats after reset
+    await fetchRealStats();
   };
 
   // Calculate totals for summary - ensure it always returns a valid object
@@ -85,6 +109,7 @@ export const usePHAStats = () => {
     importStats,
     addFileUpload,
     resetStats,
-    getTotals
+    getTotals,
+    refreshStats: fetchRealStats
   };
 };

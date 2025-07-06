@@ -45,7 +45,8 @@ const PHADataManager: React.FC = () => {
     importStats,
     addFileUpload,
     resetStats,
-    getTotals
+    getTotals,
+    refreshStats
   } = usePHAStats();
 
   console.log('PHADataManager state:', { 
@@ -73,6 +74,8 @@ const PHADataManager: React.FC = () => {
       }
       
       await fetchPHACount();
+      // Refresh stats to get latest data from database
+      await refreshStats();
     } catch (error) {
       console.error('Import failed:', error);
     }
@@ -92,7 +95,7 @@ const PHADataManager: React.FC = () => {
       await clearAllPHAData();
       
       // Reset import stats
-      resetStats();
+      await resetStats();
       
       // Reset last import date
       setLastImport(null);
