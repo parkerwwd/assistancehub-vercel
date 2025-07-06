@@ -75,31 +75,31 @@ export const PHAStatsCard: React.FC<PHAStatsCardProps> = ({
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+      {/* Mobile-First Main Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {statsCards.map((stat, index) => {
           const IconComponent = stat.icon;
           return (
             <Card 
               key={stat.title}
-              className={`group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br ${stat.bgGradient} hover:scale-105 transform`}
+              className={`group hover:shadow-lg transition-all duration-300 border-0 bg-gradient-to-br ${stat.bgGradient} hover:scale-[1.02] transform`}
             >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-semibold text-gray-700">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 sm:pb-3 p-3 sm:p-4 lg:p-6">
+                <CardTitle className="text-xs sm:text-sm font-semibold text-gray-700 leading-tight">
                   {stat.title}
                 </CardTitle>
-                <div className={`p-3 ${stat.iconBg} rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
-                  <IconComponent className="h-5 w-5 text-white" />
+                <div className={`p-1.5 sm:p-2 lg:p-3 ${stat.iconBg} rounded-lg sm:rounded-xl shadow-md group-hover:shadow-lg transition-shadow duration-300 flex-shrink-0`}>
+                  <IconComponent className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-white" />
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className={`text-3xl font-bold ${stat.textColor} mb-2 group-hover:scale-110 transition-transform duration-300`}>
+              <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
+                <div className={`text-lg sm:text-2xl lg:text-3xl font-bold ${stat.textColor} mb-1 sm:mb-2 group-hover:scale-105 transition-transform duration-300 leading-tight`}>
                   {stat.value}
                 </div>
-                <p className="text-sm text-gray-600 flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" />
-                  {stat.description}
+                <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-1 leading-tight">
+                  <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3 flex-shrink-0" />
+                  <span className="truncate">{stat.description}</span>
                 </p>
               </CardContent>
             </Card>
@@ -107,28 +107,30 @@ export const PHAStatsCard: React.FC<PHAStatsCardProps> = ({
         })}
       </div>
 
-      {/* Last Import Information */}
+      {/* Mobile-First Last Import Information */}
       {lastImport && (
-        <Card className="bg-gradient-to-r from-slate-50 to-gray-50 border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardContent className="p-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl shadow-lg">
-                  <Calendar className="w-6 h-6 text-white" />
+        <Card className="bg-gradient-to-r from-slate-50 to-gray-50 border-0 shadow-md hover:shadow-lg transition-shadow duration-300">
+          <CardContent className="p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+                <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl sm:rounded-2xl shadow-lg flex-shrink-0">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
                 </div>
-                <div>
-                  <p className="text-lg font-semibold text-gray-900 mb-1">Last Database Synchronization</p>
-                  <p className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-1 sm:mb-2 leading-tight">
+                    Last Database Synchronization
+                  </p>
+                  <p className="text-base sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent leading-tight break-all">
                     {lastImport.toLocaleString()}
                   </p>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="flex-shrink-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-green-700">System Synchronized</span>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs sm:text-sm font-medium text-green-700">System Synchronized</span>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600 leading-tight">
                   Database was last updated with HUD data sources
                 </p>
               </div>
