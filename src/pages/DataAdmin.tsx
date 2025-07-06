@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from "react-router-dom";
 import PHADataManager from "@/components/PHADataManager";
@@ -6,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Database, FileText, Users, Activity, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useDataAdminStats } from "@/hooks/useDataAdminStats";
 
 const DataAdmin = () => {
   const { signOut, user } = useAuth();
   const { toast } = useToast();
+  const { totalDataSources, filesProcessed, recordsManaged, lastActivity, isLoading } = useDataAdminStats();
 
   const handleSignOut = async () => {
     try {
@@ -82,7 +85,9 @@ const DataAdmin = () => {
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
+              <div className="text-2xl font-bold">
+                {isLoading ? '...' : totalDataSources}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Active data integrations
               </p>
@@ -95,7 +100,9 @@ const DataAdmin = () => {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold">
+                {isLoading ? '...' : filesProcessed}
+              </div>
               <p className="text-xs text-muted-foreground">
                 This month
               </p>
@@ -108,7 +115,9 @@ const DataAdmin = () => {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">2,847</div>
+              <div className="text-2xl font-bold">
+                {isLoading ? '...' : recordsManaged.toLocaleString()}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Across all databases
               </p>
@@ -121,7 +130,9 @@ const DataAdmin = () => {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">2h ago</div>
+              <div className="text-2xl font-bold">
+                {isLoading ? '...' : lastActivity}
+              </div>
               <p className="text-xs text-muted-foreground">
                 PHA data update
               </p>
