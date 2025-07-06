@@ -108,7 +108,12 @@ const StateOffices = () => {
       
       {/* Hero Section with Enhanced Design */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700"></div>
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700">
+          <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }}></div>
+        </div>
         
         <div className="relative text-white py-16 md:py-20">
           <div className="container mx-auto px-4">
@@ -193,29 +198,33 @@ const StateOffices = () => {
               </div>
 
               {/* Compact Office Cards */}
-              <div className="grid gap-3">
+              <div className="grid gap-4">
                 {visibleAgencies.map((agency, index) => (
                   <Card key={agency.id} className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-md bg-white/90 backdrop-blur-sm hover:bg-white hover:scale-[1.01]">
                     <CardContent className="p-0">
-                      <div className="flex">
+                      <div className="flex flex-col lg:flex-row">
                         {/* Compact Image Section */}
-                        <div className="w-48 h-24 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-600 relative overflow-hidden flex-shrink-0">
+                        <div className="w-full lg:w-64 h-40 lg:h-32 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-600 relative overflow-hidden">
+                          {/* Animated background patterns */}
+                          <div className="absolute inset-0 opacity-30" style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+                          }}></div>
                           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-300"></div>
                           
                           {/* Content overlay */}
-                          <div className="absolute inset-0 flex flex-col justify-between p-3">
+                          <div className="absolute inset-0 flex flex-col justify-between p-4">
                             <div className="flex justify-between items-start">
-                              <span className="bg-white/90 backdrop-blur-sm text-purple-700 px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+                              <span className="bg-white/90 backdrop-blur-sm text-purple-700 px-3 py-1 rounded-full text-xs font-bold shadow-lg">
                                 Section 8 PHA
                               </span>
-                              <div className="bg-white/20 backdrop-blur-sm rounded-full p-1">
+                              <div className="bg-white/20 backdrop-blur-sm rounded-full p-1.5">
                                 <Star className="w-3 h-3 text-yellow-300" />
                               </div>
                             </div>
                             
                             <div className="text-center">
-                              <Building className="w-6 h-6 text-white/40 mx-auto mb-1 group-hover:scale-110 transition-transform duration-300" />
-                              <div className="bg-white/10 backdrop-blur-sm rounded-md px-2 py-1 inline-block">
+                              <Building className="w-8 h-8 text-white/40 mx-auto mb-2 group-hover:scale-110 transition-transform duration-300" />
+                              <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1 inline-block">
                                 <span className="text-white text-xs font-medium flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
                                   Quick Response
@@ -226,44 +235,70 @@ const StateOffices = () => {
                         </div>
                         
                         {/* Compact Content Section */}
-                        <div className="flex-1 p-4">
-                          <div className="flex justify-between items-start h-full">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-base font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300 truncate">
-                                {agency.name}
-                              </h3>
-                              
-                              {agency.address && (
-                                <div className="flex items-start text-gray-600 mb-3">
-                                  <MapPin className="w-3 h-3 mr-2 flex-shrink-0 mt-0.5 text-blue-500" />
-                                  <span className="text-xs leading-relaxed line-clamp-2">{agency.address}</span>
-                                </div>
-                              )}
-
-                              {/* Contact Info Row */}
-                              <div className="flex items-center gap-4 mb-3">
-                                {agency.phone && (
-                                  <div className="flex items-center">
-                                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-2">
-                                      <Phone className="w-3 h-3 text-white" />
-                                    </div>
-                                    <span className="text-xs text-green-700 font-medium">{agency.phone}</span>
-                                  </div>
-                                )}
-                                {agency.email && (
-                                  <div className="flex items-center">
-                                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mr-2">
-                                      <Mail className="w-3 h-3 text-white" />
-                                    </div>
-                                    <span className="text-xs text-blue-700 font-medium truncate max-w-[120px]">{agency.email}</span>
+                        <div className="flex-1 p-5">
+                          <div className="flex flex-col h-full">
+                            {/* Header */}
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="flex-1">
+                                <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
+                                  {agency.name}
+                                </h3>
+                                {agency.address && (
+                                  <div className="flex items-start text-gray-600 mb-3">
+                                    <MapPin className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5 text-blue-500" />
+                                    <span className="text-sm leading-relaxed">{agency.address}</span>
                                   </div>
                                 )}
                               </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleToggleFavorite(agency)}
+                                className="text-gray-400 hover:text-red-500 transition-all duration-300 hover:scale-110 rounded-full h-8 w-8"
+                              >
+                                <Heart className="w-4 h-4" />
+                              </Button>
+                            </div>
 
-                              {/* Tags */}
+                            {/* Compact Contact Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                              {agency.phone && (
+                                <div className="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors cursor-pointer">
+                                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                                    <Phone className="w-4 h-4 text-white" />
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-green-600 font-medium">Phone</div>
+                                    <div className="text-green-700 font-semibold text-sm">{agency.phone}</div>
+                                  </div>
+                                </div>
+                              )}
+                              {agency.email && (
+                                <div className="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
+                                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                                    <Mail className="w-4 h-4 text-white" />
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-blue-600 font-medium">Email</div>
+                                    <div className="text-blue-700 font-semibold text-sm truncate max-w-[120px]">{agency.email}</div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Compact Action Section */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-auto">
+                              <Button
+                                onClick={() => handleDetailView(agency)}
+                                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2 rounded-lg font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300 group/btn"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform" />
+                                View Details
+                              </Button>
+                              
                               <div className="flex items-center gap-2">
                                 {agency.program_type && (
-                                  <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full font-medium">
+                                  <span className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
                                     {agency.program_type}
                                   </span>
                                 )}
@@ -272,27 +307,6 @@ const StateOffices = () => {
                                   Available
                                 </div>
                               </div>
-                            </div>
-
-                            {/* Action Section */}
-                            <div className="flex flex-col items-end gap-2 ml-4">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleToggleFavorite(agency)}
-                                className="text-gray-400 hover:text-red-500 transition-all duration-300 hover:scale-110 rounded-full h-7 w-7"
-                              >
-                                <Heart className="w-4 h-4" />
-                              </Button>
-                              
-                              <Button
-                                onClick={() => handleDetailView(agency)}
-                                size="sm"
-                                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-4 py-1.5 rounded-lg font-semibold text-xs shadow-lg hover:shadow-xl transition-all duration-300 group/btn"
-                              >
-                                <CheckCircle className="w-3 h-3 mr-1.5 group-hover/btn:scale-110 transition-transform" />
-                                View Details
-                              </Button>
                             </div>
                           </div>
                         </div>
