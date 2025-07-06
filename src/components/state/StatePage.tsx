@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import StateHeroSection from '@/components/state/StateHeroSection';
@@ -16,6 +16,10 @@ interface StatePageProps {
 }
 
 const StatePage: React.FC<StatePageProps> = ({ stateName, stateData, topCities }) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [stateName]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <Header />
