@@ -88,7 +88,7 @@ TX003,Houston Housing Authority,"2640 Fountain View Dr, Houston, TX, 77057",(713
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-4 sm:space-y-6">
       <input
         ref={fileInputRef}
         type="file"
@@ -97,43 +97,43 @@ TX003,Houston Housing Authority,"2640 Fountain View Dr, Houston, TX, 77057",(713
         className="hidden"
       />
       
-      {/* Enhanced Security Notice */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+      {/* Mobile-First Security Notice */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-md">
         <div className="absolute inset-0 bg-gradient-to-r from-amber-100/30 to-orange-100/30"></div>
         <div className="relative z-10">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg sm:rounded-xl shadow-lg">
-              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+            <div className="p-1 sm:p-1.5 bg-gradient-to-br from-amber-500 to-orange-500 rounded-md sm:rounded-lg shadow-md">
+              <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-amber-900">Security Notice</h3>
+            <h3 className="text-sm sm:text-base font-bold text-amber-900">Security Notice</h3>
           </div>
-          <p className="text-sm sm:text-base text-amber-800 leading-relaxed">
-            Data imports now require <span className="font-semibold">authentication</span> and are subject to enhanced security validation. 
-            Files are limited to <span className="font-semibold">50MB</span> and <span className="font-semibold">100,000 records</span> maximum.
+          <p className="text-xs sm:text-sm text-amber-800 leading-relaxed">
+            Data imports require <span className="font-semibold">authentication</span> and are limited to 
+            <span className="font-semibold"> 50MB</span> and <span className="font-semibold">100,000 records</span>.
           </p>
         </div>
       </div>
       
-      {/* Main Import Actions */}
+      {/* Mobile-First Import Actions */}
       <div className="space-y-3 sm:space-y-4">
         {/* Primary Import Button */}
         <div className="relative group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg sm:rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
           <Button
             onClick={() => fileInputRef.current?.click()}
             disabled={isImporting}
-            className="relative w-full h-14 sm:h-16 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-base sm:text-lg rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none disabled:opacity-70"
+            className="relative w-full h-12 sm:h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-sm sm:text-base rounded-lg sm:rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:transform-none disabled:opacity-70"
             size="lg"
           >
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg sm:rounded-xl">
-                <Upload className="w-5 h-5 sm:w-6 sm:h-6" />
+              <div className="p-1 sm:p-1.5 bg-white/20 rounded-md sm:rounded-lg">
+                <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div className="text-left">
-                <div className="text-base sm:text-lg font-bold">
-                  {isImporting ? `Processing Data... ${Math.round(progressPercentage)}%` : 'Import HUD CSV File'}
+              <div className="text-left flex-1 min-w-0">
+                <div className="text-sm sm:text-base font-bold truncate">
+                  {isImporting ? `Processing... ${Math.round(progressPercentage)}%` : 'Import HUD CSV File'}
                 </div>
-                <div className="text-xs sm:text-sm opacity-90">Authentication Required</div>
+                <div className="text-xs opacity-90 hidden sm:block">Authentication Required</div>
               </div>
             </div>
             {isImporting && (
@@ -151,133 +151,132 @@ TX003,Houston Housing Authority,"2640 Fountain View Dr, Houston, TX, 77057",(713
         <Button
           onClick={downloadSampleCSV}
           variant="outline"
-          className="w-full h-12 sm:h-14 border-2 border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01]"
+          className="w-full h-10 sm:h-12 border-2 border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.01]"
           size="lg"
         >
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 bg-gray-100 rounded-lg sm:rounded-xl">
-              <Download className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+            <div className="p-1 sm:p-1.5 bg-gray-100 rounded-md sm:rounded-lg">
+              <Download className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
             </div>
-            <div className="text-left">
-              <div className="text-sm sm:text-base font-semibold text-gray-900">Download HUD Format Sample</div>
-              <div className="text-xs sm:text-sm text-gray-600">CSV template with example data</div>
+            <div className="text-left flex-1 min-w-0">
+              <div className="text-xs sm:text-sm font-semibold text-gray-900 truncate">Download Sample CSV</div>
+              <div className="text-xs text-gray-600 hidden sm:block">Template with example data</div>
             </div>
           </div>
         </Button>
       </div>
 
-      {/* Enhanced Field Mapping Information - Mobile Optimized */}
-      <div className="bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
-        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-          <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg sm:rounded-xl shadow-lg">
-            <FileCheck className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+      {/* Mobile-First Field Mapping Information */}
+      <div className="bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-200 rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-md">
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+          <div className="p-1 sm:p-1.5 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-md sm:rounded-lg shadow-md">
+            <FileCheck className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
-          <h3 className="text-base sm:text-lg font-bold text-slate-900">Automatic Field Mapping</h3>
+          <h3 className="text-sm sm:text-base font-bold text-slate-900">Automatic Field Mapping</h3>
         </div>
         
         <div className="space-y-3 sm:space-y-4">
-          <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
             The system automatically maps HUD PHA Contact Information CSV fields:
           </p>
           
-          {/* Mobile-First Field Mapping Cards */}
-          <div className="space-y-2 sm:space-y-3">
+          {/* Mobile-Optimized Field Mapping Cards */}
+          <div className="space-y-2">
             {/* Row 1 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-              <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-slate-200 shadow-sm">
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 bg-white rounded-md sm:rounded-lg border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                  <span className="font-mono text-xs sm:text-sm text-slate-600 truncate">PARTICIPANT_CODE</span>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <span className="font-mono text-xs text-slate-600 truncate">PARTICIPANT_CODE</span>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-slate-400 text-xs sm:text-sm">→</span>
-                  <span className="font-semibold text-xs sm:text-sm text-slate-800">PHA Code</span>
+                  <span className="text-slate-400 text-xs">→</span>
+                  <span className="font-semibold text-xs text-slate-800">PHA Code</span>
                 </div>
               </div>
               
-              <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 bg-white rounded-md sm:rounded-lg border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                  <span className="font-mono text-xs sm:text-sm text-slate-600 truncate">FORMAL_PARTICIPANT_NAME</span>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                  <span className="font-mono text-xs text-slate-600 truncate">FORMAL_PARTICIPANT_NAME</span>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-slate-400 text-xs sm:text-sm">→</span>
-                  <span className="font-semibold text-xs sm:text-sm text-slate-800">Name</span>
+                  <span className="text-slate-400 text-xs">→</span>
+                  <span className="font-semibold text-xs text-slate-800">Name</span>
                 </div>
               </div>
             </div>
             
             {/* Row 2 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-              <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-slate-200 shadow-sm">
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 bg-white rounded-md sm:rounded-lg border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
-                  <span className="font-mono text-xs sm:text-sm text-slate-600 truncate">FULL_ADDRESS</span>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-500 rounded-full flex-shrink-0"></div>
+                  <span className="font-mono text-xs text-slate-600 truncate">FULL_ADDRESS</span>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-slate-400 text-xs sm:text-sm">→</span>
-                  <span className="font-semibold text-xs sm:text-sm text-slate-800">Complete Address</span>
+                  <span className="text-slate-400 text-xs">→</span>
+                  <span className="font-semibold text-xs text-slate-800">Address</span>
                 </div>
               </div>
               
-              <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 bg-white rounded-md sm:rounded-lg border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
-                  <span className="font-mono text-xs sm:text-sm text-slate-600 truncate">HA_PHN_NUM</span>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-orange-500 rounded-full flex-shrink-0"></div>
+                  <span className="font-mono text-xs text-slate-600 truncate">HA_PHN_NUM</span>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-slate-400 text-xs sm:text-sm">→</span>
-                  <span className="font-semibold text-xs sm:text-sm text-slate-800">Phone</span>
+                  <span className="text-slate-400 text-xs">→</span>
+                  <span className="font-semibold text-xs text-slate-800">Phone</span>
                 </div>
               </div>
             </div>
             
             {/* Row 3 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-              <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-slate-200 shadow-sm">
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 bg-white rounded-md sm:rounded-lg border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="w-2 h-2 bg-pink-500 rounded-full flex-shrink-0"></div>
-                  <span className="font-mono text-xs sm:text-sm text-slate-600 truncate">HA_EMAIL_ADDR_TEXT</span>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-pink-500 rounded-full flex-shrink-0"></div>
+                  <span className="font-mono text-xs text-slate-600 truncate">HA_EMAIL_ADDR_TEXT</span>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-slate-400 text-xs sm:text-sm">→</span>
-                  <span className="font-semibold text-xs sm:text-sm text-slate-800">Email</span>
+                  <span className="text-slate-400 text-xs">→</span>
+                  <span className="font-semibold text-xs text-slate-800">Email</span>
                 </div>
               </div>
               
-              <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 bg-white rounded-md sm:rounded-lg border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full flex-shrink-0"></div>
-                  <span className="font-mono text-xs sm:text-sm text-slate-600 truncate">EXEC_DIR_EMAIL</span>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-indigo-500 rounded-full flex-shrink-0"></div>
+                  <span className="font-mono text-xs text-slate-600 truncate">EXEC_DIR_EMAIL</span>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-slate-400 text-xs sm:text-sm">→</span>
-                  <span className="font-semibold text-xs sm:text-sm text-slate-800">Executive Director Email</span>
+                  <span className="text-slate-400 text-xs">→</span>
+                  <span className="font-semibold text-xs text-slate-800">Director Email</span>
                 </div>
               </div>
             </div>
             
             {/* Row 4 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-              <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-white rounded-lg sm:rounded-xl border border-slate-200 shadow-sm">
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 bg-white rounded-md sm:rounded-lg border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="w-2 h-2 bg-teal-500 rounded-full flex-shrink-0"></div>
-                  <span className="font-mono text-xs sm:text-sm text-slate-600 truncate">HA_PROGRAM_TYPE</span>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-teal-500 rounded-full flex-shrink-0"></div>
+                  <span className="font-mono text-xs text-slate-600 truncate">HA_PROGRAM_TYPE</span>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <span className="text-slate-400 text-xs sm:text-sm">→</span>
-                  <span className="font-semibold text-xs sm:text-sm text-slate-800">Program Type</span>
+                  <span className="text-slate-400 text-xs">→</span>
+                  <span className="font-semibold text-xs text-slate-800">Program Type</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
         
-        <div className="flex items-start gap-2 sm:gap-3 mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 rounded-lg sm:rounded-xl border border-blue-200">
-          <Info className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="text-xs sm:text-sm text-blue-800">
-            <span className="font-semibold">Note:</span> Authentication is required for data imports. 
-            Both tab-separated and comma-separated formats are supported for maximum compatibility.
+        <div className="flex items-start gap-2 mt-3 sm:mt-4 p-2 sm:p-3 bg-blue-50 rounded-md sm:rounded-lg border border-blue-200">
+          <Info className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="text-xs text-blue-800">
+            <span className="font-semibold">Note:</span> Authentication required. Both tab and comma-separated formats supported.
           </div>
         </div>
       </div>
