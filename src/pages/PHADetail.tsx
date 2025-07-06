@@ -33,12 +33,20 @@ const PHADetail = () => {
   });
 
   const handleBack = () => {
-    // Check if there's a previous page in history
-    if (window.history.length > 1 && location.key !== 'default') {
-      navigate(-1); // Go back to previous page
-    } else {
-      navigate('/section8'); // Default to Section 8 page
+    // Navigate to the state page based on the office's address
+    if (office?.address) {
+      // Extract state from address (assuming format includes state)
+      const addressParts = office.address.split(',');
+      if (addressParts.length >= 2) {
+        const state = addressParts[addressParts.length - 2]?.trim();
+        if (state) {
+          navigate(`/state/${encodeURIComponent(state)}`);
+          return;
+        }
+      }
     }
+    // Fallback to Section 8 page if we can't determine the state
+    navigate('/section8');
   };
 
   const handleViewHousing = (office: PHAAgency) => {
