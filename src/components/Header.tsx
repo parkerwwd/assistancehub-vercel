@@ -78,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                   SNAP
                 </Link>
                 <Link to="/auth" className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-3 py-2 rounded-lg hover:bg-white/10 text-sm lg:text-base">
-                  Admin Login
+                  Login
                 </Link>
               </nav>
             )}
@@ -142,7 +142,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                   className="text-header-foreground hover:text-yellow-300 transition-colors font-medium px-4 py-3 rounded-lg hover:bg-white/10 text-base"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Admin Login
+                  Login
                 </Link>
               </nav>
             </div>
