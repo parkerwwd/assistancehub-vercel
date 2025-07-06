@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
-import { MapPin, Building2, ChevronRight, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Building2, ChevronRight, ChevronDown, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -25,9 +25,21 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
   loading = false 
 }) => {
   const [visibleCities, setVisibleCities] = useState(4);
+  const navigate = useNavigate();
   
   const handleShowMore = () => {
     setVisibleCities(prev => Math.min(prev + 2, topCities.length));
+  };
+
+  const handleShowAllOffices = () => {
+    navigate('/section8', { 
+      state: { 
+        searchLocation: { 
+          name: stateName, 
+          type: 'state' 
+        } 
+      } 
+    });
   };
   
   const citiesToShow = topCities.slice(0, visibleCities);
@@ -36,15 +48,26 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
   return (
     <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-lg overflow-hidden">
       <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b border-gray-100/50">
-        <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
-            <MapPin className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <div className="text-base font-bold">Cities in {stateName}</div>
-            <CardDescription className="text-xs text-gray-600 mt-0.5">Housing authorities by location</CardDescription>
-          </div>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
+              <MapPin className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <div className="text-base font-bold">Cities in {stateName}</div>
+              <CardDescription className="text-xs text-gray-600 mt-0.5">Housing authorities by location</CardDescription>
+            </div>
+          </CardTitle>
+          
+          <Button
+            onClick={handleShowAllOffices}
+            size="sm"
+            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-xs font-medium shadow-sm"
+          >
+            Show All Offices
+            <ArrowRight className="w-3 h-3" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="p-3">
         {loading ? (
