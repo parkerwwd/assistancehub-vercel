@@ -1,25 +1,17 @@
+
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Home, Building2, Users, MapPin, FileText, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const StateContactHelp: React.FC = () => {
-  const { state } = useParams<{ state: string }>();
-  const navigate = useNavigate();
-  const stateName = state ? decodeURIComponent(state) : '';
-
-  const handleWaitlistClick = () => {
-    navigate(`/state/${encodeURIComponent(stateName)}/waitlists`);
-  };
-
   const housingTypes = [
-    { label: 'Section 8 Housing', icon: Home, highlight: false, clickable: false },
-    { label: 'Income Restricted Apartments', icon: Building2, highlight: false, clickable: false },
-    { label: 'Townhomes', icon: Home, highlight: false, clickable: false },
-    { label: 'Open Section 8 Waiting Lists', icon: FileText, highlight: true, clickable: true, onClick: handleWaitlistClick },
-    { label: 'Low Income Rentals', icon: MapPin, highlight: false, clickable: false },
-    { label: 'Public Housing', icon: Building2, highlight: false, clickable: false },
-    { label: 'Public Housing Agencies (PHA)', icon: Users, highlight: false, clickable: false }
+    { label: 'Section 8 Housing', icon: Home, highlight: false },
+    { label: 'Income Restricted Apartments', icon: Building2, highlight: false },
+    { label: 'Townhomes', icon: Home, highlight: false },
+    { label: 'Open Section 8 Waiting Lists', icon: FileText, highlight: true },
+    { label: 'Low Income Rentals', icon: MapPin, highlight: false },
+    { label: 'Public Housing', icon: Building2, highlight: false },
+    { label: 'Public Housing Agencies (PHA)', icon: Users, highlight: false }
   ];
 
   return (
@@ -38,39 +30,28 @@ const StateContactHelp: React.FC = () => {
           {housingTypes.map((type, index) => (
             <div 
               key={index} 
-              className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
+              className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:shadow-md ${
                 type.highlight 
                   ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100' 
                   : 'bg-white/70 hover:bg-white'
-              } ${
-                type.clickable 
-                  ? 'cursor-pointer hover:shadow-md hover:scale-105 active:scale-95 transform' 
-                  : ''
               }`}
-              onClick={type.onClick}
             >
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                 type.highlight 
-                  ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                  ? 'bg-blue-500 text-white' 
                   : 'bg-green-500 text-white'
-              } ${
-                type.clickable ? 'group-hover:rotate-6' : ''
               }`}>
                 <CheckCircle className="w-4 h-4" />
               </div>
               <div className="flex-1">
-                <span className={`font-medium transition-colors duration-300 ${
+                <span className={`font-medium ${
                   type.highlight ? 'text-blue-700' : 'text-green-700'
-                } ${
-                  type.clickable ? 'hover:text-blue-800' : ''
                 }`}>
                   {type.label}
                 </span>
               </div>
-              <type.icon className={`w-4 h-4 transition-all duration-300 ${
+              <type.icon className={`w-4 h-4 ${
                 type.highlight ? 'text-blue-500' : 'text-green-500'
-              } ${
-                type.clickable ? 'hover:text-blue-600 hover:translate-x-1' : ''
               }`} />
             </div>
           ))}
