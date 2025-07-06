@@ -1,8 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { usePHAImport } from "./PHADataManager/hooks/usePHAImport";
 import { usePHACount } from "./PHADataManager/hooks/usePHACount";
 import { usePHAStats } from "./PHADataManager/hooks/usePHAStats";
@@ -19,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 const PHADataManager: React.FC = () => {
   console.log('PHADataManager component rendering...');
   const { toast } = useToast();
+  const [showResetDialog, setShowResetDialog] = useState(false);
   
   const { 
     isImporting, 
@@ -131,7 +142,7 @@ const PHADataManager: React.FC = () => {
             HUD PHA Data Management
           </CardTitle>
           <Button
-            onClick={handleResetAllStats}
+            onClick={() => setShowResetDialog(true)}
             variant="outline"
             size="sm"
             className="flex items-center gap-2"
@@ -174,6 +185,30 @@ const PHADataManager: React.FC = () => {
           csvHeaders={csvHeaders}
           onMappingConfirm={handleMappingComplete}
         />
+
+        <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset All Statistics</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action will permanently delete all PHA records and statistics from the database. 
+                This cannot be undone. Are you sure you want to continue?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  setShowResetDialog(false);
+                  handleResetAllStats();
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Yes, Reset All Data
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
