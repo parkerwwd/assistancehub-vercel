@@ -37,16 +37,19 @@ const StatePage: React.FC<StatePageProps> = ({
       
       <StateHeroSection stateName={stateName} stateData={stateData} />
 
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-3 gap-8">
+          {/* Mobile: Stack vertically, Desktop: Side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
             
-            <div className="lg:col-span-2 space-y-8">
+            {/* Main content - Full width on mobile */}
+            <div className="lg:col-span-2 space-y-6 md:space-y-8">
               <StateAboutSection stateName={stateName} stateData={stateData} />
               <StateSearchGuide stateName={stateName} />
             </div>
 
-            <div className="space-y-6">
+            {/* Sidebar - Full width on mobile, stacked after main content */}
+            <div className="space-y-6 order-first lg:order-last">
               <StateCitiesSidebar 
                 topCities={topCities} 
                 stateName={stateName} 
