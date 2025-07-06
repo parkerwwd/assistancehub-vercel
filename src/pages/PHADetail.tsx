@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
@@ -14,6 +13,7 @@ type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 const PHADetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { data: office, isLoading, error } = useQuery({
     queryKey: ['pha-office', id],
@@ -33,7 +33,12 @@ const PHADetail = () => {
   });
 
   const handleBack = () => {
-    navigate(-1); // Go back to previous page
+    // Check if there's a previous page in history
+    if (window.history.length > 1 && location.key !== 'default') {
+      navigate(-1); // Go back to previous page
+    } else {
+      navigate('/section8'); // Default to Section 8 page
+    }
   };
 
   const handleViewHousing = (office: PHAAgency) => {
