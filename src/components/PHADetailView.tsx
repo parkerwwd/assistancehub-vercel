@@ -34,7 +34,7 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100/80 rounded-lg transition-all duration-200 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Search
+            Back
           </Button>
         </div>
       </div>

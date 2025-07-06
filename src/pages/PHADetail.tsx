@@ -33,7 +33,7 @@ const PHADetail = () => {
   });
 
   const handleBack = () => {
-    navigate('/section8');
+    navigate(-1); // Go back to previous page
   };
 
   const handleViewHousing = (office: PHAAgency) => {
@@ -65,7 +65,7 @@ const PHADetail = () => {
             <p className="text-gray-600 mb-4">The requested PHA office could not be found.</p>
             <Button onClick={handleBack} className="flex items-center gap-2">
               <ArrowLeft className="w-4 h-4" />
-              Back to Search
+              Back
             </Button>
           </div>
         </div>
