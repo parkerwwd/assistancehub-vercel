@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,18 @@ const PHADetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const hasNavigatedRef = useRef(false);
+
+  // Track if user has navigated within the app
+  useEffect(() => {
+    // Check if there's a state indicating navigation from within the app
+    // This includes location state, referrer, or sufficient history length
+    if (location.state || 
+        document.referrer.includes(window.location.origin) || 
+        window.history.length > 2) {
+      hasNavigatedRef.current = true;
+    }
+  }, [location.state]);
 
   const { data: office, isLoading, error } = useQuery({
     queryKey: ['pha-office', id],
@@ -33,20 +45,24 @@ const PHADetail = () => {
   });
 
   const handleBack = () => {
-    // Navigate to the state page based on the office's address
-    if (office?.address) {
-      // Extract state from address (assuming format includes state)
-      const addressParts = office.address.split(',');
-      if (addressParts.length >= 2) {
-        const state = addressParts[addressParts.length - 2]?.trim();
-        if (state) {
-          navigate(`/state/${encodeURIComponent(state)}`);
-          return;
-        }
+    // Check if we can go back in history
+    // This is a heuristic approach since React Router doesn't provide a direct way
+    const hasHistory = window.history.length > 1;
+    const hasLocationState = location.state !== null;
+    const notDirectAccess = location.key !== 'default';
+    
+    // If any indicator suggests there's a previous page, try to go back
+    if (hasHistory && (hasLocationState || notDirectAccess || hasNavigatedRef.current)) {
+      try {
+        navigate(-1);
+      } catch (error) {
+        // If navigate(-1) fails, fall back to Section 8
+        navigate('/section8');
       }
+    } else {
+      // No previous page detected, go to Section 8
+      navigate('/section8');
     }
-    // Fallback to Section 8 page if we can't determine the state
-    navigate('/section8');
   };
 
   const handleViewHousing = (office: PHAAgency) => {
