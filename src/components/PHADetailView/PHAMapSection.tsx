@@ -1,8 +1,10 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Map, MapPin } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import MapContainer, { MapContainerRef } from "@/components/MapContainer";
+import { geocodePHAAddress } from "@/services/geocodingService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -28,31 +30,26 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
       setIsGeocoding(true);
       
       try {
-        const encodedAddress = encodeURIComponent(office.address);
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
-        );
+        console.log('🗺️ PHAMapSection - Geocoding address:', office.address);
         
-        if (response.ok) {
-          const data = await response.json();
-          if (data.features && data.features.length > 0) {
-            const [lng, lat] = data.features[0].center;
-            
-            // Set the location marker WITHOUT hover card (showHoverCard: false)
-            mapRef.current.setLocationMarker(lat, lng, office.name, false);
-            
-            // Fly to the location with zoom level 17
-            mapRef.current.flyTo([lng, lat], 17);
-            
-            console.log('✅ Successfully geocoded and marked location:', office.name, { lat, lng });
-          } else {
-            console.warn('⚠️ No geocoding results for address:', office.address);
-          }
+        // Use the improved geocoding service
+        const coordinates = await geocodePHAAddress(office.address, mapboxToken);
+        
+        if (coordinates) {
+          const { lat, lng } = coordinates;
+          
+          // Set the location marker WITHOUT hover card (showHoverCard: false)
+          mapRef.current.setLocationMarker(lat, lng, office.name, false);
+          
+          // Fly to the location with zoom level 17
+          mapRef.current.flyTo([lng, lat], 17);
+          
+          console.log('✅ PHAMapSection - Successfully geocoded and marked location:', office.name, { lat, lng });
         } else {
-          console.warn('⚠️ Geocoding API error:', response.status);
+          console.warn('⚠️ PHAMapSection - No geocoding results for address:', office.address);
         }
       } catch (error) {
-        console.error('❌ Geocoding error:', error);
+        console.error('❌ PHAMapSection - Geocoding error:', error);
       } finally {
         setIsGeocoding(false);
       }

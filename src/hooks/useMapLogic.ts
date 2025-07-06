@@ -4,6 +4,7 @@ import { Database } from "@/integrations/supabase/types";
 import { USLocation } from "@/data/usLocations";
 import { MapContainerRef } from "@/components/MapContainer";
 import { usePHAData } from "./usePHAData";
+import { geocodePHAAddress } from "@/services/geocodingService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -79,34 +80,6 @@ export const useMapLogic = () => {
     }
   };
 
-  const geocodeAddress = async (address: string): Promise<{ lat: number; lng: number } | null> => {
-    if (!mapboxToken || !address) return null;
-    
-    try {
-      const encodedAddress = encodeURIComponent(address);
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
-      );
-      
-      if (!response.ok) {
-        console.warn('Geocoding API error:', response.status);
-        return null;
-      }
-      
-      const data = await response.json();
-      
-      if (data.features && data.features.length > 0) {
-        const [lng, lat] = data.features[0].center;
-        return { lat, lng };
-      }
-      
-      return null;
-    } catch (error) {
-      console.warn('Geocoding error:', error);
-      return null;
-    }
-  };
-
   const handleOfficeSelect = async (office: PHAAgency | null) => {
     if (!office) {
       console.log('🏢 Clearing selected office');
@@ -126,17 +99,21 @@ export const useMapLogic = () => {
     let lat = (office as any).geocoded_latitude;
     let lng = (office as any).geocoded_longitude;
     
-    // If no coordinates, try to geocode the address
+    // If no coordinates, try to geocode the address using improved service
     if (!lat || !lng) {
       console.log('🗺️ No coordinates found, trying to geocode address:', office.address);
       
       if (office.address) {
-        const coordinates = await geocodeAddress(office.address);
-        
-        if (coordinates) {
-          lat = coordinates.lat;
-          lng = coordinates.lng;
-          console.log('✅ Geocoded coordinates:', { lat, lng });
+        try {
+          const coordinates = await geocodePHAAddress(office.address, mapboxToken);
+          
+          if (coordinates) {
+            lat = coordinates.lat;
+            lng = coordinates.lng;
+            console.log('✅ Geocoded coordinates:', { lat, lng });
+          }
+        } catch (error) {
+          console.error('❌ Failed to geocode office address:', error);
         }
       }
     }

@@ -1,7 +1,9 @@
+
 import mapboxgl from 'mapbox-gl';
 import { Database } from "@/integrations/supabase/types";
 import { LocationMarker } from "./LocationMarker";
 import { MarkerUtils } from "./MarkerUtils";
+import { geocodePHAAddress } from "@/services/geocodingService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -39,19 +41,21 @@ export class MapMarkerManager {
       this.locationMarker.remove();
     }
     
+    console.log('📍 Setting location marker at coordinates:', { lat, lng, name });
+    
     this.locationMarker = this.locationMarkerHelper.create({ 
       lat, 
       lng, 
       name, 
       mapboxToken,
-      showHoverCard, // Pass the showHoverCard option
-      color: 'red' // Default red color for location marker
+      showHoverCard,
+      color: 'red'
     });
     this.locationMarker
       .setPopup(MarkerUtils.createLocationPopup(name))
       .addTo(map);
       
-    console.log('📍 Added enhanced location marker for:', name, 'at', { lat, lng }, 'showHoverCard:', showHoverCard);
+    console.log('✅ Added enhanced location marker for:', name, 'at', { lat, lng }, 'showHoverCard:', showHoverCard);
   }
 
   async addOfficeLocationMarkers(map: mapboxgl.Map, offices: PHAAgency[], mapboxToken: string): Promise<void> {
@@ -63,41 +67,42 @@ export class MapMarkerManager {
     this.clearOfficeLocationMarkers();
     
     for (const office of offices) {
-      if (!office.address) continue;
+      if (!office.address) {
+        console.warn('⚠️ No address for office:', office.name);
+        continue;
+      }
       
       try {
-        // Geocode the office address
-        const encodedAddress = encodeURIComponent(office.address);
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
-        );
+        console.log('🗺️ Geocoding office address:', office.address);
         
-        if (response.ok) {
-          const data = await response.json();
-          if (data.features && data.features.length > 0) {
-            const [lng, lat] = data.features[0].center;
-            
-            // Create blue location marker for office
-            const officeLocationMarker = this.locationMarkerHelper.create({
-              lat,
-              lng,
-              name: office.name,
-              mapboxToken,
-              showHoverCard: true,
-              color: 'blue' // Blue color for office location markers
-            });
-            
-            officeLocationMarker
-              .setPopup(this.createOfficeLocationPopup(office))
-              .addTo(map);
-            
-            this.officeLocationMarkers.push(officeLocationMarker);
-            
-            console.log('✅ Added office location marker for:', office.name, 'at', { lat, lng });
-          }
+        // Use the improved geocoding service
+        const coordinates = await geocodePHAAddress(office.address, mapboxToken);
+        
+        if (coordinates) {
+          const { lat, lng } = coordinates;
+          
+          // Create blue location marker for office
+          const officeLocationMarker = this.locationMarkerHelper.create({
+            lat,
+            lng,
+            name: office.name,
+            mapboxToken,
+            showHoverCard: true,
+            color: 'blue'
+          });
+          
+          officeLocationMarker
+            .setPopup(this.createOfficeLocationPopup(office))
+            .addTo(map);
+          
+          this.officeLocationMarkers.push(officeLocationMarker);
+          
+          console.log('✅ Added office location marker for:', office.name, 'at', { lat, lng });
+        } else {
+          console.warn('⚠️ Failed to geocode office address:', office.name, office.address);
         }
       } catch (error) {
-        console.warn('⚠️ Failed to geocode office address:', office.name, error);
+        console.error('❌ Error geocoding office address:', office.name, error);
       }
     }
     
@@ -127,28 +132,20 @@ export class MapMarkerManager {
     let lat = (office as any).geocoded_latitude;
     let lng = (office as any).geocoded_longitude;
     
-    // If no coordinates, try to geocode the address
+    // If no coordinates, try to geocode the address using improved service
     if ((!lat || !lng) && office.address) {
-      console.log('🗺️ No coordinates found, trying to geocode address:', office.address);
+      console.log('🗺️ No coordinates found, geocoding address:', office.address);
       
       try {
-        const fullAddress = office.address;
-        const encodedAddress = encodeURIComponent(fullAddress);
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${mapboxToken}&limit=1`
-        );
+        const coordinates = await geocodePHAAddress(office.address, mapboxToken);
         
-        if (response.ok) {
-          const data = await response.json();
-          if (data.features && data.features.length > 0) {
-            const [geocodedLng, geocodedLat] = data.features[0].center;
-            lat = geocodedLat;
-            lng = geocodedLng;
-            console.log('✅ Geocoded coordinates:', { lat, lng });
-          }
+        if (coordinates) {
+          lat = coordinates.lat;
+          lng = coordinates.lng;
+          console.log('✅ Geocoded coordinates for office:', office.name, { lat, lng });
         }
       } catch (error) {
-        console.warn('⚠️ Geocoding error:', error);
+        console.error('❌ Failed to geocode office address:', office.name, error);
       }
     }
     
@@ -160,6 +157,7 @@ export class MapMarkerManager {
         }
 
         // Fly to office with close zoom level
+        console.log('🚁 Flying to office coordinates:', { lat, lng });
         map.flyTo({
           center: [lng, lat],
           zoom: 18,
@@ -205,7 +203,7 @@ export class MapMarkerManager {
         <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #1f2937; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">🏢 ${office.name}</h3>
         ${office.address ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #6b7280;">📍 ${office.address}</p>` : ''}
         ${office.phone ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: #6b7280;">📞 ${office.phone}</p>` : ''}
-        <p style="margin: 0; font-size: 13px; color: #ef4444; font-weight: 600;">Status: Unknown</p>
+        <p style="margin: 0; font-size: 13px; color: #ef4444; font-weight: 600;">Status: Active</p>
       </div>
     `);
   }
