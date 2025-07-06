@@ -38,15 +38,14 @@ const StatePage: React.FC<StatePageProps> = ({
       
       <StateHeroSection stateName={stateName} stateData={stateData} />
 
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-4 gap-8">
             
-            <div className="lg:col-span-2 space-y-8">
+            {/* Main Content */}
+            <div className="lg:col-span-3 space-y-8">
               <StateAboutSection stateName={stateName} stateData={stateData} />
               <StateSearchGuide stateName={stateName} />
-              
-              {/* Add PHA Offices Section */}
               <StatePHASection 
                 stateName={stateName}
                 phaAgencies={phaAgencies}
@@ -54,7 +53,8 @@ const StatePage: React.FC<StatePageProps> = ({
               />
             </div>
 
-            <div className="space-y-6">
+            {/* Sidebar */}
+            <div className="lg:col-span-1 space-y-6">
               <StateCitiesSidebar topCities={topCities} stateName={stateName} />
               <StateContactHelp />
             </div>

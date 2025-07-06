@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Building2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface City {
@@ -18,38 +18,47 @@ interface StateCitiesSidebarProps {
 
 const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({ topCities, stateName }) => {
   return (
-    <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
-      <CardHeader className="pb-3">
+    <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm sticky top-6">
+      <CardHeader className="pb-4">
         <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-blue-600" />
+          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+            <MapPin className="w-3 h-3 text-white" />
+          </div>
           Cities in {stateName}
         </CardTitle>
         <CardDescription className="text-sm">Cities with housing authorities</CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="space-y-3">
+        <div className="space-y-3 max-h-96 overflow-y-auto">
           {topCities.length > 0 ? topCities.map((city, index) => (
-            <div key={index} className="group p-3 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-lg hover:shadow-sm transition-all duration-200 cursor-pointer">
-              <div className="flex justify-between items-start mb-1">
-                <div>
-                  <div className="font-medium text-gray-900 text-sm">{city.name}</div>
-                  <div className="text-xs text-gray-600">{city.properties} authorities</div>
+            <div key={index} className="group p-4 bg-gradient-to-r from-gray-50 to-blue-50/40 rounded-xl border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-200 cursor-pointer">
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-900 text-sm mb-1">{city.name}</div>
+                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                    <Building2 className="w-3 h-3" />
+                    <span>{city.properties} authorities</span>
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-semibold text-blue-600 text-sm">{city.units}</div>
+                  <div className="font-bold text-blue-600 text-sm">{city.units}</div>
                   <div className="text-xs text-gray-500">est. units</div>
                 </div>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-600">Pop: {city.population}</span>
-                <span className="text-orange-600 font-medium">~{city.waitTime}</span>
+              <div className="flex justify-between items-center text-xs pt-2 border-t border-gray-200/50">
+                <span className="text-gray-600 font-medium">Pop: {city.population}</span>
+                <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-medium">
+                  ~{city.waitTime}
+                </span>
               </div>
             </div>
           )) : (
-            <div className="text-center py-6 text-gray-500">
-              <MapPin className="w-8 h-8 mx-auto mb-3 text-gray-300" />
-              <p className="text-sm font-medium mb-1">No Cities Found</p>
-              <p className="text-xs">No PHA offices found in {stateName}</p>
+            <div className="text-center py-8 text-gray-500">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <MapPin className="w-8 h-8 text-gray-300" />
+              </div>
+              <p className="text-sm font-medium mb-1 text-gray-600">No Cities Found</p>
+              <p className="text-xs text-gray-500">No PHA offices found in {stateName}</p>
             </div>
           )}
         </div>
