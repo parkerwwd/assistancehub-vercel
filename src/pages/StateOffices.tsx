@@ -19,6 +19,7 @@ const StateOffices = () => {
   const { allPHAAgencies, loading } = usePHAData();
   const [visibleCount, setVisibleCount] = useState(5);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [noImageryAgencies, setNoImageryAgencies] = useState<Set<string>>(new Set());
   
   // Filter PHA agencies by state and optionally by city
   const statePHAAgencies = React.useMemo(() => {
@@ -59,6 +60,21 @@ const StateOffices = () => {
 
   const handleImageError = (agencyId: string) => {
     setImageErrors(prev => new Set([...prev, agencyId]));
+  };
+
+  const handleImageLoad = (agencyId: string, event: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = event.target as HTMLImageElement;
+    
+    // Check if the image is the "no imagery" placeholder by checking its size or other characteristics
+    // Google's "no imagery" images are typically very small or have specific dimensions
+    if (img.naturalWidth <= 1 || img.naturalHeight <= 1 || 
+        (img.naturalWidth === 640 && img.naturalHeight === 640) || // Common placeholder size
+        img.src.includes('sorry') || 
+        img.complete && img.naturalWidth < 100) { // Very small images are likely placeholders
+      
+      console.log('Detected no imagery placeholder for agency:', agencyId);
+      setNoImageryAgencies(prev => new Set([...prev, agencyId]));
+    }
   };
 
   if (loading) {
@@ -206,6 +222,8 @@ const StateOffices = () => {
               <div className="grid gap-4">
                 {visibleAgencies.map((agency, index) => {
                   const hasImageError = imageErrors.has(agency.id);
+                  const hasNoImagery = noImageryAgencies.has(agency.id);
+                  const shouldShowGradient = hasImageError || hasNoImagery;
                   const fullAddress = agency.address || '';
                   const streetViewImage = fullAddress ? GoogleMapsService.getStreetViewImage({
                     address: fullAddress,
@@ -218,13 +236,14 @@ const StateOffices = () => {
                         <div className="flex flex-col lg:flex-row">
                           {/* Image or Gradient Section */}
                           <div className="w-full lg:w-64 h-32 lg:h-auto relative overflow-hidden">
-                            {streetViewImage && !hasImageError ? (
+                            {streetViewImage && !shouldShowGradient ? (
                               <div className="relative w-full h-full">
                                 <img
                                   src={streetViewImage}
                                   alt={`Street view of ${agency.name}`}
                                   className="w-full h-full object-cover"
                                   onError={() => handleImageError(agency.id)}
+                                  onLoad={(e) => handleImageLoad(agency.id, e)}
                                 />
                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-300"></div>
                                 
