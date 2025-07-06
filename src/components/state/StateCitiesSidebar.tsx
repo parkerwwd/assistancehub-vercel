@@ -35,6 +35,11 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
   const handleShowAllOffices = () => {
     navigate(`/state/${encodeURIComponent(stateName)}/offices`);
   };
+
+  const handleCityClick = (cityName: string) => {
+    // Navigate to offices page with city filter
+    navigate(`/state/${encodeURIComponent(stateName)}/offices?city=${encodeURIComponent(cityName)}`);
+  };
   
   const citiesToShow = topCities.slice(0, visibleCities);
   const hasMoreCities = visibleCities < topCities.length;
@@ -90,6 +95,7 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
                 {citiesToShow.map((city, index) => (
                   <div 
                     key={index} 
+                    onClick={() => handleCityClick(city.name)}
                     className="group relative overflow-hidden rounded-xl border border-gray-100 bg-gradient-to-r from-white via-blue-50/20 to-indigo-50/30 hover:shadow-lg hover:shadow-blue-100/50 transition-all duration-300 cursor-pointer hover:border-blue-200/60"
                   >
                     {/* Animated background gradient */}

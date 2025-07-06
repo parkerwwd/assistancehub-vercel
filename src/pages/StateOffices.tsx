@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { usePHAData } from '@/hooks/usePHAData';
@@ -12,15 +12,30 @@ import { Button } from '@/components/ui/button';
 const StateOffices = () => {
   const { state } = useParams<{ state: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const stateName = state ? decodeURIComponent(state) : '';
+  const cityFilter = searchParams.get('city');
   
   const { allPHAAgencies, loading } = usePHAData();
   
-  // Filter PHA agencies by state
+  // Filter PHA agencies by state and optionally by city
   const statePHAAgencies = React.useMemo(() => {
     if (!stateName || !allPHAAgencies.length) return [];
-    return filterPHAAgenciesByState(allPHAAgencies, stateName);
-  }, [stateName, allPHAAgencies]);
+    
+    let filtered = filterPHAAgenciesByState(allPHAAgencies, stateName);
+    
+    // If city filter is provided, filter by city
+    if (cityFilter) {
+      filtered = filtered.filter(agency => {
+        const address = agency.address || '';
+        const agencyName = agency.name || '';
+        return address.toLowerCase().includes(cityFilter.toLowerCase()) ||
+               agencyName.toLowerCase().includes(cityFilter.toLowerCase());
+      });
+    }
+    
+    return filtered;
+  }, [stateName, allPHAAgencies, cityFilter]);
 
   const handleBackClick = () => {
     navigate(-1); // Go back to previous page
@@ -79,10 +94,16 @@ const StateOffices = () => {
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Open Section 8 Waitlists In {stateName}
+              {cityFilter 
+                ? `Section 8 Offices in ${cityFilter}, ${stateName}`
+                : `Open Section 8 Waitlists In ${stateName}`
+              }
             </h1>
             <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-              Here are the waitlists our system has found for you. Please contact PHAs directly for most up-to-date information.
+              {cityFilter 
+                ? `Showing offices specifically in ${cityFilter}. Contact PHAs directly for most up-to-date information.`
+                : 'Here are the waitlists our system has found for you. Please contact PHAs directly for most up-to-date information.'
+              }
             </p>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 inline-block">
               <div className="flex items-center justify-center gap-4 text-lg">
@@ -102,7 +123,10 @@ const StateOffices = () => {
               <Building className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-2xl font-semibold text-gray-600 mb-2">No Offices Found</h3>
               <p className="text-gray-500">
-                We couldn't find any PHA offices for {stateName} at this time.
+                {cityFilter 
+                  ? `We couldn't find any PHA offices in ${cityFilter}, ${stateName} at this time.`
+                  : `We couldn't find any PHA offices for ${stateName} at this time.`
+                }
               </p>
             </div>
           ) : (
