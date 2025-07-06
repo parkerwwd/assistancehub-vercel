@@ -50,7 +50,7 @@ const StateCitiesSidebar: React.FC<StateCitiesSidebarProps> = ({
             {topCities.length > 0 ? topCities.map((city, index) => (
               <div key={index} className="group p-4 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer border border-gray-100/50 hover:border-blue-200/50">
                 <div className="flex justify-between items-center">
-                  <div className="flex-1">
+                  <div className="flex">
                     <div className="font-semibold text-gray-900 text-base mb-1 group-hover:text-blue-600 transition-colors">
                       {city.name}
                     </div>
