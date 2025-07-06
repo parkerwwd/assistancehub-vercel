@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Home, Building2, Users, MapPin, FileText, ExternalLink } from 'lucide-react';
@@ -40,27 +41,35 @@ const StateContactHelp: React.FC = () => {
               key={index} 
               className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
                 type.highlight 
-                  ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100' 
+                  ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100 animate-pulse' 
                   : 'bg-white/70 hover:bg-white'
               } ${
                 type.clickable 
-                  ? 'cursor-pointer hover:shadow-md hover:scale-105 active:scale-95 transform' 
+                  ? 'cursor-pointer hover:shadow-lg hover:scale-110 active:scale-95 transform animate-bounce' 
                   : ''
               }`}
               onClick={type.onClick}
+              style={{
+                animationDuration: type.highlight ? '2s' : undefined,
+                animationIterationCount: type.highlight ? 'infinite' : undefined
+              }}
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                 type.highlight 
-                  ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                  ? 'bg-blue-500 text-white hover:bg-blue-600 animate-spin' 
                   : 'bg-green-500 text-white'
               } ${
-                type.clickable ? 'group-hover:rotate-6' : ''
-              }`}>
+                type.clickable ? 'group-hover:rotate-12' : ''
+              }`}
+              style={{
+                animationDuration: type.highlight ? '3s' : undefined,
+                animationIterationCount: type.highlight ? 'infinite' : undefined
+              }}>
                 <CheckCircle className="w-4 h-4" />
               </div>
               <div className="flex-1">
                 <span className={`font-medium transition-colors duration-300 ${
-                  type.highlight ? 'text-blue-700' : 'text-green-700'
+                  type.highlight ? 'text-blue-700 animate-pulse' : 'text-green-700'
                 } ${
                   type.clickable ? 'hover:text-blue-800' : ''
                 }`}>
@@ -68,10 +77,15 @@ const StateContactHelp: React.FC = () => {
                 </span>
               </div>
               <type.icon className={`w-4 h-4 transition-all duration-300 ${
-                type.highlight ? 'text-blue-500' : 'text-green-500'
+                type.highlight ? 'text-blue-500 animate-bounce' : 'text-green-500'
               } ${
-                type.clickable ? 'hover:text-blue-600 hover:translate-x-1' : ''
-              }`} />
+                type.clickable ? 'hover:text-blue-600 hover:translate-x-2' : ''
+              }`}
+              style={{
+                animationDelay: type.highlight ? '0.5s' : undefined,
+                animationDuration: type.highlight ? '1.5s' : undefined,
+                animationIterationCount: type.highlight ? 'infinite' : undefined
+              }} />
             </div>
           ))}
         </div>
