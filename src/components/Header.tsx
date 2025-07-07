@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CitySearch from './CitySearch';
 import { USLocation } from "@/data/usLocations";
+import logoImage from "@/assets/logo.png";
 
 interface HeaderProps {
   onCitySelect?: (location: USLocation) => void;
@@ -43,12 +44,12 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
             <div className="flex items-center">
               <Link to="/" className="hover:opacity-90 transition-opacity">
                 <img 
-                  src="/logo.png" 
+                  src={logoImage} 
                   alt="JetWord AssistanceHub" 
                   className="h-10 sm:h-12 w-auto"
-                  onLoad={() => console.log('Logo loaded successfully')}
+                  onLoad={() => console.log('Logo loaded successfully from imported module')}
                   onError={(e) => {
-                    console.error('Logo failed to load from /logo.png');
+                    console.error('Logo failed to load from imported module');
                     // Fallback to a simple text logo
                     e.currentTarget.style.display = 'none';
                     e.currentTarget.parentElement!.innerHTML = '<div style="color: #1d4ed8; font-weight: bold; font-size: 20px;">JetWord AssistanceHub</div>';
