@@ -34,4 +34,16 @@ pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjenhndSJ9.lHDryqr2gOUMzjrH
 AIzaSyDldtppRX48PKyBUvlP7mnRFzO_vb6sVgU
 ```
 
-Move these to the respective environment variables in Vercel. 
+Move these to the respective environment variables in Vercel.
+
+## 📊 Data Import
+
+For importing PHA and property data directly to Supabase:
+
+1. **Check the upload script**: `scripts/upload-to-supabase.js`
+2. **Follow the guide**: `scripts/README.md`
+3. **Use your Supabase Service Role Key** (not the anon key) for uploads
+
+The upload script requires these additional environment variables:
+- `SUPABASE_URL` - Your Supabase project URL (same as VITE_SUPABASE_URL)
+- `SUPABASE_SERVICE_KEY` - Your Supabase service role key (for database writes) 
