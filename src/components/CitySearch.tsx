@@ -467,6 +467,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
             type="button"
             onClick={(e) => {
               e.preventDefault();
+              alert('Search button clicked!'); // TEST
               if (searchQuery.trim()) {
                 console.log('🔍 SEARCH: Starting search for:', searchQuery.trim());
                 handleDirectSearch(searchQuery.trim());

@@ -24,10 +24,7 @@ export const usePHAData = () => {
       setLoading(true);
       setError(null);
 
-      console.log('🔄 Fetching ALL PHA data for proper filtering...');
       const result = await fetchAllPHAData();
-
-      console.log('✅ Fetched all PHA data:', result.data.length, 'agencies');
 
       // Store all agencies
       setAllPHAAgencies(result.data);
@@ -49,18 +46,11 @@ export const usePHAData = () => {
     location: USLocation | null,
     page: number
   ) => {
-    console.log('🔄 Updating displayed agencies:', {
-      totalAgencies: allAgencies.length,
-      location: location?.name || 'None',
-      page
-    });
-
     // Step 1: Apply location filter if any
     const filtered = location
       ? filterPHAAgenciesByLocation(allAgencies, location)
       : allAgencies;
 
-    console.log('🔍 After filtering:', filtered.length, 'agencies');
     setFilteredAgencies(filtered);
 
     // Step 2: Apply pagination to filtered results
@@ -68,12 +58,10 @@ export const usePHAData = () => {
     const endIndex = startIndex + itemsPerPage;
     const paginated = filtered.slice(startIndex, endIndex);
 
-    console.log('📄 After pagination:', paginated.length, 'agencies for page', page);
     setPHAAgencies(paginated);
   };
 
   const applyLocationFilter = (location: USLocation | null) => {
-    console.log('🔍 Applying location filter:', location?.name || 'None');
     setFilteredLocation(location);
     setCurrentPage(1); // Reset to first page when filtering
 
@@ -86,7 +74,6 @@ export const usePHAData = () => {
   };
 
   const goToPage = (page: number) => {
-    console.log('📄 Going to page:', page);
     setCurrentPage(page);
 
     // Update displayed agencies with current filter and new page

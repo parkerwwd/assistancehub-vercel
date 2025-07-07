@@ -95,8 +95,6 @@ const filterByStateName = (agencies: PHAAgency[], stateName: string): PHAAgencyW
   
   const stateAbbr = stateAbbreviations[stateNameLower];
   
-  console.log('🔍 Filtering by state:', stateName, 'abbreviation:', stateAbbr);
-  
   return agencies.filter(agency => {
     if (!agency.address) return false;
     
@@ -133,12 +131,9 @@ export const filterPHAAgenciesByLocation = (
     return [];
   }
 
-  console.log('🔍 Filtering PHA agencies for location:', selectedLocation.name, selectedLocation.type);
-
   if (selectedLocation.type === 'state') {
     // Enhanced state filtering
     const filteredAgencies = filterByStateName(agencies, selectedLocation.name);
-    console.log('🔍 State filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
     return filteredAgencies;
   }
 
@@ -152,7 +147,6 @@ export const filterPHAAgenciesByLocation = (
         
         // Skip agencies without coordinates
         if (!agencyLat || !agencyLng) {
-          console.log('⚠️ No coordinates for agency:', agency.name);
           return null;
         }
         
@@ -190,7 +184,6 @@ export const filterPHAAgenciesByLocation = (
     });
 
     const filteredAgencies = agenciesWithDistance.map(item => {
-      console.log(`✅ ${item.isExactMatch ? '⭐' : '📍'} ${item.agency.name} - ${item.distance.toFixed(1)} miles`);
       return {
         ...item.agency,
         _distance: item.distance,
@@ -198,32 +191,27 @@ export const filterPHAAgenciesByLocation = (
       } as PHAAgencyWithDistance;
     });
 
-    console.log('🔍 City filter (25 miles) - found agencies:', filteredAgencies.length, 'out of', agencies.length);
     return filteredAgencies;
   }
 
   if (selectedLocation.type === 'county') {
     // For counties, match by county name and state
     const searchTerms = getLocationSearchTerms(selectedLocation);
-    console.log('🔍 County search terms:', searchTerms);
 
     const filteredAgencies = agencies.filter(agency => {
       return searchTerms.some(term => matchesAgencyLocation(agency, term));
     }) as PHAAgencyWithDistance[];
 
-    console.log('🔍 County filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
     return filteredAgencies;
   }
 
   // Fallback to original logic
   const searchTerms = getLocationSearchTerms(selectedLocation);
-  console.log('🔍 Fallback search terms:', searchTerms);
 
   const filteredAgencies = agencies.filter(agency => {
     return searchTerms.some(term => matchesAgencyLocation(agency, term));
   }) as PHAAgencyWithDistance[];
 
-  console.log('🔍 Fallback filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
   return filteredAgencies;
 };
 
@@ -238,7 +226,6 @@ export const filterPHAAgenciesByState = (
     return [];
   }
 
-  console.log('🏛️ Filtering PHA agencies for state:', stateName);
   return filterByStateName(agencies, stateName);
 };
 

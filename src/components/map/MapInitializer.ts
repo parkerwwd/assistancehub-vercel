@@ -12,8 +12,6 @@ interface MapInitializerOptions {
 
 export class MapInitializer {
   static createMap({ container, mapboxToken, onTokenError, onBoundsChange }: MapInitializerOptions): mapboxgl.Map | null {
-    console.log('🗺️ MapInitializer - Token:', mapboxToken ? `Present (${mapboxToken.substring(0, 20)}...)` : 'Missing');
-    
     // Validate token
     if (!mapboxToken || !mapboxToken.trim() || !mapboxToken.startsWith('pk.')) {
       console.error('❌ Invalid or missing Mapbox token:', mapboxToken);
@@ -25,10 +23,7 @@ export class MapInitializer {
     onTokenError("");
 
     try {
-      console.log('🗺️ Setting Mapbox access token...');
       mapboxgl.accessToken = mapboxToken.trim();
-      
-      console.log('🗺️ Creating map instance...');
       
       // Create the map with 3D configuration
       const map = new mapboxgl.Map({
@@ -41,8 +36,6 @@ export class MapInitializer {
         antialias: true,
         maxPitch: 85
       });
-      
-      console.log('🗺️ Map instance created successfully');
       
       // Add error handling for the map
       map.on('error', (e) => {
