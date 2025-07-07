@@ -305,9 +305,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
     console.log('🔍 Direct search for:', query);
     console.log('🔍 onCitySelect callback:', typeof onCitySelect);
     
-    // Reset search state at the beginning
-    resetSearchState();
-    
     // Check if it's a ZIP code
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
     if (zipCodeRegex.test(query)) {
@@ -315,13 +312,10 @@ const CitySearch: React.FC<CitySearchProps> = ({
       const geocodedLocation = await handleZipCodeSearch(query);
       if (geocodedLocation) {
         console.log('🔍 ZIP geocoded successfully, calling onCitySelect:', geocodedLocation);
-        // Clear search state before calling onCitySelect
-        setTimeout(() => {
-          // Blur input on mobile to hide keyboard
-          searchInputRef.current?.blur();
-          onCitySelect(geocodedLocation);
-          console.log('🔍 Search completed successfully');
-        }, 100);
+        // Blur input on mobile to hide keyboard
+        searchInputRef.current?.blur();
+        onCitySelect(geocodedLocation);
+        console.log('🔍 Search completed successfully');
       } else {
         console.log('🔍 ZIP geocoding failed');
       }
@@ -339,13 +333,10 @@ const CitySearch: React.FC<CitySearchProps> = ({
       setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
       setShowSuggestions(false);
       console.log('🔍 Calling onCitySelect with local match:', localMatch);
-      // Clear search state before calling onCitySelect
-      setTimeout(() => {
-        // Blur input on mobile to hide keyboard
-        searchInputRef.current?.blur();
-        onCitySelect(localMatch);
-        console.log('🔍 Search completed successfully');
-      }, 100);
+      // Blur input on mobile to hide keyboard
+      searchInputRef.current?.blur();
+      onCitySelect(localMatch);
+      console.log('🔍 Search completed successfully');
       return;
     }
     
@@ -384,13 +375,10 @@ const CitySearch: React.FC<CitySearchProps> = ({
             setSearchQuery(`${location.name}, ${location.stateCode}`);
             setShowSuggestions(false);
             console.log('🔍 Calling onCitySelect with Mapbox result:', location);
-            // Clear search state before calling onCitySelect
-            setTimeout(() => {
-              // Blur input on mobile to hide keyboard
-              searchInputRef.current?.blur();
-              onCitySelect(location);
-              console.log('🔍 Search completed successfully');
-            }, 100);
+            // Blur input on mobile to hide keyboard
+            searchInputRef.current?.blur();
+            onCitySelect(location);
+            console.log('🔍 Search completed successfully');
           } else {
             console.log('🔍 Mapbox API returned no features');
           }
@@ -475,49 +463,51 @@ const CitySearch: React.FC<CitySearchProps> = ({
   if (variant === 'header') {
     return (
       <div className="relative w-full">
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          if (searchQuery.trim()) {
-            console.log('🔵 Form submitted with query:', searchQuery);
-            handleDirectSearch(searchQuery.trim());
-          }
-        }}>
-          <div className="flex items-center gap-2">
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder={placeholder}
-              value={searchQuery}
-              onChange={(e) => handleInputChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-              className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base min-h-[44px] pr-8 touch-manipulation"
-              autoComplete="off"
-              inputMode="search"
-              style={{ WebkitAppearance: 'none', touchAction: 'manipulation' }}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                className="absolute right-16 p-2 text-gray-400 hover:text-gray-600 transition-colors touch-manipulation"
-                aria-label="Clear search"
-                style={{ touchAction: 'manipulation' }}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
+        <div className="flex items-center gap-2">
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder={placeholder}
+            value={searchQuery}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base min-h-[44px] pr-8 touch-manipulation"
+            autoComplete="off"
+            inputMode="search"
+            style={{ WebkitAppearance: 'none', touchAction: 'manipulation' }}
+          />
+          {searchQuery && (
             <button
-              type="submit"
-              className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap min-h-[44px]"
-              disabled={!searchQuery.trim()}
+              type="button"
+              onClick={handleClearSearch}
+              className="absolute right-16 p-2 text-gray-400 hover:text-gray-600 transition-colors touch-manipulation"
+              aria-label="Clear search"
               style={{ touchAction: 'manipulation' }}
             >
-              Search
+              <X className="w-4 h-4" />
             </button>
-          </div>
-        </form>
+          )}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              console.log('🔵 Search button clicked with query:', searchQuery);
+              if (searchQuery.trim()) {
+                console.log('🔵 Calling handleDirectSearch...');
+                handleDirectSearch(searchQuery.trim());
+              } else {
+                console.log('🔵 No search query to search for');
+              }
+            }}
+            className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap min-h-[44px]"
+            disabled={!searchQuery.trim()}
+            style={{ touchAction: 'manipulation' }}
+          >
+            Search
+          </button>
+        </div>
         
         {showSuggestions && filteredLocations.length > 0 && (
           <div 
