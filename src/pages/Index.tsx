@@ -9,6 +9,7 @@ import { MapPin, Search, Home, Users, FileText, CheckCircle, ArrowRight } from "
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from 'react';
 import { USLocation } from "@/data/locations";
+import USMap from "@/components/USMap";
 
 const STATES = [
   { code: 'AL', name: 'Alabama' },
@@ -193,22 +194,15 @@ const Index = () => {
             </div>
           </div>
 
-          {/* US Map Placeholder */}
-          <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-3xl p-12 mb-16">
-            <div className="text-center">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-                Interactive State Map
-              </h3>
-              <div className="bg-gray-200 rounded-2xl h-64 flex items-center justify-center mb-8">
-                <div className="text-center">
-                  <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg">
-                    Select a state above to explore housing options
-                  </p>
-                </div>
-              </div>
-              
-              {/* Popular States */}
+          {/* Interactive US Map */}
+          <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-3xl p-8 mb-16">
+            <div className="h-96">
+              <USMap selectedState={selectedState} onStateClick={setSelectedState} />
+            </div>
+            
+            {/* Popular States */}
+            <div className="text-center mt-8">
+              <p className="text-gray-600 mb-4">Popular states to explore:</p>
               <div className="flex flex-wrap justify-center gap-3">
                 {['CA', 'TX', 'FL', 'NY', 'IL', 'GA'].map((stateCode) => {
                   const state = STATES.find(s => s.code === stateCode);
