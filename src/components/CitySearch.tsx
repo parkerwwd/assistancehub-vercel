@@ -13,13 +13,15 @@ const CitySearch: React.FC<CitySearchProps> = ({
   placeholder = "Search by city, county, state...",
   variant = 'default'
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  console.log('🔍 CitySearch component rendered, onCitySelect exists?', !!onCitySelect);
+  
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState<number>(-1);
   const [filteredLocations, setFilteredLocations] = useState<(USLocation & { zipCode?: string; mapboxId?: string })[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Reset search when component remounts or location changes
   useEffect(() => {
@@ -302,6 +304,8 @@ const CitySearch: React.FC<CitySearchProps> = ({
   // Handle direct search when Enter is pressed without selecting a suggestion
   const handleDirectSearch = async (query: string) => {
     console.log('🔍 handleDirectSearch called with:', query);
+    console.log('🔍 onCitySelect exists in handleDirectSearch?', !!onCitySelect);
+    console.log('🔍 onCitySelect type:', typeof onCitySelect);
     
     // Check if it's a ZIP code
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
@@ -483,14 +487,23 @@ const CitySearch: React.FC<CitySearchProps> = ({
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              console.log('🔍 Button clicked, searchQuery:', searchQuery);
-              console.log('🔍 searchQuery.trim():', searchQuery.trim());
+              console.log('🔍 Button clicked!');
+              console.log('🔍 searchQuery value:', searchQuery);
+              console.log('🔍 searchQuery type:', typeof searchQuery);
+              console.log('🔍 searchQuery length:', searchQuery.length);
+              console.log('🔍 trimmed length:', searchQuery.trim().length);
               
-              if (searchQuery.trim()) {
-                console.log('🔍 SEARCH: Starting search for:', searchQuery.trim());
-                handleDirectSearch(searchQuery.trim());
-              } else {
-                console.log('🔍 No query to search');
+              try {
+                if (searchQuery && searchQuery.trim()) {
+                  console.log('🔍 SEARCH: Starting search for:', searchQuery.trim());
+                  console.log('🔍 About to call handleDirectSearch');
+                  handleDirectSearch(searchQuery.trim());
+                  console.log('🔍 handleDirectSearch call completed');
+                } else {
+                  console.log('🔍 No query to search (empty or whitespace only)');
+                }
+              } catch (error) {
+                console.error('🔍 ERROR in search button handler:', error);
               }
             }}
             className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap min-h-[44px]"
