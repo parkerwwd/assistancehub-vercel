@@ -19,8 +19,18 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
 
   const handleCitySelectFromHeader = (location: USLocation) => {
     console.log('🏙️ Header location selected:', location);
+    console.log('🏙️ Header onCitySelect callback exists:', !!onCitySelect);
+    console.log('🏙️ Header onCitySelect type:', typeof onCitySelect);
     if (onCitySelect) {
-      onCitySelect(location);
+      console.log('🏙️ Header calling onCitySelect...');
+      try {
+        onCitySelect(location);
+        console.log('🏙️ Header onCitySelect called successfully');
+      } catch (error) {
+        console.error('🏙️ Header onCitySelect error:', error);
+      }
+    } else {
+      console.error('🏙️ Header onCitySelect callback is missing!');
     }
   };
 
@@ -129,10 +139,10 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
 
           {/* Mobile Search (when enabled) */}
           {showSearch && isMobile && !isMobileMenuOpen && (
-            <div className="pb-3 pt-2 -mx-4 px-4 bg-white border-b relative z-[70]">
-              <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-3 min-h-[48px]">
+            <div className="pb-3 pt-2 -mx-4 px-4 bg-white border-b relative z-[80]">
+              <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-3 min-h-[52px] touch-manipulation">
                 <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                <div className="flex-1 relative">
+                <div className="flex-1 relative touch-manipulation">
                   <CitySearch 
                     onCitySelect={handleCitySelectFromHeader} 
                     placeholder="Search city, state, ZIP..."

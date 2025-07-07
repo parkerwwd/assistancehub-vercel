@@ -17,7 +17,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
   const [filteredLocations, setFilteredLocations] = useState<(USLocation & { zipCode?: string; mapboxId?: string })[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  const [isInteracting, setIsInteracting] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -420,7 +419,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
     setFilteredLocations([]);
     setShowSuggestions(false);
     setSelectedSuggestionIndex(-1);
-    setIsInteracting(false);
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
       debounceTimeout.current = null;
@@ -428,15 +426,10 @@ const CitySearch: React.FC<CitySearchProps> = ({
   };
 
   const handleInputBlur = () => {
-    // Only hide if not interacting with suggestions
-    if (!isInteracting) {
-      // Increased delay for mobile touches
-      setTimeout(() => {
-        if (!isInteracting) {
-          setShowSuggestions(false);
-        }
-      }, 300);
-    }
+    // Simplified blur handling for mobile
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
   };
 
   const handleInputFocus = () => {
@@ -447,15 +440,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
     setTimeout(() => {
       searchInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 300);
-  };
-
-  // Handle touch/mouse interactions with suggestions
-  const handleSuggestionInteractionStart = () => {
-    setIsInteracting(true);
-  };
-
-  const handleSuggestionInteractionEnd = () => {
-    setIsInteracting(false);
   };
 
   // Clean up debounce timeout on unmount
@@ -491,82 +475,72 @@ const CitySearch: React.FC<CitySearchProps> = ({
   if (variant === 'header') {
     return (
       <div className="relative w-full">
-        <div className="flex items-center gap-2">
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder={placeholder}
-            value={searchQuery}
-            onChange={(e) => handleInputChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
-            className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base min-h-[40px] pr-8"
-            autoComplete="off"
-            inputMode="search"
-          />
-          {searchQuery && (
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (searchQuery.trim()) {
+            console.log('🔵 Form submitted with query:', searchQuery);
+            handleDirectSearch(searchQuery.trim());
+          }
+        }}>
+          <div className="flex items-center gap-2">
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder={placeholder}
+              value={searchQuery}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
+              className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base min-h-[44px] pr-8 touch-manipulation"
+              autoComplete="off"
+              inputMode="search"
+              style={{ WebkitAppearance: 'none', touchAction: 'manipulation' }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-16 p-2 text-gray-400 hover:text-gray-600 transition-colors touch-manipulation"
+                aria-label="Clear search"
+                style={{ touchAction: 'manipulation' }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
             <button
-              type="button"
-              onClick={handleClearSearch}
-              className="absolute right-16 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Clear search"
+              type="submit"
+              className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap min-h-[44px]"
+              disabled={!searchQuery.trim()}
+              style={{ touchAction: 'manipulation' }}
             >
-              <X className="w-4 h-4" />
+              Search
             </button>
-          )}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('🔵 Search button clicked with query:', searchQuery);
-              if (searchQuery.trim()) {
-                console.log('🔵 Calling handleDirectSearch...');
-                handleDirectSearch(searchQuery.trim());
-              } else {
-                console.log('🔵 No search query to search for');
-              }
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('🔵 Search button touched (mobile) with query:', searchQuery);
-              if (searchQuery.trim()) {
-                console.log('🔵 Calling handleDirectSearch from touch...');
-                handleDirectSearch(searchQuery.trim());
-              } else {
-                console.log('🔵 No search query to search for from touch');
-              }
-            }}
-            className="px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap"
-            disabled={!searchQuery.trim()}
-          >
-            Search
-          </button>
-        </div>
+          </div>
+        </form>
         
         {showSuggestions && filteredLocations.length > 0 && (
           <div 
             ref={suggestionsRef}
-            className="absolute top-full left-0 right-0 z-[100] mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-w-[calc(100vw-2rem)] mx-auto max-h-[50vh] overflow-y-auto overscroll-contain"
+            className="absolute top-full left-0 right-0 z-[110] mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-w-[calc(100vw-2rem)] mx-auto max-h-[50vh] overflow-y-auto overscroll-contain"
             style={{ width: 'min(24rem, calc(100vw - 2rem))' }}
-            onTouchStart={handleSuggestionInteractionStart}
-            onTouchEnd={handleSuggestionInteractionEnd}
-            onMouseDown={handleSuggestionInteractionStart}
-            onMouseUp={handleSuggestionInteractionEnd}
           >
             {filteredLocations.map((location, index) => (
               <div
                 key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
-                onClick={() => handleLocationSelect(location)}
-                onTouchEnd={() => handleLocationSelect(location)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('🔵 Suggestion clicked:', location.name);
+                  handleLocationSelect(location);
+                }}
                 onMouseEnter={() => setSelectedSuggestionIndex(index)}
-                className={`cursor-pointer flex items-center gap-3 px-4 py-4 text-sm transition-colors touch-manipulation ${
+                className={`cursor-pointer flex items-center gap-3 px-4 py-4 text-sm transition-colors touch-manipulation min-h-[44px] ${
                   index === selectedSuggestionIndex
                     ? 'bg-blue-50 text-blue-900'
                     : 'hover:bg-gray-50 active:bg-gray-100'
                 } border-b border-gray-100 last:border-b-0`}
+                style={{ touchAction: 'manipulation' }}
               >
                 <span className="text-lg flex-shrink-0">{getLocationIcon(location)}</span>
                 <div className="flex-1 min-w-0">
@@ -611,10 +585,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
           ref={suggestionsRef}
           className="absolute top-full left-0 right-0 z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-w-[calc(100vw-2rem)] mx-auto max-h-[40vh] overflow-y-auto overscroll-contain"
           style={{ width: 'min(20rem, calc(100vw - 2rem))' }}
-          onTouchStart={handleSuggestionInteractionStart}
-          onTouchEnd={handleSuggestionInteractionEnd}
-          onMouseDown={handleSuggestionInteractionStart}
-          onMouseUp={handleSuggestionInteractionEnd}
         >
           {filteredLocations.map((location, index) => (
             <div
