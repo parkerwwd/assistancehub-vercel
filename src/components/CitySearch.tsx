@@ -306,6 +306,9 @@ const CitySearch: React.FC<CitySearchProps> = ({
     console.log('🔍 Direct search for:', query);
     console.log('🔍 onCitySelect callback:', typeof onCitySelect);
     
+    // Reset search state at the beginning
+    resetSearchState();
+    
     // Check if it's a ZIP code
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
     if (zipCodeRegex.test(query)) {
@@ -313,7 +316,13 @@ const CitySearch: React.FC<CitySearchProps> = ({
       const geocodedLocation = await handleZipCodeSearch(query);
       if (geocodedLocation) {
         console.log('🔍 ZIP geocoded successfully, calling onCitySelect:', geocodedLocation);
-        onCitySelect(geocodedLocation);
+        // Clear search state before calling onCitySelect
+        setTimeout(() => {
+          // Blur input on mobile to hide keyboard
+          searchInputRef.current?.blur();
+          onCitySelect(geocodedLocation);
+          console.log('🔍 Search completed successfully');
+        }, 100);
       } else {
         console.log('🔍 ZIP geocoding failed');
       }
@@ -331,7 +340,13 @@ const CitySearch: React.FC<CitySearchProps> = ({
       setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
       setShowSuggestions(false);
       console.log('🔍 Calling onCitySelect with local match:', localMatch);
-      onCitySelect(localMatch);
+      // Clear search state before calling onCitySelect
+      setTimeout(() => {
+        // Blur input on mobile to hide keyboard
+        searchInputRef.current?.blur();
+        onCitySelect(localMatch);
+        console.log('🔍 Search completed successfully');
+      }, 100);
       return;
     }
     
@@ -370,7 +385,13 @@ const CitySearch: React.FC<CitySearchProps> = ({
             setSearchQuery(`${location.name}, ${location.stateCode}`);
             setShowSuggestions(false);
             console.log('🔍 Calling onCitySelect with Mapbox result:', location);
-            onCitySelect(location);
+            // Clear search state before calling onCitySelect
+            setTimeout(() => {
+              // Blur input on mobile to hide keyboard
+              searchInputRef.current?.blur();
+              onCitySelect(location);
+              console.log('🔍 Search completed successfully');
+            }, 100);
           } else {
             console.log('🔍 Mapbox API returned no features');
           }
@@ -391,6 +412,19 @@ const CitySearch: React.FC<CitySearchProps> = ({
     setShowSuggestions(false);
     setSelectedSuggestionIndex(-1);
     searchInputRef.current?.focus();
+  };
+
+  // Reset all search state - useful for mobile between searches
+  const resetSearchState = () => {
+    console.log('🧹 Resetting search state');
+    setFilteredLocations([]);
+    setShowSuggestions(false);
+    setSelectedSuggestionIndex(-1);
+    setIsInteracting(false);
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+      debounceTimeout.current = null;
+    }
   };
 
   const handleInputBlur = () => {
@@ -483,13 +517,26 @@ const CitySearch: React.FC<CitySearchProps> = ({
           )}
           <button
             type="button"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               console.log('🔵 Search button clicked with query:', searchQuery);
               if (searchQuery.trim()) {
                 console.log('🔵 Calling handleDirectSearch...');
                 handleDirectSearch(searchQuery.trim());
               } else {
                 console.log('🔵 No search query to search for');
+              }
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('🔵 Search button touched (mobile) with query:', searchQuery);
+              if (searchQuery.trim()) {
+                console.log('🔵 Calling handleDirectSearch from touch...');
+                handleDirectSearch(searchQuery.trim());
+              } else {
+                console.log('🔵 No search query to search for from touch');
               }
             }}
             className="px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap"
