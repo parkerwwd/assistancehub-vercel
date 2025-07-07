@@ -12,6 +12,17 @@ export type Database = {
       pha_agencies: {
         Row: {
           address: string | null
+          city: string | null
+          state: string | null
+          zip: string | null
+          latitude: number | null
+          longitude: number | null
+          website: string | null
+          supports_hcv: boolean
+          waitlist_open: boolean | null
+          waitlist_status: string | null
+          jurisdictions: string[] | null
+          last_updated: string
           created_at: string
           email: string | null
           exec_dir_email: string | null
@@ -24,6 +35,17 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          city?: string | null
+          state?: string | null
+          zip?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          website?: string | null
+          supports_hcv?: boolean
+          waitlist_open?: boolean | null
+          waitlist_status?: string | null
+          jurisdictions?: string[] | null
+          last_updated?: string
           created_at?: string
           email?: string | null
           exec_dir_email?: string | null
@@ -36,6 +58,17 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          city?: string | null
+          state?: string | null
+          zip?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          website?: string | null
+          supports_hcv?: boolean
+          waitlist_open?: boolean | null
+          waitlist_status?: string | null
+          jurisdictions?: string[] | null
+          last_updated?: string
           created_at?: string
           email?: string | null
           exec_dir_email?: string | null

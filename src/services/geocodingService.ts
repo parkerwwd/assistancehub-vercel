@@ -57,23 +57,67 @@ export const geocodePHAs = async (phas: PHAAgency[]): Promise<GeocodedPHA[]> => 
   const { usCities } = await import("@/data/usCities");
   
   return phas.map(pha => {
-    // Skip if already has geocoded coordinates
+    // Check if we already have geocoded coordinates
     if ((pha as any).geocoded_latitude && (pha as any).geocoded_longitude) {
       return pha;
     }
 
-    // Extract city name from phone field (where city names are stored)
-    const cityName = pha.phone?.toLowerCase().trim();
+    // Check if the database has latitude/longitude fields
+    if ((pha as any).latitude && (pha as any).longitude) {
+      return {
+        ...pha,
+        geocoded_latitude: Number((pha as any).latitude),
+        geocoded_longitude: Number((pha as any).longitude)
+      };
+    }
+
+    // Try to extract city and state from address field
+    let cityName = '';
+    let stateCode = '';
+    
+    if (pha.address) {
+      // Try to parse city and state from address (format: "123 Main St, City, ST 12345")
+      const addressParts = pha.address.split(',');
+      if (addressParts.length >= 3) {
+        // Extract city (second to last part)
+        cityName = addressParts[addressParts.length - 2]?.trim().toLowerCase() || '';
+        
+        // Extract state from last part (format: "ST 12345")
+        const stateZipPart = addressParts[addressParts.length - 1]?.trim() || '';
+        const stateMatch = stateZipPart.match(/^([A-Z]{2})\s+\d{5}/);
+        if (stateMatch) {
+          stateCode = stateMatch[1].toLowerCase();
+        }
+      }
+    }
+    
+    // If we have a city field, use it (in case database has it)
+    if ((pha as any).city) {
+      cityName = (pha as any).city.toLowerCase().trim();
+    }
+    
+    // If we have a state field, use it (in case database has it)
+    if ((pha as any).state) {
+      stateCode = (pha as any).state.toLowerCase().trim();
+    }
     
     if (cityName) {
       // Find matching city in US cities data
-      const matchingCity = usCities.find(city => 
-        city.name.toLowerCase() === cityName ||
-        city.name.toLowerCase().includes(cityName) ||
-        cityName.includes(city.name.toLowerCase())
-      );
+      const matchingCity = usCities.find(city => {
+        const cityMatches = city.name.toLowerCase() === cityName ||
+                          city.name.toLowerCase().includes(cityName) ||
+                          cityName.includes(city.name.toLowerCase());
+        
+        // If we have a state code, make sure it matches too
+        if (stateCode && cityMatches) {
+          return city.stateCode.toLowerCase() === stateCode;
+        }
+        
+        return cityMatches;
+      });
 
       if (matchingCity) {
+        console.log(`✅ Found coordinates for ${pha.name}: ${matchingCity.name}, ${matchingCity.stateCode}`);
         return {
           ...pha,
           geocoded_latitude: matchingCity.latitude,
@@ -82,6 +126,9 @@ export const geocodePHAs = async (phas: PHAAgency[]): Promise<GeocodedPHA[]> => 
       }
     }
 
+    // If still no match and we have an address, we could use the Mapbox geocoding
+    // For now, just return the PHA without geocoded coordinates
+    console.warn(`⚠️ No coordinates found for PHA: ${pha.name} at ${pha.address}`);
     return pha;
   });
 };
