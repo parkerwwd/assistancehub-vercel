@@ -62,6 +62,60 @@ export const processPHARecord = (record: any, fieldMappings?: FieldMapping[]) =>
     }
   }
 
+  // If we have a full address but no city/state/zip, try to parse them
+  if (mappedRow.address && (!mappedRow.city || !mappedRow.state || !mappedRow.zip)) {
+    console.log('🏙️ Parsing city/state/zip from address:', mappedRow.address);
+    
+    // Clean up "nan" placeholder in addresses
+    if (mappedRow.address.toLowerCase().startsWith('nan,')) {
+      mappedRow.address = mappedRow.address.substring(4).trim();
+    }
+    
+    // Parse address in format: "Street, City, State, Zip" or "City, State, Zip"
+    const addressParts = mappedRow.address.split(',').map((part: string) => part.trim());
+    
+    if (addressParts.length >= 2) {
+      // Handle different address formats
+      let cityIndex = -1;
+      let stateZipIndex = -1;
+      
+      // Find the state/zip part (format: "ST 12345")
+      for (let i = addressParts.length - 1; i >= 0; i--) {
+        if (addressParts[i].match(/^[A-Z]{2}\s+\d{5}(-\d{4})?$/)) {
+          stateZipIndex = i;
+          cityIndex = i - 1;
+          break;
+        }
+      }
+      
+      // Extract city
+      if (!mappedRow.city && cityIndex >= 0 && cityIndex < addressParts.length) {
+        mappedRow.city = addressParts[cityIndex];
+      }
+      
+      // Extract state and zip
+      if (stateZipIndex >= 0) {
+        const stateZipPart = addressParts[stateZipIndex];
+        const stateZipMatch = stateZipPart.match(/^([A-Z]{2})\s+(\d{5}(-\d{4})?)$/);
+        
+        if (stateZipMatch) {
+          if (!mappedRow.state) {
+            mappedRow.state = stateZipMatch[1];
+          }
+          if (!mappedRow.zip) {
+            mappedRow.zip = stateZipMatch[2];
+          }
+        }
+      }
+      
+      console.log('✅ Parsed location:', { 
+        city: mappedRow.city, 
+        state: mappedRow.state, 
+        zip: mappedRow.zip 
+      });
+    }
+  }
+
   console.log('✅ Mapped PHA record:', mappedRow);
   return mappedRow;
 };
