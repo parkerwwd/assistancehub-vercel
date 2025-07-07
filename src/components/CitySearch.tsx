@@ -24,19 +24,14 @@ const CitySearch: React.FC<CitySearchProps> = ({
   
   // Track search attempts - only log on second search
   const searchCountRef = useRef(0);
-
-  // Reset search when component remounts or location changes
+  
+  // Debug component mounting
   useEffect(() => {
+    console.log('🔧 CitySearch mounted, variant:', variant);
     return () => {
-      setSearchQuery("");
-      setFilteredLocations([]);
-      setShowSuggestions(false);
-      setSelectedSuggestionIndex(-1);
-      if (debounceTimeout.current) {
-        clearTimeout(debounceTimeout.current);
-      }
+      console.log('🔧 CitySearch unmounting, variant:', variant);
     };
-  }, []);
+  }, [variant]);
 
   // Filter locations based on search input (with Mapbox integration)
   const filterLocations = async (query: string) => {
