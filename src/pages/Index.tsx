@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Search, Home, Users, FileText, CheckCircle, ArrowRight, Target, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { USLocation } from "@/data/locations";
+import { comprehensiveCities } from "@/data/locations/cities";
 import USMap from "@/components/USMap";
 
 const STATES = [
@@ -77,6 +78,11 @@ const POPULAR_CITIES = [
 const Index = () => {
   const [selectedState, setSelectedState] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState<number>(-1);
+  const [filteredCities, setFilteredCities] = useState<USLocation[]>([]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const handleStateSearch = () => {
@@ -110,6 +116,93 @@ const Index = () => {
     navigate('/section8', { state: { searchQuery: city } });
   };
 
+  // Filter cities based on search input
+  const filterCities = (query: string) => {
+    if (!query.trim()) {
+      setFilteredCities([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const filtered = comprehensiveCities
+      .filter(city => 
+        city.name.toLowerCase().includes(query.toLowerCase()) ||
+        city.state.toLowerCase().includes(query.toLowerCase()) ||
+        city.stateCode.toLowerCase().includes(query.toLowerCase())
+      )
+      .slice(0, 8); // Limit to 8 suggestions
+
+    setFilteredCities(filtered);
+    setShowSuggestions(filtered.length > 0);
+    setSelectedSuggestionIndex(-1);
+  };
+
+  // Handle search input changes
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    filterCities(value);
+  };
+
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!showSuggestions) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev < filteredCities.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev > 0 ? prev - 1 : filteredCities.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0 && filteredCities[selectedSuggestionIndex]) {
+          handleSuggestionSelect(filteredCities[selectedSuggestionIndex]);
+        } else if (searchQuery.trim()) {
+          handleSearchSubmit(e);
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        searchInputRef.current?.blur();
+        break;
+    }
+  };
+
+  // Handle suggestion selection
+  const handleSuggestionSelect = (city: USLocation) => {
+    const searchText = `${city.name}, ${city.stateCode}`;
+    setSearchQuery(searchText);
+    setShowSuggestions(false);
+    setSelectedSuggestionIndex(-1);
+    navigate('/section8', { state: { searchQuery: searchText } });
+  };
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current && 
+        !suggestionsRef.current.contains(event.target as Node) &&
+        !searchInputRef.current?.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -134,26 +227,61 @@ const Index = () => {
               Your trusted guide to Section 8 housing and affordable rental solutions
             </p>
 
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-12">
+            {/* Search Bar with Autocomplete */}
+            <div className="max-w-2xl mx-auto mb-12 relative">
               <form onSubmit={handleSearchSubmit} className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                   <Target className="h-6 w-6 text-gray-400" />
                 </div>
                 <input
+                  ref={searchInputRef}
                   type="text"
                   placeholder="City, County, or Zipcode"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-20 py-6 text-lg rounded-full border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  onChange={handleSearchInputChange}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => searchQuery && filterCities(searchQuery)}
+                  className="w-full pl-12 pr-20 py-6 text-lg rounded-full border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none relative z-10"
+                  autoComplete="off"
                 />
                 <button
                   type="submit"
-                  className="absolute right-2 top-2 bottom-2 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors duration-200 flex items-center gap-2"
+                  className="absolute right-2 top-2 bottom-2 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors duration-200 flex items-center gap-2 z-10"
                 >
                   <Search className="h-5 w-5" />
                   <span className="hidden sm:inline">Search</span>
                 </button>
+                
+                {/* Autocomplete Suggestions */}
+                {showSuggestions && filteredCities.length > 0 && (
+                  <div 
+                    ref={suggestionsRef}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50"
+                  >
+                    {filteredCities.map((city, index) => (
+                      <div
+                        key={`${city.name}-${city.stateCode}`}
+                        className={`px-4 py-3 cursor-pointer transition-colors duration-150 flex items-center gap-3 ${
+                          index === selectedSuggestionIndex 
+                            ? 'bg-blue-50 text-blue-900' 
+                            : 'hover:bg-gray-50'
+                        }`}
+                        onClick={() => handleSuggestionSelect(city)}
+                        onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                      >
+                        <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">
+                            {city.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {city.state} ({city.stateCode})
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </form>
             </div>
 
