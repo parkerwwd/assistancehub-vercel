@@ -547,14 +547,14 @@ const CitySearch: React.FC<CitySearchProps> = ({
               >
                 <span className="text-lg flex-shrink-0">{getLocationIcon(location)}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-gray-900 truncate">
-                      {location.zipCode || location.name}
-                      {(location.type === 'city' || location.type === 'county') && ', '}
+                  <div className="mb-1">
+                    <span className="font-medium text-gray-900">
+                      {location.zipCode || (
+                        (location.type === 'city' || location.type === 'county') 
+                          ? `${location.name}, ${location.stateCode}`
+                          : location.name
+                      )}
                     </span>
-                    {(location.type === 'city' || location.type === 'county') && (
-                      <span className="text-gray-500 flex-shrink-0">{location.stateCode}</span>
-                    )}
                   </div>
                   <div className="text-xs text-gray-500">
                     {getLocationDescription(location)}
@@ -604,14 +604,14 @@ const CitySearch: React.FC<CitySearchProps> = ({
             >
               <span className="text-lg flex-shrink-0">{getLocationIcon(location)}</span>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="mb-1">
                   <span className="font-medium text-gray-900">
-                    {location.zipCode || location.name}
-                    {(location.type === 'city' || location.type === 'county') && ', '}
+                    {location.zipCode || (
+                      (location.type === 'city' || location.type === 'county') 
+                        ? `${location.name}, ${location.stateCode}`
+                        : location.name
+                    )}
                   </span>
-                  {(location.type === 'city' || location.type === 'county') && (
-                    <span className="text-gray-500">{location.stateCode}</span>
-                  )}
                 </div>
                 <div className="text-xs text-gray-500">
                   {getLocationDescription(location)}
