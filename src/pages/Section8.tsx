@@ -106,8 +106,12 @@ const Section8 = () => {
   };
 
   const handleHeaderCitySelect = (location: any) => {
-    console.log('🏙️ Section8 received location selection:', location);
+    console.log('🏙️ Section8 received location selection from header:', location);
+    console.log('🏙️ Location type:', typeof location);
+    console.log('🏙️ Location details:', JSON.stringify(location, null, 2));
+    console.log('🏙️ Calling handleCitySelect...');
     handleCitySelect(location);
+    console.log('🏙️ handleCitySelect called successfully');
   };
 
   if (!mapboxToken) {

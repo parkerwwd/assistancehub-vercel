@@ -304,13 +304,18 @@ const CitySearch: React.FC<CitySearchProps> = ({
   // Handle direct search when Enter is pressed without selecting a suggestion
   const handleDirectSearch = async (query: string) => {
     console.log('🔍 Direct search for:', query);
+    console.log('🔍 onCitySelect callback:', typeof onCitySelect);
     
     // Check if it's a ZIP code
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
     if (zipCodeRegex.test(query)) {
+      console.log('🔍 Detected ZIP code, geocoding...');
       const geocodedLocation = await handleZipCodeSearch(query);
       if (geocodedLocation) {
+        console.log('🔍 ZIP geocoded successfully, calling onCitySelect:', geocodedLocation);
         onCitySelect(geocodedLocation);
+      } else {
+        console.log('🔍 ZIP geocoding failed');
       }
       return;
     }
@@ -322,16 +327,21 @@ const CitySearch: React.FC<CitySearchProps> = ({
     );
     
     if (localMatch) {
+      console.log('🔍 Found local match:', localMatch);
       setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
       setShowSuggestions(false);
+      console.log('🔍 Calling onCitySelect with local match:', localMatch);
       onCitySelect(localMatch);
       return;
     }
+    
+    console.log('🔍 No local match found, trying Mapbox geocoding...');
     
     // If not found locally, try geocoding with Mapbox
     try {
       const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
       if (mapboxToken) {
+        console.log('🔍 Mapbox token found, making API call...');
         const response = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
           `access_token=${mapboxToken}&` +
@@ -341,6 +351,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
         );
         
         if (response.ok) {
+          console.log('🔍 Mapbox API response received');
           const data = await response.json();
           if (data.features && data.features.length > 0) {
             const feature = data.features[0];
@@ -355,14 +366,22 @@ const CitySearch: React.FC<CitySearchProps> = ({
               longitude: lng
             };
             
+            console.log('🔍 Mapbox geocoded location:', location);
             setSearchQuery(`${location.name}, ${location.stateCode}`);
             setShowSuggestions(false);
+            console.log('🔍 Calling onCitySelect with Mapbox result:', location);
             onCitySelect(location);
+          } else {
+            console.log('🔍 Mapbox API returned no features');
           }
+        } else {
+          console.log('🔍 Mapbox API response not ok:', response.status);
         }
+      } else {
+        console.log('🔍 No Mapbox token found');
       }
     } catch (error) {
-      console.error('Error geocoding search query:', error);
+      console.error('🔍 Error geocoding search query:', error);
     }
   };
 
@@ -465,8 +484,12 @@ const CitySearch: React.FC<CitySearchProps> = ({
           <button
             type="button"
             onClick={() => {
+              console.log('🔵 Search button clicked with query:', searchQuery);
               if (searchQuery.trim()) {
+                console.log('🔵 Calling handleDirectSearch...');
                 handleDirectSearch(searchQuery.trim());
+              } else {
+                console.log('🔵 No search query to search for');
               }
             }}
             className="px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap"

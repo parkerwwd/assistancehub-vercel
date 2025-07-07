@@ -44,13 +44,17 @@ export const useMapLogic = () => {
   };
 
   const handleCitySelect = async (location: USLocation) => {
-    console.log('🏙️ Selected location:', location.name, location.type);
+    console.log('🏙️ handleCitySelect called with location:', location.name, location.type);
+    console.log('🏙️ Location coordinates:', { lat: location.latitude, lng: location.longitude });
 
     // Clear any selected office first
     setSelectedOffice(null);
+    console.log('🏙️ Cleared selected office');
 
     // Apply location filter to PHA agencies
+    console.log('🏙️ Applying location filter...');
     applyLocationFilter(location);
+    console.log('🏙️ Location filter applied');
 
     // Set selected location for marker
     const locationData = {
@@ -60,6 +64,7 @@ export const useMapLogic = () => {
             location.type === 'county' ? `${location.name}, ${location.stateCode}` :
             `${location.name}, ${location.stateCode}`
     };
+    console.log('🏙️ Setting selected location:', locationData);
     setSelectedLocation(locationData);
 
     // Determine appropriate zoom level based on location type
@@ -72,6 +77,8 @@ export const useMapLogic = () => {
       zoomLevel = 10;
     }
 
+    console.log('🏙️ Zoom level determined:', zoomLevel);
+
     // Fly to the selected location with appropriate zoom level
     if (mapRef.current) {
       console.log('🗺️ Flying to location coordinates:', { lat: location.latitude, lng: location.longitude, zoom: zoomLevel });
@@ -79,9 +86,15 @@ export const useMapLogic = () => {
 
       // Add location marker
       setTimeout(() => {
+        console.log('🗺️ Adding location marker...');
         mapRef.current?.setLocationMarker(location.latitude, location.longitude, locationData.name);
+        console.log('🗺️ Location marker added');
       }, 200); // Reduced timeout to match faster animation
+    } else {
+      console.warn('🗺️ mapRef.current is null, cannot fly to location');
     }
+    
+    console.log('🏙️ handleCitySelect completed');
   };
 
   const handleOfficeSelect = async (office: PHAAgency | null) => {
