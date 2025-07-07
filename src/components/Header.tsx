@@ -41,16 +41,12 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+              <Link to="/" className="hover:opacity-90 transition-opacity">
                 <img 
                   src="/logo.png" 
-                  alt="AssistanceHub Logo" 
-                  className="h-8 sm:h-10 w-auto"
+                  alt="JetWord AssistanceHub" 
+                  className="h-10 sm:h-12 w-auto"
                 />
-                <div className="flex flex-col">
-                  <span className="text-xl font-bold text-gray-900">AssistanceHub</span>
-                  <span className="text-xs text-gray-500 hidden sm:block">Section 8 Housing Search</span>
-                </div>
               </Link>
             </div>
 
