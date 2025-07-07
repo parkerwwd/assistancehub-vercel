@@ -44,18 +44,14 @@ export const useMapLogic = () => {
   };
 
   const handleCitySelect = async (location: USLocation) => {
-    console.log('🏙️ handleCitySelect called with location:', location.name, location.type);
-    console.log('🏙️ Location coordinates:', { lat: location.latitude, lng: location.longitude });
-
+    console.log('🔍 MAP: City selected -', location.name);
+    
     // Clear any selected office first
     setSelectedOffice(null);
-    console.log('🏙️ Cleared selected office');
-
+    
     // Apply location filter to PHA agencies
-    console.log('🏙️ Applying location filter...');
     applyLocationFilter(location);
-    console.log('🏙️ Location filter applied');
-
+    
     // Set selected location for marker
     const locationData = {
       lat: location.latitude,
@@ -64,9 +60,8 @@ export const useMapLogic = () => {
             location.type === 'county' ? `${location.name}, ${location.stateCode}` :
             `${location.name}, ${location.stateCode}`
     };
-    console.log('🏙️ Setting selected location:', locationData);
     setSelectedLocation(locationData);
-
+    
     // Determine appropriate zoom level based on location type
     let zoomLevel = 10;
     if (location.type === 'state') {
@@ -77,81 +72,59 @@ export const useMapLogic = () => {
       zoomLevel = 10;
     }
 
-    console.log('🏙️ Zoom level determined:', zoomLevel);
-
     // Fly to the selected location with appropriate zoom level
     if (mapRef.current) {
-      console.log('🗺️ Flying to location coordinates:', { lat: location.latitude, lng: location.longitude, zoom: zoomLevel });
       mapRef.current.flyTo([location.longitude, location.latitude], zoomLevel);
-
+      
       // Add location marker
       setTimeout(() => {
-        console.log('🗺️ Adding location marker...');
         mapRef.current?.setLocationMarker(location.latitude, location.longitude, locationData.name);
-        console.log('🗺️ Location marker added');
       }, 200); // Reduced timeout to match faster animation
     } else {
       console.warn('🗺️ mapRef.current is null, cannot fly to location');
     }
     
-    console.log('🏙️ handleCitySelect completed');
+    console.log('🔍 MAP: City select completed');
   };
 
   const handleOfficeSelect = async (office: PHAAgency | null) => {
     if (!office) {
-      console.log('🏢 Clearing selected office');
       setSelectedOffice(null);
       return;
     }
-
-    console.log('🏢 Selected office:', office.name);
     
-    // Set the selected office
+    console.log('🔍 MAP: Office selected -', office.name);
     setSelectedOffice(office);
     
-    // Clear location marker when selecting an office
-    setSelectedLocation(null);
-    
-    // Get coordinates from the office data (use geocoded coordinates)
-    let lat = (office as any).geocoded_latitude;
-    let lng = (office as any).geocoded_longitude;
-    
-    // If no coordinates, try to geocode the address using improved service
-    if (!lat || !lng) {
-      console.log('🗺️ No coordinates found, trying to geocode address:', office.address);
-      
-      if (office.address) {
-        try {
-          const coordinates = await geocodePHAAddress(office.address, mapboxToken);
-          
-          if (coordinates) {
-            lat = coordinates.lat;
-            lng = coordinates.lng;
-            console.log('✅ Geocoded coordinates:', { lat, lng });
-          }
-        } catch (error) {
-          console.error('❌ Failed to geocode office address:', error);
+    // Get or geocode coordinates
+    let lat, lng;
+    if (office.latitude && office.longitude) {
+      lat = office.latitude;
+      lng = office.longitude;
+    } else {
+      // Try to geocode the address
+      try {
+        const geocoded = await geocodePHAAddress(office.address, mapboxToken);
+        if (geocoded) {
+          lat = geocoded.lat;
+          lng = geocoded.lng;
         }
+      } catch (error) {
+        console.error('Error geocoding office address:', error);
+        return;
       }
     }
     
-    console.log('🗺️ Flying to office coordinates:', { lat, lng });
-    
-    // If we have coordinates, fly to them with closer zoom
-    if (lat && lng && mapRef.current) {
-      mapRef.current.flyTo([lng, lat], 14);
-    } else {
-      console.warn('⚠️ No coordinates found for office:', office.name);
+    // Fly to office location
+    if (mapRef.current && lat && lng) {
+      mapRef.current.flyTo([lng, lat], 15);
     }
   };
 
   const resetToUSView = () => {
-    console.log('🇺🇸 Resetting to US view');
-    setSelectedOffice(null);
     setSelectedLocation(null);
-    clearLocationFilter(); // Clear the location filter to show all agencies
+    setSelectedOffice(null);
     if (mapRef.current) {
-      // Center on continental US with appropriate zoom to match reference image - optimized animation
       mapRef.current.flyTo([-95.7129, 37.0902], 4);
     }
   };

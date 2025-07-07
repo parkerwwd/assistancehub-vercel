@@ -140,7 +140,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle search input change with debouncing
   const handleInputChange = (value: string) => {
-    console.log('📝 Input changed to:', value);
     setSearchQuery(value);
     
     // Clear existing timeout
@@ -211,7 +210,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
       if (geocodedLocation) {
         setSearchQuery(location.zipCode);
         setShowSuggestions(false);
-        console.log('🏙️ ZIP code selected in CitySearch:', location.zipCode);
+        console.log('🔍 ZIP selected, calling onCitySelect');
         onCitySelect(geocodedLocation);
       }
       return;
@@ -227,7 +226,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
     setShowSuggestions(false);
     setSelectedSuggestionIndex(-1);
     
-    console.log('🏙️ Location selected in CitySearch:', displayName);
+    console.log('🔍 Suggestion selected, calling onCitySelect');
     onCitySelect(location);
   };
 
@@ -302,22 +301,14 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle direct search when Enter is pressed without selecting a suggestion
   const handleDirectSearch = async (query: string) => {
-    console.log('🔍 Direct search for:', query);
-    console.log('🔍 onCitySelect callback:', typeof onCitySelect);
-    
     // Check if it's a ZIP code
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
     if (zipCodeRegex.test(query)) {
-      console.log('🔍 Detected ZIP code, geocoding...');
       const geocodedLocation = await handleZipCodeSearch(query);
       if (geocodedLocation) {
-        console.log('🔍 ZIP geocoded successfully, calling onCitySelect:', geocodedLocation);
-        // Blur input on mobile to hide keyboard
+        console.log('🔍 ZIP found, calling onCitySelect');
         searchInputRef.current?.blur();
         onCitySelect(geocodedLocation);
-        console.log('🔍 Search completed successfully');
-      } else {
-        console.log('🔍 ZIP geocoding failed');
       }
       return;
     }
@@ -329,24 +320,18 @@ const CitySearch: React.FC<CitySearchProps> = ({
     );
     
     if (localMatch) {
-      console.log('🔍 Found local match:', localMatch);
+      console.log('🔍 Local match found, calling onCitySelect');
       setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
       setShowSuggestions(false);
-      console.log('🔍 Calling onCitySelect with local match:', localMatch);
-      // Blur input on mobile to hide keyboard
       searchInputRef.current?.blur();
       onCitySelect(localMatch);
-      console.log('🔍 Search completed successfully');
       return;
     }
-    
-    console.log('🔍 No local match found, trying Mapbox geocoding...');
     
     // If not found locally, try geocoding with Mapbox
     try {
       const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
       if (mapboxToken) {
-        console.log('🔍 Mapbox token found, making API call...');
         const response = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
           `access_token=${mapboxToken}&` +
@@ -356,7 +341,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
         );
         
         if (response.ok) {
-          console.log('🔍 Mapbox API response received');
           const data = await response.json();
           if (data.features && data.features.length > 0) {
             const feature = data.features[0];
@@ -371,22 +355,13 @@ const CitySearch: React.FC<CitySearchProps> = ({
               longitude: lng
             };
             
-            console.log('🔍 Mapbox geocoded location:', location);
+            console.log('🔍 Mapbox result found, calling onCitySelect');
             setSearchQuery(`${location.name}, ${location.stateCode}`);
             setShowSuggestions(false);
-            console.log('🔍 Calling onCitySelect with Mapbox result:', location);
-            // Blur input on mobile to hide keyboard
             searchInputRef.current?.blur();
             onCitySelect(location);
-            console.log('🔍 Search completed successfully');
-          } else {
-            console.log('🔍 Mapbox API returned no features');
           }
-        } else {
-          console.log('🔍 Mapbox API response not ok:', response.status);
         }
-      } else {
-        console.log('🔍 No Mapbox token found');
       }
     } catch (error) {
       console.error('🔍 Error geocoding search query:', error);
@@ -403,7 +378,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Reset all search state - useful for mobile between searches
   const resetSearchState = () => {
-    console.log('🧹 Resetting search state');
     setFilteredLocations([]);
     setShowSuggestions(false);
     setSelectedSuggestionIndex(-1);
@@ -493,12 +467,9 @@ const CitySearch: React.FC<CitySearchProps> = ({
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              console.log('🔵 Search button clicked with query:', searchQuery);
               if (searchQuery.trim()) {
-                console.log('🔵 Calling handleDirectSearch...');
+                console.log('🔍 SEARCH: Starting search for:', searchQuery.trim());
                 handleDirectSearch(searchQuery.trim());
-              } else {
-                console.log('🔵 No search query to search for');
               }
             }}
             className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap min-h-[44px]"
@@ -521,7 +492,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('🔵 Suggestion clicked:', location.name);
                   handleLocationSelect(location);
                 }}
                 onMouseEnter={() => setSelectedSuggestionIndex(index)}
