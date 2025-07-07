@@ -52,7 +52,9 @@ export class OfficeMarkerManager extends BaseMarkerManager {
           zoom: 18,
           pitch: 0,
           bearing: 0,
-          duration: 2500,
+          duration: 1000, // Faster animation - 1 second
+          curve: 1.42, // Smooth curve
+          easing: (t) => t * (2 - t), // Ease-out animation for smooth deceleration
           essential: true
         });
 
@@ -119,7 +121,9 @@ export class OfficeMarkerManager extends BaseMarkerManager {
         zoom: 4,
         pitch: 45,
         bearing: 0,
-        duration: 2000
+        duration: 1200, // Faster animation - 1.2 seconds
+        curve: 1.42, // Smooth curve
+        easing: (t) => t * (2 - t) // Ease-out animation for smooth deceleration
       });
     }
   }

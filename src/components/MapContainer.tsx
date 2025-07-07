@@ -19,7 +19,7 @@ interface MapContainerProps {
 }
 
 export interface MapContainerRef {
-  flyTo: (center: [number, number], zoom: number) => void;
+  flyTo: (center: [number, number], zoom: number, options?: any) => void;
   getBounds: () => mapboxgl.LngLatBounds | null;
   setLocationMarker: (lat: number, lng: number, name: string, showHoverCard?: boolean) => void;
 }
@@ -38,15 +38,21 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   const markerManager = useRef<MapMarkerManager>(new MapMarkerManager());
 
   useImperativeHandle(ref, () => ({
-    flyTo: (center: [number, number], zoom: number) => {
+    flyTo: (center: [number, number], zoom: number, options?: any) => {
       console.log('🗺️ MapContainer.flyTo called with:', { center, zoom });
       if (map.current) {
-        map.current.flyTo({
+        // Use optimized defaults for smooth animations
+        const flyToOptions = {
           center,
           zoom,
-          duration: 2000,
-          essential: true
-        });
+          duration: 1200, // Faster default - 1.2 seconds
+          curve: 1.42, // Smooth curve
+          easing: (t: number) => t * (2 - t), // Ease-out animation for smooth deceleration
+          essential: true,
+          ...options // Allow override of defaults
+        };
+        
+        map.current.flyTo(flyToOptions);
       } else {
         console.warn('⚠️ Map not initialized yet');
       }

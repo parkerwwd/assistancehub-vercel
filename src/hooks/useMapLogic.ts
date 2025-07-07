@@ -80,7 +80,7 @@ export const useMapLogic = () => {
       // Add location marker
       setTimeout(() => {
         mapRef.current?.setLocationMarker(location.latitude, location.longitude, locationData.name);
-      }, 1000);
+      }, 600); // Reduced timeout to match faster animation
     }
   };
 
@@ -138,7 +138,7 @@ export const useMapLogic = () => {
     setSelectedLocation(null);
     clearLocationFilter(); // Clear the location filter to show all agencies
     if (mapRef.current) {
-      // Center on continental US with appropriate zoom to match reference image
+      // Center on continental US with appropriate zoom to match reference image - optimized animation
       mapRef.current.flyTo([-95.7129, 37.0902], 4);
     }
   };
