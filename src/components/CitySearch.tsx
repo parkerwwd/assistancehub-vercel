@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Target, X } from "lucide-react";
 import { comprehensiveCities, USLocation } from "@/data/locations";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface CitySearchProps {
-  onCitySelect: (location: USLocation) => void;
+  onCitySelect?: (location: USLocation) => void;
   placeholder?: string;
   variant?: 'default' | 'header';
 }
@@ -13,6 +14,8 @@ const CitySearch: React.FC<CitySearchProps> = ({
   placeholder = "Search by city, county, state...",
   variant = 'default'
 }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
@@ -25,6 +28,17 @@ const CitySearch: React.FC<CitySearchProps> = ({
   // Track search attempts - only log on second search
   const searchCountRef = useRef(0);
   
+  // Helper function to handle navigation/selection
+  const handleLocationSelection = (locationData: USLocation) => {
+    if (onCitySelect) {
+      // If we have a handler, use it (we're on Section8 page)
+      onCitySelect(locationData);
+    } else {
+      // Otherwise navigate to Section8 with the location
+      navigate('/section8', { state: { searchLocation: locationData } });
+    }
+  };
+
   // Filter locations based on search input (with Mapbox integration)
   const filterLocations = async (query: string) => {
     if (!query.trim()) {
@@ -200,7 +214,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
       if (geocodedLocation) {
         setSearchQuery(location.zipCode);
         setShowSuggestions(false);
-        onCitySelect(geocodedLocation);
+        handleLocationSelection(geocodedLocation);
       }
       return;
     }
@@ -215,7 +229,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
     setShowSuggestions(false);
     setSelectedSuggestionIndex(-1);
     
-    onCitySelect(location);
+    handleLocationSelection(location);
   };
 
   const getLocationIcon = (location: USLocation & { zipCode?: string }) => {
@@ -289,13 +303,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle direct search when Enter is pressed without selecting a suggestion
   const handleDirectSearch = async (query: string) => {
-    // Check if onCitySelect callback exists
-    if (!onCitySelect || typeof onCitySelect !== 'function') {
-      console.error('❌ CRITICAL ERROR: onCitySelect callback is missing or not a function!');
-      alert('Search functionality is not properly configured. Please refresh the page.');
-      return;
-    }
-    
     // Verify cities are loaded
     if (!comprehensiveCities || comprehensiveCities.length === 0) {
       console.error('❌ CRITICAL ERROR: No cities loaded!');
@@ -313,7 +320,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
       const geocodedLocation = await handleZipCodeSearch(query.trim());
       if (geocodedLocation) {
         searchInputRef.current?.blur();
-        onCitySelect(geocodedLocation);
+        handleLocationSelection(geocodedLocation);
       }
       return;
     }
@@ -345,7 +352,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
       setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
       setShowSuggestions(false);
       searchInputRef.current?.blur();
-      onCitySelect(localMatch);
+      handleLocationSelection(localMatch);
       return;
     }
     
@@ -391,7 +398,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
         setSearchQuery(`${location.name}, ${location.stateCode}`);
         setShowSuggestions(false);
         searchInputRef.current?.blur();
-        onCitySelect(location);
+        handleLocationSelection(location);
       } else {
         console.error('❌ No results from Mapbox');
         alert(`City "${query}" not found. Try a different search.`);
