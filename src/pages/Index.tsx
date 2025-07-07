@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Search, Home, Users, FileText, CheckCircle, ArrowRight, Target, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useRef, useEffect } from 'react';
 import { USLocation } from "@/data/locations";
 import { comprehensiveCities } from "@/data/locations/cities";
 import USMap from "@/components/USMap";
@@ -84,6 +83,7 @@ const Index = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const handleStateSearch = () => {
     if (selectedState) {
@@ -104,7 +104,7 @@ const Index = () => {
   };
 
   // Filter cities based on search input
-  const filterCities = (query: string) => {
+  const filterCities = async (query: string) => {
     if (!query.trim()) {
       setFilteredCities([]);
       setShowSuggestions(false);
@@ -127,28 +127,108 @@ const Index = () => {
         zipCode: query.trim()
       } as any]);
       setShowSuggestions(true);
-      setSelectedSuggestionIndex(-1);
       return;
     }
 
-    const filtered = comprehensiveCities
-      .filter(city => 
-        city.name.toLowerCase().includes(query.toLowerCase()) ||
-        city.state.toLowerCase().includes(query.toLowerCase()) ||
-        city.stateCode.toLowerCase().includes(query.toLowerCase())
-      )
-      .slice(0, 8); // Limit to 8 suggestions
+    // First, filter local cities for instant results
+    const lowerQuery = query.toLowerCase();
+    const localCities = comprehensiveCities.filter(city => 
+      city.name.toLowerCase().includes(lowerQuery) ||
+      city.state.toLowerCase().includes(lowerQuery) ||
+      city.stateCode.toLowerCase().includes(lowerQuery)
+    );
 
-    setFilteredCities(filtered);
-    setShowSuggestions(filtered.length > 0);
-    setSelectedSuggestionIndex(-1);
+    // If we have enough local results, use them
+    if (localCities.length >= 5) {
+      setFilteredCities(localCities.slice(0, 10));
+      setShowSuggestions(true);
+      return;
+    }
+
+    // Otherwise, use Mapbox geocoding for comprehensive search
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+    if (query.length >= 3 && mapboxToken) { // Only search after 3 characters
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+          `access_token=${mapboxToken}&` +
+          `country=US&` +
+          `types=place&` + // Only search for cities/places
+          `limit=10`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Convert Mapbox results to our format
+          const mapboxCities = data.features
+            .filter((feature: any) => feature.place_type.includes('place'))
+            .map((feature: any) => {
+              const [stateName, stateCode] = feature.context?.find((c: any) => c.id.startsWith('region'))?.text 
+                ? [feature.context.find((c: any) => c.id.startsWith('region')).text, 
+                   feature.context.find((c: any) => c.id.startsWith('region')).short_code?.replace('US-', '') || '']
+                : ['', ''];
+              
+              return {
+                name: feature.text,
+                state: stateName,
+                stateCode: stateCode.toUpperCase(),
+                latitude: feature.center[1],
+                longitude: feature.center[0],
+                type: 'city' as const,
+                mapboxId: feature.id // Keep track of Mapbox results
+              };
+            });
+
+          // Combine local and Mapbox results, removing duplicates
+          const combinedResults = [...localCities];
+          mapboxCities.forEach((mapboxCity: any) => {
+            if (!combinedResults.some(local => 
+              local.name.toLowerCase() === mapboxCity.name.toLowerCase() && 
+              local.stateCode === mapboxCity.stateCode
+            )) {
+              combinedResults.push(mapboxCity);
+            }
+          });
+
+          setFilteredCities(combinedResults.slice(0, 10));
+          setShowSuggestions(true);
+        }
+      } catch (error) {
+        console.error('Error fetching cities from Mapbox:', error);
+        // Fall back to local results only
+        setFilteredCities(localCities.slice(0, 10));
+        setShowSuggestions(true);
+      }
+    } else {
+      // For short queries, just use local results
+      setFilteredCities(localCities.slice(0, 10));
+      setShowSuggestions(true);
+    }
   };
 
-  // Handle search input changes
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  // Handle search input change
+  const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    filterCities(value);
+    
+    // Clear existing timeout
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+    
+    // For empty queries, clear immediately
+    if (!value.trim()) {
+      setFilteredCities([]);
+      setShowSuggestions(false);
+      return;
+    }
+    
+    // For non-empty queries, debounce the search
+    const timeout = setTimeout(() => {
+      filterCities(value);
+    }, 300); // 300ms debounce
+    
+    setDebounceTimeout(timeout);
   };
 
   // Handle search submission - updated to handle ZIP codes
@@ -294,8 +374,14 @@ const Index = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      // Clean up any pending debounce timeout
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+    };
+  }, [debounceTimeout]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -327,17 +413,18 @@ const Index = () => {
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                   <Target className="h-6 w-6 text-gray-400" />
                 </div>
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="City, County, or Zipcode"
-                  value={searchQuery}
-                  onChange={handleSearchInputChange}
-                  onKeyDown={handleKeyDown}
-                  onFocus={() => searchQuery && filterCities(searchQuery)}
-                  className="w-full pl-12 pr-20 py-6 text-lg rounded-full border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none relative z-10"
-                  autoComplete="off"
-                />
+                                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="City, County, or Zipcode"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => { if (searchQuery) filterCities(searchQuery); }}
+                    className="w-full pl-12 pr-20 py-6 text-lg rounded-full border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none relative z-10"
+                    aria-label="Search for Section 8 housing"
+                    autoComplete="off"
+                  />
                 <button
                   type="submit"
                   className="absolute right-2 top-2 bottom-2 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors duration-200 flex items-center gap-2 z-10"
