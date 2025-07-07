@@ -157,6 +157,16 @@ export class MapMarkerManager {
     console.log(`✅ Successfully displayed ${successCount} PHAs as individual pins`);
     console.log(`❌ Skipped ${skipCount} PHAs due to missing coordinates or errors`);
     
+    // Add detailed summary of which PHAs are missing coordinates
+    if (skipCount > 0) {
+      console.log('📍 PHAs missing coordinates that need geocoding:');
+      agencies.forEach(agency => {
+        if (!agency.latitude || !agency.longitude) {
+          console.log(`   - ${agency.name} | Address: ${agency.address || 'No address'}`);
+        }
+      });
+    }
+    
     // Adjust map bounds to show all pins if we have any valid coordinates
     if (hasValidCoordinates && successCount > 0) {
       try {

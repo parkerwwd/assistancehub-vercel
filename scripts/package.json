@@ -6,7 +6,9 @@
   "main": "upload-to-supabase.js",
   "scripts": {
     "upload": "node upload-to-supabase.js",
-    "install-deps": "npm install"
+    "install-deps": "npm install",
+    "check-status": "node check-geocoding-status.js",
+    "geocode": "node geocode-specific-phas.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
