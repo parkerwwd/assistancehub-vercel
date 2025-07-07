@@ -20,12 +20,6 @@ export const fetchAllPHAData = async (): Promise<FetchPHADataResult> => {
     throw fetchError;
   }
 
-  console.log('✅ fetchAllPHAData successful:', {
-    dataLength: data?.length || 0,
-    totalCount: count,
-    sampleRecord: data?.[0]
-  });
-
   // Add geocoded coordinates for PHAs that don't have them
   const geocodedData = await geocodePHAs(data || []);
 
@@ -48,12 +42,6 @@ export const fetchPHAData = async (page = 1, itemsPerPage = 20): Promise<FetchPH
   if (fetchError) {
     throw fetchError;
   }
-
-  console.log('✅ fetchPHAData successful:', {
-    dataLength: data?.length || 0,
-    totalCount: count,
-    sampleRecord: data?.[0]
-  });
 
   // Add geocoded coordinates for PHAs that don't have them
   const geocodedData = await geocodePHAs(data || []);

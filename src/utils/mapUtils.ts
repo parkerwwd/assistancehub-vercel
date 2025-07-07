@@ -127,10 +127,6 @@ export const filterPHAAgenciesByLocation = (
   agencies: PHAAgency[],
   selectedLocation: USLocation
 ): PHAAgencyWithDistance[] => {
-  console.warn('🔍 filterPHAAgenciesByLocation called');
-  console.warn('🔍 agencies count:', agencies.length);
-  console.warn('🔍 selectedLocation:', selectedLocation);
-  
   if (!agencies || agencies.length === 0) {
     return [];
   }
@@ -138,25 +134,10 @@ export const filterPHAAgenciesByLocation = (
   if (selectedLocation.type === 'state') {
     // Enhanced state filtering
     const filteredAgencies = filterByStateName(agencies, selectedLocation.name);
-    console.warn('🔍 State filter result count:', filteredAgencies.length);
     return filteredAgencies;
   }
 
   if (selectedLocation.type === 'city') {
-    console.warn('🔍 Filtering by city within 25 miles');
-    
-    // Check first agency to see what fields are available
-    if (agencies.length > 0) {
-      console.warn('🔍 First agency sample:', {
-        name: agencies[0].name,
-        address: agencies[0].address,
-        latitude: agencies[0].latitude,
-        longitude: agencies[0].longitude,
-        geocoded_latitude: (agencies[0] as any).geocoded_latitude,
-        geocoded_longitude: (agencies[0] as any).geocoded_longitude,
-      });
-    }
-    
     // For cities, show all agencies within 25 miles, sorted by distance
     const agenciesWithDistance = agencies
       .map(agency => {
@@ -199,8 +180,6 @@ export const filterPHAAgenciesByLocation = (
       })
       .filter(item => item !== null) as Array<{ agency: PHAAgency; distance: number; isExactMatch: boolean }>;
 
-    console.warn('🔍 Agencies within 25 miles:', agenciesWithDistance.length);
-
     // Sort by: 1) Exact match first, 2) Distance (closest first)
     agenciesWithDistance.sort((a, b) => {
       // Prioritize exact matches
@@ -219,7 +198,6 @@ export const filterPHAAgenciesByLocation = (
       } as PHAAgencyWithDistance;
     });
 
-    console.warn('🔍 Final filtered count:', filteredAgencies.length);
     return filteredAgencies;
   }
 

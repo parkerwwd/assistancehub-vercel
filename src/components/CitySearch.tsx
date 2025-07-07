@@ -25,25 +25,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
   // Track search attempts - only log on second search
   const searchCountRef = useRef(0);
   
-  // Debug component mounting
-  useEffect(() => {
-    console.log('🔧 CitySearch mounted, variant:', variant);
-    
-    // Check if Appleton exists in the data
-    if (variant === 'header') {
-      const appletonExists = comprehensiveCities.find(city => 
-        city.name.toLowerCase() === 'appleton' && city.stateCode === 'WI'
-      );
-      console.error('🔍 APPLETON CHECK:', appletonExists ? 'FOUND' : 'NOT FOUND', appletonExists);
-      console.error('🔍 Total cities loaded:', comprehensiveCities.length);
-      console.error('🔍 First 5 cities:', comprehensiveCities.slice(0, 5).map(c => `${c.name}, ${c.stateCode}`));
-    }
-    
-    return () => {
-      console.log('🔧 CitySearch unmounting, variant:', variant);
-    };
-  }, [variant]);
-
   // Filter locations based on search input (with Mapbox integration)
   const filterLocations = async (query: string) => {
     if (!query.trim()) {
@@ -150,9 +131,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle search input change with debouncing
   const handleInputChange = (value: string) => {
-    if (variant === 'header') {
-      console.warn('🔴 HEADER INPUT CHANGE:', value);
-    }
     setSearchQuery(value);
     
     // Clear existing timeout
@@ -311,7 +289,12 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle direct search when Enter is pressed without selecting a suggestion
   const handleDirectSearch = async (query: string) => {
-    console.error('🚨 SEARCH BUTTON CLICKED - Query:', query);
+    // Check if onCitySelect callback exists
+    if (!onCitySelect || typeof onCitySelect !== 'function') {
+      console.error('❌ CRITICAL ERROR: onCitySelect callback is missing or not a function!');
+      alert('Search functionality is not properly configured. Please refresh the page.');
+      return;
+    }
     
     // Verify cities are loaded
     if (!comprehensiveCities || comprehensiveCities.length === 0) {
@@ -320,21 +303,13 @@ const CitySearch: React.FC<CitySearchProps> = ({
       return;
     }
     
-    // DEBUG: Check if Chicago specifically exists
-    const chicagoTest = comprehensiveCities.find(city => 
-      city.name.toLowerCase() === 'chicago' && city.stateCode === 'IL'
-    );
-    console.error('🔍 CHICAGO TEST:', chicagoTest ? 'FOUND' : 'NOT FOUND', chicagoTest);
-    
     if (!query || !query.trim()) {
-      console.error('❌ Empty query, returning');
       return;
     }
     
     // Check if it's a ZIP code
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
     if (zipCodeRegex.test(query.trim())) {
-      console.warn('📮 ZIP code detected:', query);
       const geocodedLocation = await handleZipCodeSearch(query.trim());
       if (geocodedLocation) {
         searchInputRef.current?.blur();
@@ -344,19 +319,9 @@ const CitySearch: React.FC<CitySearchProps> = ({
     }
     
     // Try to find in local data first
-    console.warn('🔍 Searching for:', query);
-    console.warn('🔍 Total cities in database:', comprehensiveCities.length);
-    
     // Extract city name from "City, State" format if needed
     const queryParts = query.split(',').map(part => part.trim());
     const cityNameToSearch = queryParts[0].toLowerCase();
-    
-    console.error('🔍 SEARCH BREAKDOWN:', {
-      originalQuery: query,
-      queryParts: queryParts,
-      cityNameToSearch: cityNameToSearch,
-      hasStatePart: queryParts.length > 1
-    });
     
     // Search for the city
     let localMatch = comprehensiveCities.find(city => {
@@ -369,7 +334,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
                city.state.toLowerCase() === stateQuery ||
                city.state.toLowerCase().includes(stateQuery);
         
-        console.error('🔍 CHECKING CITY:', city.name, city.stateCode, 'matches:', matches);
         return matches;
       }
       
@@ -378,14 +342,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
     });
     
     if (localMatch) {
-      console.warn('✅ Found city in local database:', localMatch.name, localMatch.stateCode);
-      console.error('🔴🔴🔴 ABOUT TO CALL onCitySelect WITH:', {
-        name: localMatch.name,
-        state: localMatch.state,
-        stateCode: localMatch.stateCode,
-        lat: localMatch.latitude,
-        lng: localMatch.longitude
-      });
       setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
       setShowSuggestions(false);
       searchInputRef.current?.blur();
@@ -394,8 +350,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
     }
     
     // If not found locally, ALWAYS try Mapbox as fallback
-    console.warn('⚠️ City not found locally, trying Mapbox geocoding...');
-    
     const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
     if (!mapboxToken) {
       console.error('❌ No Mapbox token available');
@@ -434,7 +388,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
           longitude: lng
         };
         
-        console.warn('✅ Found city via Mapbox:', location.name, location.stateCode);
         setSearchQuery(`${location.name}, ${location.stateCode}`);
         setShowSuggestions(false);
         searchInputRef.current?.blur();
@@ -518,7 +471,16 @@ const CitySearch: React.FC<CitySearchProps> = ({
   if (variant === 'header') {
     return (
       <div className="relative w-full">
-        <div className="flex items-center gap-2">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            const queryToSearch = searchQuery || searchInputRef.current?.value || '';
+            if (queryToSearch && queryToSearch.trim()) {
+              handleDirectSearch(queryToSearch.trim());
+            }
+          }}
+          className="flex items-center gap-2"
+        >
           <input
             ref={searchInputRef}
             type="text"
@@ -545,52 +507,14 @@ const CitySearch: React.FC<CitySearchProps> = ({
             </button>
           )}
           <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              
-              console.error('🔴 SEARCH BUTTON CLICK EVENT');
-              console.error('🔴 Current searchQuery state:', searchQuery);
-              console.error('🔴 Input element value:', searchInputRef.current?.value);
-              
-              // Always log for header variant
-              if (variant === 'header') {
-                console.warn('🔴 HEADER SEARCH CLICKED');
-                console.warn('searchQuery:', searchQuery);
-                console.warn('searchQuery length:', searchQuery.length);
-                console.warn('onCitySelect exists?', !!onCitySelect);
-                console.warn('onCitySelect type:', typeof onCitySelect);
-              }
-              
-              // Increment search counter
-              searchCountRef.current += 1;
-              
-              // Only log on second search attempt
-              if (searchCountRef.current === 2) {
-                console.warn('🚨 SECOND SEARCH ATTEMPT - DEBUGGING');
-                console.warn('searchQuery:', searchQuery);
-                console.warn('onCitySelect exists?', !!onCitySelect);
-                console.warn('onCitySelect type:', typeof onCitySelect);
-              }
-              
-              try {
-                if (searchQuery && searchQuery.trim()) {
-                  console.warn('🔴 Calling handleDirectSearch with:', searchQuery.trim());
-                  handleDirectSearch(searchQuery.trim());
-                } else {
-                  console.warn('🔴 No query to search - empty or whitespace');
-                }
-              } catch (error) {
-                console.error('ERROR in search button handler:', error);
-              }
-            }}
+            type="submit"
             className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap min-h-[44px]"
-            disabled={!searchQuery.trim()}
+            disabled={!searchQuery?.trim() && !searchInputRef.current?.value?.trim()}
             style={{ touchAction: 'manipulation' }}
           >
             Search
           </button>
-        </div>
+        </form>
         
         {showSuggestions && filteredLocations.length > 0 && (
           <div 

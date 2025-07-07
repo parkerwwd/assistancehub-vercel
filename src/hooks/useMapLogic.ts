@@ -43,18 +43,11 @@ export const useMapLogic = () => {
   };
 
   const handleCitySelect = async (location: USLocation) => {
-    // Debug logging for header search issue
-    console.warn('🎯 handleCitySelect called with:', location);
-    console.warn('🎯 location type:', location.type);
-    console.warn('🎯 mapRef.current exists:', !!mapRef.current);
-    
     // Clear any selected office first
     setSelectedOffice(null);
     
     // Apply location filter to PHA agencies
-    console.warn('🎯 Calling applyLocationFilter with:', location);
     applyLocationFilter(location);
-    console.warn('🎯 applyLocationFilter called');
     
     // Set selected location for marker
     const locationData = {
@@ -76,23 +69,15 @@ export const useMapLogic = () => {
       zoomLevel = 10;
     }
 
-    console.warn('🎯 About to fly to location:', [location.longitude, location.latitude], 'zoom:', zoomLevel);
-
     // Fly to the selected location with appropriate zoom level
     if (mapRef.current) {
-      console.warn('🎯 Calling mapRef.current.flyTo');
       mapRef.current.flyTo([location.longitude, location.latitude], zoomLevel);
       
       // Add location marker
       setTimeout(() => {
-        console.warn('🎯 Setting location marker');
         mapRef.current?.setLocationMarker(location.latitude, location.longitude, locationData.name);
       }, 200); // Reduced timeout to match faster animation
-    } else {
-      console.warn('❌ mapRef.current is null - cannot fly to location');
     }
-    
-    console.warn('🎯 handleCitySelect completed');
   };
 
   const handleOfficeSelect = async (office: PHAAgency | null) => {

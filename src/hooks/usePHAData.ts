@@ -21,7 +21,7 @@ export const usePHAData = () => {
 
   // Debug filteredLocation changes
   useEffect(() => {
-    console.error('🔴 filteredLocation STATE CHANGED TO:', filteredLocation);
+    // Only log significant changes, not every update
   }, [filteredLocation]);
 
   const handleFetchAllPHAData = async () => {
@@ -51,17 +51,11 @@ export const usePHAData = () => {
     location: USLocation | null,
     page: number
   ) => {
-    console.warn('🔄 updateDisplayedAgencies called');
-    console.warn('🔄 allAgencies count:', allAgencies.length);
-    console.warn('🔄 location:', location);
-    console.warn('🔄 page:', page);
-    
     // Step 1: Apply location filter if any
     const filtered = location
       ? filterPHAAgenciesByLocation(allAgencies, location)
       : allAgencies;
 
-    console.warn('🔄 Filtered count:', filtered.length);
     setFilteredAgencies(filtered);
 
     // Step 2: Apply pagination to filtered results
@@ -69,24 +63,15 @@ export const usePHAData = () => {
     const endIndex = startIndex + itemsPerPage;
     const paginated = filtered.slice(startIndex, endIndex);
 
-    console.warn('🔄 Paginated count:', paginated.length);
     setPHAAgencies(paginated);
   };
 
   const applyLocationFilter = (location: USLocation | null) => {
-    console.error('🎯🎯🎯 applyLocationFilter START:', {
-      timestamp: new Date().toISOString(),
-      newLocation: location?.name || 'null',
-      currentFilteredLocation: filteredLocation?.name || 'null'
-    });
-    
     setFilteredLocation(location);
     setCurrentPage(1); // Reset to first page when filtering
 
     // Update displayed agencies with new filter
     updateDisplayedAgencies(allPHAAgencies, location, 1);
-    
-    console.error('🎯🎯🎯 applyLocationFilter END');
   };
 
   const clearLocationFilter = () => {
