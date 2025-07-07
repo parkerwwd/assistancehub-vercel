@@ -161,7 +161,7 @@ export const filterPHAAgenciesByLocation = (
   }
 
   if (selectedLocation.type === 'city') {
-    // For cities, show all agencies within 25 miles, sorted by distance
+    // For cities, show all agencies within 50 miles (increased from 25), sorted by distance
     const agenciesWithDistance = agencies
       .map(agency => {
         // Get agency coordinates - prefer database coordinates, fall back to geocoded ones
@@ -177,6 +177,16 @@ export const filterPHAAgenciesByLocation = (
         
         // Skip agencies without any coordinates
         if (!agencyLat || !agencyLng) {
+          // Log agencies being skipped due to missing coordinates
+          if (agency.city?.toLowerCase() === selectedLocation.name.toLowerCase() ||
+              agency.address?.toLowerCase().includes(selectedLocation.name.toLowerCase())) {
+            console.warn(`⚠️ PHA in ${selectedLocation.name} skipped - no coordinates:`, {
+              name: agency.name,
+              address: agency.address,
+              city: agency.city,
+              state: agency.state
+            });
+          }
           return null;
         }
         
@@ -188,8 +198,8 @@ export const filterPHAAgenciesByLocation = (
           agencyLng
         );
         
-        // Check if it's within range
-        if (distance > 25) {
+        // Check if it's within range (increased to 50 miles)
+        if (distance > 50) {
           return null;
         }
         
@@ -197,7 +207,8 @@ export const filterPHAAgenciesByLocation = (
         const cityNameLower = selectedLocation.name.toLowerCase();
         const isExactMatch = 
           agency.name?.toLowerCase().includes(cityNameLower) ||
-          agency.address?.toLowerCase().includes(cityNameLower);
+          agency.address?.toLowerCase().includes(cityNameLower) ||
+          agency.city?.toLowerCase() === cityNameLower;
         
         return { agency, distance, isExactMatch };
       })
