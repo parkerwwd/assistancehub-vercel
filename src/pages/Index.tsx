@@ -76,6 +76,7 @@ const POPULAR_CITIES = [
 
 const Index = () => {
   const [selectedState, setSelectedState] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const navigate = useNavigate();
 
   const handleStateSearch = () => {
@@ -93,6 +94,14 @@ const Index = () => {
         
         navigate('/section8', { state: { searchLocation: stateLocation } });
       }
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Navigate to section8 page with search query
+      navigate('/section8', { state: { searchQuery: searchQuery.trim() } });
     }
   };
 
@@ -122,17 +131,25 @@ const Index = () => {
 
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto mb-12">
-              <div className="relative">
+              <form onSubmit={handleSearchSubmit} className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Target className="h-6 w-6 text-gray-400" />
                 </div>
                 <input
                   type="text"
                   placeholder="City, County, or Zipcode"
-                  className="w-full pl-12 pr-4 py-6 text-lg rounded-full border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  onClick={() => navigate('/section8')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-20 py-6 text-lg rounded-full border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
-              </div>
+                <button
+                  type="submit"
+                  className="absolute right-2 top-2 bottom-2 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors duration-200 flex items-center gap-2"
+                >
+                  <Search className="h-5 w-5" />
+                  <span className="hidden sm:inline">Search</span>
+                </button>
+              </form>
             </div>
 
             {/* Popular Cities - Blue buttons */}
