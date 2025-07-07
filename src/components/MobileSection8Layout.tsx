@@ -18,6 +18,7 @@ interface MobileSection8LayoutProps {
   filteredLocation: any;
   mapRef: any;
   phaAgencies: PHAAgency[];
+  filteredAgencies?: PHAAgency[];
   loading: boolean;
   currentPage: number;
   totalPages: number;
@@ -41,6 +42,7 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
   filteredLocation,
   mapRef,
   phaAgencies,
+  filteredAgencies,
   loading,
   currentPage,
   totalPages,
@@ -168,7 +170,7 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
         <MapContainer
           ref={mapRef}
           mapboxToken={mapboxToken}
-          phaAgencies={phaAgencies}
+          phaAgencies={filteredAgencies || phaAgencies}
           onOfficeSelect={handleOfficeClick}
           onTokenError={setTokenError}
           selectedOffice={selectedOffice}

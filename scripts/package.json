@@ -7,7 +7,6 @@
   "scripts": {
     "upload": "node upload-to-supabase.js",
     "install-deps": "npm install",
-    "check-status": "node check-geocoding-status.js",
     "geocode": "node geocode-specific-phas.js"
   },
   "dependencies": {

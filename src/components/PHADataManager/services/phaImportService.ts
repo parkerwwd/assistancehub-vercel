@@ -108,11 +108,22 @@ export const processPHARecord = (record: any, fieldMappings?: FieldMapping[]) =>
       let cityIndex = -1;
       let stateZipIndex = -1;
       
-      // Find the state/zip part (format: "ST 12345" or just "ST")
+      // Find the state/zip part (format: "ST 12345" or "ST, 12345" or just "ST")
       for (let i = addressParts.length - 1; i >= 0; i--) {
         const part = addressParts[i];
-        // Check for state + zip format
-        if (part.match(/^[A-Z]{2}\s+\d{5}(-\d{4})?$/)) {
+        // Check if this is just a zip code (last part)
+        if (i === addressParts.length - 1 && part.match(/^\d{5}(-\d{4})?$/)) {
+          // Zip is separate, state should be the previous part
+          if (i > 0 && addressParts[i-1].match(/^[A-Z]{2}$/)) {
+            stateZipIndex = i - 1;
+            cityIndex = i - 2;
+            mappedRow.state = standardizeState(addressParts[i-1]);
+            mappedRow.zip = part;
+            break;
+          }
+        }
+        // Check for state + zip format (with space)
+        else if (part.match(/^[A-Z]{2}\s+\d{5}(-\d{4})?$/)) {
           stateZipIndex = i;
           cityIndex = i - 1;
           break;

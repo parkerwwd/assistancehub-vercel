@@ -25,6 +25,7 @@ const Section8 = () => {
     tokenError,
     mapRef,
     phaAgencies,
+    filteredAgencies,
     loading,
     currentPage,
     totalPages,
@@ -126,6 +127,7 @@ const Section8 = () => {
             filteredLocation={filteredLocation}
             mapRef={mapRef}
             phaAgencies={phaAgencies}
+            filteredAgencies={filteredAgencies}
             loading={loading}
             currentPage={currentPage}
             totalPages={totalPages}
@@ -149,7 +151,7 @@ const Section8 = () => {
               <MapContainer
                 ref={mapRef}
                 mapboxToken={mapboxToken}
-                phaAgencies={phaAgencies}
+                phaAgencies={filteredAgencies || phaAgencies}
                 onOfficeSelect={handleOfficeClick}
                 onTokenError={setTokenError}
                 selectedOffice={selectedOffice}
