@@ -550,9 +550,10 @@ const CitySearch: React.FC<CitySearchProps> = ({
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-gray-900 truncate">
                       {location.zipCode || location.name}
+                      {(location.type === 'city' || location.type === 'county') && ', '}
                     </span>
                     {(location.type === 'city' || location.type === 'county') && (
-                      <span className="text-gray-500 flex-shrink-0">, {location.stateCode}</span>
+                      <span className="text-gray-500 flex-shrink-0">{location.stateCode}</span>
                     )}
                   </div>
                   <div className="text-xs text-gray-500">
@@ -606,9 +607,10 @@ const CitySearch: React.FC<CitySearchProps> = ({
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-medium text-gray-900">
                     {location.zipCode || location.name}
+                    {(location.type === 'city' || location.type === 'county') && ', '}
                   </span>
                   {(location.type === 'city' || location.type === 'county') && (
-                    <span className="text-gray-500">, {location.stateCode}</span>
+                    <span className="text-gray-500">{location.stateCode}</span>
                   )}
                 </div>
                 <div className="text-xs text-gray-500">
