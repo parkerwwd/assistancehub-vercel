@@ -41,12 +41,12 @@ const Section8 = () => {
 
   const isMobile = useIsMobile();
 
-  // Handle navigation from state page
+  // Handle navigation from state page and updates when location state changes
   useEffect(() => {
     if (searchLocation && mapRef.current) {
       handleCitySelect(searchLocation);
     }
-  }, [searchLocation, handleCitySelect]);
+  }, [searchLocation?.name, searchLocation?.latitude, searchLocation?.longitude]);
       
   // Handle search query from city buttons (e.g., "Los Angeles, CA")
   useEffect(() => {
@@ -71,7 +71,7 @@ const Section8 = () => {
         }
       }
     }
-  }, [searchQuery, handleCitySelect]);
+  }, [searchQuery]);
 
   // Reset to US view when component mounts (only if no search location or query)
   useEffect(() => {
