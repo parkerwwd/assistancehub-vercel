@@ -139,6 +139,9 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle search input change with debouncing
   const handleInputChange = (value: string) => {
+    if (variant === 'header') {
+      console.warn('🔴 HEADER INPUT CHANGE:', value);
+    }
     setSearchQuery(value);
     
     // Clear existing timeout
@@ -297,6 +300,11 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle direct search when Enter is pressed without selecting a suggestion
   const handleDirectSearch = async (query: string) => {
+    // Always log for header variant
+    if (variant === 'header') {
+      console.warn('🔴 HEADER handleDirectSearch called with:', query);
+    }
+    
     // Only log on second search
     if (searchCountRef.current === 2) {
       console.warn('🚨 handleDirectSearch called on SECOND search');
@@ -468,6 +476,15 @@ const CitySearch: React.FC<CitySearchProps> = ({
             onClick={(e) => {
               e.preventDefault();
               
+              // Always log for header variant
+              if (variant === 'header') {
+                console.warn('🔴 HEADER SEARCH CLICKED');
+                console.warn('searchQuery:', searchQuery);
+                console.warn('searchQuery length:', searchQuery.length);
+                console.warn('onCitySelect exists?', !!onCitySelect);
+                console.warn('onCitySelect type:', typeof onCitySelect);
+              }
+              
               // Increment search counter
               searchCountRef.current += 1;
               
@@ -481,9 +498,10 @@ const CitySearch: React.FC<CitySearchProps> = ({
               
               try {
                 if (searchQuery && searchQuery.trim()) {
+                  console.warn('🔴 Calling handleDirectSearch with:', searchQuery.trim());
                   handleDirectSearch(searchQuery.trim());
                 } else {
-                  // No query to search (empty or whitespace only)
+                  console.warn('🔴 No query to search - empty or whitespace');
                 }
               } catch (error) {
                 console.error('ERROR in search button handler:', error);
