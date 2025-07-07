@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CitySearch from './CitySearch';
 import { USLocation } from "@/data/usLocations";
-import logoImage from "@/assets/logo.png";
+import logoImage from "@/assets/Black.png";
 
 interface HeaderProps {
   onCitySelect?: (location: USLocation) => void;
