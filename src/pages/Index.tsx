@@ -105,6 +105,11 @@ const Index = () => {
     }
   };
 
+  const handleCityClick = (city: string) => {
+    // Navigate to section8 page with the specific city as search query
+    navigate('/section8', { state: { searchQuery: city } });
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -158,7 +163,7 @@ const Index = () => {
                 {POPULAR_CITIES.map((city) => (
                   <Button
                     key={city}
-                    onClick={() => navigate('/section8')}
+                    onClick={() => handleCityClick(city)}
                     className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <MapPin className="w-4 h-4 mr-2" />
