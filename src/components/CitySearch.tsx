@@ -467,10 +467,16 @@ const CitySearch: React.FC<CitySearchProps> = ({
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              alert('Search button clicked!'); // TEST
+              alert(`Search button clicked! Query: "${searchQuery}"`); // TEST - show the query
+              console.log('🔍 Button clicked, searchQuery:', searchQuery);
+              console.log('🔍 searchQuery.trim():', searchQuery.trim());
+              console.log('🔍 Boolean(searchQuery.trim()):', Boolean(searchQuery.trim()));
+              
               if (searchQuery.trim()) {
                 console.log('🔍 SEARCH: Starting search for:', searchQuery.trim());
                 handleDirectSearch(searchQuery.trim());
+              } else {
+                console.log('🔍 No query to search');
               }
             }}
             className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap min-h-[44px]"
