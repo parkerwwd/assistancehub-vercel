@@ -101,7 +101,7 @@ const Index = () => {
       <Header />
       
       {/* Hero Section - Matching screenshot design */}
-      <div className="relative h-screen bg-cover bg-center bg-no-repeat" style={{
+      <div className="relative h-[70vh] bg-cover bg-center bg-no-repeat" style={{
         backgroundImage: "url('https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')"
       }}>
         {/* Dark overlay for better text readability */}
@@ -135,14 +135,14 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Popular Cities - Yellow/Gold buttons */}
+            {/* Popular Cities - Blue buttons */}
             <div className="mb-16">
               <div className="flex flex-wrap justify-center gap-3">
                 {POPULAR_CITIES.map((city) => (
                   <Button
                     key={city}
                     onClick={() => navigate('/section8')}
-                    className="bg-yellow-400 hover:bg-yellow-500 text-black font-medium px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     <MapPin className="w-4 h-4 mr-2" />
                     {city}
