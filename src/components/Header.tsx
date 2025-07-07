@@ -42,16 +42,16 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="hover:opacity-90 transition-opacity">
-                <div style={{width: '100px', height: '40px', backgroundColor: 'blue', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px'}}>
-                  LOGO HERE
-                </div>
                 <img 
                   src="/logo.png" 
                   alt="JetWord AssistanceHub" 
                   className="h-10 sm:h-12 w-auto"
-                  style={{display: 'none'}}
+                  onLoad={() => console.log('Logo loaded successfully')}
                   onError={(e) => {
-                    console.error('Logo failed to load:', e);
+                    console.error('Logo failed to load from /logo.png');
+                    // Fallback to a simple text logo
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement!.innerHTML = '<div style="color: #1d4ed8; font-weight: bold; font-size: 20px;">JetWord AssistanceHub</div>';
                   }}
                 />
               </Link>
