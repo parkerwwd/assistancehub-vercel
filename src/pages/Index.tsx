@@ -5,73 +5,73 @@ import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Search, Home, Users, FileText, CheckCircle, ArrowRight } from "lucide-react";
+import { MapPin, Search, Home, Users, FileText, CheckCircle, ArrowRight, Target, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from 'react';
 import { USLocation } from "@/data/locations";
 import USMap from "@/components/USMap";
 
 const STATES = [
-  { code: 'AL', name: 'Alabama' },
-  { code: 'AK', name: 'Alaska' },
-  { code: 'AZ', name: 'Arizona' },
-  { code: 'AR', name: 'Arkansas' },
-  { code: 'CA', name: 'California' },
-  { code: 'CO', name: 'Colorado' },
-  { code: 'CT', name: 'Connecticut' },
-  { code: 'DE', name: 'Delaware' },
-  { code: 'FL', name: 'Florida' },
-  { code: 'GA', name: 'Georgia' },
-  { code: 'HI', name: 'Hawaii' },
-  { code: 'ID', name: 'Idaho' },
-  { code: 'IL', name: 'Illinois' },
-  { code: 'IN', name: 'Indiana' },
-  { code: 'IA', name: 'Iowa' },
-  { code: 'KS', name: 'Kansas' },
-  { code: 'KY', name: 'Kentucky' },
-  { code: 'LA', name: 'Louisiana' },
-  { code: 'ME', name: 'Maine' },
-  { code: 'MD', name: 'Maryland' },
-  { code: 'MA', name: 'Massachusetts' },
-  { code: 'MI', name: 'Michigan' },
-  { code: 'MN', name: 'Minnesota' },
-  { code: 'MS', name: 'Mississippi' },
-  { code: 'MO', name: 'Missouri' },
-  { code: 'MT', name: 'Montana' },
-  { code: 'NE', name: 'Nebraska' },
-  { code: 'NV', name: 'Nevada' },
-  { code: 'NH', name: 'New Hampshire' },
-  { code: 'NJ', name: 'New Jersey' },
-  { code: 'NM', name: 'New Mexico' },
-  { code: 'NY', name: 'New York' },
-  { code: 'NC', name: 'North Carolina' },
-  { code: 'ND', name: 'North Dakota' },
-  { code: 'OH', name: 'Ohio' },
-  { code: 'OK', name: 'Oklahoma' },
-  { code: 'OR', name: 'Oregon' },
-  { code: 'PA', name: 'Pennsylvania' },
-  { code: 'RI', name: 'Rhode Island' },
-  { code: 'SC', name: 'South Carolina' },
-  { code: 'SD', name: 'South Dakota' },
-  { code: 'TN', name: 'Tennessee' },
-  { code: 'TX', name: 'Texas' },
-  { code: 'UT', name: 'Utah' },
-  { code: 'VT', name: 'Vermont' },
-  { code: 'VA', name: 'Virginia' },
-  { code: 'WA', name: 'Washington' },
-  { code: 'WV', name: 'West Virginia' },
-  { code: 'WI', name: 'Wisconsin' },
-  { code: 'WY', name: 'Wyoming' },
-  { code: 'DC', name: 'District of Columbia' },
+  { code: 'AL', name: 'Alabama', lat: 32.318, lng: -86.902 },
+  { code: 'AK', name: 'Alaska', lat: 64.0685, lng: -152.2782 },
+  { code: 'AZ', name: 'Arizona', lat: 34.2744, lng: -111.2847 },
+  { code: 'AR', name: 'Arkansas', lat: 34.8938, lng: -92.4426 },
+  { code: 'CA', name: 'California', lat: 36.7783, lng: -119.4179 },
+  { code: 'CO', name: 'Colorado', lat: 39.113, lng: -105.358 },
+  { code: 'CT', name: 'Connecticut', lat: 41.767, lng: -72.677 },
+  { code: 'DE', name: 'Delaware', lat: 39.161, lng: -75.526 },
+  { code: 'FL', name: 'Florida', lat: 27.7663, lng: -81.6868 },
+  { code: 'GA', name: 'Georgia', lat: 32.9866, lng: -83.6487 },
+  { code: 'HI', name: 'Hawaii', lat: 21.1098, lng: -157.5311 },
+  { code: 'ID', name: 'Idaho', lat: 44.2619, lng: -114.5103 },
+  { code: 'IL', name: 'Illinois', lat: 40.3363, lng: -89.0022 },
+  { code: 'IN', name: 'Indiana', lat: 39.8647, lng: -86.2604 },
+  { code: 'IA', name: 'Iowa', lat: 42.0046, lng: -93.214 },
+  { code: 'KS', name: 'Kansas', lat: 38.5111, lng: -96.8005 },
+  { code: 'KY', name: 'Kentucky', lat: 37.669, lng: -84.6514 },
+  { code: 'LA', name: 'Louisiana', lat: 31.1801, lng: -91.8749 },
+  { code: 'ME', name: 'Maine', lat: 44.323, lng: -69.765 },
+  { code: 'MD', name: 'Maryland', lat: 39.0724, lng: -76.7902 },
+  { code: 'MA', name: 'Massachusetts', lat: 42.2373, lng: -71.5314 },
+  { code: 'MI', name: 'Michigan', lat: 43.3504, lng: -84.5603 },
+  { code: 'MN', name: 'Minnesota', lat: 45.7326, lng: -93.9196 },
+  { code: 'MS', name: 'Mississippi', lat: 32.7673, lng: -89.6812 },
+  { code: 'MO', name: 'Missouri', lat: 38.4623, lng: -92.302 },
+  { code: 'MT', name: 'Montana', lat: 47.0527, lng: -109.6333 },
+  { code: 'NE', name: 'Nebraska', lat: 41.1289, lng: -98.2883 },
+  { code: 'NV', name: 'Nevada', lat: 38.4199, lng: -117.1219 },
+  { code: 'NH', name: 'New Hampshire', lat: 43.4108, lng: -71.5653 },
+  { code: 'NJ', name: 'New Jersey', lat: 40.314, lng: -74.5089 },
+  { code: 'NM', name: 'New Mexico', lat: 34.8375, lng: -106.2371 },
+  { code: 'NY', name: 'New York', lat: 42.9538, lng: -75.5268 },
+  { code: 'NC', name: 'North Carolina', lat: 35.6411, lng: -79.8431 },
+  { code: 'ND', name: 'North Dakota', lat: 47.2505, lng: -100.0646 },
+  { code: 'OH', name: 'Ohio', lat: 40.3467, lng: -82.7791 },
+  { code: 'OK', name: 'Oklahoma', lat: 35.5376, lng: -96.9247 },
+  { code: 'OR', name: 'Oregon', lat: 44.5672, lng: -122.1269 },
+  { code: 'PA', name: 'Pennsylvania', lat: 40.5773, lng: -77.264 },
+  { code: 'RI', name: 'Rhode Island', lat: 41.6762, lng: -71.5562 },
+  { code: 'SC', name: 'South Carolina', lat: 33.8191, lng: -80.9066 },
+  { code: 'SD', name: 'South Dakota', lat: 44.2853, lng: -99.4632 },
+  { code: 'TN', name: 'Tennessee', lat: 35.7449, lng: -86.7489 },
+  { code: 'TX', name: 'Texas', lat: 31.106, lng: -97.6475 },
+  { code: 'UT', name: 'Utah', lat: 40.1135, lng: -111.8535 },
+  { code: 'VT', name: 'Vermont', lat: 44.0407, lng: -72.7093 },
+  { code: 'VA', name: 'Virginia', lat: 37.768, lng: -78.2057 },
+  { code: 'WA', name: 'Washington', lat: 47.042, lng: -122.893 },
+  { code: 'WV', name: 'West Virginia', lat: 38.468, lng: -80.9696 },
+  { code: 'WI', name: 'Wisconsin', lat: 44.2563, lng: -89.6385 },
+  { code: 'WY', name: 'Wyoming', lat: 42.7475, lng: -107.2085 },
+  { code: 'DC', name: 'District of Columbia', lat: 38.8974, lng: -77.0365 },
 ];
 
 const POPULAR_CITIES = [
   'Los Angeles, CA',
-  'New York, NY', 
-  'Chicago, IL',
-  'Houston, TX',
-  'Phoenix, AZ',
-  'Philadelphia, PA'
+  'San Francisco, CA',
+  'Atlanta, GA',
+  'New York, NY',
+  'Austin, TX',
+  'Seattle, WA'
 ];
 
 const Index = () => {
@@ -87,8 +87,8 @@ const Index = () => {
           stateCode: state.code,
           state: state.name,
           type: 'state',
-          latitude: 39.8283,
-          longitude: -98.5795
+          latitude: state.lat,
+          longitude: state.lng
         };
         
         navigate('/section8', { state: { searchLocation: stateLocation } });
@@ -100,55 +100,60 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Hero Section - Like section8search.org */}
-      <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <Users className="w-4 h-4" />
-              Your trusted guide to Section 8 housing
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Find Section 8 Housing
-              <span className="block text-blue-600">Nationwide</span>
+      {/* Hero Section - Matching screenshot design */}
+      <div className="relative h-screen bg-cover bg-center bg-no-repeat" style={{
+        backgroundImage: "url('https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')"
+      }}>
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-4xl mx-auto">
+            {/* Main Heading */}
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              Search Section 8 Housing Nationwide
             </h1>
             
-            <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Your trusted guide to Section 8 housing and affordable rental solutions. 
-              Finding affordable housing can be tough, but you're not alone.
+            {/* Subtitle */}
+            <p className="text-xl md:text-2xl text-white mb-12 opacity-90">
+              Your trusted guide to Section 8 housing and affordable rental solutions
             </p>
 
-            {/* Popular Cities */}
-            <div className="mb-12">
-              <div className="flex flex-wrap justify-center gap-3 mb-8">
+            {/* Search Bar */}
+            <div className="max-w-2xl mx-auto mb-12">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Target className="h-6 w-6 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="City, County, or Zipcode"
+                  className="w-full pl-12 pr-4 py-6 text-lg rounded-full border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  onClick={() => navigate('/section8')}
+                />
+              </div>
+            </div>
+
+            {/* Popular Cities - Yellow/Gold buttons */}
+            <div className="mb-16">
+              <div className="flex flex-wrap justify-center gap-3">
                 {POPULAR_CITIES.map((city) => (
                   <Button
                     key={city}
-                    variant="outline"
-                    className="text-sm hover:bg-blue-50 hover:border-blue-300"
                     onClick={() => navigate('/section8')}
+                    className="bg-yellow-400 hover:bg-yellow-500 text-black font-medium px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
                   >
+                    <MapPin className="w-4 h-4 mr-2" />
                     {city}
                   </Button>
                 ))}
               </div>
             </div>
 
-            {/* Trust Signal - Like section8search.org */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 mb-16 max-w-2xl mx-auto">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-blue-600 mb-2">500,000+</div>
-                <div className="text-gray-600 mb-6">Trusted by over 500,000 families to find housing</div>
-                <Button 
-                  onClick={() => navigate('/section8')}
-                  size="lg" 
-                  className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4"
-                >
-                  Start Your Journey
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </div>
+            {/* Down Arrow */}
+            <div className="animate-bounce">
+              <ChevronDown className="w-8 h-8 text-white mx-auto" />
             </div>
           </div>
         </div>
