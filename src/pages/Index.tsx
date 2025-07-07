@@ -223,12 +223,12 @@ const Index = () => {
             </h1>
             
             {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-white mb-12 opacity-90">
+            <p className="text-xl md:text-2xl text-white mb-8 opacity-90">
               Your trusted guide to Section 8 housing and affordable rental solutions
             </p>
 
             {/* Search Bar with Autocomplete */}
-            <div className="max-w-2xl mx-auto mb-12 relative">
+            <div className="max-w-2xl mx-auto mb-8 relative">
               <form onSubmit={handleSearchSubmit} className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                   <Target className="h-6 w-6 text-gray-400" />
@@ -286,7 +286,7 @@ const Index = () => {
             </div>
 
             {/* Popular Cities - Blue buttons */}
-            <div className="mb-16">
+            <div className="mb-10">
               <div className="flex flex-wrap justify-center gap-3">
                 {POPULAR_CITIES.map((city) => (
                   <Button
@@ -310,10 +310,10 @@ const Index = () => {
       </div>
 
       {/* State Search Section - Main Feature */}
-      <div className="bg-white py-20">
+      <div className="bg-white py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
               Search Housing by State
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -323,7 +323,7 @@ const Index = () => {
           </div>
 
           {/* State Selector */}
-          <div className="max-w-lg mx-auto mb-16">
+          <div className="max-w-lg mx-auto mb-10">
             <div className="flex gap-4">
               <Select value={selectedState} onValueChange={setSelectedState}>
                 <SelectTrigger className="flex-1 h-14 text-lg">
@@ -350,14 +350,14 @@ const Index = () => {
           </div>
 
           {/* Interactive US Map */}
-          <div className="bg-white rounded-3xl p-8 mb-16 shadow-lg border border-gray-200">
-            <div className="h-96 mb-8">
+          <div className="bg-white rounded-3xl p-6 mb-0 shadow-lg border border-gray-200">
+            <div className="h-96 mb-6">
               <USMap selectedState={selectedState} onStateClick={setSelectedState} />
             </div>
             
             {/* Popular States - Integrated into same container */}
-            <div className="text-center pt-6 border-t border-gray-200">
-              <p className="text-lg font-medium text-gray-800 mb-6">Popular states to explore:</p>
+            <div className="text-center pt-4 border-t border-gray-200">
+              <p className="text-lg font-medium text-gray-800 mb-4">Popular states to explore:</p>
               <div className="flex flex-wrap justify-center gap-3">
                 {['CA', 'TX', 'FL', 'NY', 'IL', 'GA'].map((stateCode) => {
                   const state = STATES.find(s => s.code === stateCode);
@@ -380,10 +380,10 @@ const Index = () => {
       </div>
 
       {/* How-To Guides Section - Like section8search.org */}
-      <div className="bg-gray-50 py-20">
+      <div className="bg-gray-50 py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">How-To Guides</h2>
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">How-To Guides</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               We know the HCV housing process can be confusing. That's why we've gathered 
               all the information in one place to help you navigate the entire process.
@@ -449,20 +449,20 @@ const Index = () => {
       </div>
 
       {/* Benefits Section */}
-      <div className="bg-white py-20">
+      <div className="bg-white py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
               Finding Housing with AssistanceHub
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-12">
+          <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-10 h-10 text-blue-600" />
               </div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Save Time and Effort</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-3">Save Time and Effort</h3>
               <p className="text-gray-600 leading-relaxed">
                 Searching for Section 8 housing can be a long process. Here, you'll find 
                 nationwide listings in one convenient place, reducing the time it takes to locate your new home.
@@ -470,10 +470,10 @@ const Index = () => {
             </div>
 
             <div className="text-center">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FileText className="w-10 h-10 text-green-600" />
               </div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Stay Informed</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-3">Stay Informed</h3>
               <p className="text-gray-600 leading-relaxed">
                 HCV housing rules and regulations vary by location. AssistanceHub offers the latest 
                 information on waiting lists, application processes, and eligibility requirements.
@@ -481,10 +481,10 @@ const Index = () => {
             </div>
 
             <div className="text-center">
-              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-10 h-10 text-purple-600" />
               </div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Empower Your Search</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-3">Empower Your Search</h3>
               <p className="text-gray-600 leading-relaxed">
                 Whether you're a veteran or want to own your own home, you can tailor your search 
                 according to what matters to you. Your new home could be just a click away.
