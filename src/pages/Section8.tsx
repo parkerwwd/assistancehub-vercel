@@ -8,6 +8,7 @@ import MobileSection8Layout from "@/components/MobileSection8Layout";
 import { useMapLogic } from "@/hooks/useMapLogic";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Database } from "@/integrations/supabase/types";
+import { comprehensiveCities } from "@/data/locations/cities";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -16,6 +17,7 @@ const Section8 = () => {
   
   const location = useLocation();
   const searchLocation = location.state?.searchLocation;
+  const searchQuery = location.state?.searchQuery;
   
   const {
     mapboxToken,
@@ -49,9 +51,42 @@ const Section8 = () => {
     }
   }, [searchLocation, handleCitySelect]);
 
-  // Reset to US view when component mounts (only if no search location)
+  // Handle search query from city buttons (e.g., "Los Angeles, CA")
   useEffect(() => {
-    if (!searchLocation) {
+    if (searchQuery && mapRef.current) {
+      console.log('🔍 Received search query from navigation:', searchQuery);
+      
+      // Try to find a matching city in our database
+      const matchingCity = comprehensiveCities.find(city => {
+        const cityString = `${city.name}, ${city.stateCode}`;
+        return cityString.toLowerCase() === searchQuery.toLowerCase() ||
+               city.name.toLowerCase() === searchQuery.toLowerCase();
+      });
+      
+      if (matchingCity) {
+        console.log('✅ Found matching city:', matchingCity);
+        handleCitySelect(matchingCity);
+      } else {
+        console.log('⚠️ No exact match found for:', searchQuery, 'searching for partial matches...');
+        
+        // Try partial match on city name
+        const partialMatch = comprehensiveCities.find(city => 
+          city.name.toLowerCase().includes(searchQuery.toLowerCase().split(',')[0].trim())
+        );
+        
+        if (partialMatch) {
+          console.log('✅ Found partial match:', partialMatch);
+          handleCitySelect(partialMatch);
+        } else {
+          console.log('❌ No city found matching:', searchQuery);
+        }
+      }
+    }
+  }, [searchQuery, handleCitySelect]);
+
+  // Reset to US view when component mounts (only if no search location or query)
+  useEffect(() => {
+    if (!searchLocation && !searchQuery) {
       const timer = setTimeout(() => {
         if (mapRef.current) {
           console.log('🇺🇸 Initial page load - showing US map');
@@ -61,7 +96,7 @@ const Section8 = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [searchLocation]);
+  }, [searchLocation, searchQuery]);
 
   const handleOfficeClick = (office: PHAAgency) => {
     console.log('🎯 Office clicked from panel:', office.name);
