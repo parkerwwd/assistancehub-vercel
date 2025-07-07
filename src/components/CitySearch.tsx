@@ -320,6 +320,12 @@ const CitySearch: React.FC<CitySearchProps> = ({
       return;
     }
     
+    // DEBUG: Check if Chicago specifically exists
+    const chicagoTest = comprehensiveCities.find(city => 
+      city.name.toLowerCase() === 'chicago' && city.stateCode === 'IL'
+    );
+    console.error('🔍 CHICAGO TEST:', chicagoTest ? 'FOUND' : 'NOT FOUND', chicagoTest);
+    
     if (!query || !query.trim()) {
       console.error('❌ Empty query, returning');
       return;
@@ -345,6 +351,13 @@ const CitySearch: React.FC<CitySearchProps> = ({
     const queryParts = query.split(',').map(part => part.trim());
     const cityNameToSearch = queryParts[0].toLowerCase();
     
+    console.error('🔍 SEARCH BREAKDOWN:', {
+      originalQuery: query,
+      queryParts: queryParts,
+      cityNameToSearch: cityNameToSearch,
+      hasStatePart: queryParts.length > 1
+    });
+    
     // Search for the city
     let localMatch = comprehensiveCities.find(city => {
       const cityNameMatches = city.name.toLowerCase() === cityNameToSearch;
@@ -352,9 +365,12 @@ const CitySearch: React.FC<CitySearchProps> = ({
       // If query has state part, check it matches
       if (queryParts.length > 1 && cityNameMatches) {
         const stateQuery = queryParts[1].trim().toLowerCase();
-        return city.stateCode.toLowerCase() === stateQuery || 
+        const matches = city.stateCode.toLowerCase() === stateQuery || 
                city.state.toLowerCase() === stateQuery ||
                city.state.toLowerCase().includes(stateQuery);
+        
+        console.error('🔍 CHECKING CITY:', city.name, city.stateCode, 'matches:', matches);
+        return matches;
       }
       
       // Otherwise just match city name
@@ -363,6 +379,13 @@ const CitySearch: React.FC<CitySearchProps> = ({
     
     if (localMatch) {
       console.warn('✅ Found city in local database:', localMatch.name, localMatch.stateCode);
+      console.error('🔴🔴🔴 ABOUT TO CALL onCitySelect WITH:', {
+        name: localMatch.name,
+        state: localMatch.state,
+        stateCode: localMatch.stateCode,
+        lat: localMatch.latitude,
+        lng: localMatch.longitude
+      });
       setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
       setShowSuggestions(false);
       searchInputRef.current?.blur();
@@ -525,6 +548,10 @@ const CitySearch: React.FC<CitySearchProps> = ({
             type="button"
             onClick={(e) => {
               e.preventDefault();
+              
+              console.error('🔴 SEARCH BUTTON CLICK EVENT');
+              console.error('🔴 Current searchQuery state:', searchQuery);
+              console.error('🔴 Input element value:', searchInputRef.current?.value);
               
               // Always log for header variant
               if (variant === 'header') {

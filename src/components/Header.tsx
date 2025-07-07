@@ -18,13 +18,15 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
   const isMobile = useIsMobile();
 
   const handleCitySelect = (location: any) => {
-    console.error('🎯🎯🎯 Header handleCitySelect called with:', {
+    console.error('🎯🎯🎯 Header handleCitySelect RECEIVED:', {
+      timestamp: new Date().toISOString(),
       name: location?.name,
       state: location?.state,
       stateCode: location?.stateCode,
       latitude: location?.latitude,
       longitude: location?.longitude,
-      type: location?.type
+      type: location?.type,
+      fullLocation: JSON.stringify(location)
     });
     
     if (onCitySelect) {
