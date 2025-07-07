@@ -17,8 +17,10 @@ const CitySearch: React.FC<CitySearchProps> = ({
   const [filteredLocations, setFilteredLocations] = useState<(USLocation & { zipCode?: string; mapboxId?: string })[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [isInteracting, setIsInteracting] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // Filter locations based on search input (with Mapbox integration)
   const filterLocations = async (query: string) => {
@@ -281,14 +283,34 @@ const CitySearch: React.FC<CitySearchProps> = ({
   };
 
   const handleInputBlur = () => {
-    // Delay hiding suggestions to allow for clicks
-    setTimeout(() => setShowSuggestions(false), 200);
+    // Only hide if not interacting with suggestions
+    if (!isInteracting) {
+      // Increased delay for mobile touches
+      setTimeout(() => {
+        if (!isInteracting) {
+          setShowSuggestions(false);
+        }
+      }, 300);
+    }
   };
 
   const handleInputFocus = () => {
     if (searchQuery.length > 1) {
       filterLocations(searchQuery);
     }
+    // Scroll input into view on mobile to avoid keyboard overlap
+    setTimeout(() => {
+      searchInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  };
+
+  // Handle touch/mouse interactions with suggestions
+  const handleSuggestionInteractionStart = () => {
+    setIsInteracting(true);
+  };
+
+  const handleSuggestionInteractionEnd = () => {
+    setIsInteracting(false);
   };
 
   // Clean up debounce timeout on unmount
@@ -297,6 +319,27 @@ const CitySearch: React.FC<CitySearchProps> = ({
       if (debounceTimeout.current) {
         clearTimeout(debounceTimeout.current);
       }
+    };
+  }, []);
+
+  // Handle clicks outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        suggestionsRef.current && 
+        !suggestionsRef.current.contains(event.target as Node) &&
+        !searchInputRef.current?.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, []);
 
@@ -314,19 +357,29 @@ const CitySearch: React.FC<CitySearchProps> = ({
           onBlur={handleInputBlur}
           className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base"
           autoComplete="off"
+          inputMode="search"
         />
         
         {showSuggestions && filteredLocations.length > 0 && (
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 z-50 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl w-80 sm:w-96 max-h-80 overflow-y-auto">
+          <div 
+            ref={suggestionsRef}
+            className="absolute top-full left-0 right-0 z-[100] mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-w-[calc(100vw-2rem)] mx-auto max-h-[50vh] overflow-y-auto overscroll-contain"
+            style={{ width: 'min(24rem, calc(100vw - 2rem))' }}
+            onTouchStart={handleSuggestionInteractionStart}
+            onTouchEnd={handleSuggestionInteractionEnd}
+            onMouseDown={handleSuggestionInteractionStart}
+            onMouseUp={handleSuggestionInteractionEnd}
+          >
             {filteredLocations.map((location, index) => (
               <div
                 key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
                 onClick={() => handleLocationSelect(location)}
+                onTouchEnd={() => handleLocationSelect(location)}
                 onMouseEnter={() => setSelectedSuggestionIndex(index)}
-                className={`cursor-pointer flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                className={`cursor-pointer flex items-center gap-3 px-4 py-4 text-sm transition-colors touch-manipulation ${
                   index === selectedSuggestionIndex
                     ? 'bg-blue-50 text-blue-900'
-                    : 'hover:bg-gray-50'
+                    : 'hover:bg-gray-50 active:bg-gray-100'
                 } border-b border-gray-100 last:border-b-0`}
               >
                 <span className="text-lg flex-shrink-0">{getLocationIcon(location)}</span>
@@ -364,19 +417,29 @@ const CitySearch: React.FC<CitySearchProps> = ({
         onBlur={handleInputBlur}
         className="w-full h-9 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-500"
         autoComplete="off"
+        inputMode="search"
       />
       
       {showSuggestions && filteredLocations.length > 0 && (
-        <div className="absolute top-full left-1/2 transform -translate-x-1/2 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl w-80 max-h-64 overflow-y-auto">
+        <div 
+          ref={suggestionsRef}
+          className="absolute top-full left-0 right-0 z-[100] mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-w-[calc(100vw-2rem)] mx-auto max-h-[40vh] overflow-y-auto overscroll-contain"
+          style={{ width: 'min(20rem, calc(100vw - 2rem))' }}
+          onTouchStart={handleSuggestionInteractionStart}
+          onTouchEnd={handleSuggestionInteractionEnd}
+          onMouseDown={handleSuggestionInteractionStart}
+          onMouseUp={handleSuggestionInteractionEnd}
+        >
           {filteredLocations.map((location, index) => (
             <div
               key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
               onClick={() => handleLocationSelect(location)}
+              onTouchEnd={() => handleLocationSelect(location)}
               onMouseEnter={() => setSelectedSuggestionIndex(index)}
-              className={`cursor-pointer flex items-center gap-3 px-3 py-3 text-sm transition-colors ${
+              className={`cursor-pointer flex items-center gap-3 px-3 py-3 text-sm transition-colors touch-manipulation ${
                 index === selectedSuggestionIndex
                   ? 'bg-blue-50 text-blue-900'
-                  : 'hover:bg-gray-50'
+                  : 'hover:bg-gray-50 active:bg-gray-100'
               } border-b border-gray-100 last:border-b-0`}
             >
               <span className="text-lg flex-shrink-0">{getLocationIcon(location)}</span>

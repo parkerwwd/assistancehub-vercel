@@ -239,6 +239,44 @@ All colors MUST be HSL.
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-blue-500;
   }
+  
+  /* Handle virtual keyboard on mobile */
+  @supports (height: 100dvh) {
+    .h-screen {
+      height: 100dvh;
+    }
+    
+    .h-full {
+      height: 100%;
+    }
+  }
+  
+  /* Prevent layout shift when keyboard opens */
+  .fixed-viewport {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  
+  /* Improve search dropdown on mobile */
+  @media (max-width: 640px) {
+    /* Ensure dropdowns don't get cut off */
+    .overflow-y-auto {
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Better touch scrolling for search results */
+    .overscroll-contain {
+      overscroll-behavior: contain;
+    }
+    
+    /* Prevent zoom on search focus iOS */
+    input[type="search"] {
+      font-size: 16px !important;
+    }
+  }
 }
 
 /* Custom utilities for mobile interactions */
@@ -259,5 +297,10 @@ All colors MUST be HSL.
   /* Prevent pull-to-refresh on map */
   .overscroll-none {
     overscroll-behavior: none;
+  }
+  
+  /* Safe keyboard inset */
+  .pb-keyboard-safe {
+    padding-bottom: env(keyboard-inset-height, 0);
   }
 }

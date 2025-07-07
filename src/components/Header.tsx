@@ -128,15 +128,17 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
           </div>
 
           {/* Mobile Search (when enabled) */}
-          {showSearch && isMobile && (
-            <div className="pb-4 pt-2">
-              <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-3">
-                <Search className="w-4 h-4 text-gray-400" />
-                <CitySearch 
-                  onCitySelect={handleCitySelectFromHeader} 
-                  placeholder="Search by city, state..."
-                  variant="header"
-                />
+          {showSearch && isMobile && !isMobileMenuOpen && (
+            <div className="pb-3 pt-2 px-4 bg-white border-b">
+              <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2">
+                <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <div className="flex-1 relative">
+                  <CitySearch 
+                    onCitySelect={handleCitySelectFromHeader} 
+                    placeholder="Search by city, state, or ZIP..."
+                    variant="header"
+                  />
+                </div>
               </div>
             </div>
           )}

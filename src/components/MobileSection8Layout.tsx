@@ -72,7 +72,7 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
       case 'half':
         return { height: '50vh', bottom: 0 };
       case 'full':
-        return { height: 'calc(100vh - 80px)', bottom: 0 };
+        return { height: 'calc(100vh - 120px)', bottom: 0 }; // Leave room for header
       default:
         return { height: '120px', bottom: 0 };
     }

@@ -498,17 +498,22 @@ const Index = () => {
                 {showSuggestions && filteredCities.length > 0 && (
                   <div 
                     ref={suggestionsRef}
-                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50 max-h-60 sm:max-h-80 overflow-y-auto"
+                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-[100] max-h-[50vh] overflow-y-auto overscroll-contain"
+                    style={{ maxWidth: '100%' }}
                   >
                     {filteredCities.map((city, index) => (
                       <div
                         key={`${city.name}-${city.stateCode}`}
-                        className={`px-3 sm:px-4 py-3 cursor-pointer transition-colors duration-150 flex items-center gap-2 sm:gap-3 ${
+                        className={`px-3 sm:px-4 py-4 cursor-pointer transition-colors duration-150 flex items-center gap-2 sm:gap-3 touch-manipulation ${
                           index === selectedSuggestionIndex 
                             ? 'bg-blue-50 text-blue-900' 
                             : 'hover:bg-gray-50 active:bg-gray-100'
                         }`}
                         onClick={() => handleSuggestionSelect(city)}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          handleSuggestionSelect(city);
+                        }}
                         onMouseEnter={() => setSelectedSuggestionIndex(index)}
                       >
                         <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
