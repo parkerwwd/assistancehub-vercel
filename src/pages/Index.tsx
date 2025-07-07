@@ -243,8 +243,56 @@ const Index = () => {
         // Handle ZIP code search with geocoding
         await handleZipCodeSearch(searchQuery.trim());
       } else {
-        // Navigate to section8 page with search query
-        navigate('/section8', { state: { searchQuery: searchQuery.trim() } });
+        // Try to find the city in our local data first
+        const cityData = comprehensiveCities.find(city => 
+          `${city.name}, ${city.stateCode}`.toLowerCase() === searchQuery.trim().toLowerCase() ||
+          city.name.toLowerCase() === searchQuery.trim().toLowerCase()
+        );
+        
+        if (cityData) {
+          // Use local city data with coordinates
+          navigate('/section8', { state: { searchLocation: cityData } });
+        } else {
+          // If not found locally, try geocoding with Mapbox
+          try {
+            const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+            if (mapboxToken) {
+              const response = await fetch(
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?` +
+                `access_token=${mapboxToken}&` +
+                `country=US&` +
+                `types=place&` +
+                `limit=1`
+              );
+              
+              if (response.ok) {
+                const data = await response.json();
+                if (data.features && data.features.length > 0) {
+                  const feature = data.features[0];
+                  const [lng, lat] = feature.center;
+                  
+                  // Create location object from geocoded data
+                  const geoLocation = {
+                    name: feature.text || searchQuery,
+                    type: 'city' as const,
+                    state: feature.context?.find((c: any) => c.id.startsWith('region'))?.text || '',
+                    stateCode: feature.context?.find((c: any) => c.id.startsWith('region'))?.short_code?.replace('US-', '') || '',
+                    latitude: lat,
+                    longitude: lng
+                  };
+                  
+                  navigate('/section8', { state: { searchLocation: geoLocation } });
+                  return;
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error geocoding search query:', error);
+          }
+          
+          // Final fallback to text search
+          navigate('/section8', { state: { searchQuery: searchQuery.trim() } });
+        }
       }
     }
   };
@@ -313,12 +361,14 @@ const Index = () => {
       setSelectedSuggestionIndex(-1);
       await handleZipCodeSearch(city.zipCode);
     } else {
-      // Handle regular city selection
+      // Handle regular city selection - pass location object with coordinates
       const searchText = `${city.name}, ${city.stateCode}`;
       setSearchQuery(searchText);
       setShowSuggestions(false);
       setSelectedSuggestionIndex(-1);
-      navigate('/section8', { state: { searchQuery: searchText } });
+      
+      // Pass the location object with coordinates so Section8 page can filter properly
+      navigate('/section8', { state: { searchLocation: city } });
     }
   };
 
@@ -356,8 +406,19 @@ const Index = () => {
   };
 
   // Handle city click from popular cities buttons
-  const handleCityClick = (city: string) => {
-    navigate('/section8', { state: { searchQuery: city } });
+  const handleCityClick = (cityName: string) => {
+    // Find the city data from our comprehensive cities list
+    const cityData = comprehensiveCities.find(city => 
+      city.name === cityName.split(',')[0].trim()
+    );
+    
+    if (cityData) {
+      // Pass the location object with coordinates
+      navigate('/section8', { state: { searchLocation: cityData } });
+    } else {
+      // Fallback to text search if city not found in local data
+      navigate('/section8', { state: { searchQuery: cityName } });
+    }
   };
 
   // Close suggestions when clicking outside
