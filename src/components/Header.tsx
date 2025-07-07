@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
         </p>
       </div>
       
-      <header className="bg-white backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
+      <header className="bg-white backdrop-blur-sm shadow-sm border-b sticky top-0 z-[60]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -129,13 +129,13 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
 
           {/* Mobile Search (when enabled) */}
           {showSearch && isMobile && !isMobileMenuOpen && (
-            <div className="pb-3 pt-2 px-4 bg-white border-b">
-              <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2">
-                <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <div className="pb-3 pt-2 -mx-4 px-4 bg-white border-b relative z-[70]">
+              <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-3 min-h-[48px]">
+                <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
                 <div className="flex-1 relative">
                   <CitySearch 
                     onCitySelect={handleCitySelectFromHeader} 
-                    placeholder="Search by city, state, or ZIP..."
+                    placeholder="Search city, state, ZIP..."
                     variant="header"
                   />
                 </div>

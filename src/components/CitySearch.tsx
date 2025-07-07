@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Target } from "lucide-react";
+import { MapPin, Target, X } from "lucide-react";
 import { comprehensiveCities, USLocation } from "@/data/locations";
 
 interface CitySearchProps {
@@ -21,6 +21,19 @@ const CitySearch: React.FC<CitySearchProps> = ({
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  // Reset search when component remounts or location changes
+  useEffect(() => {
+    return () => {
+      setSearchQuery("");
+      setFilteredLocations([]);
+      setShowSuggestions(false);
+      setSelectedSuggestionIndex(-1);
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, []);
 
   // Filter locations based on search input (with Mapbox integration)
   const filterLocations = async (query: string) => {
@@ -253,25 +266,31 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions) return;
-
     switch (e.key) {
       case 'ArrowDown':
-        e.preventDefault();
-        setSelectedSuggestionIndex(prev => 
-          prev < filteredLocations.length - 1 ? prev + 1 : 0
-        );
+        if (showSuggestions && filteredLocations.length > 0) {
+          e.preventDefault();
+          setSelectedSuggestionIndex(prev => 
+            prev < filteredLocations.length - 1 ? prev + 1 : 0
+          );
+        }
         break;
       case 'ArrowUp':
-        e.preventDefault();
-        setSelectedSuggestionIndex(prev => 
-          prev > 0 ? prev - 1 : filteredLocations.length - 1
-        );
+        if (showSuggestions && filteredLocations.length > 0) {
+          e.preventDefault();
+          setSelectedSuggestionIndex(prev => 
+            prev > 0 ? prev - 1 : filteredLocations.length - 1
+          );
+        }
         break;
       case 'Enter':
         e.preventDefault();
         if (selectedSuggestionIndex >= 0 && filteredLocations[selectedSuggestionIndex]) {
+          // Select from suggestions
           handleLocationSelect(filteredLocations[selectedSuggestionIndex]);
+        } else if (searchQuery.trim()) {
+          // No suggestion selected but there's text - try to search
+          handleDirectSearch(searchQuery.trim());
         }
         break;
       case 'Escape':
@@ -280,6 +299,79 @@ const CitySearch: React.FC<CitySearchProps> = ({
         searchInputRef.current?.blur();
         break;
     }
+  };
+
+  // Handle direct search when Enter is pressed without selecting a suggestion
+  const handleDirectSearch = async (query: string) => {
+    console.log('🔍 Direct search for:', query);
+    
+    // Check if it's a ZIP code
+    const zipCodeRegex = /^\d{5}(-\d{4})?$/;
+    if (zipCodeRegex.test(query)) {
+      const geocodedLocation = await handleZipCodeSearch(query);
+      if (geocodedLocation) {
+        onCitySelect(geocodedLocation);
+      }
+      return;
+    }
+    
+    // Try to find in local data first
+    const localMatch = comprehensiveCities.find(city => 
+      city.name.toLowerCase() === query.toLowerCase() ||
+      `${city.name}, ${city.stateCode}`.toLowerCase() === query.toLowerCase()
+    );
+    
+    if (localMatch) {
+      setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
+      setShowSuggestions(false);
+      onCitySelect(localMatch);
+      return;
+    }
+    
+    // If not found locally, try geocoding with Mapbox
+    try {
+      const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+      if (mapboxToken) {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+          `access_token=${mapboxToken}&` +
+          `country=US&` +
+          `types=place&` +
+          `limit=1`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.features && data.features.length > 0) {
+            const feature = data.features[0];
+            const [lng, lat] = feature.center;
+            
+            const location: USLocation = {
+              name: feature.text || query,
+              type: 'city',
+              state: feature.context?.find((c: any) => c.id.startsWith('region'))?.text || '',
+              stateCode: feature.context?.find((c: any) => c.id.startsWith('region'))?.short_code?.replace('US-', '') || '',
+              latitude: lat,
+              longitude: lng
+            };
+            
+            setSearchQuery(`${location.name}, ${location.stateCode}`);
+            setShowSuggestions(false);
+            onCitySelect(location);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error geocoding search query:', error);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setFilteredLocations([]);
+    setShowSuggestions(false);
+    setSelectedSuggestionIndex(-1);
+    searchInputRef.current?.focus();
   };
 
   const handleInputBlur = () => {
@@ -346,19 +438,39 @@ const CitySearch: React.FC<CitySearchProps> = ({
   if (variant === 'header') {
     return (
       <div className="relative w-full">
-        <input
-          ref={searchInputRef}
-          type="text"
-          placeholder={placeholder}
-          value={searchQuery}
-          onChange={(e) => handleInputChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base"
-          autoComplete="off"
-          inputMode="search"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder={placeholder}
+            value={searchQuery}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base min-h-[40px] pr-8"
+            autoComplete="off"
+            inputMode="search"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="absolute right-16 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Clear search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => searchQuery.trim() && handleDirectSearch(searchQuery.trim())}
+            className="px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap"
+            disabled={!searchQuery.trim()}
+          >
+            Search
+          </button>
+        </div>
         
         {showSuggestions && filteredLocations.length > 0 && (
           <div 
