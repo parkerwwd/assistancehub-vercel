@@ -32,6 +32,21 @@ const FIELD_MAPPINGS: { [key: string]: string } = {
   'URL': 'website'
 };
 
+// State name to abbreviation mapping
+const STATE_ABBREVIATIONS: Record<string, string> = {
+  'alabama': 'AL', 'alaska': 'AK', 'arizona': 'AZ', 'arkansas': 'AR', 'california': 'CA',
+  'colorado': 'CO', 'connecticut': 'CT', 'delaware': 'DE', 'florida': 'FL', 'georgia': 'GA',
+  'hawaii': 'HI', 'idaho': 'ID', 'illinois': 'IL', 'indiana': 'IN', 'iowa': 'IA',
+  'kansas': 'KS', 'kentucky': 'KY', 'louisiana': 'LA', 'maine': 'ME', 'maryland': 'MD',
+  'massachusetts': 'MA', 'michigan': 'MI', 'minnesota': 'MN', 'mississippi': 'MS', 'missouri': 'MO',
+  'montana': 'MT', 'nebraska': 'NE', 'nevada': 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
+  'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', 'ohio': 'OH',
+  'oklahoma': 'OK', 'oregon': 'OR', 'pennsylvania': 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
+  'south dakota': 'SD', 'tennessee': 'TN', 'texas': 'TX', 'utah': 'UT', 'vermont': 'VT',
+  'virginia': 'VA', 'washington': 'WA', 'west virginia': 'WV', 'wisconsin': 'WI', 'wyoming': 'WY',
+  'district of columbia': 'DC', 'washington dc': 'DC', 'washington d.c.': 'DC'
+};
+
 // Valid database columns (only include mapped columns)
 const VALID_DB_COLUMNS = [
   'pha_code', 'name', 'address', 'city', 'state', 'zip', 
@@ -47,6 +62,23 @@ const sanitizeInput = (input: string | null | undefined, maxLength: number = 255
   return trimmed.length > 0 ? trimmed.substring(0, maxLength) : null;
 };
 
+// Standardize state to 2-letter abbreviation
+const standardizeState = (state: string | null | undefined): string | null => {
+  if (!state) return null;
+  
+  const trimmed = state.trim();
+  if (trimmed.length === 0) return null;
+  
+  // If already 2 letters, just uppercase it
+  if (trimmed.length === 2) {
+    return trimmed.toUpperCase();
+  }
+  
+  // Try to find the abbreviation for the full state name
+  const stateLower = trimmed.toLowerCase();
+  return STATE_ABBREVIATIONS[stateLower] || trimmed.substring(0, 2).toUpperCase();
+};
+
 export const processPHARecord = (record: any, fieldMappings?: FieldMapping[]) => {
   console.log('🔄 Processing PHA record with simplified approach');
   
@@ -58,7 +90,12 @@ export const processPHARecord = (record: any, fieldMappings?: FieldMapping[]) =>
     
     // Only include columns that have explicit mappings and are valid
     if (dbField && VALID_DB_COLUMNS.includes(dbField) && value && String(value).trim()) {
-      mappedRow[dbField] = sanitizeInput(String(value));
+      // Special handling for state field to standardize to 2-letter abbreviation
+      if (dbField === 'state') {
+        mappedRow[dbField] = standardizeState(String(value));
+      } else {
+        mappedRow[dbField] = sanitizeInput(String(value));
+      }
     }
   }
 

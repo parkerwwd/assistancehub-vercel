@@ -93,23 +93,46 @@ const filterByStateName = (agencies: PHAAgency[], stateName: string): PHAAgencyW
     'virginia': 'va', 'washington': 'wa', 'west virginia': 'wv', 'wisconsin': 'wi', 'wyoming': 'wy'
   };
   
-  const stateAbbr = stateAbbreviations[stateNameLower];
+  // Get state abbreviation (or use input if already an abbreviation)
+  let stateAbbr = stateAbbreviations[stateNameLower];
+  if (!stateAbbr && stateName.length === 2) {
+    stateAbbr = stateName.toLowerCase();
+  }
+  
+  // Create reverse mapping for full names
+  const abbreviationToName: Record<string, string> = {};
+  Object.entries(stateAbbreviations).forEach(([name, abbr]) => {
+    abbreviationToName[abbr] = name;
+  });
   
   return agencies.filter(agency => {
-    if (!agency.address) return false;
-    
-    const addressLower = agency.address.toLowerCase();
-    
-    // Check for full state name
-    if (addressLower.includes(stateNameLower)) {
-      return true;
+    // First check the dedicated state field if it exists
+    if (agency.state) {
+      const agencyState = agency.state.toLowerCase().trim();
+      
+      // Check if state field matches either abbreviation or full name
+      if (agencyState === stateNameLower || 
+          agencyState === stateAbbr ||
+          (agencyState.length === 2 && abbreviationToName[agencyState] === stateNameLower)) {
+        return true;
+      }
     }
     
-    // Check for state abbreviation (with word boundaries to avoid false matches)
-    if (stateAbbr) {
-      const abbrevRegex = new RegExp(`\\b${stateAbbr}\\b`, 'i');
-      if (abbrevRegex.test(agency.address)) {
+    // Fallback to checking address field if state field is empty
+    if (!agency.state && agency.address) {
+      const addressLower = agency.address.toLowerCase();
+      
+      // Check for full state name
+      if (addressLower.includes(stateNameLower)) {
         return true;
+      }
+      
+      // Check for state abbreviation (with word boundaries to avoid false matches)
+      if (stateAbbr) {
+        const abbrevRegex = new RegExp(`\\b${stateAbbr}\\b`, 'i');
+        if (abbrevRegex.test(agency.address)) {
+          return true;
+        }
       }
     }
     
