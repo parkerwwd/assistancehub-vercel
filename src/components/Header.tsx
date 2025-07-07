@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
-import { Menu, X, Home, Search } from "lucide-react";
+import { Menu, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CitySearch from './CitySearch';
@@ -41,10 +41,12 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link to="/" className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Home className="w-5 h-5 text-white" />
-                </div>
+              <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+                <img 
+                  src="/logo.png" 
+                  alt="AssistanceHub Logo" 
+                  className="h-8 sm:h-10 w-auto"
+                />
                 <div className="flex flex-col">
                   <span className="text-xl font-bold text-gray-900">AssistanceHub</span>
                   <span className="text-xs text-gray-500 hidden sm:block">Section 8 Housing Search</span>
