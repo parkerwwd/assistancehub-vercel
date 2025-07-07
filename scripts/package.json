@@ -1,0 +1,21 @@
+{
+  "name": "supabase-upload-script",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Script to upload CSV data directly to Supabase",
+  "main": "upload-to-supabase.js",
+  "scripts": {
+    "upload": "node upload-to-supabase.js",
+    "install-deps": "npm install"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "csv-parse": "^5.5.6",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "author": "AssistanceHub",
+  "license": "MIT"
+} 
