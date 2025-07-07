@@ -46,6 +46,10 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                   src="/logo.png" 
                   alt="JetWord AssistanceHub" 
                   className="h-10 sm:h-12 w-auto"
+                  onError={(e) => {
+                    console.error('Logo failed to load from /logo.png');
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
               </Link>
             </div>
