@@ -65,6 +65,8 @@ export class MapMarkerManager {
     
     let successCount = 0;
     let skipCount = 0;
+    const bounds = new mapboxgl.LngLatBounds();
+    let hasValidCoordinates = false;
     
     agencies.forEach(agency => {
       // Check database coordinates first, then geocoded ones
@@ -72,12 +74,23 @@ export class MapMarkerManager {
       const lng = agency.longitude || (agency as any).geocoded_longitude;
       
       if (!lat || !lng) {
-        console.warn(`⚠️ No coordinates for PHA: ${agency.name} (${agency.city}, ${agency.state})`);
+        console.warn(`⚠️ No coordinates for PHA: ${agency.name} (${agency.city}, ${agency.state})`, {
+          name: agency.name,
+          address: agency.address,
+          city: agency.city,
+          state: agency.state,
+          hasDbCoords: !!(agency.latitude && agency.longitude),
+          hasGeocodedCoords: !!((agency as any).geocoded_latitude && (agency as any).geocoded_longitude)
+        });
         skipCount++;
         return;
       }
       
       try {
+        // Add to bounds
+        bounds.extend([lng, lat]);
+        hasValidCoordinates = true;
+        
         // Determine marker color based on program type
         let markerColor = '#10b981'; // Default green
         const programType = agency.program_type?.toLowerCase() || '';
@@ -144,6 +157,20 @@ export class MapMarkerManager {
     
     console.log(`✅ Successfully displayed ${successCount} PHAs as individual pins`);
     console.log(`❌ Skipped ${skipCount} PHAs due to missing coordinates or errors`);
+    
+    // Adjust map bounds to show all pins if we have any valid coordinates
+    if (hasValidCoordinates && successCount > 0) {
+      try {
+        map.fitBounds(bounds, {
+          padding: { top: 50, bottom: 50, left: 50, right: 50 },
+          maxZoom: 12, // Don't zoom in too close
+          duration: 800 // Smooth animation
+        });
+        console.log('📍 Adjusted map bounds to show all PHAs with coordinates');
+      } catch (error) {
+        console.error('Failed to adjust map bounds:', error);
+      }
+    }
   }
 
   // Update clusters when map moves or zoom changes
