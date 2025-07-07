@@ -326,10 +326,39 @@ const CitySearch: React.FC<CitySearchProps> = ({
     
     // Try to find in local data first
     console.warn('🔍 Searching in comprehensiveCities, total cities:', comprehensiveCities.length);
-    const localMatch = comprehensiveCities.find(city => 
+    
+    // First try exact match
+    let localMatch = comprehensiveCities.find(city => 
       city.name.toLowerCase() === query.toLowerCase() ||
       `${city.name}, ${city.stateCode}`.toLowerCase() === query.toLowerCase()
     );
+    
+    // If no exact match, try partial match (for queries like "New York, NY" matching "New York")
+    if (!localMatch) {
+      // Extract city name from "City, State" format
+      const queryParts = query.split(',').map(part => part.trim());
+      const cityNameOnly = queryParts[0].toLowerCase();
+      
+      console.warn('🔍 No exact match, trying partial match with city name:', cityNameOnly);
+      
+      localMatch = comprehensiveCities.find(city => 
+        city.name.toLowerCase() === cityNameOnly
+      );
+      
+      // If we found a match and the query included a state, verify it matches
+      if (localMatch && queryParts.length > 1) {
+        const stateQuery = queryParts[1].trim().toLowerCase();
+        const stateMatches = 
+          localMatch.stateCode.toLowerCase() === stateQuery ||
+          localMatch.state.toLowerCase() === stateQuery ||
+          localMatch.state.toLowerCase().includes(stateQuery);
+        
+        if (!stateMatches) {
+          console.warn('🔍 City found but state does not match, discarding match');
+          localMatch = undefined;
+        }
+      }
+    }
     
     console.warn('🔍 Local match found:', !!localMatch, localMatch);
     
@@ -339,6 +368,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
       searchInputRef.current?.blur();
       console.warn('✅ Calling onCitySelect with local match:', localMatch);
       onCitySelect(localMatch);
+      console.warn('✅ onCitySelect called successfully');
       return;
     }
     

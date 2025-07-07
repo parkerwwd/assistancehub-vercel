@@ -52,7 +52,9 @@ export const useMapLogic = () => {
     setSelectedOffice(null);
     
     // Apply location filter to PHA agencies
+    console.warn('🎯 Calling applyLocationFilter with:', location);
     applyLocationFilter(location);
+    console.warn('🎯 applyLocationFilter called');
     
     // Set selected location for marker
     const locationData = {
@@ -89,6 +91,8 @@ export const useMapLogic = () => {
     } else {
       console.warn('❌ mapRef.current is null - cannot fly to location');
     }
+    
+    console.warn('🎯 handleCitySelect completed');
   };
 
   const handleOfficeSelect = async (office: PHAAgency | null) => {

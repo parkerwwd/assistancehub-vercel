@@ -39,6 +39,18 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
   filteredLocation,
   onShowMap
 }) => {
+  // Debug logging
+  React.useEffect(() => {
+    console.warn('📊 OfficeDetailsPanel received props:');
+    console.warn('📊 phaAgencies count:', phaAgencies.length);
+    console.warn('📊 filteredLocation:', filteredLocation);
+    console.warn('📊 hasFilter:', hasFilter);
+    console.warn('📊 totalCount:', totalCount);
+    if (phaAgencies.length > 0) {
+      console.warn('📊 First agency:', phaAgencies[0].name, phaAgencies[0].address);
+    }
+  }, [phaAgencies, filteredLocation, hasFilter, totalCount]);
+  
   // Show empty state when no agencies are available
   if (phaAgencies.length === 0) {
     return (
