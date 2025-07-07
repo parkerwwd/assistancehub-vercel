@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { MapPin } from "lucide-react";
-import { allUSLocations, USLocation } from "@/data/locations";
+import React, { useState, useEffect, useRef } from 'react';
+import { MapPin, Target } from "lucide-react";
+import { comprehensiveCities, USLocation } from "@/data/locations";
 
 interface CitySearchProps {
   onCitySelect: (location: USLocation) => void;
@@ -14,48 +14,196 @@ const CitySearch: React.FC<CitySearchProps> = ({
   variant = 'default'
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredLocations, setFilteredLocations] = useState<USLocation[]>([]);
+  const [filteredLocations, setFilteredLocations] = useState<(USLocation & { zipCode?: string; mapboxId?: string })[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (searchQuery.trim().length > 1) {
-      try {
-        const filtered = allUSLocations
-          .filter(location => {
-            const query = searchQuery.toLowerCase();
-            return (
-              location?.name?.toLowerCase().includes(query) ||
-              location?.state?.toLowerCase().includes(query) ||
-              location?.stateCode?.toLowerCase().includes(query)
-            );
-          })
-          .sort((a, b) => {
-            // Sort by type priority: states first, then counties, then cities
-            const typeOrder = { 'state': 0, 'county': 1, 'city': 2 };
-            if (typeOrder[a.type] !== typeOrder[b.type]) {
-              return typeOrder[a.type] - typeOrder[b.type];
-            }
-            // Then sort alphabetically
-            return a.name.localeCompare(b.name);
-          })
-          .slice(0, 15); // Show more results since we have comprehensive data
-        
-        setFilteredLocations(filtered || []);
-        setShowSuggestions(true);
-      } catch (error) {
-        console.error('Error filtering locations:', error);
-        setFilteredLocations([]);
-        setShowSuggestions(false);
-      }
-    } else {
+  // Filter locations based on search input (with Mapbox integration)
+  const filterLocations = async (query: string) => {
+    if (!query.trim()) {
       setFilteredLocations([]);
       setShowSuggestions(false);
+      return;
     }
-  }, [searchQuery]);
 
-  const handleLocationSelect = (location: USLocation) => {
+    // Check if the query is a ZIP code (5 digits or 5+4 format)
+    const zipCodeRegex = /^\d{5}(-\d{4})?$/;
+    const isZipCode = zipCodeRegex.test(query.trim());
+
+    if (isZipCode) {
+      // For ZIP codes, create a special suggestion
+      setFilteredLocations([{
+        name: `ZIP Code ${query.trim()}`,
+        type: 'city' as const, // Use 'city' type but with zipCode property
+        state: 'United States',
+        stateCode: 'US',
+        latitude: 0, // Will be geocoded later
+        longitude: 0, // Will be geocoded later
+        zipCode: query.trim()
+      }]);
+      setShowSuggestions(true);
+      return;
+    }
+
+    // First, filter local cities for instant results
+    const lowerQuery = query.toLowerCase();
+    const localCities = comprehensiveCities.filter(city => 
+      city.name.toLowerCase().includes(lowerQuery) ||
+      city.state.toLowerCase().includes(lowerQuery) ||
+      city.stateCode.toLowerCase().includes(lowerQuery)
+    );
+
+    // If we have enough local results, use them
+    if (localCities.length >= 5) {
+      setFilteredLocations(localCities.slice(0, 10));
+      setShowSuggestions(true);
+      return;
+    }
+
+    // Otherwise, use Mapbox geocoding for comprehensive search
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+    if (query.length >= 3 && mapboxToken) { // Only search after 3 characters
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+          `access_token=${mapboxToken}&` +
+          `country=US&` +
+          `types=place&` + // Only search for cities/places
+          `limit=10`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Convert Mapbox results to our format
+          const mapboxCities = data.features
+            .filter((feature: any) => feature.place_type.includes('place'))
+            .map((feature: any) => {
+              const [stateName, stateCode] = feature.context?.find((c: any) => c.id.startsWith('region'))?.text 
+                ? [feature.context.find((c: any) => c.id.startsWith('region')).text, 
+                   feature.context.find((c: any) => c.id.startsWith('region')).short_code?.replace('US-', '') || '']
+                : ['', ''];
+              
+              return {
+                name: feature.text,
+                state: stateName,
+                stateCode: stateCode.toUpperCase(),
+                latitude: feature.center[1],
+                longitude: feature.center[0],
+                type: 'city' as const,
+                mapboxId: feature.id // Keep track of Mapbox results
+              };
+            });
+
+          // Combine local and Mapbox results, removing duplicates
+          const combinedResults = [...localCities];
+          mapboxCities.forEach((mapboxCity: any) => {
+            if (!combinedResults.some(local => 
+              local.name.toLowerCase() === mapboxCity.name.toLowerCase() && 
+              local.stateCode === mapboxCity.stateCode
+            )) {
+              combinedResults.push(mapboxCity);
+            }
+          });
+
+          setFilteredLocations(combinedResults.slice(0, 10));
+          setShowSuggestions(true);
+        }
+      } catch (error) {
+        console.error('Error fetching cities from Mapbox:', error);
+        // Fall back to local results only
+        setFilteredLocations(localCities.slice(0, 10));
+        setShowSuggestions(true);
+      }
+    } else {
+      // For short queries, just use local results
+      setFilteredLocations(localCities.slice(0, 10));
+      setShowSuggestions(true);
+    }
+  };
+
+  // Handle search input change with debouncing
+  const handleInputChange = (value: string) => {
+    console.log('📝 Input changed to:', value);
+    setSearchQuery(value);
+    
+    // Clear existing timeout
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    
+    // For empty queries, clear immediately
+    if (!value.trim()) {
+      setFilteredLocations([]);
+      setShowSuggestions(false);
+      return;
+    }
+    
+    // For non-empty queries, debounce the search
+    debounceTimeout.current = setTimeout(() => {
+      filterLocations(value);
+    }, 300); // 300ms debounce
+  };
+
+  // Handle ZIP code geocoding
+  const handleZipCodeSearch = async (zipCode: string): Promise<USLocation | null> => {
+    try {
+      const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+      if (!mapboxToken) {
+        console.error('Mapbox token not found');
+        return null;
+      }
+
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(zipCode)}.json?access_token=${mapboxToken}&limit=1&country=US&types=postcode`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.features && data.features.length > 0) {
+          const feature = data.features[0];
+          const [lng, lat] = feature.center;
+          const placeName = feature.place_name || feature.text || zipCode;
+          
+          // Create a location object for the ZIP code
+          const zipLocation: USLocation = {
+            name: placeName.split(',')[0] || `ZIP ${zipCode}`,
+            type: 'city',
+            state: 'United States',
+            stateCode: 'US',
+            latitude: lat,
+            longitude: lng
+          };
+          
+          console.log('✅ Geocoded ZIP code:', zipCode, '→', { lat, lng, placeName });
+          return zipLocation;
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error geocoding ZIP code:', error);
+    }
+    return null;
+  };
+
+  const handleLocationSelect = async (location: USLocation & { zipCode?: string }) => {
     if (!location?.name) return;
     
+    // If it's a ZIP code, geocode it first
+    if (location.zipCode) {
+      const geocodedLocation = await handleZipCodeSearch(location.zipCode);
+      if (geocodedLocation) {
+        setSearchQuery(location.zipCode);
+        setShowSuggestions(false);
+        console.log('🏙️ ZIP code selected in CitySearch:', location.zipCode);
+        onCitySelect(geocodedLocation);
+      }
+      return;
+    }
+    
+    // For regular locations
     let displayName = location.name;
     if (location.type === 'city' || location.type === 'county') {
       displayName = `${location.name}, ${location.stateCode}`;
@@ -63,13 +211,17 @@ const CitySearch: React.FC<CitySearchProps> = ({
     
     setSearchQuery(displayName);
     setShowSuggestions(false);
+    setSelectedSuggestionIndex(-1);
     
     console.log('🏙️ Location selected in CitySearch:', displayName);
     onCitySelect(location);
   };
 
-  const getLocationIcon = (type: string) => {
-    switch (type) {
+  const getLocationIcon = (location: USLocation & { zipCode?: string }) => {
+    if (location.zipCode) {
+      return '📮';
+    }
+    switch (location.type) {
       case 'state':
         return '🏛️';
       case 'county':
@@ -81,7 +233,10 @@ const CitySearch: React.FC<CitySearchProps> = ({
     }
   };
 
-  const getLocationDescription = (location: USLocation) => {
+  const getLocationDescription = (location: USLocation & { zipCode?: string }) => {
+    if (location.zipCode) {
+      return 'ZIP Code';
+    }
     switch (location.type) {
       case 'state':
         return 'State';
@@ -94,15 +249,35 @@ const CitySearch: React.FC<CitySearchProps> = ({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setShowSuggestions(false);
-    }
-  };
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!showSuggestions) return;
 
-  const handleInputChange = (value: string) => {
-    console.log('📝 Input changed to:', value);
-    setSearchQuery(value);
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev < filteredLocations.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev > 0 ? prev - 1 : filteredLocations.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0 && filteredLocations[selectedSuggestionIndex]) {
+          handleLocationSelect(filteredLocations[selectedSuggestionIndex]);
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        searchInputRef.current?.blur();
+        break;
+    }
   };
 
   const handleInputBlur = () => {
@@ -112,22 +287,33 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   const handleInputFocus = () => {
     if (searchQuery.length > 1) {
-      setShowSuggestions(true);
+      filterLocations(searchQuery);
     }
   };
+
+  // Clean up debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, []);
 
   if (variant === 'header') {
     return (
       <div className="relative w-full">
         <input
+          ref={searchInputRef}
           type="text"
           placeholder={placeholder}
           value={searchQuery}
           onChange={(e) => handleInputChange(e.target.value)}
-          onKeyDown={handleKeyPress}
+          onKeyDown={handleKeyDown}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-base"
+          autoComplete="off"
         />
         
         {showSuggestions && filteredLocations.length > 0 && (
@@ -136,12 +322,19 @@ const CitySearch: React.FC<CitySearchProps> = ({
               <div
                 key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
                 onClick={() => handleLocationSelect(location)}
-                className="cursor-pointer flex items-center gap-3 px-4 py-3 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 transition-colors"
+                onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                className={`cursor-pointer flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                  index === selectedSuggestionIndex
+                    ? 'bg-blue-50 text-blue-900'
+                    : 'hover:bg-gray-50'
+                } border-b border-gray-100 last:border-b-0`}
               >
-                <span className="text-lg flex-shrink-0">{getLocationIcon(location.type)}</span>
+                <span className="text-lg flex-shrink-0">{getLocationIcon(location)}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-gray-900 truncate">{location.name}</span>
+                    <span className="font-medium text-gray-900 truncate">
+                      {location.zipCode || location.name}
+                    </span>
                     {(location.type === 'city' || location.type === 'county') && (
                       <span className="text-gray-500 flex-shrink-0">, {location.stateCode}</span>
                     )}
@@ -161,14 +354,16 @@ const CitySearch: React.FC<CitySearchProps> = ({
   return (
     <div className="relative w-full">
       <input
+        ref={searchInputRef}
         type="text"
         placeholder={placeholder}
         value={searchQuery}
         onChange={(e) => handleInputChange(e.target.value)}
-        onKeyDown={handleKeyPress}
+        onKeyDown={handleKeyDown}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
         className="w-full h-9 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-500"
+        autoComplete="off"
       />
       
       {showSuggestions && filteredLocations.length > 0 && (
@@ -177,12 +372,19 @@ const CitySearch: React.FC<CitySearchProps> = ({
             <div
               key={`${location.name}-${location.type}-${location.stateCode}-${index}`}
               onClick={() => handleLocationSelect(location)}
-              className="cursor-pointer flex items-center gap-3 px-3 py-3 text-sm hover:bg-blue-50 hover:text-blue-900 border-b border-gray-100 last:border-b-0 transition-colors"
+              onMouseEnter={() => setSelectedSuggestionIndex(index)}
+              className={`cursor-pointer flex items-center gap-3 px-3 py-3 text-sm transition-colors ${
+                index === selectedSuggestionIndex
+                  ? 'bg-blue-50 text-blue-900'
+                  : 'hover:bg-gray-50'
+              } border-b border-gray-100 last:border-b-0`}
             >
-              <span className="text-lg flex-shrink-0">{getLocationIcon(location.type)}</span>
+              <span className="text-lg flex-shrink-0">{getLocationIcon(location)}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-gray-900">{location.name}</span>
+                  <span className="font-medium text-gray-900">
+                    {location.zipCode || location.name}
+                  </span>
                   {(location.type === 'city' || location.type === 'county') && (
                     <span className="text-gray-500">, {location.stateCode}</span>
                   )}
