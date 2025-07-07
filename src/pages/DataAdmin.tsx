@@ -36,12 +36,12 @@ const DataAdmin = () => {
   };
 
   const handleGeocode = async () => {
-    // Get Mapbox token
-    const token = localStorage.getItem('mapbox_token');
+    // Get Mapbox token from environment variable
+    const token = import.meta.env.VITE_MAPBOX_TOKEN;
     if (!token) {
       toast({
         title: "Error",
-        description: "Please set a Mapbox token first on the main map page",
+        description: "Mapbox token not found. Please check your environment configuration.",
         variant: "destructive"
       });
       return;
