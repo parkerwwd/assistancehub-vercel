@@ -160,17 +160,18 @@ export const filterPHAAgenciesByLocation = (
     // For cities, show all agencies within 25 miles, sorted by distance
     const agenciesWithDistance = agencies
       .map(agency => {
-        // Get agency coordinates using geocoded coordinates
-        let agencyLat = (agency as any).geocoded_latitude;
-        let agencyLng = (agency as any).geocoded_longitude;
+        // Get agency coordinates - prefer database coordinates, fall back to geocoded ones
+        let agencyLat = agency.latitude;
+        let agencyLng = agency.longitude;
         
-        // Fall back to regular latitude/longitude if geocoded ones don't exist
+        // If database doesn't have coordinates, check for geocoded ones
         if (!agencyLat || !agencyLng) {
-          agencyLat = agency.latitude;
-          agencyLng = agency.longitude;
+          const geocodedAgency = agency as any;
+          agencyLat = geocodedAgency.geocoded_latitude;
+          agencyLng = geocodedAgency.geocoded_longitude;
         }
         
-        // Skip agencies without coordinates
+        // Skip agencies without any coordinates
         if (!agencyLat || !agencyLng) {
           return null;
         }

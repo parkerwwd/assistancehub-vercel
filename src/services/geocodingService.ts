@@ -3,6 +3,8 @@ import { Database } from "@/integrations/supabase/types";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
+// GeocodedPHA extends PHAAgency with optional geocoded coordinates
+// These are used when the database doesn't have coordinates
 export interface GeocodedPHA extends PHAAgency {
   geocoded_latitude?: number;
   geocoded_longitude?: number;
@@ -51,18 +53,9 @@ export const geocodePHAs = async (phas: PHAAgency[]): Promise<GeocodedPHA[]> => 
   const { usCities } = await import("@/data/usCities");
   
   return phas.map(pha => {
-    // Check if we already have geocoded coordinates
-    if ((pha as any).geocoded_latitude && (pha as any).geocoded_longitude) {
-      return pha;
-    }
-
-    // Check if the database has latitude/longitude fields
-    if ((pha as any).latitude && (pha as any).longitude) {
-      return {
-        ...pha,
-        geocoded_latitude: Number((pha as any).latitude),
-        geocoded_longitude: Number((pha as any).longitude)
-      };
+    // If PHA already has coordinates, return as-is
+    if (pha.latitude && pha.longitude) {
+      return pha as GeocodedPHA;
     }
 
     // Try to extract city and state from address field
@@ -70,11 +63,11 @@ export const geocodePHAs = async (phas: PHAAgency[]): Promise<GeocodedPHA[]> => 
     let stateCode = '';
     
     // First check if we have city and state fields directly
-    if ((pha as any).city) {
-      cityName = (pha as any).city.toLowerCase().trim();
+    if (pha.city) {
+      cityName = pha.city.toLowerCase().trim();
     }
-    if ((pha as any).state) {
-      stateCode = (pha as any).state.toLowerCase().trim();
+    if (pha.state) {
+      stateCode = pha.state.toLowerCase().trim();
     }
     
     // If not, parse from address
@@ -128,13 +121,13 @@ export const geocodePHAs = async (phas: PHAAgency[]): Promise<GeocodedPHA[]> => 
           ...pha,
           geocoded_latitude: matchingCity.latitude,
           geocoded_longitude: matchingCity.longitude
-        };
+        } as GeocodedPHA;
       }
     }
 
     // If still no match and we have an address, we could use the Mapbox geocoding
     // For now, just return the PHA without geocoded coordinates
-    return pha;
+    return pha as GeocodedPHA;
   });
 };
 
