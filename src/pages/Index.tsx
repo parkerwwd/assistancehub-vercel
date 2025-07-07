@@ -196,13 +196,13 @@ const Index = () => {
 
           {/* Interactive US Map */}
           <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-3xl p-8 mb-16">
-            <div className="h-96">
+            <div className="h-96 mb-12">
               <USMap selectedState={selectedState} onStateClick={setSelectedState} />
             </div>
             
-            {/* Popular States */}
-            <div className="text-center mt-8">
-              <p className="text-gray-600 mb-4">Popular states to explore:</p>
+            {/* Popular States - Separated with proper spacing */}
+            <div className="text-center bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+              <p className="text-lg font-medium text-gray-800 mb-6">Popular states to explore:</p>
               <div className="flex flex-wrap justify-center gap-3">
                 {['CA', 'TX', 'FL', 'NY', 'IL', 'GA'].map((stateCode) => {
                   const state = STATES.find(s => s.code === stateCode);
@@ -211,7 +211,7 @@ const Index = () => {
                       key={stateCode}
                       variant="outline"
                       onClick={() => setSelectedState(stateCode)}
-                      className="hover:bg-blue-50 hover:border-blue-300"
+                      className="hover:bg-blue-50 hover:border-blue-300 px-4 py-2 text-sm font-medium"
                     >
                       <MapPin className="w-4 h-4 mr-2" />
                       {state?.name}

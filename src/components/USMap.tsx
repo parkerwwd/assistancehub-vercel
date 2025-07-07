@@ -86,97 +86,59 @@ const USMap: React.FC<USMapProps> = ({ onStateClick, selectedState }) => {
     return '#FFFFFF'; // White border for default
   };
 
-  return (
-    <div className="w-full bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-6 shadow-lg">
-      {/* Header Section - Clean spacing */}
-      <div className="text-center mb-8">
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-          Interactive US Map
-        </h3>
-        <p className="text-gray-600 text-sm">
-          Click on a state to view Section 8 housing options
-        </p>
+    return (
+    <div className="w-full h-full relative">
+      {/* Map Container - Full height with proper containment */}
+      <div className="w-full h-full bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <ComposableMap 
+          projection="geoAlbersUsa"
+          style={{ width: '100%', height: '100%' }}
+          projectionConfig={{
+            scale: 1000,
+          }}
+        >
+          <Geographies geography={geoUrl}>
+            {({ geographies }) =>
+              geographies.map((geo) => (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill={getStateFill(geo)}
+                  stroke={getStateStroke(geo)}
+                  strokeWidth={hoveredState === geo.id ? 2 : 1}
+                  style={{
+                    default: {
+                      outline: 'none',
+                    },
+                    hover: {
+                      outline: 'none',
+                      cursor: 'pointer',
+                    },
+                    pressed: {
+                      outline: 'none',
+                    },
+                  }}
+                  onClick={() => handleStateClick(geo)}
+                  onMouseEnter={() => setHoveredState(geo.id)}
+                  onMouseLeave={() => setHoveredState(null)}
+                />
+              ))
+            }
+          </Geographies>
+        </ComposableMap>
       </div>
       
-      {/* Map Container - Properly contained */}
-      <div className="flex justify-center mb-8">
-        <div className="w-full max-w-4xl bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          <ComposableMap 
-            projection="geoAlbersUsa"
-            style={{ width: '100%', height: 'auto' }}
-            projectionConfig={{
-              scale: 1000,
-            }}
-          >
-            <Geographies geography={geoUrl}>
-              {({ geographies }) =>
-                geographies.map((geo) => (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill={getStateFill(geo)}
-                    stroke={getStateStroke(geo)}
-                    strokeWidth={hoveredState === geo.id ? 2 : 1}
-                    style={{
-                      default: {
-                        outline: 'none',
-                      },
-                      hover: {
-                        outline: 'none',
-                        cursor: 'pointer',
-                      },
-                      pressed: {
-                        outline: 'none',
-                      },
-                    }}
-                    onClick={() => handleStateClick(geo)}
-                    onMouseEnter={() => setHoveredState(geo.id)}
-                    onMouseLeave={() => setHoveredState(null)}
-                  />
-                ))
-              }
-            </Geographies>
-          </ComposableMap>
-        </div>
-      </div>
-      
-      {/* Hover State Info - Separated from map */}
+      {/* Hover State Info - Positioned absolutely to not affect layout */}
       {hoveredState && (
-        <div className="text-center mb-6 p-3 bg-white rounded-lg shadow-sm border border-blue-200 mx-auto max-w-md">
-          <p className="text-lg font-medium text-blue-700">
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 p-3 bg-white rounded-lg shadow-lg border border-blue-200">
+          <p className="text-sm font-medium text-blue-700">
             {stateNames[hoveredState]}
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-xs text-gray-600">
             Click to view housing authorities
           </p>
         </div>
       )}
-
-      {/* Popular States Section - Clean separation */}
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-        <h4 className="text-center text-base font-medium text-gray-800 mb-4">
-          Popular states to explore:
-        </h4>
-        <div className="flex flex-wrap justify-center gap-3">
-          {['06', '48', '12', '36', '17', '13'].map((stateId) => {
-            const stateCode = stateCodes[stateId];
-            const stateName = stateNames[stateId];
-            return (
-              <button
-                key={stateId}
-                onClick={() => handleStateClick({ id: stateId })}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors text-sm font-medium text-gray-700 hover:text-blue-700 shadow-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {stateName}
-              </button>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 };
