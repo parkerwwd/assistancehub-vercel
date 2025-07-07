@@ -28,7 +28,7 @@ export class MapInitializer {
       // Create the map with 2D configuration
       const map = new mapboxgl.Map({
         container: container,
-        style: 'mapbox://styles/mapbox/navigation-day-v1',
+        style: 'mapbox://styles/mapbox/streets-v12',
         center: [-95.7129, 37.0902],
         zoom: 4,
         pitch: 0,
