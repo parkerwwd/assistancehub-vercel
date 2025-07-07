@@ -31,7 +31,6 @@ export const useMapLogic = () => {
 
   // Handle token changes if needed
   const handleTokenChange = (token: string) => {
-    console.log('🔑 Token change requested:', token ? 'Present' : 'Empty');
     if (!token) {
       setTokenError("Mapbox token is required");
     } else {
@@ -44,8 +43,6 @@ export const useMapLogic = () => {
   };
 
   const handleCitySelect = async (location: USLocation) => {
-    console.log('🔍 MAP: City selected -', location.name);
-    
     // Clear any selected office first
     setSelectedOffice(null);
     
@@ -80,11 +77,7 @@ export const useMapLogic = () => {
       setTimeout(() => {
         mapRef.current?.setLocationMarker(location.latitude, location.longitude, locationData.name);
       }, 200); // Reduced timeout to match faster animation
-    } else {
-      console.warn('🗺️ mapRef.current is null, cannot fly to location');
     }
-    
-    console.log('🔍 MAP: City select completed');
   };
 
   const handleOfficeSelect = async (office: PHAAgency | null) => {
@@ -93,7 +86,6 @@ export const useMapLogic = () => {
       return;
     }
     
-    console.log('🔍 MAP: Office selected -', office.name);
     setSelectedOffice(office);
     
     // Get or geocode coordinates

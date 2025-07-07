@@ -13,7 +13,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
   placeholder = "Search by city, county, state...",
   variant = 'default'
 }) => {
-  console.log('🔍 CitySearch component rendered, onCitySelect exists?', !!onCitySelect);
   
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
@@ -22,6 +21,9 @@ const CitySearch: React.FC<CitySearchProps> = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  
+  // Track search attempts - only log on second search
+  const searchCountRef = useRef(0);
 
   // Reset search when component remounts or location changes
   useEffect(() => {
@@ -193,7 +195,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
             longitude: lng
           };
           
-          console.log('✅ Geocoded ZIP code:', zipCode, '→', { lat, lng, placeName });
           return zipLocation;
         }
       }
@@ -212,7 +213,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
       if (geocodedLocation) {
         setSearchQuery(location.zipCode);
         setShowSuggestions(false);
-        console.log('🔍 ZIP selected, calling onCitySelect');
         onCitySelect(geocodedLocation);
       }
       return;
@@ -228,7 +228,6 @@ const CitySearch: React.FC<CitySearchProps> = ({
     setShowSuggestions(false);
     setSelectedSuggestionIndex(-1);
     
-    console.log('🔍 Suggestion selected, calling onCitySelect');
     onCitySelect(location);
   };
 
@@ -303,17 +302,18 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle direct search when Enter is pressed without selecting a suggestion
   const handleDirectSearch = async (query: string) => {
-    console.log('🔍 handleDirectSearch called with:', query);
-    console.log('🔍 onCitySelect exists in handleDirectSearch?', !!onCitySelect);
-    console.log('🔍 onCitySelect type:', typeof onCitySelect);
+    // Only log on second search
+    if (searchCountRef.current === 2) {
+      console.warn('🚨 handleDirectSearch called on SECOND search');
+      console.warn('query:', query);
+      console.warn('onCitySelect in handleDirectSearch:', !!onCitySelect);
+    }
     
     // Check if it's a ZIP code
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
     if (zipCodeRegex.test(query)) {
-      console.log('🔍 Detected ZIP code');
       const geocodedLocation = await handleZipCodeSearch(query);
       if (geocodedLocation) {
-        console.log('🔍 ZIP found, calling onCitySelect');
         searchInputRef.current?.blur();
         onCitySelect(geocodedLocation);
       }
@@ -321,22 +321,18 @@ const CitySearch: React.FC<CitySearchProps> = ({
     }
     
     // Try to find in local data first
-    console.log('🔍 Searching in local data for:', query);
     const localMatch = comprehensiveCities.find(city => 
       city.name.toLowerCase() === query.toLowerCase() ||
       `${city.name}, ${city.stateCode}`.toLowerCase() === query.toLowerCase()
     );
     
     if (localMatch) {
-      console.log('🔍 Local match found:', localMatch);
       setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
       setShowSuggestions(false);
       searchInputRef.current?.blur();
       onCitySelect(localMatch);
       return;
     }
-    
-    console.log('🔍 No local match, trying Mapbox geocoding...');
     
     // If not found locally, try geocoding with Mapbox
     try {
@@ -350,12 +346,8 @@ const CitySearch: React.FC<CitySearchProps> = ({
           `limit=1`
         );
         
-        console.log('🔍 Mapbox response status:', response.status);
-        
         if (response.ok) {
           const data = await response.json();
-          console.log('🔍 Mapbox response data:', data);
-          
           if (data.features && data.features.length > 0) {
             const feature = data.features[0];
             const [lng, lat] = feature.center;
@@ -369,22 +361,15 @@ const CitySearch: React.FC<CitySearchProps> = ({
               longitude: lng
             };
             
-            console.log('🔍 Mapbox result found:', location);
             setSearchQuery(`${location.name}, ${location.stateCode}`);
             setShowSuggestions(false);
             searchInputRef.current?.blur();
             onCitySelect(location);
-          } else {
-            console.log('🔍 No features in Mapbox response');
           }
-        } else {
-          console.log('🔍 Mapbox request failed');
         }
-      } else {
-        console.log('🔍 No Mapbox token available');
       }
     } catch (error) {
-      console.error('🔍 Error geocoding search query:', error);
+      console.error('Error geocoding search query:', error);
     }
   };
 
@@ -487,23 +472,26 @@ const CitySearch: React.FC<CitySearchProps> = ({
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              console.log('🔍 Button clicked!');
-              console.log('🔍 searchQuery value:', searchQuery);
-              console.log('🔍 searchQuery type:', typeof searchQuery);
-              console.log('🔍 searchQuery length:', searchQuery.length);
-              console.log('🔍 trimmed length:', searchQuery.trim().length);
+              
+              // Increment search counter
+              searchCountRef.current += 1;
+              
+              // Only log on second search attempt
+              if (searchCountRef.current === 2) {
+                console.warn('🚨 SECOND SEARCH ATTEMPT - DEBUGGING');
+                console.warn('searchQuery:', searchQuery);
+                console.warn('onCitySelect exists?', !!onCitySelect);
+                console.warn('onCitySelect type:', typeof onCitySelect);
+              }
               
               try {
                 if (searchQuery && searchQuery.trim()) {
-                  console.log('🔍 SEARCH: Starting search for:', searchQuery.trim());
-                  console.log('🔍 About to call handleDirectSearch');
                   handleDirectSearch(searchQuery.trim());
-                  console.log('🔍 handleDirectSearch call completed');
                 } else {
-                  console.log('🔍 No query to search (empty or whitespace only)');
+                  // No query to search (empty or whitespace only)
                 }
               } catch (error) {
-                console.error('🔍 ERROR in search button handler:', error);
+                console.error('ERROR in search button handler:', error);
               }
             }}
             className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap min-h-[44px]"

@@ -43,9 +43,7 @@ const Section8 = () => {
 
   // Handle navigation from state page
   useEffect(() => {
-    console.log('🔍 Section8: Received searchLocation:', searchLocation);
     if (searchLocation && mapRef.current) {
-      console.log('🔍 Section8: Calling handleCitySelect with:', searchLocation);
       handleCitySelect(searchLocation);
     }
   }, [searchLocation, handleCitySelect]);
@@ -94,10 +92,7 @@ const Section8 = () => {
   };
 
   const handleHeaderCitySelect = (location: any) => {
-    console.log('🔍 Section8: handleHeaderCitySelect called with:', location);
-    console.log('🔍 Section8: handleCitySelect function exists?', !!handleCitySelect);
     handleCitySelect(location);
-    console.log('🔍 Section8: handleCitySelect completed');
   };
 
   if (!mapboxToken) {
