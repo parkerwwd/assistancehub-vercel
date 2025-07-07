@@ -314,6 +314,7 @@ const CitySearch: React.FC<CitySearchProps> = ({
     
     // Check if it's a ZIP code
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
+    console.warn('🔍 Checking if ZIP code:', query, 'matches:', zipCodeRegex.test(query));
     if (zipCodeRegex.test(query)) {
       const geocodedLocation = await handleZipCodeSearch(query);
       if (geocodedLocation) {
@@ -324,33 +325,42 @@ const CitySearch: React.FC<CitySearchProps> = ({
     }
     
     // Try to find in local data first
+    console.warn('🔍 Searching in comprehensiveCities, total cities:', comprehensiveCities.length);
     const localMatch = comprehensiveCities.find(city => 
       city.name.toLowerCase() === query.toLowerCase() ||
       `${city.name}, ${city.stateCode}`.toLowerCase() === query.toLowerCase()
     );
     
+    console.warn('🔍 Local match found:', !!localMatch, localMatch);
+    
     if (localMatch) {
       setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
       setShowSuggestions(false);
       searchInputRef.current?.blur();
+      console.warn('✅ Calling onCitySelect with local match:', localMatch);
       onCitySelect(localMatch);
       return;
     }
     
     // If not found locally, try geocoding with Mapbox
+    console.warn('🔍 No local match, trying Mapbox geocoding...');
     try {
       const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+      console.warn('🔍 Mapbox token exists:', !!mapboxToken);
       if (mapboxToken) {
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
           `access_token=${mapboxToken}&` +
           `country=US&` +
           `types=place&` +
-          `limit=1`
-        );
+          `limit=1`;
+        console.warn('🔍 Fetching from Mapbox:', url.replace(mapboxToken, 'TOKEN_HIDDEN'));
+        
+        const response = await fetch(url);
+        console.warn('🔍 Mapbox response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
+          console.warn('🔍 Mapbox data:', data);
           if (data.features && data.features.length > 0) {
             const feature = data.features[0];
             const [lng, lat] = feature.center;
@@ -364,16 +374,26 @@ const CitySearch: React.FC<CitySearchProps> = ({
               longitude: lng
             };
             
+            console.warn('✅ Created location from Mapbox:', location);
             setSearchQuery(`${location.name}, ${location.stateCode}`);
             setShowSuggestions(false);
             searchInputRef.current?.blur();
+            console.warn('✅ Calling onCitySelect with Mapbox location');
             onCitySelect(location);
+          } else {
+            console.warn('❌ No features found in Mapbox response');
           }
+        } else {
+          console.warn('❌ Mapbox response not OK:', response.statusText);
         }
+      } else {
+        console.warn('❌ No Mapbox token available');
       }
     } catch (error) {
-      console.error('Error geocoding search query:', error);
+      console.error('❌ Error geocoding search query:', error);
     }
+    
+    console.warn('🔍 handleDirectSearch completed');
   };
 
   const handleClearSearch = () => {

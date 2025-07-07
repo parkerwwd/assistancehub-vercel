@@ -92,7 +92,15 @@ const Section8 = () => {
   };
 
   const handleHeaderCitySelect = (location: any) => {
-    handleCitySelect(location);
+    console.warn('🚀 handleHeaderCitySelect called in Section8 with:', location);
+    console.warn('🚀 handleCitySelect function exists:', !!handleCitySelect);
+    console.warn('🚀 typeof handleCitySelect:', typeof handleCitySelect);
+    try {
+      handleCitySelect(location);
+      console.warn('🚀 handleCitySelect executed successfully');
+    } catch (error) {
+      console.error('💥 Error in handleCitySelect:', error);
+    }
   };
 
   if (!mapboxToken) {
