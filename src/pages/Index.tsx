@@ -103,24 +103,31 @@ const Index = () => {
     }
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Navigate to section8 page with search query
-      navigate('/section8', { state: { searchQuery: searchQuery.trim() } });
-    }
-  };
-
-  const handleCityClick = (city: string) => {
-    // Navigate to section8 page with the specific city as search query
-    navigate('/section8', { state: { searchQuery: city } });
-  };
-
   // Filter cities based on search input
   const filterCities = (query: string) => {
     if (!query.trim()) {
       setFilteredCities([]);
       setShowSuggestions(false);
+      return;
+    }
+
+    // Check if the query is a ZIP code (5 digits or 5+4 format)
+    const zipCodeRegex = /^\d{5}(-\d{4})?$/;
+    const isZipCode = zipCodeRegex.test(query.trim());
+
+    if (isZipCode) {
+      // For ZIP codes, we'll create a special suggestion
+      setFilteredCities([{
+        name: `ZIP Code ${query.trim()}`,
+        type: 'zip' as any,
+        state: 'United States',
+        stateCode: 'US',
+        latitude: 0, // Will be geocoded later
+        longitude: 0, // Will be geocoded later
+        zipCode: query.trim()
+      } as any]);
+      setShowSuggestions(true);
+      setSelectedSuggestionIndex(-1);
       return;
     }
 
@@ -142,6 +149,97 @@ const Index = () => {
     const value = e.target.value;
     setSearchQuery(value);
     filterCities(value);
+  };
+
+  // Handle search submission - updated to handle ZIP codes
+  const handleSearchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Check if it's a ZIP code
+      const zipCodeRegex = /^\d{5}(-\d{4})?$/;
+      const isZipCode = zipCodeRegex.test(searchQuery.trim());
+      
+      if (isZipCode) {
+        // Handle ZIP code search with geocoding
+        await handleZipCodeSearch(searchQuery.trim());
+      } else {
+        // Navigate to section8 page with search query
+        navigate('/section8', { state: { searchQuery: searchQuery.trim() } });
+      }
+    }
+  };
+
+  // Handle ZIP code search with geocoding
+  const handleZipCodeSearch = async (zipCode: string) => {
+    try {
+      // Use Mapbox geocoding to get coordinates for the ZIP code
+      const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+      if (!mapboxToken) {
+        console.error('Mapbox token not found');
+        // Fallback to regular search
+        navigate('/section8', { state: { searchQuery: zipCode } });
+        return;
+      }
+
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(zipCode)}.json?access_token=${mapboxToken}&limit=1&country=US&types=postcode`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.features && data.features.length > 0) {
+          const feature = data.features[0];
+          const [lng, lat] = feature.center;
+          const placeName = feature.place_name || feature.text || zipCode;
+          
+          // Create a location object for the ZIP code
+          const zipLocation = {
+            name: placeName.split(',')[0] || `ZIP ${zipCode}`,
+            type: 'city' as const,
+            state: 'United States',
+            stateCode: 'US',
+            latitude: lat,
+            longitude: lng
+          };
+          
+          console.log('✅ Geocoded ZIP code:', zipCode, '→', { lat, lng, placeName });
+          
+          // Navigate to section8 page with the geocoded location
+          navigate('/section8', { state: { searchLocation: zipLocation } });
+        } else {
+          console.warn('⚠️ No geocoding results for ZIP code:', zipCode);
+          // Fallback to regular search
+          navigate('/section8', { state: { searchQuery: zipCode } });
+        }
+      } else {
+        console.error('❌ Geocoding API error:', response.status);
+        // Fallback to regular search
+        navigate('/section8', { state: { searchQuery: zipCode } });
+      }
+    } catch (error) {
+      console.error('❌ Error geocoding ZIP code:', error);
+      // Fallback to regular search
+      navigate('/section8', { state: { searchQuery: zipCode } });
+    }
+  };
+
+  // Handle suggestion selection - updated to handle ZIP codes
+  const handleSuggestionSelect = async (city: USLocation | any) => {
+    if (city.type === 'zip' && city.zipCode) {
+      // Handle ZIP code selection
+      setSearchQuery(city.zipCode);
+      setShowSuggestions(false);
+      setSelectedSuggestionIndex(-1);
+      await handleZipCodeSearch(city.zipCode);
+    } else {
+      // Handle regular city selection
+      const searchText = `${city.name}, ${city.stateCode}`;
+      setSearchQuery(searchText);
+      setShowSuggestions(false);
+      setSelectedSuggestionIndex(-1);
+      navigate('/section8', { state: { searchQuery: searchText } });
+    }
   };
 
   // Handle keyboard navigation
@@ -177,13 +275,9 @@ const Index = () => {
     }
   };
 
-  // Handle suggestion selection
-  const handleSuggestionSelect = (city: USLocation) => {
-    const searchText = `${city.name}, ${city.stateCode}`;
-    setSearchQuery(searchText);
-    setShowSuggestions(false);
-    setSelectedSuggestionIndex(-1);
-    navigate('/section8', { state: { searchQuery: searchText } });
+  // Handle city click from popular cities buttons
+  const handleCityClick = (city: string) => {
+    navigate('/section8', { state: { searchQuery: city } });
   };
 
   // Close suggestions when clicking outside
