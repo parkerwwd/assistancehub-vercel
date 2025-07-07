@@ -311,25 +311,25 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle direct search when Enter is pressed without selecting a suggestion
   const handleDirectSearch = async (query: string) => {
-    console.error('🚨🚨🚨 DIRECT SEARCH START - Query:', query);
+    console.error('🚨 SEARCH BUTTON CLICKED - Query:', query);
     
-    // Always log for header variant
-    if (variant === 'header') {
-      console.warn('🔴 HEADER handleDirectSearch called with:', query);
+    // Verify cities are loaded
+    if (!comprehensiveCities || comprehensiveCities.length === 0) {
+      console.error('❌ CRITICAL ERROR: No cities loaded!');
+      alert('Cities database not loaded. Please refresh the page.');
+      return;
     }
     
-    // Only log on second search
-    if (searchCountRef.current === 2) {
-      console.warn('🚨 handleDirectSearch called on SECOND search');
-      console.warn('query:', query);
-      console.warn('onCitySelect in handleDirectSearch:', !!onCitySelect);
+    if (!query || !query.trim()) {
+      console.error('❌ Empty query, returning');
+      return;
     }
     
     // Check if it's a ZIP code
     const zipCodeRegex = /^\d{5}(-\d{4})?$/;
-    console.warn('🔍 Checking if ZIP code:', query, 'matches:', zipCodeRegex.test(query));
-    if (zipCodeRegex.test(query)) {
-      const geocodedLocation = await handleZipCodeSearch(query);
+    if (zipCodeRegex.test(query.trim())) {
+      console.warn('📮 ZIP code detected:', query);
+      const geocodedLocation = await handleZipCodeSearch(query.trim());
       if (geocodedLocation) {
         searchInputRef.current?.blur();
         onCitySelect(geocodedLocation);
@@ -338,105 +338,92 @@ const CitySearch: React.FC<CitySearchProps> = ({
     }
     
     // Try to find in local data first
-    console.warn('🔍 Searching in comprehensiveCities, total cities:', comprehensiveCities.length);
+    console.warn('🔍 Searching for:', query);
+    console.warn('🔍 Total cities in database:', comprehensiveCities.length);
     
-    // First try exact match
-    let localMatch = comprehensiveCities.find(city => 
-      city.name.toLowerCase() === query.toLowerCase() ||
-      `${city.name}, ${city.stateCode}`.toLowerCase() === query.toLowerCase()
-    );
+    // Extract city name from "City, State" format if needed
+    const queryParts = query.split(',').map(part => part.trim());
+    const cityNameToSearch = queryParts[0].toLowerCase();
     
-    // If no exact match, try partial match (for queries like "New York, NY" matching "New York")
-    if (!localMatch) {
-      // Extract city name from "City, State" format
-      const queryParts = query.split(',').map(part => part.trim());
-      const cityNameOnly = queryParts[0].toLowerCase();
+    // Search for the city
+    let localMatch = comprehensiveCities.find(city => {
+      const cityNameMatches = city.name.toLowerCase() === cityNameToSearch;
       
-      console.warn('🔍 No exact match, trying partial match with city name:', cityNameOnly);
-      
-      localMatch = comprehensiveCities.find(city => 
-        city.name.toLowerCase() === cityNameOnly
-      );
-      
-      // If we found a match and the query included a state, verify it matches
-      if (localMatch && queryParts.length > 1) {
+      // If query has state part, check it matches
+      if (queryParts.length > 1 && cityNameMatches) {
         const stateQuery = queryParts[1].trim().toLowerCase();
-        const stateMatches = 
-          localMatch.stateCode.toLowerCase() === stateQuery ||
-          localMatch.state.toLowerCase() === stateQuery ||
-          localMatch.state.toLowerCase().includes(stateQuery);
-        
-        if (!stateMatches) {
-          console.warn('🔍 City found but state does not match, discarding match');
-          localMatch = undefined;
-        }
+        return city.stateCode.toLowerCase() === stateQuery || 
+               city.state.toLowerCase() === stateQuery ||
+               city.state.toLowerCase().includes(stateQuery);
       }
-    }
-    
-    console.warn('🔍 Local match found:', !!localMatch, localMatch);
+      
+      // Otherwise just match city name
+      return cityNameMatches;
+    });
     
     if (localMatch) {
+      console.warn('✅ Found city in local database:', localMatch.name, localMatch.stateCode);
       setSearchQuery(`${localMatch.name}, ${localMatch.stateCode}`);
       setShowSuggestions(false);
       searchInputRef.current?.blur();
-      console.warn('✅ Calling onCitySelect with local match:', localMatch);
       onCitySelect(localMatch);
-      console.warn('✅ onCitySelect called successfully');
       return;
     }
     
-    // If not found locally, try geocoding with Mapbox
-    console.warn('🔍 No local match, trying Mapbox geocoding...');
-    try {
-      const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-      console.warn('🔍 Mapbox token exists:', !!mapboxToken);
-      if (mapboxToken) {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
-          `access_token=${mapboxToken}&` +
-          `country=US&` +
-          `types=place&` +
-          `limit=1`;
-        console.warn('🔍 Fetching from Mapbox:', url.replace(mapboxToken, 'TOKEN_HIDDEN'));
-        
-        const response = await fetch(url);
-        console.warn('🔍 Mapbox response status:', response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.warn('🔍 Mapbox data:', data);
-          if (data.features && data.features.length > 0) {
-            const feature = data.features[0];
-            const [lng, lat] = feature.center;
-            
-            const location: USLocation = {
-              name: feature.text || query,
-              type: 'city',
-              state: feature.context?.find((c: any) => c.id.startsWith('region'))?.text || '',
-              stateCode: feature.context?.find((c: any) => c.id.startsWith('region'))?.short_code?.replace('US-', '') || '',
-              latitude: lat,
-              longitude: lng
-            };
-            
-            console.warn('✅ Created location from Mapbox:', location);
-            setSearchQuery(`${location.name}, ${location.stateCode}`);
-            setShowSuggestions(false);
-            searchInputRef.current?.blur();
-            console.warn('✅ Calling onCitySelect with Mapbox location');
-            onCitySelect(location);
-          } else {
-            console.warn('❌ No features found in Mapbox response');
-          }
-        } else {
-          console.warn('❌ Mapbox response not OK:', response.statusText);
-        }
-      } else {
-        console.warn('❌ No Mapbox token available');
-      }
-    } catch (error) {
-      console.error('❌ Error geocoding search query:', error);
+    // If not found locally, ALWAYS try Mapbox as fallback
+    console.warn('⚠️ City not found locally, trying Mapbox geocoding...');
+    
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+    if (!mapboxToken) {
+      console.error('❌ No Mapbox token available');
+      alert(`City "${query}" not found. Try a different search.`);
+      return;
     }
     
-    console.warn('🔍 handleDirectSearch completed');
+    try {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+        `access_token=${mapboxToken}&` +
+        `country=US&` +
+        `types=place,locality,neighborhood&` +
+        `limit=1`;
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Mapbox API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.features && data.features.length > 0) {
+        const feature = data.features[0];
+        const [lng, lat] = feature.center;
+        
+        // Extract state info from context
+        const stateContext = feature.context?.find((c: any) => c.id.startsWith('region'));
+        
+        const location: USLocation = {
+          name: feature.text || query.split(',')[0].trim(),
+          type: 'city',
+          state: stateContext?.text || '',
+          stateCode: stateContext?.short_code?.replace('US-', '') || '',
+          latitude: lat,
+          longitude: lng
+        };
+        
+        console.warn('✅ Found city via Mapbox:', location.name, location.stateCode);
+        setSearchQuery(`${location.name}, ${location.stateCode}`);
+        setShowSuggestions(false);
+        searchInputRef.current?.blur();
+        onCitySelect(location);
+      } else {
+        console.error('❌ No results from Mapbox');
+        alert(`City "${query}" not found. Try a different search.`);
+      }
+    } catch (error) {
+      console.error('❌ Mapbox geocoding error:', error);
+      alert(`Error searching for "${query}". Please try again.`);
+    }
   };
 
   const handleClearSearch = () => {
