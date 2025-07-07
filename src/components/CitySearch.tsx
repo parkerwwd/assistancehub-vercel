@@ -464,7 +464,11 @@ const CitySearch: React.FC<CitySearchProps> = ({
           )}
           <button
             type="button"
-            onClick={() => searchQuery.trim() && handleDirectSearch(searchQuery.trim())}
+            onClick={() => {
+              if (searchQuery.trim()) {
+                handleDirectSearch(searchQuery.trim());
+              }
+            }}
             className="px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation whitespace-nowrap"
             disabled={!searchQuery.trim()}
           >
