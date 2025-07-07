@@ -43,13 +43,9 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
             <div className="flex items-center">
               <Link to="/" className="hover:opacity-90 transition-opacity">
                 <img 
-                  src="/logo.png" 
+                  src="/lovable-uploads/logo.png" 
                   alt="JetWord AssistanceHub" 
                   className="h-10 sm:h-12 w-auto"
-                  onError={(e) => {
-                    console.error('Logo failed to load from /logo.png');
-                    e.currentTarget.style.display = 'none';
-                  }}
                 />
               </Link>
             </div>
