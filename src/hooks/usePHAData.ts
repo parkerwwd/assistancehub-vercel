@@ -2,16 +2,15 @@
 import { useState, useEffect } from 'react';
 import { Database } from "@/integrations/supabase/types";
 import { fetchAllPHAData } from "@/services/phaService";
-import { GeocodedPHA } from "@/services/geocodingService";
 import { USLocation } from "@/data/usLocations";
 import { filterPHAAgenciesByLocation } from "@/utils/mapUtils";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export const usePHAData = () => {
-  const [allPHAAgencies, setAllPHAAgencies] = useState<GeocodedPHA[]>([]);
-  const [filteredAgencies, setFilteredAgencies] = useState<GeocodedPHA[]>([]);
-  const [phaAgencies, setPHAAgencies] = useState<GeocodedPHA[]>([]);
+  const [allPHAAgencies, setAllPHAAgencies] = useState<PHAAgency[]>([]);
+  const [filteredAgencies, setFilteredAgencies] = useState<PHAAgency[]>([]);
+  const [phaAgencies, setPHAAgencies] = useState<PHAAgency[]>([]);
   const [filteredLocation, setFilteredLocation] = useState<USLocation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +46,7 @@ export const usePHAData = () => {
   };
 
   const updateDisplayedAgencies = (
-    allAgencies: GeocodedPHA[],
+    allAgencies: PHAAgency[],
     location: USLocation | null,
     page: number
   ) => {

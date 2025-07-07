@@ -16,8 +16,8 @@ export class AgencyMarkerManager extends BaseMarkerManager {
     this.clearMarkers();
 
     agencies.forEach(agency => {
-      const lat = (agency as any).geocoded_latitude;
-      const lng = (agency as any).geocoded_longitude;
+      const lat = agency.latitude;
+      const lng = agency.longitude;
 
       if (lat && lng) {
         try {

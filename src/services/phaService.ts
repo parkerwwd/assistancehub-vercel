@@ -1,12 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
-import { geocodePHAs, GeocodedPHA } from "./geocodingService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export interface FetchPHADataResult {
-  data: GeocodedPHA[];
+  data: PHAAgency[];
   count: number;
 }
 
@@ -20,11 +19,9 @@ export const fetchAllPHAData = async (): Promise<FetchPHADataResult> => {
     throw fetchError;
   }
 
-  // Add geocoded coordinates for PHAs that don't have them
-  const geocodedData = await geocodePHAs(data || []);
-
+  // Return data as-is, using the coordinates from the database
   return {
-    data: geocodedData,
+    data: data || [],
     count: count || 0
   };
 };
@@ -43,11 +40,9 @@ export const fetchPHAData = async (page = 1, itemsPerPage = 20): Promise<FetchPH
     throw fetchError;
   }
 
-  // Add geocoded coordinates for PHAs that don't have them
-  const geocodedData = await geocodePHAs(data || []);
-
+  // Return data as-is, using the coordinates from the database
   return {
-    data: geocodedData,
+    data: data || [],
     count: count || 0
   };
 };

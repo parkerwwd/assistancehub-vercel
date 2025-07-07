@@ -17,9 +17,9 @@ export class OfficeMarkerManager extends BaseMarkerManager {
     
     console.log('📍 Adding marker for selected office:', office.name);
     
-    // Use geocoded coordinates since latitude/longitude fields don't exist
-    let lat = (office as any).geocoded_latitude;
-    let lng = (office as any).geocoded_longitude;
+    // Use database coordinates first
+    let lat = office.latitude;
+    let lng = office.longitude;
     
     // If no coordinates, try to geocode the address using improved service
     if ((!lat || !lng) && office.address) {

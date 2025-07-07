@@ -34,9 +34,9 @@ export class ClusterManager {
     // Convert agencies to GeoJSON features
     const features: GeoJSON.Feature<GeoJSON.Point, AgencyProperties>[] = agencies
       .filter(agency => {
-        // Check database coordinates first, then geocoded ones
-        const lat = agency.latitude || (agency as any).geocoded_latitude;
-        const lng = agency.longitude || (agency as any).geocoded_longitude;
+        // Only use database coordinates
+        const lat = agency.latitude;
+        const lng = agency.longitude;
         
         if (!lat || !lng) {
           console.warn(`⚠️ No coordinates for PHA: ${agency.name} (${agency.city}, ${agency.state})`);
@@ -50,8 +50,8 @@ export class ClusterManager {
         geometry: {
           type: 'Point' as const,
           coordinates: [
-            agency.longitude || (agency as any).geocoded_longitude,
-            agency.latitude || (agency as any).geocoded_latitude
+            agency.longitude,
+            agency.latitude
           ]
         }
       }));

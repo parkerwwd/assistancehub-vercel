@@ -69,9 +69,9 @@ export class MapMarkerManager {
     let hasValidCoordinates = false;
     
     agencies.forEach(agency => {
-      // Check database coordinates first, then geocoded ones
-      const lat = agency.latitude || (agency as any).geocoded_latitude;
-      const lng = agency.longitude || (agency as any).geocoded_longitude;
+      // Only use database coordinates
+      const lat = agency.latitude;
+      const lng = agency.longitude;
       
       if (!lat || !lng) {
         console.warn(`⚠️ No coordinates for PHA: ${agency.name} (${agency.city}, ${agency.state})`, {
@@ -79,8 +79,7 @@ export class MapMarkerManager {
           address: agency.address,
           city: agency.city,
           state: agency.state,
-          hasDbCoords: !!(agency.latitude && agency.longitude),
-          hasGeocodedCoords: !!((agency as any).geocoded_latitude && (agency as any).geocoded_longitude)
+          hasDbCoords: !!(agency.latitude && agency.longitude)
         });
         skipCount++;
         return;
