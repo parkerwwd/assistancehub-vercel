@@ -144,47 +144,86 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
+          <div className="md:hidden fixed inset-0 z-50 bg-white">
+            {/* Mobile Menu Header */}
+            <div className="flex items-center justify-between px-4 py-4 border-b">
+              <Link to="/" className="flex items-center gap-2">
+                <img 
+                  src={logoImage} 
+                  alt="AssistanceHub" 
+                  className="h-8 w-auto"
+                />
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleMobileMenu}
+                className="p-2"
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
+            
+            {/* Mobile Menu Items */}
+            <div className="px-4 py-6 space-y-2">
               <Link
                 to="/"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                className="block px-4 py-4 text-lg font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Home
               </Link>
               <Link
                 to="/section8"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                className="block px-4 py-4 text-lg font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Search Housing
               </Link>
               <Link
                 to="/state/california"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                className="block px-4 py-4 text-lg font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 State List
               </Link>
               <Link
                 to="/snap"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                className="block px-4 py-4 text-lg font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Resources
               </Link>
               <Link
                 to="/data-admin"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
+                className="block px-4 py-4 text-lg font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 About Us
               </Link>
-              <div className="px-3 py-2">
-                <Link to="/section8">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    <Search className="w-4 h-4 mr-2" />
+              
+              {/* Mobile Search (if enabled) */}
+              {showSearch && (
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-3">
+                    <Search className="w-5 h-5 text-gray-400" />
+                    <CitySearch 
+                      onCitySelect={(location) => {
+                        handleCitySelectFromHeader(location);
+                        setIsMobileMenuOpen(false);
+                      }} 
+                      placeholder="Search by city..."
+                      variant="header"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Mobile CTA */}
+              <div className="pt-6">
+                <Link to="/section8" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-4 text-lg">
+                    <Search className="w-5 h-5 mr-2" />
                     Find Housing
                   </Button>
                 </Link>

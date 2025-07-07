@@ -177,3 +177,87 @@ All colors MUST be HSL.
     opacity: 0;
   }
 }
+
+@layer base {
+  /* Remove Mapbox logo on mobile for cleaner UI */
+  .mapboxgl-ctrl-logo {
+    @apply hidden sm:block;
+  }
+  
+  /* Improve Mapbox controls for mobile */
+  .mapboxgl-ctrl-group {
+    @apply shadow-lg;
+  }
+  
+  .mapboxgl-ctrl button {
+    @apply w-10 h-10 sm:w-9 sm:h-9;
+  }
+  
+  /* Prevent iOS zoom on input focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  
+  /* Better touch targets */
+  button, a, [role="button"] {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Smooth scrolling for better mobile experience */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent text selection on UI elements */
+  button, [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Safe area padding for modern phones */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  
+  /* Improve tap highlighting */
+  * {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Better focus states for mobile */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-500;
+  }
+}
+
+/* Custom utilities for mobile interactions */
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  .touch-none {
+    touch-action: none;
+  }
+  
+  /* Momentum scrolling on iOS */
+  .scroll-touch {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent pull-to-refresh on map */
+  .overscroll-none {
+    overscroll-behavior: none;
+  }
+}

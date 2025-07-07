@@ -448,8 +448,8 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Hero Section - Matching screenshot design */}
-      <div className="relative h-[70vh] bg-cover bg-center bg-no-repeat" style={{
+      {/* Hero Section - Mobile Optimized */}
+      <div className="relative h-[80vh] md:h-[70vh] bg-cover bg-center bg-no-repeat" style={{
         backgroundImage: "url('https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')"
       }}>
         {/* Dark overlay for better text readability */}
@@ -458,65 +458,65 @@ const Index = () => {
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
-            {/* Main Heading */}
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+            {/* Main Heading - Mobile Optimized */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
               Search Section 8 Housing Nationwide
             </h1>
             
-            {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-white mb-8 opacity-90">
-              Your trusted guide to Section 8 housing and affordable rental solutions
+            {/* Subtitle - Mobile Optimized */}
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white mb-6 sm:mb-8 opacity-90 px-2">
+              Your trusted guide to Section 8 housing
             </p>
 
-            {/* Search Bar with Autocomplete */}
-            <div className="max-w-2xl mx-auto mb-8 relative">
+            {/* Search Bar with Autocomplete - Mobile Optimized */}
+            <div className="max-w-xl md:max-w-2xl mx-auto mb-6 sm:mb-8 relative px-2 sm:px-0">
               <form onSubmit={handleSearchSubmit} className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                  <Target className="h-6 w-6 text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
+                  <Target className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
                 </div>
-                                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="City, County, or Zipcode"
-                    value={searchQuery}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onFocus={() => { if (searchQuery) filterCities(searchQuery); }}
-                    className="w-full pl-12 pr-20 py-6 text-lg rounded-full border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none relative z-10"
-                    aria-label="Search for Section 8 housing"
-                    autoComplete="off"
-                  />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="City, County, or ZIP"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => { if (searchQuery) filterCities(searchQuery); }}
+                  className="w-full pl-10 sm:pl-12 pr-16 sm:pr-20 py-4 sm:py-6 text-base sm:text-lg rounded-full border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none relative z-10"
+                  aria-label="Search for Section 8 housing"
+                  autoComplete="off"
+                />
                 <button
                   type="submit"
-                  className="absolute right-2 top-2 bottom-2 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors duration-200 flex items-center gap-2 z-10"
+                  className="absolute right-1 sm:right-2 top-1 sm:top-2 bottom-1 sm:bottom-2 px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-full transition-colors duration-200 flex items-center gap-1 sm:gap-2 z-10 text-sm sm:text-base"
                 >
-                  <Search className="h-5 w-5" />
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span className="hidden sm:inline">Search</span>
                 </button>
                 
-                {/* Autocomplete Suggestions */}
+                {/* Autocomplete Suggestions - Mobile Optimized */}
                 {showSuggestions && filteredCities.length > 0 && (
                   <div 
                     ref={suggestionsRef}
-                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50"
+                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50 max-h-60 sm:max-h-80 overflow-y-auto"
                   >
                     {filteredCities.map((city, index) => (
                       <div
                         key={`${city.name}-${city.stateCode}`}
-                        className={`px-4 py-3 cursor-pointer transition-colors duration-150 flex items-center gap-3 ${
+                        className={`px-3 sm:px-4 py-3 cursor-pointer transition-colors duration-150 flex items-center gap-2 sm:gap-3 ${
                           index === selectedSuggestionIndex 
                             ? 'bg-blue-50 text-blue-900' 
-                            : 'hover:bg-gray-50'
+                            : 'hover:bg-gray-50 active:bg-gray-100'
                         }`}
                         onClick={() => handleSuggestionSelect(city)}
                         onMouseEnter={() => setSelectedSuggestionIndex(index)}
                       >
                         <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-gray-900 text-sm sm:text-base truncate">
                             {city.name}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-xs sm:text-sm text-gray-500">
                             {city.state} ({city.stateCode})
                           </div>
                         </div>
@@ -527,51 +527,50 @@ const Index = () => {
               </form>
             </div>
 
-            {/* Popular Cities - Blue buttons */}
-            <div className="mb-10">
-              <div className="flex flex-wrap justify-center gap-3">
+            {/* Popular Cities - Mobile Optimized */}
+            <div className="mb-6 sm:mb-10">
+              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-2 sm:px-0">
                 {POPULAR_CITIES.map((city) => (
                   <Button
                     key={city}
                     onClick={() => handleCityClick(city)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
                   >
-                    <MapPin className="w-4 h-4 mr-2" />
-                    {city}
+                    <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span>{city.split(',')[0]}</span>
                   </Button>
                 ))}
               </div>
             </div>
 
-            {/* Down Arrow */}
-            <div className="animate-bounce">
-              <ChevronDown className="w-8 h-8 text-white mx-auto" />
+            {/* Down Arrow - Hidden on small mobile */}
+            <div className="animate-bounce hidden sm:block">
+              <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8 text-white mx-auto" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* State Search Section - Main Feature */}
-      <div className="bg-white py-14">
+      {/* State Search Section - Mobile Optimized */}
+      <div className="bg-white py-8 sm:py-12 md:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-6 sm:mb-8 md:mb-10">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
               Search Housing by State
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We have Section 8 housing assistance listings in every state. 
-              Click on a state below to find housing in your desired area.
+            <p className="text-sm sm:text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
+              We have Section 8 housing assistance listings in every state.
             </p>
           </div>
 
-          {/* State Selector */}
-          <div className="max-w-lg mx-auto mb-10">
-            <div className="flex gap-4">
+          {/* State Selector - Mobile Optimized */}
+          <div className="max-w-md md:max-w-lg mx-auto mb-6 sm:mb-8 md:mb-10">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Select value={selectedState} onValueChange={setSelectedState}>
-                <SelectTrigger className="flex-1 h-14 text-lg">
+                <SelectTrigger className="w-full h-12 sm:h-14 text-base sm:text-lg">
                   <SelectValue placeholder="Select Your State" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[60vh]">
                   {STATES.map((state) => (
                     <SelectItem key={state.code} value={state.code}>
                       {state.name}
@@ -583,21 +582,21 @@ const Index = () => {
                 onClick={handleStateSearch}
                 disabled={!selectedState}
                 size="lg"
-                className="h-14 px-8 bg-blue-600 hover:bg-blue-700"
+                className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-8 bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
               >
-                <Search className="w-5 h-5 mr-2" />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Search
               </Button>
             </div>
           </div>
 
-          {/* Interactive US Map */}
-          <div className="bg-white rounded-3xl p-6 mb-0 shadow-lg border border-gray-200">
+          {/* Interactive US Map - Hidden on Mobile */}
+          <div className="hidden md:block bg-white rounded-3xl p-6 mb-0 shadow-lg border border-gray-200">
             <div className="h-96 mb-6">
               <USMap selectedState={selectedState} onStateClick={setSelectedState} />
             </div>
             
-            {/* Popular States - Integrated into same container */}
+            {/* Popular States - Desktop */}
             <div className="text-center pt-4 border-t border-gray-200">
               <p className="text-lg font-medium text-gray-800 mb-4">Popular states to explore:</p>
               <div className="flex flex-wrap justify-center gap-3">
@@ -618,71 +617,95 @@ const Index = () => {
               </div>
             </div>
           </div>
+
+          {/* Popular States Grid - Mobile Only */}
+          <div className="md:hidden">
+            <p className="text-center text-base font-medium text-gray-800 mb-4">
+              Popular states to explore:
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {['CA', 'TX', 'FL', 'NY', 'IL', 'GA', 'PA', 'OH'].map((stateCode) => {
+                const state = STATES.find(s => s.code === stateCode);
+                return (
+                  <Button
+                    key={stateCode}
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedState(stateCode);
+                      handleStateSearch();
+                    }}
+                    className="h-16 flex flex-col items-center justify-center hover:bg-blue-50 hover:border-blue-300 border-2"
+                  >
+                    <span className="text-lg font-bold text-blue-600">{stateCode}</span>
+                    <span className="text-xs text-gray-600">{state?.name}</span>
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* How-To Guides Section - Like section8search.org */}
-      <div className="bg-gray-50 py-14">
+      {/* How-To Guides Section - Mobile Optimized */}
+      <div className="bg-gray-50 py-8 sm:py-12 md:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">How-To Guides</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We know the HCV housing process can be confusing. That's why we've gathered 
-              all the information in one place to help you navigate the entire process.
+          <div className="text-center mb-6 sm:mb-8 md:mb-10">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
+              How-To Guides
+            </h2>
+            <p className="text-sm sm:text-base md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
+              Navigate the housing process with our comprehensive guides
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                  <FileText className="w-8 h-8 text-blue-600" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+            <Card className="hover:shadow-lg transition-shadow touch-manipulation">
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-3 sm:mb-4">
+                  <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                 </div>
-                <CardTitle>Learn How to Apply for Section 8</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Apply for Section 8</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600 mb-4">
-                  Learn more about applying for Section 8, the federal program that provides 
-                  affordable housing for low-income families.
+                <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
+                  Learn about the application process for federal housing assistance.
                 </p>
-                <Button variant="outline" className="w-full">
-                  Read More <ArrowRight className="w-4 h-4 ml-2" />
+                <Button variant="outline" className="w-full text-sm sm:text-base">
+                  Read More <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
+            <Card className="hover:shadow-lg transition-shadow touch-manipulation">
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-xl flex items-center justify-center mb-3 sm:mb-4">
+                  <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
                 </div>
-                <CardTitle>Check Your Waitlist Status</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Check Waitlist Status</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600 mb-4">
-                  Learn how to track your status and stay informed about developments 
-                  in your Section 8 housing search.
+                <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
+                  Track your application and stay informed about your status.
                 </p>
-                <Button variant="outline" className="w-full">
-                  Read More <ArrowRight className="w-4 h-4 ml-2" />
+                <Button variant="outline" className="w-full text-sm sm:text-base">
+                  Read More <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                  <Home className="w-8 h-8 text-purple-600" />
+            <Card className="hover:shadow-lg transition-shadow touch-manipulation sm:col-span-2 md:col-span-1">
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-3 sm:mb-4">
+                  <Home className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
                 </div>
-                <CardTitle>Complete Your PHA Pre-Application</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Complete Pre-Application</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600 mb-4">
-                  Learn more about filling out your pre-application, the first step 
-                  in finding Section 8 housing.
+                <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
+                  Fill out your pre-application - the first step to housing.
                 </p>
-                <Button variant="outline" className="w-full">
-                  Read More <ArrowRight className="w-4 h-4 ml-2" />
+                <Button variant="outline" className="w-full text-sm sm:text-base">
+                  Read More <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                 </Button>
               </CardContent>
             </Card>
@@ -690,46 +713,49 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Benefits Section */}
-      <div className="bg-white py-14">
+      {/* Benefits Section - Mobile Optimized */}
+      <div className="bg-white py-8 sm:py-12 md:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Finding Housing with AssistanceHub
+          <div className="text-center mb-6 sm:mb-8 md:mb-10">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
+              Why Use AssistanceHub?
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-10 h-10 text-blue-600" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+            <div className="text-center px-2">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <Search className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
               </div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">Save Time and Effort</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Searching for Section 8 housing can be a long process. Here, you'll find 
-                nationwide listings in one convenient place, reducing the time it takes to locate your new home.
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                Save Time
+              </h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Find all Section 8 housing options in one place, reducing your search time.
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-10 h-10 text-green-600" />
+            <div className="text-center px-2">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
               </div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">Stay Informed</h3>
-              <p className="text-gray-600 leading-relaxed">
-                HCV housing rules and regulations vary by location. AssistanceHub offers the latest 
-                information on waiting lists, application processes, and eligibility requirements.
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                Stay Informed
+              </h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Get the latest info on waiting lists and eligibility requirements.
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-10 h-10 text-purple-600" />
+            <div className="text-center px-2 sm:col-span-2 md:col-span-1">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <Users className="w-8 h-8 sm:w-10 sm:h-10 text-purple-600" />
               </div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-3">Empower Your Search</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Whether you're a veteran or want to own your own home, you can tailor your search 
-                according to what matters to you. Your new home could be just a click away.
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                Find Your Home
+              </h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Tailor your search to find the perfect housing option for your needs.
               </p>
             </div>
           </div>
