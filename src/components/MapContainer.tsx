@@ -148,7 +148,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         style={{ minHeight: '400px' }}
       />
       <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-2 rounded-lg text-sm font-medium backdrop-blur-sm">
-        🗺️ Map View
+        🗺️ Street Map
       </div>
     </div>
   );

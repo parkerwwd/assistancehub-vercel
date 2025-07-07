@@ -25,16 +25,16 @@ export class MapInitializer {
     try {
       mapboxgl.accessToken = mapboxToken.trim();
       
-      // Create the map with 3D configuration
+      // Create the map with 2D configuration
       const map = new mapboxgl.Map({
         container: container,
-        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        style: 'mapbox://styles/mapbox/navigation-day-v1',
         center: [-95.7129, 37.0902],
         zoom: 4,
-        pitch: 45,
+        pitch: 0,
         bearing: 0,
         antialias: true,
-        maxPitch: 85
+        maxPitch: 0
       });
       
       // Add error handling for the map
