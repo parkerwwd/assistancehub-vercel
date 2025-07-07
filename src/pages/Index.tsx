@@ -195,13 +195,13 @@ const Index = () => {
           </div>
 
           {/* Interactive US Map */}
-          <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-3xl p-8 mb-16">
-            <div className="h-96 mb-12">
+          <div className="bg-white rounded-3xl p-8 mb-16 shadow-lg border border-gray-200">
+            <div className="h-96 mb-8">
               <USMap selectedState={selectedState} onStateClick={setSelectedState} />
             </div>
             
-            {/* Popular States - Separated with proper spacing */}
-            <div className="text-center bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+            {/* Popular States - Integrated into same container */}
+            <div className="text-center pt-6 border-t border-gray-200">
               <p className="text-lg font-medium text-gray-800 mb-6">Popular states to explore:</p>
               <div className="flex flex-wrap justify-center gap-3">
                 {['CA', 'TX', 'FL', 'NY', 'IL', 'GA'].map((stateCode) => {
