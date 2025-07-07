@@ -28,6 +28,17 @@ const CitySearch: React.FC<CitySearchProps> = ({
   // Debug component mounting
   useEffect(() => {
     console.log('🔧 CitySearch mounted, variant:', variant);
+    
+    // Check if Appleton exists in the data
+    if (variant === 'header') {
+      const appletonExists = comprehensiveCities.find(city => 
+        city.name.toLowerCase() === 'appleton' && city.stateCode === 'WI'
+      );
+      console.error('🔍 APPLETON CHECK:', appletonExists ? 'FOUND' : 'NOT FOUND', appletonExists);
+      console.error('🔍 Total cities loaded:', comprehensiveCities.length);
+      console.error('🔍 First 5 cities:', comprehensiveCities.slice(0, 5).map(c => `${c.name}, ${c.stateCode}`));
+    }
+    
     return () => {
       console.log('🔧 CitySearch unmounting, variant:', variant);
     };
@@ -300,6 +311,8 @@ const CitySearch: React.FC<CitySearchProps> = ({
 
   // Handle direct search when Enter is pressed without selecting a suggestion
   const handleDirectSearch = async (query: string) => {
+    console.error('🚨🚨🚨 DIRECT SEARCH START - Query:', query);
+    
     // Always log for header variant
     if (variant === 'header') {
       console.warn('🔴 HEADER handleDirectSearch called with:', query);

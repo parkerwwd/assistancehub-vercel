@@ -18,8 +18,20 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
   const isMobile = useIsMobile();
 
   const handleCitySelect = (location: any) => {
+    console.error('🎯🎯🎯 Header handleCitySelect called with:', {
+      name: location?.name,
+      state: location?.state,
+      stateCode: location?.stateCode,
+      latitude: location?.latitude,
+      longitude: location?.longitude,
+      type: location?.type
+    });
+    
     if (onCitySelect) {
+      console.error('🎯 Passing location to parent onCitySelect');
       onCitySelect(location);
+    } else {
+      console.error('❌ No onCitySelect prop provided to Header!');
     }
   };
 
