@@ -3,6 +3,11 @@ import { USLocation } from "@/data/usLocations";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
+export interface PHAAgencyWithDistance extends PHAAgency {
+  _distance?: number;
+  _isExactMatch?: boolean;
+}
+
 export const getWaitlistColor = (status: string) => {
   switch (status) {
     case "Open": return "#10b981";
@@ -71,7 +76,7 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 /**
  * Enhanced state filtering that matches agencies by state name or abbreviation
  */
-const filterByStateName = (agencies: PHAAgency[], stateName: string): PHAAgency[] => {
+const filterByStateName = (agencies: PHAAgency[], stateName: string): PHAAgencyWithDistance[] => {
   const stateNameLower = stateName.toLowerCase();
   
   // Common state abbreviations mapping
@@ -111,7 +116,7 @@ const filterByStateName = (agencies: PHAAgency[], stateName: string): PHAAgency[
     }
     
     return false;
-  });
+  }) as PHAAgencyWithDistance[];
 };
 
 /**
@@ -123,7 +128,7 @@ const filterByStateName = (agencies: PHAAgency[], stateName: string): PHAAgency[
 export const filterPHAAgenciesByLocation = (
   agencies: PHAAgency[],
   selectedLocation: USLocation
-): PHAAgency[] => {
+): PHAAgencyWithDistance[] => {
   if (!agencies || agencies.length === 0) {
     return [];
   }
@@ -138,32 +143,59 @@ export const filterPHAAgenciesByLocation = (
   }
 
   if (selectedLocation.type === 'city') {
-    // For cities, show all agencies within 25 miles
-    const filteredAgencies = agencies.filter(agency => {
-      // Get agency coordinates using geocoded coordinates
-      let agencyLat = (agency as any).geocoded_latitude;
-      let agencyLng = (agency as any).geocoded_longitude;
+    // For cities, show all agencies within 25 miles, sorted by distance
+    const agenciesWithDistance = agencies
+      .map(agency => {
+        // Get agency coordinates using geocoded coordinates
+        let agencyLat = (agency as any).geocoded_latitude;
+        let agencyLng = (agency as any).geocoded_longitude;
+        
+        // Skip agencies without coordinates
+        if (!agencyLat || !agencyLng) {
+          console.log('⚠️ No coordinates for agency:', agency.name);
+          return null;
+        }
+        
+        // Calculate distance
+        const distance = calculateDistance(
+          selectedLocation.latitude,
+          selectedLocation.longitude,
+          agencyLat,
+          agencyLng
+        );
+        
+        // Check if it's within range
+        if (distance > 25) {
+          return null;
+        }
+        
+        // Check if agency name or address contains the exact city name
+        const cityNameLower = selectedLocation.name.toLowerCase();
+        const isExactMatch = 
+          agency.name?.toLowerCase().includes(cityNameLower) ||
+          agency.address?.toLowerCase().includes(cityNameLower);
+        
+        return { agency, distance, isExactMatch };
+      })
+      .filter(item => item !== null) as Array<{ agency: PHAAgency; distance: number; isExactMatch: boolean }>;
+
+    // Sort by: 1) Exact match first, 2) Distance (closest first)
+    agenciesWithDistance.sort((a, b) => {
+      // Prioritize exact matches
+      if (a.isExactMatch && !b.isExactMatch) return -1;
+      if (!a.isExactMatch && b.isExactMatch) return 1;
       
-      // Skip agencies without coordinates
-      if (!agencyLat || !agencyLng) {
-        console.log('⚠️ No coordinates for agency:', agency.name);
-        return false;
-      }
-      
-      // Calculate distance
-      const distance = calculateDistance(
-        selectedLocation.latitude,
-        selectedLocation.longitude,
-        agencyLat,
-        agencyLng
-      );
-      
-      const withinRange = distance <= 25;
-      if (withinRange) {
-        console.log('✅ Agency within 25 miles:', agency.name, `(${distance.toFixed(1)} miles)`);
-      }
-      
-      return withinRange;
+      // Then sort by distance
+      return a.distance - b.distance;
+    });
+
+    const filteredAgencies = agenciesWithDistance.map(item => {
+      console.log(`✅ ${item.isExactMatch ? '⭐' : '📍'} ${item.agency.name} - ${item.distance.toFixed(1)} miles`);
+      return {
+        ...item.agency,
+        _distance: item.distance,
+        _isExactMatch: item.isExactMatch
+      } as PHAAgencyWithDistance;
     });
 
     console.log('🔍 City filter (25 miles) - found agencies:', filteredAgencies.length, 'out of', agencies.length);
@@ -177,7 +209,7 @@ export const filterPHAAgenciesByLocation = (
 
     const filteredAgencies = agencies.filter(agency => {
       return searchTerms.some(term => matchesAgencyLocation(agency, term));
-    });
+    }) as PHAAgencyWithDistance[];
 
     console.log('🔍 County filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
     return filteredAgencies;
@@ -189,7 +221,7 @@ export const filterPHAAgenciesByLocation = (
 
   const filteredAgencies = agencies.filter(agency => {
     return searchTerms.some(term => matchesAgencyLocation(agency, term));
-  });
+  }) as PHAAgencyWithDistance[];
 
   console.log('🔍 Fallback filter - found agencies:', filteredAgencies.length, 'out of', agencies.length);
   return filteredAgencies;
@@ -201,7 +233,7 @@ export const filterPHAAgenciesByLocation = (
 export const filterPHAAgenciesByState = (
   agencies: PHAAgency[],
   stateName: string
-): PHAAgency[] => {
+): PHAAgencyWithDistance[] => {
   if (!agencies || agencies.length === 0 || !stateName) {
     return [];
   }

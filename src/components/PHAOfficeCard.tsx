@@ -2,14 +2,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
-import { MapPin, Heart, Phone, Building2 } from "lucide-react";
+import { MapPin, Heart, Phone, Building2, Navigation } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
+import type { PHAAgencyWithDistance } from "@/utils/mapUtils";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 interface PHAOfficeCardProps {
-  agency: PHAAgency;
+  agency: PHAAgency | PHAAgencyWithDistance;
   onOfficeClick?: (office: PHAAgency) => void;
 }
 
@@ -19,6 +20,10 @@ const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
   // Build full address using only the address field since city, state, zip don't exist in current schema
   const fullAddress = agency.address || 'Address not available';
   const phaType = getPHATypeFromData(agency);
+  
+  // Get distance if available
+  const distance = (agency as PHAAgencyWithDistance)._distance;
+  const isExactMatch = (agency as PHAAgencyWithDistance)._isExactMatch;
 
   const handleClick = () => {
     // Navigate to the dedicated PHA detail page
@@ -33,18 +38,35 @@ const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
       <div className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            {/* Office Name */}
-            <h4 className="font-bold text-gray-900 text-base sm:text-lg leading-tight mb-2 line-clamp-2">
-              {agency.name}
-            </h4>
+            {/* Office Name with exact match indicator */}
+            <div className="flex items-start gap-2 mb-2">
+              <h4 className="font-bold text-gray-900 text-base sm:text-lg leading-tight line-clamp-2">
+                {agency.name}
+              </h4>
+              {isExactMatch && (
+                <span className="flex-shrink-0 text-xs font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-full">
+                  ⭐ Match
+                </span>
+              )}
+            </div>
             
-            {/* Address */}
+            {/* Address with distance */}
             {fullAddress && (
               <div className="flex items-start gap-2 mb-3">
                 <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
-                  {fullAddress}
-                </p>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+                    {fullAddress}
+                  </p>
+                  {distance !== undefined && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <Navigation className="w-3 h-3 text-gray-400" />
+                      <span className="text-xs font-medium text-gray-500">
+                        {distance.toFixed(1)} miles away
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             
