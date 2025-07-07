@@ -120,9 +120,9 @@ export class ClusterManager {
         map.flyTo({
           center: [lng, lat],
           zoom: zoom,
-          duration: 800,
-          curve: 1.42,
-          easing: (t) => t * (2 - t)
+          duration: 300, // Much faster - 300ms
+          curve: 1.2, // Reduced curve for quicker animation
+          easing: (t) => t // Linear easing for snappy feel
         });
       }
     });

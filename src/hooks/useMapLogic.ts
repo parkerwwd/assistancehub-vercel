@@ -80,7 +80,7 @@ export const useMapLogic = () => {
       // Add location marker
       setTimeout(() => {
         mapRef.current?.setLocationMarker(location.latitude, location.longitude, locationData.name);
-      }, 600); // Reduced timeout to match faster animation
+      }, 200); // Reduced timeout to match faster animation
     }
   };
 

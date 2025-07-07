@@ -41,13 +41,13 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     flyTo: (center: [number, number], zoom: number, options?: any) => {
       console.log('🗺️ MapContainer.flyTo called with:', { center, zoom });
       if (map.current) {
-        // Use optimized defaults for smooth animations
+        // Use much faster defaults for snappy animations
         const flyToOptions = {
           center,
           zoom,
-          duration: 1200, // Faster default - 1.2 seconds
-          curve: 1.42, // Smooth curve
-          easing: (t: number) => t * (2 - t), // Ease-out animation for smooth deceleration
+          duration: 300, // Much faster - 300ms
+          curve: 1.2, // Slightly reduced curve for quicker animation
+          easing: (t: number) => t, // Linear easing for snappy feel
           essential: true,
           ...options // Allow override of defaults
         };

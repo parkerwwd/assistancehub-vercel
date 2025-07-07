@@ -52,9 +52,9 @@ export class OfficeMarkerManager extends BaseMarkerManager {
           zoom: 18,
           pitch: 0,
           bearing: 0,
-          duration: 1000, // Faster animation - 1 second
-          curve: 1.42, // Smooth curve
-          easing: (t) => t * (2 - t), // Ease-out animation for smooth deceleration
+          duration: 400, // Much faster - 400ms
+          curve: 1.2, // Reduced curve for quicker animation
+          easing: (t) => t, // Linear easing for snappy feel
           essential: true
         });
 
@@ -121,9 +121,9 @@ export class OfficeMarkerManager extends BaseMarkerManager {
         zoom: 4,
         pitch: 45,
         bearing: 0,
-        duration: 1200, // Faster animation - 1.2 seconds
-        curve: 1.42, // Smooth curve
-        easing: (t) => t * (2 - t) // Ease-out animation for smooth deceleration
+        duration: 500, // Much faster - 500ms
+        curve: 1.2, // Reduced curve for quicker animation
+        easing: (t) => t // Linear easing for snappy feel
       });
     }
   }
