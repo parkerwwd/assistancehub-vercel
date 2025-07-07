@@ -39,7 +39,6 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
   useImperativeHandle(ref, () => ({
     flyTo: (center: [number, number], zoom: number, options?: any) => {
-      console.log('🗺️ MapContainer.flyTo called with:', { center, zoom });
       if (map.current) {
         // Use much faster defaults for snappy animations
         const flyToOptions = {
@@ -82,31 +81,31 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
     // Setup map load events
     map.current.on('load', () => {
-      console.log('🗺️ Map loaded successfully! 🎉');
-      console.log('🗺️ Map container size:', mapContainer.current?.offsetWidth, 'x', mapContainer.current?.offsetHeight);
+      // Map loaded successfully
     });
 
-    map.current.on('style.load', () => {
-      console.log('🗺️ Map style loaded successfully');
+    map.current.on('styledata', () => {
+      // Map style loaded successfully
+    });
+
+    map.current.on('idle', () => {
+      // Map initialization complete with 3D features
     });
 
     // Add 3D controls and features
     Map3DControls.addControls(map.current);
     Map3DControls.setup3DFeatures(map.current);
 
-    console.log('✅ Map initialization complete with 3D features');
-
     return () => {
-      console.log('🧹 Cleaning up map...');
-      markerManager.current.cleanup();
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+      }
     };
   }, [mapboxToken, onTokenError, onBoundsChange]);
 
   // Update marker when selected office changes
   useEffect(() => {
     if (map.current?.loaded()) {
-      console.log('🔄 Selected office changed, updating 3D markers');
       markerManager.current.clearOfficeMarkers();
       
       if (selectedOffice) {
@@ -119,7 +118,6 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           );
         }, 100);
       } else {
-        console.log('🧹 Cleared all office markers - no office selected');
         markerManager.current.resetToOverviewStyle(map.current);
       }
     }
@@ -128,13 +126,11 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   // Handle location search flow: show found agencies OR just the location if no agencies found
   useEffect(() => {
     if (map.current?.loaded() && !selectedOffice) {
-      console.log('🔍 Location search flow - agencies:', phaAgencies?.length || 0, 'selectedLocation:', !!selectedLocation);
-      
       markerManager.current.handleLocationSearch(
-        map.current,
+        map.current, 
         phaAgencies || [],
         selectedLocation,
-        mapboxToken,
+        mapboxToken, 
         onOfficeSelect
       );
     } else if (map.current?.loaded() && selectedOffice) {

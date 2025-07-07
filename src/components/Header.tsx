@@ -17,20 +17,9 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  const handleCitySelectFromHeader = (location: USLocation) => {
-    console.log('🏙️ Header location selected:', location);
-    console.log('🏙️ Header onCitySelect callback exists:', !!onCitySelect);
-    console.log('🏙️ Header onCitySelect type:', typeof onCitySelect);
+  const handleCitySelect = (location: any) => {
     if (onCitySelect) {
-      console.log('🏙️ Header calling onCitySelect...');
-      try {
-        onCitySelect(location);
-        console.log('🏙️ Header onCitySelect called successfully');
-      } catch (error) {
-        console.error('🏙️ Header onCitySelect error:', error);
-      }
-    } else {
-      console.error('🏙️ Header onCitySelect callback is missing!');
+      onCitySelect(location);
     }
   };
 
@@ -57,13 +46,6 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                   src={logoImage} 
                   alt="JetWord AssistanceHub" 
                   className="h-10 sm:h-12 w-auto"
-                  onLoad={() => console.log('Logo loaded successfully from imported module')}
-                  onError={(e) => {
-                    console.error('Logo failed to load from imported module');
-                    // Fallback to a simple text logo
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement!.innerHTML = '<div style="color: #1d4ed8; font-weight: bold; font-size: 20px;">JetWord AssistanceHub</div>';
-                  }}
                 />
               </Link>
             </div>
@@ -107,7 +89,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
               <div className="hidden md:flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-2 min-w-80">
                 <Search className="w-4 h-4 text-gray-400" />
                 <CitySearch 
-                  onCitySelect={handleCitySelectFromHeader} 
+                  onCitySelect={handleCitySelect} 
                   placeholder="Search by city, state..."
                   variant="header"
                 />
@@ -144,7 +126,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
                 <div className="flex-1 relative touch-manipulation">
                   <CitySearch 
-                    onCitySelect={handleCitySelectFromHeader} 
+                    onCitySelect={handleCitySelect} 
                     placeholder="Search city, state, ZIP..."
                     variant="header"
                   />
@@ -221,7 +203,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                     <Search className="w-5 h-5 text-gray-400" />
                     <CitySearch 
                       onCitySelect={(location) => {
-                        handleCitySelectFromHeader(location);
+                        handleCitySelect(location);
                         setIsMobileMenuOpen(false);
                       }} 
                       placeholder="Search by city..."

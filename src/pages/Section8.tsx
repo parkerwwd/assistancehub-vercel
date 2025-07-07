@@ -13,8 +13,6 @@ import { comprehensiveCities } from "@/data/locations/cities";
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 const Section8 = () => {
-  console.log('Section8 component rendering...');
-  
   const location = useLocation();
   const searchLocation = location.state?.searchLocation;
   const searchQuery = location.state?.searchQuery;
@@ -46,16 +44,13 @@ const Section8 = () => {
   // Handle navigation from state page
   useEffect(() => {
     if (searchLocation && mapRef.current) {
-      console.log('🏛️ Received search location from state page:', searchLocation);
       handleCitySelect(searchLocation);
     }
   }, [searchLocation, handleCitySelect]);
-
+      
   // Handle search query from city buttons (e.g., "Los Angeles, CA")
   useEffect(() => {
     if (searchQuery && mapRef.current) {
-      console.log('🔍 Received search query from navigation:', searchQuery);
-      
       // Try to find a matching city in our database
       const matchingCity = comprehensiveCities.find(city => {
         const cityString = `${city.name}, ${city.stateCode}`;
@@ -64,21 +59,15 @@ const Section8 = () => {
       });
       
       if (matchingCity) {
-        console.log('✅ Found matching city:', matchingCity);
         handleCitySelect(matchingCity);
       } else {
-        console.log('⚠️ No exact match found for:', searchQuery, 'searching for partial matches...');
-        
         // Try partial match on city name
         const partialMatch = comprehensiveCities.find(city => 
           city.name.toLowerCase().includes(searchQuery.toLowerCase().split(',')[0].trim())
         );
         
         if (partialMatch) {
-          console.log('✅ Found partial match:', partialMatch);
           handleCitySelect(partialMatch);
-        } else {
-          console.log('❌ No city found matching:', searchQuery);
         }
       }
     }
@@ -89,7 +78,6 @@ const Section8 = () => {
     if (!searchLocation && !searchQuery) {
       const timer = setTimeout(() => {
         if (mapRef.current) {
-          console.log('🇺🇸 Initial page load - showing US map');
           resetToUSView();
         }
       }, 1000);
@@ -99,19 +87,12 @@ const Section8 = () => {
   }, [searchLocation, searchQuery]);
 
   const handleOfficeClick = (office: PHAAgency) => {
-    console.log('🎯 Office clicked from panel:', office.name);
-    
     // First select the office on the map (this will fly to it and show marker)
     setSelectedOffice(office);
   };
 
   const handleHeaderCitySelect = (location: any) => {
-    console.log('🏙️ Section8 received location selection from header:', location);
-    console.log('🏙️ Location type:', typeof location);
-    console.log('🏙️ Location details:', JSON.stringify(location, null, 2));
-    console.log('🏙️ Calling handleCitySelect...');
     handleCitySelect(location);
-    console.log('🏙️ handleCitySelect called successfully');
   };
 
   if (!mapboxToken) {

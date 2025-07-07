@@ -73,70 +73,38 @@ const calculateRealStatistics = (phaAgencies: any[]) => {
 const extractCityFromAddress = (address: string): string | null => {
   if (!address) return null;
   
-  console.log('🔍 Extracting city from address:', address);
-  
-  // Clean the address first
-  const cleanAddress = address.trim();
-  
-  // Try different patterns to extract city
-  const patterns = [
-    // Pattern 1: "Street, City, State ZIP" or "Street, City, State"
-    /^[^,]+,\s*([^,]+),\s*[A-Z]{2}(?:\s+\d{5})?/i,
-    
-    // Pattern 2: "City, State ZIP" (when no street)
-    /^([^,]+),\s*[A-Z]{2}(?:\s+\d{5})?/i,
-    
-    // Pattern 3: "Street City State ZIP" (no commas)
-    /\b([A-Za-z\s]+)\s+[A-Z]{2}\s+\d{5}/,
-    
-    // Pattern 4: Look for city before state abbreviation
-    /\b([A-Za-z\s]+?)\s+(?:FL|AL|GA|SC|NC|TN|MS|LA|AR|TX|OK|KS|MO|IA|MN|WI|IL|IN|OH|KY|WV|VA|MD|DE|PA|NJ|NY|CT|RI|MA|VT|NH|ME|ND|SD|NE|CO|WY|MT|ID|UT|AZ|NV|CA|OR|WA|AK|HI)\b/i
+  // Try different parsing strategies
+  const strategies = [
+    // Strategy 1: Look for pattern "City, State ZIP" or "City, State"  
+    /([A-Z][a-z\s]+),\s*([A-Z]{2})\s*\d*/,
+    // Strategy 2: Look for pattern with room/suite numbers
+    /(?:Room|Suite|Ste|#)\s*[\w\d-]+,?\s*([A-Z][a-z\s]+),\s*([A-Z]{2})/i,
+    // Strategy 3: Look for state abbreviation and grab preceding word(s)
+    /([A-Z][a-z\s]+)\s+([A-Z]{2})\s*\d*/,
+    // Strategy 4: More flexible city extraction
+    /,\s*([A-Z][a-z\s]+),?\s*([A-Z]{2})/
   ];
   
-  for (let i = 0; i < patterns.length; i++) {
-    const match = cleanAddress.match(patterns[i]);
-    if (match && match[1]) {
-      let cityName = match[1].trim();
-      
-      // Clean up the city name
-      cityName = cityName.replace(/^\d+\s*/, ''); // Remove leading numbers
-      cityName = cityName.replace(/\s*\d+$/, ''); // Remove trailing numbers
-      cityName = cityName.replace(/\s+/g, ' '); // Normalize spaces
-      cityName = cityName.trim();
-      
-      // Validate city name
-      if (cityName.length >= 2 && 
-          !/^\d+$/.test(cityName) && // Not just numbers
-          !/^[A-Z]{2}$/.test(cityName) && // Not state abbreviation
-          !cityName.toLowerCase().includes('po box')) { // Not PO Box
-        
-        console.log('✅ Extracted city:', cityName, 'using pattern', i + 1);
+  for (let i = 0; i < strategies.length; i++) {
+    const match = address.match(strategies[i]);
+    if (match) {
+      const cityName = match[1].trim();
+      // Validate it's a reasonable city name (not just a single letter or number)
+      if (cityName.length > 2 && /^[A-Za-z\s]+$/.test(cityName)) {
         return cityName;
       }
     }
   }
   
-  // If no pattern works, try to extract meaningful location info
-  // Look for recognizable city words
-  const cityWords = cleanAddress.split(/[,\s]+/).filter(word => {
-    const w = word.trim();
-    return w.length > 2 && 
-           !/^\d+$/.test(w) && 
-           !/^[A-Z]{2}$/.test(w) &&
-           !w.toLowerCase().includes('po') &&
-           !w.toLowerCase().includes('box') &&
-           !w.toLowerCase().includes('suite') &&
-           !w.toLowerCase().includes('apt');
-  });
-  
-  if (cityWords.length > 0) {
-    // Take the first meaningful word as potential city
-    const potentialCity = cityWords[0];
-    console.log('🎯 Using fallback city extraction:', potentialCity);
-    return potentialCity;
+  // Fallback: try to extract from the end of the address
+  const parts = address.split(',').map(part => part.trim());
+  if (parts.length >= 2) {
+    const potentialCity = parts[parts.length - 2];
+    if (potentialCity && potentialCity.length > 2 && /^[A-Za-z\s]+$/.test(potentialCity)) {
+      return potentialCity;
+    }
   }
   
-  console.log('❌ Could not extract city from:', address);
   return null;
 };
 
@@ -145,8 +113,6 @@ export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string)
   if (!phaAgencies || phaAgencies.length === 0) {
     return [];
   }
-
-  console.log('🏙️ Generating cities from', phaAgencies.length, 'PHA agencies');
 
   // Group agencies by city
   const cityGroups = new Map<string, any[]>();
@@ -169,25 +135,19 @@ export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string)
       
       if (nameWords.length > 0) {
         cityName = nameWords[0];
-        console.log('🏢 Using agency name for city:', cityName, 'from agency:', agency.name);
       } else {
         // Final fallback
         cityName = 'Other Locations';
-        console.log('🔄 Using fallback location for agency:', agency.name);
       }
     }
     
     processedAgencies++;
-    console.log(`🏙️ [${processedAgencies}/${phaAgencies.length}] Assigned city:`, cityName, 'for agency:', agency.name);
     
     if (!cityGroups.has(cityName)) {
       cityGroups.set(cityName, []);
     }
     cityGroups.get(cityName)!.push(agency);
   });
-
-  console.log('🏙️ Final city groups:', Array.from(cityGroups.keys()));
-  console.log('🏙️ Processed agencies:', processedAgencies, 'out of', phaAgencies.length);
 
   // Convert to array and calculate statistics for each city
   const cities = Array.from(cityGroups.entries())
@@ -218,9 +178,6 @@ export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string)
 
   // Verify totals match
   const totalOfficesInCities = cities.reduce((sum, city) => sum + parseInt(city.properties), 0);
-  console.log('🏙️ Total PHA agencies:', phaAgencies.length);
-  console.log('🏙️ Total offices in cities:', totalOfficesInCities);
-  console.log('🏙️ Final cities data:', cities);
   
   if (totalOfficesInCities !== phaAgencies.length) {
     console.warn('⚠️ Mismatch: Total agencies vs city offices', {
@@ -228,8 +185,6 @@ export const generateCitiesFromPHAData = (phaAgencies: any[], stateName: string)
       totalInCities: totalOfficesInCities,
       difference: phaAgencies.length - totalOfficesInCities
     });
-  } else {
-    console.log('✅ Perfect match: All agencies accounted for in cities');
   }
   
   return cities;
