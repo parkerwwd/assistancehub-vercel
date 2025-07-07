@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CitySearch from './CitySearch';
 import { USLocation } from "@/data/usLocations";
-import { LOGO_DATA_URL } from "@/assets/logoData";
 
 interface HeaderProps {
   onCitySelect?: (location: USLocation) => void;
@@ -44,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
             <div className="flex items-center">
               <Link to="/" className="hover:opacity-90 transition-opacity">
                 <img 
-                  src={LOGO_DATA_URL} 
+                  src="/lovable-uploads/logo.png" 
                   alt="JetWord AssistanceHub" 
                   className="h-10 sm:h-12 w-auto"
                 />
