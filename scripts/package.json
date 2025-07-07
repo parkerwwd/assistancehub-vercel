@@ -1,19 +1,21 @@
 {
-  "name": "scripts",
+  "name": "supabase-upload-script",
   "version": "1.0.0",
-  "description": "Scripts for managing PHA data",
-  "main": "index.js",
   "type": "module",
+  "description": "Script to upload CSV data directly to Supabase",
+  "main": "upload-to-supabase.js",
   "scripts": {
     "upload": "node upload-to-supabase.js",
-    "check-coordinates": "node check-coordinates.js"
+    "install-deps": "npm install"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.47.10",
-    "csv-parser": "^3.0.0",
-    "dotenv": "^16.4.7"
-  }
+    "@supabase/supabase-js": "^2.45.4",
+    "csv-parse": "^5.5.6",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "author": "AssistanceHub",
+  "license": "MIT"
 } 
