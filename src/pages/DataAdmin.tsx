@@ -1,18 +1,23 @@
 
 import React from 'react';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PHADataManager from "@/components/PHADataManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Database, FileText, Users, Activity, LogOut, TrendingUp, Shield, Zap } from "lucide-react";
+import { Database, FileText, Users, Activity, LogOut, TrendingUp, Shield, Zap, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useDataAdminStats } from "@/hooks/useDataAdminStats";
+import { geocodeAllPHAs } from "@/services/phaGeocodeService";
+import { useState } from "react";
 
 const DataAdmin = () => {
+  const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const { toast } = useToast();
-  const { totalDataSources, filesProcessed, recordsManaged, lastActivity, isLoading } = useDataAdminStats();
+  const { totalDataSources, filesProcessed, recordsManaged, phasWithoutCoordinates, lastActivity, isLoading } = useDataAdminStats();
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodeProgress, setGeocodeProgress] = useState<{ current: number; total: number } | null>(null);
 
   const handleSignOut = async () => {
     try {
@@ -27,6 +32,50 @@ const DataAdmin = () => {
         description: "Failed to sign out. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleGeocode = async () => {
+    // Get Mapbox token
+    const token = localStorage.getItem('mapbox_token');
+    if (!token) {
+      toast({
+        title: "Error",
+        description: "Please set a Mapbox token first on the main map page",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsGeocoding(true);
+    setGeocodeProgress(null);
+    
+    try {
+      const result = await geocodeAllPHAs(token, (current, total) => {
+        setGeocodeProgress({ current, total });
+      });
+      
+      if (result.success) {
+        toast({
+          title: "Geocoding Complete",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Geocoding Failed",
+          description: result.error || "Unknown error occurred",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to geocode PHAs",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeocoding(false);
+      setGeocodeProgress(null);
     }
   };
 
@@ -156,6 +205,57 @@ const DataAdmin = () => {
                 <Activity className="h-2 w-2 sm:h-3 sm:w-3" />
                 PHA data update
               </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Geocoding Section */}
+        <div className="mt-8">
+          <Card className="shadow-lg border-0">
+            <CardHeader className="bg-gradient-to-r from-purple-900 to-indigo-800 text-white rounded-t-xl p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl">
+                <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />
+                Geocoding Tools
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <p className="text-sm text-gray-600 mb-4">
+                Geocode PHA offices that are missing coordinates to enable location-based search.
+              </p>
+              
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={handleGeocode}
+                  disabled={isGeocoding}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {isGeocoding ? (
+                    <>
+                      <Activity className="mr-2 h-4 w-4 animate-spin" />
+                      Geocoding...
+                    </>
+                  ) : (
+                    <>
+                      <MapPin className="mr-2 h-4 w-4" />
+                      Geocode Missing Coordinates
+                    </>
+                  )}
+                </Button>
+                
+                {geocodeProgress && (
+                  <span className="text-sm text-gray-600">
+                    Progress: {geocodeProgress.current} / {geocodeProgress.total}
+                  </span>
+                )}
+              </div>
+              
+              {!isLoading && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    PHAs without coordinates: {phasWithoutCoordinates || 0}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

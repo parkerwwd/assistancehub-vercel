@@ -75,30 +75,43 @@ export const geocodePHAs = async (phas: PHAAgency[]): Promise<GeocodedPHA[]> => 
     let cityName = '';
     let stateCode = '';
     
-    if (pha.address) {
-      // Try to parse city and state from address (format: "123 Main St, City, ST 12345")
-      const addressParts = pha.address.split(',');
-      if (addressParts.length >= 3) {
-        // Extract city (second to last part)
-        cityName = addressParts[addressParts.length - 2]?.trim().toLowerCase() || '';
-        
-        // Extract state from last part (format: "ST 12345")
-        const stateZipPart = addressParts[addressParts.length - 1]?.trim() || '';
-        const stateMatch = stateZipPart.match(/^([A-Z]{2})\s+\d{5}/);
-        if (stateMatch) {
-          stateCode = stateMatch[1].toLowerCase();
-        }
-      }
-    }
-    
-    // If we have a city field, use it (in case database has it)
+    // First check if we have city and state fields directly
     if ((pha as any).city) {
       cityName = (pha as any).city.toLowerCase().trim();
     }
-    
-    // If we have a state field, use it (in case database has it)
     if ((pha as any).state) {
       stateCode = (pha as any).state.toLowerCase().trim();
+    }
+    
+    // If not, parse from address
+    if (!cityName && pha.address) {
+      // Clean up "nan" placeholder in addresses
+      let cleanAddress = pha.address;
+      if (cleanAddress.toLowerCase().startsWith('nan,')) {
+        cleanAddress = cleanAddress.substring(4).trim();
+      }
+      
+      // Parse address in format: "Street, City, State, Zip" or "City, State, Zip"
+      const addressParts = cleanAddress.split(',').map((part: string) => part.trim());
+      
+      if (addressParts.length >= 2) {
+        // Find the state/zip part (format: "ST 12345")
+        for (let i = addressParts.length - 1; i >= 0; i--) {
+          const part = addressParts[i];
+          const stateZipMatch = part.match(/^([A-Z]{2})\s+\d{5}(-\d{4})?$/);
+          
+          if (stateZipMatch) {
+            if (!stateCode) {
+              stateCode = stateZipMatch[1].toLowerCase();
+            }
+            // City is the part before state/zip
+            if (!cityName && i > 0) {
+              cityName = addressParts[i - 1].toLowerCase().trim();
+            }
+            break;
+          }
+        }
+      }
     }
     
     if (cityName) {

@@ -11,75 +11,67 @@ interface DataAdminStats {
 }
 
 export const useDataAdminStats = () => {
-  const [stats, setStats] = useState<DataAdminStats>({
-    totalDataSources: 0,
-    filesProcessed: 0,
-    recordsManaged: 0,
-    lastActivity: '',
-    isLoading: true
-  });
+  const [totalDataSources, setTotalDataSources] = useState(0);
+  const [filesProcessed, setFilesProcessed] = useState(0);
+  const [recordsManaged, setRecordsManaged] = useState(0);
+  const [phasWithoutCoordinates, setPhasWithoutCoordinates] = useState(0);
+  const [lastActivity, setLastActivity] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
+      setIsLoading(true);
       try {
-        // Get total PHA records
+        // Fetch files uploaded
+        const { count: filesCount } = await supabase
+          .from('pha_audit_log')
+          .select('*', { count: 'exact', head: true })
+          .eq('table_name', 'pha_agencies')
+          .eq('action', 'INSERT');
+
+        // Fetch total PHA records
         const { count: phaCount } = await supabase
           .from('pha_agencies')
           .select('*', { count: 'exact', head: true });
 
-        // Get recent audit log entries to determine files processed and last activity
-        const { data: auditLogs } = await supabase
+        // Fetch PHAs without coordinates
+        const { count: noCoordCount } = await supabase
+          .from('pha_agencies')
+          .select('*', { count: 'exact', head: true })
+          .or('latitude.is.null,longitude.is.null');
+
+        // Fetch last activity
+        const { data: lastActivityData } = await supabase
           .from('pha_audit_log')
-          .select('*')
+          .select('created_at')
           .order('created_at', { ascending: false })
-          .limit(100);
+          .limit(1)
+          .single();
 
-        // Calculate files processed (count of INSERT actions this month)
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
+        setFilesProcessed(filesCount || 0);
+        setRecordsManaged(phaCount || 0);
+        setPhasWithoutCoordinates(noCoordCount || 0);
+        setTotalDataSources(1); // We have one data source - the CSV upload
         
-        const filesProcessedThisMonth = auditLogs?.filter(log => {
-          const logDate = new Date(log.created_at);
-          return log.action === 'INSERT' && 
-                 logDate.getMonth() === currentMonth && 
-                 logDate.getFullYear() === currentYear;
-        }).length || 0;
-
-        // Get last activity
-        const lastActivityLog = auditLogs?.[0];
-        let lastActivity = 'No recent activity';
-        
-        if (lastActivityLog) {
-          const activityDate = new Date(lastActivityLog.created_at);
-          const now = new Date();
-          const diffInHours = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60));
-          
-          if (diffInHours < 1) {
-            lastActivity = 'Just now';
-          } else if (diffInHours < 24) {
-            lastActivity = `${diffInHours}h ago`;
-          } else {
-            const diffInDays = Math.floor(diffInHours / 24);
-            lastActivity = `${diffInDays}d ago`;
-          }
+        if (lastActivityData?.created_at) {
+          setLastActivity(new Date(lastActivityData.created_at).toLocaleString());
         }
-
-        setStats({
-          totalDataSources: 1, // Currently only PHA data source is active
-          filesProcessed: filesProcessedThisMonth,
-          recordsManaged: phaCount || 0,
-          lastActivity,
-          isLoading: false
-        });
-
       } catch (error) {
-        console.error('Error fetching data admin stats:', error);
-        setStats(prev => ({ ...prev, isLoading: false }));
+        console.error('Error fetching admin stats:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchStats();
   }, []);
 
-  return stats;
+  return {
+    totalDataSources,
+    filesProcessed,
+    recordsManaged,
+    phasWithoutCoordinates,
+    lastActivity,
+    isLoading
+  };
 };
