@@ -15,10 +15,7 @@ const FIELD_MAPPINGS: { [key: string]: string } = {
   'FULL_ADDRESS': 'address',
   'ADDRESS': 'address',
   'MAILING_ADDRESS': 'address',
-  'CITY': 'city',
-  'STATE': 'state',
-  'ZIP': 'zip',
-  'ZIP_CODE': 'zip',
+  // Remove city, state, zip mappings since they don't exist in the CSV
   'HA_PHN_NUM': 'phone',
   'PHONE': 'phone',
   'PHONE_NUMBER': 'phone',
@@ -90,17 +87,12 @@ export const processPHARecord = (record: any, fieldMappings?: FieldMapping[]) =>
     
     // Only include columns that have explicit mappings and are valid
     if (dbField && VALID_DB_COLUMNS.includes(dbField) && value && String(value).trim()) {
-      // Special handling for state field to standardize to 2-letter abbreviation
-      if (dbField === 'state') {
-        mappedRow[dbField] = standardizeState(String(value));
-      } else {
-        mappedRow[dbField] = sanitizeInput(String(value));
-      }
+      mappedRow[dbField] = sanitizeInput(String(value));
     }
   }
 
-  // If we have a full address but no city/state/zip, try to parse them
-  if (mappedRow.address && (!mappedRow.city || !mappedRow.state || !mappedRow.zip)) {
+  // Always parse city/state/zip from the address since they don't exist as separate fields in the CSV
+  if (mappedRow.address) {
     console.log('🏙️ Parsing city/state/zip from address:', mappedRow.address);
     
     // Clean up "nan" placeholder in addresses
@@ -116,9 +108,17 @@ export const processPHARecord = (record: any, fieldMappings?: FieldMapping[]) =>
       let cityIndex = -1;
       let stateZipIndex = -1;
       
-      // Find the state/zip part (format: "ST 12345")
+      // Find the state/zip part (format: "ST 12345" or just "ST")
       for (let i = addressParts.length - 1; i >= 0; i--) {
-        if (addressParts[i].match(/^[A-Z]{2}\s+\d{5}(-\d{4})?$/)) {
+        const part = addressParts[i];
+        // Check for state + zip format
+        if (part.match(/^[A-Z]{2}\s+\d{5}(-\d{4})?$/)) {
+          stateZipIndex = i;
+          cityIndex = i - 1;
+          break;
+        }
+        // Check for just state code at the end (in case zip is missing)
+        else if (i === addressParts.length - 1 && part.match(/^[A-Z]{2}$/)) {
           stateZipIndex = i;
           cityIndex = i - 1;
           break;
@@ -126,21 +126,35 @@ export const processPHARecord = (record: any, fieldMappings?: FieldMapping[]) =>
       }
       
       // Extract city
-      if (!mappedRow.city && cityIndex >= 0 && cityIndex < addressParts.length) {
+      if (cityIndex >= 0 && cityIndex < addressParts.length) {
         mappedRow.city = addressParts[cityIndex];
       }
       
       // Extract state and zip
       if (stateZipIndex >= 0) {
         const stateZipPart = addressParts[stateZipIndex];
-        const stateZipMatch = stateZipPart.match(/^([A-Z]{2})\s+(\d{5}(-\d{4})?)$/);
         
+        // Try to match state + zip
+        const stateZipMatch = stateZipPart.match(/^([A-Z]{2})\s+(\d{5}(-\d{4})?)$/);
         if (stateZipMatch) {
-          if (!mappedRow.state) {
-            mappedRow.state = stateZipMatch[1];
+          mappedRow.state = standardizeState(stateZipMatch[1]);
+          mappedRow.zip = stateZipMatch[2];
+        } else {
+          // Just state code
+          const stateMatch = stateZipPart.match(/^([A-Z]{2})$/);
+          if (stateMatch) {
+            mappedRow.state = standardizeState(stateMatch[1]);
           }
-          if (!mappedRow.zip) {
-            mappedRow.zip = stateZipMatch[2];
+        }
+      }
+      
+      // If we still don't have a state, check if any part contains a full state name
+      if (!mappedRow.state) {
+        for (const part of addressParts) {
+          const standardized = standardizeState(part);
+          if (standardized && standardized.length === 2) {
+            mappedRow.state = standardized;
+            break;
           }
         }
       }
