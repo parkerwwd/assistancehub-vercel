@@ -32,4 +32,9 @@ export class AgencyMarkerManager extends BaseMarkerManager {
 
     console.log('✅ Added', this.getMarkerCount(), 'agency markers to map');
   }
+
+  // Public method to add a single marker
+  addSingleMarker(marker: mapboxgl.Marker): void {
+    this.addMarker(marker);
+  }
 }

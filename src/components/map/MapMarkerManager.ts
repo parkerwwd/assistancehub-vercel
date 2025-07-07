@@ -38,10 +38,10 @@ export class MapMarkerManager {
     this.clearAllAgencyMarkers();
     this.clearLocationMarker();
 
-    // If we have agencies, display them with clustering
+    // If we have agencies, display them WITHOUT clustering (show all pins)
     if (agencies && agencies.length > 0) {
-      console.log('🏢 Displaying', agencies.length, 'PHAs with clustering');
-      this.updateClusters(map, agencies, onOfficeSelect);
+      console.log('🏢 Displaying', agencies.length, 'PHAs as individual pins');
+      this.displayAllPHAsAsIndividualPins(map, agencies, onOfficeSelect);
       return;
     }
 
@@ -50,6 +50,100 @@ export class MapMarkerManager {
       console.log('📍 No PHAs found, showing location marker for:', selectedLocation.name);
       this.setLocationMarker(map, selectedLocation.lat, selectedLocation.lng, selectedLocation.name, mapboxToken);
     }
+  }
+
+  // New method to display all PHAs as individual pins without clustering
+  displayAllPHAsAsIndividualPins(
+    map: mapboxgl.Map, 
+    agencies: PHAAgency[], 
+    onOfficeSelect: (office: PHAAgency) => void
+  ): void {
+    // Clear all markers first
+    this.clearAllAgencyMarkers();
+    
+    console.log(`📍 Displaying ${agencies.length} PHAs as individual pins`);
+    
+    let successCount = 0;
+    let skipCount = 0;
+    
+    agencies.forEach(agency => {
+      // Check database coordinates first, then geocoded ones
+      const lat = agency.latitude || (agency as any).geocoded_latitude;
+      const lng = agency.longitude || (agency as any).geocoded_longitude;
+      
+      if (!lat || !lng) {
+        console.warn(`⚠️ No coordinates for PHA: ${agency.name} (${agency.city}, ${agency.state})`);
+        skipCount++;
+        return;
+      }
+      
+      try {
+        // Determine marker color based on program type
+        let markerColor = '#10b981'; // Default green
+        const programType = agency.program_type?.toLowerCase() || '';
+        
+        if (programType.includes('section 8')) {
+          markerColor = '#3b82f6'; // Blue for Section 8
+        } else if (programType.includes('combined')) {
+          markerColor = '#a855f7'; // Purple for Combined
+        } else if (programType.includes('low-rent')) {
+          markerColor = '#10b981'; // Green for Low-Rent
+        }
+        
+        // Create marker with custom styling
+        const marker = new mapboxgl.Marker({
+          color: markerColor,
+          scale: 0.8 // Slightly smaller for many pins
+        })
+        .setLngLat([lng, lat])
+        .setPopup(
+          new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`
+              <div style="padding: 12px; max-width: 250px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${agency.name}</h3>
+                ${agency.address ? `<p style="margin: 0 0 4px 0; font-size: 14px; color: #6b7280;">${agency.address}</p>` : ''}
+                ${agency.phone ? `<p style="margin: 0; font-size: 14px; color: #6b7280;">📞 ${agency.phone}</p>` : ''}
+                ${agency.program_type ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: ${markerColor}; font-weight: 500;">🏢 ${agency.program_type}</p>` : ''}
+                <button 
+                  onclick="window.postMessage({ type: 'selectOffice', officeId: '${agency.id}' }, '*')"
+                  style="margin-top: 8px; padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
+                >
+                  View Details
+                </button>
+              </div>
+            `)
+        );
+
+        // Add click handler
+        marker.getElement().addEventListener('click', () => {
+          onOfficeSelect(agency);
+        });
+
+        // Enhanced styling for the marker element
+        const element = marker.getElement();
+        element.style.cursor = 'pointer';
+        element.style.transition = 'all 0.2s ease';
+        
+        element.addEventListener('mouseenter', () => {
+          element.style.transform = 'scale(1.2)';
+          element.style.zIndex = '1000';
+        });
+        element.addEventListener('mouseleave', () => {
+          element.style.transform = 'scale(1)';
+          element.style.zIndex = 'auto';
+        });
+
+        marker.addTo(map);
+        this.agencyManager.addSingleMarker(marker);
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to create marker for ${agency.name}:`, error);
+        skipCount++;
+      }
+    });
+    
+    console.log(`✅ Successfully displayed ${successCount} PHAs as individual pins`);
+    console.log(`❌ Skipped ${skipCount} PHAs due to missing coordinates or errors`);
   }
 
   // Update clusters when map moves or zoom changes
