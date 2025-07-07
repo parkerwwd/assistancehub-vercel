@@ -41,13 +41,19 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
 }) => {
   // Debug logging
   React.useEffect(() => {
-    console.warn('📊 OfficeDetailsPanel received props:');
-    console.warn('📊 phaAgencies count:', phaAgencies.length);
-    console.warn('📊 filteredLocation:', filteredLocation);
-    console.warn('📊 hasFilter:', hasFilter);
-    console.warn('📊 totalCount:', totalCount);
+    console.error('📊📊📊 OfficeDetailsPanel props update:', {
+      timestamp: new Date().toISOString(),
+      filteredLocationName: filteredLocation?.name || 'null',
+      phaAgenciesCount: phaAgencies.length,
+      hasFilter: hasFilter
+    });
+    
+    // Show first agency to verify we have the right data
     if (phaAgencies.length > 0) {
-      console.warn('📊 First agency:', phaAgencies[0].name, phaAgencies[0].address);
+      console.error('📊 First agency shown:', {
+        name: phaAgencies[0].name,
+        address: phaAgencies[0].address
+      });
     }
   }, [phaAgencies, filteredLocation, hasFilter, totalCount]);
   

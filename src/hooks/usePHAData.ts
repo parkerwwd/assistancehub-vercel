@@ -19,6 +19,11 @@ export const usePHAData = () => {
   const [totalCount, setTotalCount] = useState(0);
   const itemsPerPage = 20;
 
+  // Debug filteredLocation changes
+  useEffect(() => {
+    console.error('🔴 filteredLocation STATE CHANGED TO:', filteredLocation);
+  }, [filteredLocation]);
+
   const handleFetchAllPHAData = async () => {
     try {
       setLoading(true);
@@ -69,8 +74,11 @@ export const usePHAData = () => {
   };
 
   const applyLocationFilter = (location: USLocation | null) => {
-    console.warn('🎯 applyLocationFilter called with:', location);
-    console.warn('🎯 Current allPHAAgencies count:', allPHAAgencies.length);
+    console.error('🎯🎯🎯 applyLocationFilter START:', {
+      timestamp: new Date().toISOString(),
+      newLocation: location?.name || 'null',
+      currentFilteredLocation: filteredLocation?.name || 'null'
+    });
     
     setFilteredLocation(location);
     setCurrentPage(1); // Reset to first page when filtering
@@ -78,7 +86,7 @@ export const usePHAData = () => {
     // Update displayed agencies with new filter
     updateDisplayedAgencies(allPHAAgencies, location, 1);
     
-    console.warn('🎯 After filter - filteredAgencies count:', filteredAgencies.length);
+    console.error('🎯🎯🎯 applyLocationFilter END');
   };
 
   const clearLocationFilter = () => {
