@@ -14,9 +14,9 @@ export class ClusterManager {
   
   constructor() {
     this.cluster = new Supercluster({
-      radius: 60, // Cluster radius in pixels
-      maxZoom: 14, // Max zoom to cluster points on
-      minPoints: 2 // Minimum points to form a cluster
+      radius: 40, // Reduced from 60 - cluster radius in pixels
+      maxZoom: 16, // Increased from 14 - show individual pins at higher zoom levels
+      minPoints: 4 // Increased from 2 - need at least 4 PHAs to form a cluster
     });
   }
 
@@ -28,11 +28,20 @@ export class ClusterManager {
     // Clear existing markers
     this.clearMarkers();
 
+    // Log total agencies
+    console.log(`📍 Processing ${agencies.length} PHAs for map display`);
+
     // Convert agencies to GeoJSON features
     const features: GeoJSON.Feature<GeoJSON.Point, AgencyProperties>[] = agencies
       .filter(agency => {
-        const lat = (agency as any).geocoded_latitude;
-        const lng = (agency as any).geocoded_longitude;
+        // Check database coordinates first, then geocoded ones
+        const lat = agency.latitude || (agency as any).geocoded_latitude;
+        const lng = agency.longitude || (agency as any).geocoded_longitude;
+        
+        if (!lat || !lng) {
+          console.warn(`⚠️ No coordinates for PHA: ${agency.name} (${agency.city}, ${agency.state})`);
+        }
+        
         return lat && lng;
       })
       .map(agency => ({
@@ -41,11 +50,14 @@ export class ClusterManager {
         geometry: {
           type: 'Point' as const,
           coordinates: [
-            (agency as any).geocoded_longitude,
-            (agency as any).geocoded_latitude
+            agency.longitude || (agency as any).geocoded_longitude,
+            agency.latitude || (agency as any).geocoded_latitude
           ]
         }
       }));
+
+    console.log(`✅ ${features.length} PHAs have valid coordinates and will be displayed`);
+    console.log(`❌ ${agencies.length - features.length} PHAs missing coordinates`);
 
     // Load features into cluster
     this.cluster.load(features);
@@ -141,10 +153,22 @@ export class ClusterManager {
     agency: PHAAgency,
     onOfficeSelect: (office: PHAAgency) => void
   ): void {
+    // Determine marker color based on program type
+    let markerColor = '#10b981'; // Default green
+    const programType = agency.program_type?.toLowerCase() || '';
+    
+    if (programType.includes('section 8')) {
+      markerColor = '#3b82f6'; // Blue for Section 8
+    } else if (programType.includes('combined')) {
+      markerColor = '#a855f7'; // Purple for Combined
+    } else if (programType.includes('low-rent')) {
+      markerColor = '#10b981'; // Green for Low-Rent
+    }
+    
     // Create marker with custom styling
     const marker = new mapboxgl.Marker({
-      color: '#10b981',
-      scale: 0.8
+      color: markerColor,
+      scale: 0.9 // Slightly larger than before
     })
     .setLngLat([lng, lat])
     .setPopup(
@@ -154,6 +178,7 @@ export class ClusterManager {
             <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${agency.name}</h3>
             ${agency.address ? `<p style="margin: 0 0 4px 0; font-size: 14px; color: #6b7280;">${agency.address}</p>` : ''}
             ${agency.phone ? `<p style="margin: 0; font-size: 14px; color: #6b7280;">📞 ${agency.phone}</p>` : ''}
+            ${agency.program_type ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: ${markerColor}; font-weight: 500;">🏢 ${agency.program_type}</p>` : ''}
             <button 
               onclick="window.postMessage({ type: 'selectOffice', officeId: '${agency.id}' }, '*')"
               style="margin-top: 8px; padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
@@ -169,16 +194,35 @@ export class ClusterManager {
       onOfficeSelect(agency);
     });
 
-    // Style the marker element
+    // Enhanced styling for the marker element
     const element = marker.getElement();
     element.style.cursor = 'pointer';
     element.style.transition = 'all 0.2s ease';
     
+    // Add a pulsing effect to draw attention
+    element.style.animation = 'pulse 2s ease-in-out infinite';
+    
+    // Create the pulse animation if it doesn't exist
+    if (!document.querySelector('#marker-pulse-animation')) {
+      const style = document.createElement('style');
+      style.id = 'marker-pulse-animation';
+      style.textContent = `
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+          70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
     element.addEventListener('mouseenter', () => {
-      element.style.transform = 'scale(1.1)';
+      element.style.transform = 'scale(1.2)';
+      element.style.animation = 'none';
     });
     element.addEventListener('mouseleave', () => {
       element.style.transform = 'scale(1)';
+      element.style.animation = 'pulse 2s ease-in-out infinite';
     });
 
     marker.addTo(map);
