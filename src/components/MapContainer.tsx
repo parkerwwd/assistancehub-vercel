@@ -41,6 +41,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   useImperativeHandle(ref, () => ({
     flyTo: (center: [number, number], zoom: number, options?: any) => {
       if (map.current) {
+        console.log('🚀 Flying to:', center, 'zoom:', zoom);
         // Use much faster defaults for snappy animations
         const flyToOptions = {
           center,
@@ -62,6 +63,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     },
     setLocationMarker: (lat: number, lng: number, name: string, showHoverCard: boolean = true) => {
       if (!map.current) return;
+      console.log('📍 setLocationMarker called with:', { lat, lng, name });
       markerManager.current.setLocationMarker(map.current, lat, lng, name, mapboxToken, showHoverCard);
     }
   }));
@@ -131,6 +133,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   const applyLocationRestrictions = (lat: number, lng: number, radiusMiles: number = 50) => {
     if (!map.current) return;
 
+    console.log('🔒 Applying location restrictions - Center:', { lat, lng }, 'Radius:', radiusMiles, 'miles');
+
     // Calculate bounds for the restricted area
     // More accurate calculation accounting for latitude
     const latRadians = lat * Math.PI / 180;
@@ -148,6 +152,11 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       [lng + (lngDegrees * padding), lat + (latDegrees * padding)]  // Northeast
     );
 
+    console.log('📐 Calculated bounds:', {
+      sw: [lng - (lngDegrees * padding), lat - (latDegrees * padding)],
+      ne: [lng + (lngDegrees * padding), lat + (latDegrees * padding)]
+    });
+
     // Set max bounds to restrict panning
     map.current.setMaxBounds(bounds);
     
@@ -157,7 +166,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     map.current.setMaxZoom(18);  // Can zoom in to street level
     
     hasLocationRestrictions.current = true;
-    console.log('🔒 Applied location restrictions for:', lat, lng, 'Radius:', radiusMiles, 'miles');
+    console.log('✅ Location restrictions applied successfully');
   };
 
   // Remove all restrictions
@@ -212,8 +221,10 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           mapboxToken
         );
         
-        // Apply zoom and bounds restrictions
-        applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
+        // Apply zoom and bounds restrictions after a delay to let the map fly to location first
+        setTimeout(() => {
+          applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
+        }, 500); // Wait for fly animation to complete
         
       } else if (!selectedLocation) {
         // No location selected - clear everything and remove restrictions
@@ -222,6 +233,15 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         markerManager.current.clearLocationMarker();
         removeLocationRestrictions();
         lastPhaAgenciesRef.current = [];
+        
+        // Reset map to US view when clearing search
+        if (map.current) {
+          map.current.flyTo({
+            center: [-95.7129, 37.0902],
+            zoom: 4,
+            duration: 300
+          });
+        }
       }
     } else if (map.current?.loaded() && selectedOffice) {
       // Clear location search markers when an office is selected
