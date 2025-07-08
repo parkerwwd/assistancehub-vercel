@@ -369,6 +369,15 @@ export const useUnifiedSearch = (options: UseUnifiedSearchOptions = {}): UseUnif
       selectedResult = result;
     }
 
+    console.log('🎯 useUnifiedSearch.selectResult - Selected:', {
+      name: selectedResult.name,
+      type: selectedResult.type,
+      coordinates: [selectedResult.longitude, selectedResult.latitude],
+      state: selectedResult.state,
+      stateCode: selectedResult.stateCode,
+      resultType: selectedResult.resultType
+    });
+
     // Create location object
     const location: USLocation = {
       name: selectedResult.name,
@@ -378,6 +387,8 @@ export const useUnifiedSearch = (options: UseUnifiedSearchOptions = {}): UseUnif
       latitude: selectedResult.latitude,
       longitude: selectedResult.longitude
     };
+
+    console.log('📍 Creating USLocation object:', location);
 
     // Update search state
     setSearchState(prev => ({
@@ -389,8 +400,10 @@ export const useUnifiedSearch = (options: UseUnifiedSearchOptions = {}): UseUnif
 
     // Handle selection
     if (onLocationSelect) {
+      console.log('✅ Calling onLocationSelect callback');
       onLocationSelect(location);
     } else if (autoNavigate) {
+      console.log('🚀 Auto-navigating to /section8');
       navigate('/section8', { state: { searchLocation: location } });
     }
   }, [searchState.results, onLocationSelect, autoNavigate, navigate]);

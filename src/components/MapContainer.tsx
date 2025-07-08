@@ -42,7 +42,13 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   useImperativeHandle(ref, () => ({
     flyTo: (center: [number, number], zoom: number, options?: any) => {
       if (map.current) {
-        console.log('🚀 Flying to:', center, 'zoom:', zoom);
+        console.log('🚀 MapContainer.flyTo called with:', {
+          center,
+          zoom,
+          centerFormatted: `[lng: ${center[0]}, lat: ${center[1]}]`,
+          options
+        });
+        
         // Use much faster defaults for snappy animations
         const flyToOptions = {
           center,
@@ -54,6 +60,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           ...options // Allow override of defaults
         };
         
+        console.log('🚁 Executing flyTo with options:', flyToOptions);
         map.current.flyTo(flyToOptions);
       } else {
         console.warn('⚠️ Map not initialized yet');

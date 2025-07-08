@@ -28,6 +28,14 @@ export const useMap = (): UseMapReturn => {
   const flyToLocation = useCallback((location: USLocation) => {
     if (!mapRef.current) return;
     
+    console.log('🚁 flyToLocation called with:', {
+      name: location.name,
+      type: location.type,
+      coordinates: [location.longitude, location.latitude],
+      state: location.state,
+      stateCode: location.stateCode
+    });
+    
     // Determine appropriate zoom level based on location type
     let zoomLevel = 12; // Default zoom for most searches
     
@@ -41,6 +49,7 @@ export const useMap = (): UseMapReturn => {
       zoomLevel = 13; // ZIP code level - more focused
     }
     
+    console.log('🎯 Flying to coordinates:', [location.longitude, location.latitude], 'with zoom:', zoomLevel);
     mapRef.current.flyTo([location.longitude, location.latitude], zoomLevel);
   }, []);
   
