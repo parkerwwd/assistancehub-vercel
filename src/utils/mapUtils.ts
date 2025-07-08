@@ -161,10 +161,7 @@ export const filterPHAAgenciesByLocation = (
   }
 
   if (selectedLocation.type === 'city') {
-    console.log('🏙️ Filtering PHAs by city:', selectedLocation.name, 'Total agencies:', agencies.length);
-    
-    // For cities, show all agencies within 50 miles (increased from 25), sorted by distance
-    let debugCounter = 0;
+    // For cities, show all agencies within 50 miles, sorted by distance
     const agenciesWithDistance = agencies
       .map(agency => {
         // Get agency coordinates - prefer database coordinates, fall back to geocoded ones
@@ -183,12 +180,6 @@ export const filterPHAAgenciesByLocation = (
           // For agencies in the exact search city, try to show them anyway by using fallback logic
           if (agency.city?.toLowerCase() === selectedLocation.name.toLowerCase() ||
               agency.address?.toLowerCase().includes(selectedLocation.name.toLowerCase())) {
-            console.warn(`⚠️ PHA in ${selectedLocation.name} has no coordinates but showing anyway:`, {
-              name: agency.name,
-              address: agency.address,
-              city: agency.city,
-              state: agency.state
-            });
             // Use search location coordinates as fallback (they'll appear at the search center)
             agencyLat = selectedLocation.latitude;
             agencyLng = selectedLocation.longitude;
@@ -206,22 +197,8 @@ export const filterPHAAgenciesByLocation = (
           agencyLng
         );
         
-        // Debug: Log distance calculation for first few agencies
-        if (debugCounter < 5) {
-          console.log('📏 Distance calculation:', {
-            agencyName: agency.name,
-            agencyCoords: [agencyLat, agencyLng],
-            searchCoords: [selectedLocation.latitude, selectedLocation.longitude],
-            distance: distance.toFixed(2) + ' miles'
-          });
-          debugCounter++;
-        }
-        
-        // Check if it's within range (increased to 50 miles)
+        // Check if it's within range (50 miles)
         if (distance > 50) {
-          if (debugCounter < 5) {
-            console.log('❌ Agency too far:', agency.name, distance.toFixed(2) + ' miles');
-          }
           return null;
         }
         
@@ -231,10 +208,6 @@ export const filterPHAAgenciesByLocation = (
           agency.name?.toLowerCase().includes(cityNameLower) ||
           agency.address?.toLowerCase().includes(cityNameLower) ||
           agency.city?.toLowerCase() === cityNameLower;
-        
-        if (debugCounter < 5) {
-          console.log('✅ Agency included:', agency.name, distance.toFixed(2) + ' miles', isExactMatch ? '(exact match)' : '');
-        }
         
         return { agency, distance, isExactMatch };
       })
@@ -256,14 +229,6 @@ export const filterPHAAgenciesByLocation = (
         _distance: item.distance,
         _isExactMatch: item.isExactMatch
       } as PHAAgencyWithDistance;
-    });
-
-    console.log('📍 City filtering results:', {
-      totalAgencies: agencies.length,
-      withValidCoordinates: agenciesWithDistance.length,
-      finalFilteredCount: filteredAgencies.length,
-      searchLocation: selectedLocation.name,
-      searchCoords: [selectedLocation.latitude, selectedLocation.longitude]
     });
 
     return filteredAgencies;

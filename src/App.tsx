@@ -14,6 +14,7 @@ import State from "./pages/State";
 import StateOffices from "./pages/StateOffices";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { SearchMapProvider } from "./contexts/SearchMapContext";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +26,11 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/section8" element={<Section8 />} />
+          <Route path="/section8" element={
+            <SearchMapProvider>
+              <Section8 />
+            </SearchMapProvider>
+          } />
           <Route path="/pha/:id" element={<PHADetail />} />
           <Route path="/snap" element={<SNAP />} />
           <Route path="/auth" element={<Auth />} />

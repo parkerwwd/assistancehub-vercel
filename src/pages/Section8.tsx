@@ -5,141 +5,61 @@ import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import MapContainer from "@/components/MapContainer";
 import Header from "@/components/Header";
 import MobileSection8Layout from "@/components/MobileSection8Layout";
-import { useMapLogic } from "@/hooks/useMapLogic";
+import { useSearchMap } from "@/contexts/SearchMapContext";
+import { useMap } from "@/hooks/useMap";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Database } from "@/integrations/supabase/types";
-import { comprehensiveCities } from "@/data/locations/cities";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 const Section8 = () => {
   const location = useLocation();
   const searchLocation = location.state?.searchLocation;
-  const searchQuery = location.state?.searchQuery;
-  
-  // Log only when there's a search location or query
-  if (searchLocation || searchQuery) {
-    console.log('🚀 Section8 loaded with search:', {
-      searchLocation: searchLocation?.name,
-      searchQuery
-    });
-  }
-  
-  const {
-    mapboxToken,
-    selectedOffice,
-    selectedLocation,
-    filteredLocation,
-    tokenError,
-    mapRef,
-    phaAgencies,
-    allPHAAgencies,
-    filteredAgencies,
-    loading,
-    currentPage,
-    totalPages,
-    totalCount,
-    setSelectedOffice,
-    setSelectedOfficeWithFlyTo,
-    setTokenError,
-    handleTokenChange,
-    handlePageChange,
-    handleCitySelect,
-    setSelectedLocation,
-    clearLocationFilter,
-    resetToUSView,
-  } = useMapLogic();
-
+  const { state, actions } = useSearchMap();
+  const { mapRef, handleLocationSearch, handleOfficeSelection, resetToUSView } = useMap();
   const isMobile = useIsMobile();
-
-  // Handle navigation from search location
+  
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || "";
+  
+  // Handle navigation from home page search (only runs once when location changes)
   useEffect(() => {
     if (searchLocation) {
-      console.log('🎯 Section8 received searchLocation:', searchLocation.name);
-      handleCitySelect(searchLocation);
-    }
-  }, [searchLocation, handleCitySelect]);
-
-  // Ensure map zooms when it becomes ready (if there's a pending search location)
-  useEffect(() => {
-    if (searchLocation && mapRef.current) {
-      console.log('🗺️ Map became ready, re-applying location to ensure zoom');
-      handleCitySelect(searchLocation);
-    }
-  }, [mapRef.current]);
-      
-  // Handle search query from city buttons (e.g., "Los Angeles, CA")
-  useEffect(() => {
-    if (searchQuery && mapRef.current) {
-      // Try to find a matching city in our database
-      const matchingCity = comprehensiveCities.find(city => {
-        const cityString = `${city.name}, ${city.stateCode}`;
-        return cityString.toLowerCase() === searchQuery.toLowerCase() ||
-               city.name.toLowerCase() === searchQuery.toLowerCase();
-      });
-      
-      if (matchingCity) {
-        handleCitySelect(matchingCity);
-      } else {
-        // Try partial match on city name
-        const partialMatch = comprehensiveCities.find(city => 
-          city.name.toLowerCase().includes(searchQuery.toLowerCase().split(',')[0].trim())
-        );
-        
-        if (partialMatch) {
-          handleCitySelect(partialMatch);
-        }
-      }
-    }
-  }, [searchQuery]);
-
-  // Reset to US view when component mounts (only if no search location or query)
-  useEffect(() => {
-    if (!searchLocation && !searchQuery) {
+      handleLocationSearch(searchLocation);
+    } else {
+      // If no search location, reset to US view after a delay
       const timer = setTimeout(() => {
-        if (mapRef.current) {
-          resetToUSView();
-        }
+        resetToUSView();
       }, 1000);
-
       return () => clearTimeout(timer);
     }
-  }, [searchLocation, searchQuery]);
-
+  }, [searchLocation, handleLocationSearch, resetToUSView]);
+  
+  // Handle office clicks from map pins (no flyTo to prevent bouncing)
   const handleOfficeClick = (office: PHAAgency | null) => {
-    if (office) {
-      // This is for pin clicks - don't fly to location (prevents bouncing)
-      console.log('📌 Pin clicked:', office.name, 'Program Type:', office.program_type);
-      console.log('🔍 handleOfficeClick - Full office data:', {
-        id: office.id,
-        name: office.name,
-        program_type: office.program_type,
-        address: office.address,
-        phone: office.phone,
-        email: office.email,
-        city: office.city,
-        state: office.state
-      });
-      setSelectedOffice(office);
-    } else {
-      console.log('📌 Clearing selected office');
-      setSelectedOffice(null);
-    }
+    handleOfficeSelection(office, false);
   };
   
+  // Handle office clicks from list (with flyTo to show on map)
   const handleOfficeListClick = (office: PHAAgency) => {
-    // This is for list clicks - fly to location to show on map
-    console.log('📋 List clicked:', office.name);
-    setSelectedOfficeWithFlyTo(office);
+    handleOfficeSelection(office, true);
   };
-
+  
+  // Handle city selection from header search
   const handleHeaderCitySelect = (location: any) => {
-    // Clear any existing selected office to ensure clean state
-    setSelectedOffice(null);
-    
-    handleCitySelect(location);
+    handleLocationSearch(location);
   };
-
+  
+  // Handle pagination
+  const handlePageChange = (page: number) => {
+    actions.setCurrentPage(page);
+  };
+  
+  // Handle clear search
+  const handleClearSearch = () => {
+    actions.clearSearch();
+    resetToUSView();
+  };
+  
   if (!mapboxToken) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
@@ -150,7 +70,7 @@ const Section8 = () => {
       </div>
     );
   }
-
+  
   return (
     <div className="h-screen bg-white overflow-hidden flex flex-col">
       {/* Header */}
@@ -164,41 +84,41 @@ const Section8 = () => {
         {isMobile ? (
           <MobileSection8Layout
             mapboxToken={mapboxToken}
-            selectedOffice={selectedOffice}
-            filteredLocation={filteredLocation}
+            selectedOffice={state.selectedOffice}
+            filteredLocation={state.searchLocation}
             mapRef={mapRef}
-            phaAgencies={phaAgencies}
-            filteredAgencies={filteredLocation ? filteredAgencies : allPHAAgencies}
-            allPHAAgencies={allPHAAgencies}
-            loading={loading}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={totalCount}
+            phaAgencies={state.paginatedAgencies}
+            filteredAgencies={state.filteredAgencies}
+            allPHAAgencies={state.allPHAAgencies}
+            loading={state.loading}
+            currentPage={state.currentPage}
+            totalPages={state.totalPages}
+            totalCount={state.totalCount}
             viewState="overview"
             detailOffice={null}
-            setSelectedOffice={setSelectedOffice}
+            setSelectedOffice={actions.setSelectedOffice}
             handleOfficeClick={handleOfficeListClick}
             handleViewHousing={() => {}}
             handleBackToOverview={() => {}}
             handleBackToPHADetail={() => {}}
             handlePageChange={handlePageChange}
-            clearLocationFilter={clearLocationFilter}
-            setTokenError={setTokenError}
-            selectedLocation={selectedLocation}
+            clearLocationFilter={handleClearSearch}
+            setTokenError={() => {}}
+            selectedLocation={state.selectedLocation}
           />
         ) : (
           <div className="flex h-full">
             {/* Left Panel - Map (Fixed 60% width) */}
             <div className="w-3/5 h-full bg-gray-100">
-                          <MapContainer
-              ref={mapRef}
-              mapboxToken={mapboxToken}
-              phaAgencies={filteredLocation ? filteredAgencies : allPHAAgencies}
-              onOfficeSelect={handleOfficeClick}
-              onTokenError={setTokenError}
-              selectedOffice={selectedOffice}
-              selectedLocation={selectedLocation}
-            />
+              <MapContainer
+                ref={mapRef}
+                mapboxToken={mapboxToken}
+                phaAgencies={state.searchLocation ? state.filteredAgencies : state.allPHAAgencies}
+                onOfficeSelect={handleOfficeClick}
+                onTokenError={() => {}}
+                selectedOffice={state.selectedOffice}
+                selectedLocation={state.selectedLocation}
+              />
             </div>
             
             {/* Fixed Divider Line */}
@@ -207,17 +127,17 @@ const Section8 = () => {
             {/* Right Panel - PHA List (Fixed 40% width) */}
             <div className="w-2/5 h-full overflow-y-auto bg-white">
               <OfficeDetailsPanel
-                selectedOffice={selectedOffice}
+                selectedOffice={state.selectedOffice}
                 onOfficeClick={handleOfficeListClick}
-                phaAgencies={phaAgencies}
-                loading={loading}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalCount={totalCount}
+                phaAgencies={state.paginatedAgencies}
+                loading={state.loading}
+                currentPage={state.currentPage}
+                totalPages={state.totalPages}
+                totalCount={state.totalCount}
                 onPageChange={handlePageChange}
-                onShowAll={clearLocationFilter}
-                hasFilter={!!filteredLocation}
-                filteredLocation={filteredLocation}
+                onShowAll={handleClearSearch}
+                hasFilter={!!state.searchLocation}
+                filteredLocation={state.searchLocation}
               />
             </div>
           </div>
