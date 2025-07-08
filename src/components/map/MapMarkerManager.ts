@@ -191,7 +191,8 @@ export class MapMarkerManager {
                 </button>
               </div>
             `)
-        );
+        )
+        .addTo(map); // ADD THIS LINE - This was missing!
         
         console.log(`✅ Created marker for ${agency.name} at [${lng}, ${lat}] with color ${markerColor}`);
 
