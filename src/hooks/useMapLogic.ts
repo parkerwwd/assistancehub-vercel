@@ -81,36 +81,44 @@ export const useMapLogic = () => {
     }
   };
 
-  const handleOfficeSelect = async (office: PHAAgency | null) => {
+  const handleOfficeSelect = async (office: PHAAgency | null, shouldFlyTo: boolean = false) => {
     if (!office) {
       setSelectedOffice(null);
       return;
     }
     
+    console.log('📌 Office selected:', office.name, 'shouldFlyTo:', shouldFlyTo);
     setSelectedOffice(office);
     
-    // Get or geocode coordinates
-    let lat, lng;
-    if (office.latitude && office.longitude) {
-      lat = office.latitude;
-      lng = office.longitude;
-    } else {
-      // Try to geocode the address
-      try {
-        const geocoded = await geocodePHAAddress(office.address, mapboxToken);
-        if (geocoded) {
-          lat = geocoded.lat;
-          lng = geocoded.lng;
+    // Only fly to office location if explicitly requested (e.g., from list click)
+    if (shouldFlyTo) {
+      console.log('🚁 Flying to office location');
+      
+      // Get or geocode coordinates
+      let lat, lng;
+      if (office.latitude && office.longitude) {
+        lat = office.latitude;
+        lng = office.longitude;
+      } else {
+        // Try to geocode the address
+        try {
+          const geocoded = await geocodePHAAddress(office.address, mapboxToken);
+          if (geocoded) {
+            lat = geocoded.lat;
+            lng = geocoded.lng;
+          }
+        } catch (error) {
+          console.error('Error geocoding office address:', error);
+          return;
         }
-      } catch (error) {
-        console.error('Error geocoding office address:', error);
-        return;
       }
-    }
-    
-    // Fly to office location
-    if (mapRef.current && lat && lng) {
-      mapRef.current.flyTo([lng, lat], 15);
+      
+      // Fly to office location
+      if (mapRef.current && lat && lng) {
+        mapRef.current.flyTo([lng, lat], 15);
+      }
+    } else {
+      console.log('📌 No flyTo - pin click or already visible');
     }
   };
 
@@ -138,7 +146,8 @@ export const useMapLogic = () => {
     currentPage,
     totalPages,
     totalCount,
-    setSelectedOffice: handleOfficeSelect,
+    setSelectedOffice: (office: PHAAgency | null) => handleOfficeSelect(office, false), // Pin clicks don't flyTo
+    setSelectedOfficeWithFlyTo: (office: PHAAgency | null) => handleOfficeSelect(office, true), // List clicks do flyTo
     setSelectedLocation,
     setTokenError,
     setShowFilters,

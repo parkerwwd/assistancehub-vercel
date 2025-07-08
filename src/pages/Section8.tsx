@@ -39,6 +39,7 @@ const Section8 = () => {
     totalPages,
     totalCount,
     setSelectedOffice,
+    setSelectedOfficeWithFlyTo,
     setTokenError,
     handleTokenChange,
     handlePageChange,
@@ -98,8 +99,15 @@ const Section8 = () => {
   }, [searchLocation, searchQuery]);
 
   const handleOfficeClick = (office: PHAAgency) => {
-    // First select the office on the map (this will fly to it and show marker)
+    // This is for pin clicks - don't fly to location (prevents bouncing)
+    console.log('📌 Pin clicked:', office.name);
     setSelectedOffice(office);
+  };
+  
+  const handleOfficeListClick = (office: PHAAgency) => {
+    // This is for list clicks - fly to location to show on map
+    console.log('📋 List clicked:', office.name);
+    setSelectedOfficeWithFlyTo(office);
   };
 
   const handleHeaderCitySelect = (location: any) => {
@@ -146,7 +154,7 @@ const Section8 = () => {
             viewState="overview"
             detailOffice={null}
             setSelectedOffice={setSelectedOffice}
-            handleOfficeClick={handleOfficeClick}
+            handleOfficeClick={handleOfficeListClick}
             handleViewHousing={() => {}}
             handleBackToOverview={() => {}}
             handleBackToPHADetail={() => {}}
@@ -177,7 +185,7 @@ const Section8 = () => {
             <div className="w-2/5 h-full overflow-y-auto bg-white">
               <OfficeDetailsPanel
                 selectedOffice={selectedOffice}
-                onOfficeClick={handleOfficeClick}
+                onOfficeClick={handleOfficeListClick}
                 phaAgencies={phaAgencies}
                 loading={loading}
                 currentPage={currentPage}
