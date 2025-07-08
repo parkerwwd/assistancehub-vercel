@@ -262,9 +262,8 @@ export class ClusterManager {
     // Enhanced styling for the marker element
     const element = marker.getElement();
     element.style.cursor = 'pointer';
-    element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease, border 0.2s ease';
+    element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease';
     element.title = agency.name; // Add tooltip
-    element.setAttribute('data-agency-id', agency.id); // Add identifier for selection
     
     // Add subtle hover effect only
     element.addEventListener('mouseenter', () => {

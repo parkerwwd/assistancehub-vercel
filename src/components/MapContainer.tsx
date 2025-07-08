@@ -106,17 +106,15 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     };
   }, [mapboxToken, onTokenError, onBoundsChange]);
 
-  // Update marker when selected office changes
+  // Handle selected office changes (no visual pin changes needed)
   useEffect(() => {
     if (map.current?.loaded()) {
       if (selectedOffice) {
-        console.log('📌 Selecting existing pin instead of adding duplicate marker');
-        // Select the existing pin instead of adding a new marker
-        markerManager.current.selectExistingPin(selectedOffice);
+        console.log('📌 Office selected - showing in info panel:', selectedOffice.name);
+        // No visual changes to pins - selection is shown in the information panel
       } else {
-        console.log('📌 Deselecting all pins');
-        // Deselect all pins when no office is selected
-        markerManager.current.deselectAllPins();
+        console.log('📌 Office deselected');
+        // No visual changes needed - information panel will handle the state
       }
     }
   }, [selectedOffice]);
@@ -196,7 +194,6 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         // Clear existing markers first
         markerManager.current.clearAllAgencyMarkers();
         markerManager.current.clearLocationMarker();
-        markerManager.current.deselectAllPins(); // Clear any pin selections
         
         // Display PHAs based on context
         if (phaAgencies && phaAgencies.length > 0) {
