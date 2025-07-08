@@ -10,19 +10,46 @@ export interface FetchPHADataResult {
 }
 
 export const fetchAllPHAData = async (): Promise<FetchPHADataResult> => {
-  const { data, error: fetchError, count } = await supabase
+  // Supabase has a default limit of 1000 rows, we need to fetch all
+  // First get the total count
+  const { count: totalCount, error: countError } = await supabase
     .from('pha_agencies')
-    .select('*', { count: 'exact' })
-    .order('name');
+    .select('*', { count: 'exact', head: true });
 
-  if (fetchError) {
-    throw fetchError;
+  if (countError) {
+    throw countError;
   }
+
+  // Fetch all records in batches of 1000
+  const batchSize = 1000;
+  const allData: PHAAgency[] = [];
+  const totalBatches = Math.ceil((totalCount || 0) / batchSize);
+
+  for (let i = 0; i < totalBatches; i++) {
+    const from = i * batchSize;
+    const to = from + batchSize - 1;
+
+    const { data, error: fetchError } = await supabase
+      .from('pha_agencies')
+      .select('*')
+      .order('name')
+      .range(from, to);
+
+    if (fetchError) {
+      throw fetchError;
+    }
+
+    if (data) {
+      allData.push(...data);
+    }
+  }
+
+  console.log(`✅ Fetched all ${allData.length} PHAs from database`);
 
   // Return data as-is, using the coordinates from the database
   return {
-    data: data || [],
-    count: count || 0
+    data: allData,
+    count: totalCount || 0
   };
 };
 
