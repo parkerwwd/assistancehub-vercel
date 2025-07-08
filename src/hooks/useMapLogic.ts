@@ -118,6 +118,7 @@ export const useMapLogic = () => {
   const resetToUSView = () => {
     setSelectedLocation(null);
     setSelectedOffice(null);
+    clearLocationFilter(); // Clear any location filter
     if (mapRef.current) {
       mapRef.current.flyTo([-95.7129, 37.0902], 4);
     }

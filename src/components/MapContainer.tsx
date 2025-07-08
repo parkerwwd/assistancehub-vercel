@@ -36,6 +36,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markerManager = useRef<MapMarkerManager>(new MapMarkerManager());
+  const hasLocationRestrictions = useRef<boolean>(false);
 
   useImperativeHandle(ref, () => ({
     flyTo: (center: [number, number], zoom: number, options?: any) => {
@@ -126,33 +127,82 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   // Track the last rendered PHAs to prevent unnecessary updates
   const lastPhaAgenciesRef = useRef<PHAAgency[]>([]);
 
-  // Display all PHAs on the map
+  // Apply location-based zoom and bounds restrictions
+  const applyLocationRestrictions = (lat: number, lng: number, radiusMiles: number = 50) => {
+    if (!map.current) return;
+
+    // Calculate bounds for the restricted area
+    // More accurate calculation accounting for latitude
+    const latRadians = lat * Math.PI / 180;
+    const degLatKm = 110.574; // km per degree of latitude
+    const degLonKm = 111.320 * Math.cos(latRadians); // km per degree of longitude at this latitude
+    
+    const radiusKm = radiusMiles * 1.60934; // Convert miles to km
+    const latDegrees = radiusKm / degLatKm;
+    const lngDegrees = radiusKm / degLonKm;
+    
+    // Add some padding to the bounds (20% extra)
+    const padding = 1.2;
+    const bounds = new mapboxgl.LngLatBounds(
+      [lng - (lngDegrees * padding), lat - (latDegrees * padding)], // Southwest
+      [lng + (lngDegrees * padding), lat + (latDegrees * padding)]  // Northeast
+    );
+
+    // Set max bounds to restrict panning
+    map.current.setMaxBounds(bounds);
+    
+    // Set zoom restrictions based on search type
+    // For city searches, allow closer zoom but restrict zooming out too far
+    map.current.setMinZoom(9);   // Can't zoom out beyond metro area view
+    map.current.setMaxZoom(18);  // Can zoom in to street level
+    
+    hasLocationRestrictions.current = true;
+    console.log('🔒 Applied location restrictions for:', lat, lng, 'Radius:', radiusMiles, 'miles');
+  };
+
+  // Remove all restrictions
+  const removeLocationRestrictions = () => {
+    if (!map.current) return;
+
+    // Remove bounds restrictions
+    map.current.setMaxBounds(undefined);
+    
+    // Reset zoom restrictions to defaults
+    map.current.setMinZoom(0);
+    map.current.setMaxZoom(22);
+    
+    hasLocationRestrictions.current = false;
+    console.log('🔓 Removed location restrictions');
+  };
+
+  // Display PHAs on the map (only when there's a location search)
   useEffect(() => {
     console.log('🗺️ Map data update - PHAs:', phaAgencies?.length || 0, 'Map loaded:', map.current?.loaded(), 'Selected location:', selectedLocation?.name);
     
-    if (map.current?.loaded() && !selectedOffice && phaAgencies && phaAgencies.length > 0) {
-      // Check if PHAs have actually changed to prevent unnecessary re-renders
-      const phasChanged = phaAgencies.length !== lastPhaAgenciesRef.current.length ||
-        phaAgencies.some((pha, index) => pha.id !== lastPhaAgenciesRef.current[index]?.id);
-      
-      if (phasChanged) {
-        console.log('🎯 PHAs changed, updating map:', phaAgencies.length);
-        lastPhaAgenciesRef.current = phaAgencies;
+    if (map.current?.loaded() && !selectedOffice) {
+      // Only show PHAs if there's a selected location (search active)
+      if (selectedLocation && phaAgencies && phaAgencies.length > 0) {
+        // Check if PHAs have actually changed to prevent unnecessary re-renders
+        const phasChanged = phaAgencies.length !== lastPhaAgenciesRef.current.length ||
+          phaAgencies.some((pha, index) => pha.id !== lastPhaAgenciesRef.current[index]?.id);
         
-        // Clear existing markers first
-        markerManager.current.clearAllAgencyMarkers();
-        markerManager.current.clearLocationMarker();
+        if (phasChanged) {
+          console.log('🎯 Location search - displaying', phaAgencies.length, 'PHAs near', selectedLocation.name);
+          lastPhaAgenciesRef.current = phaAgencies;
+          
+          // Clear existing markers first
+          markerManager.current.clearAllAgencyMarkers();
+          markerManager.current.clearLocationMarker();
+          
+          // Display PHAs as individual pins
+          markerManager.current.displayAllPHAsAsIndividualPins(
+            map.current, 
+            phaAgencies,
+            onOfficeSelect
+          );
+        }
         
-        // Always display all PHAs as individual pins
-        markerManager.current.displayAllPHAsAsIndividualPins(
-          map.current, 
-          phaAgencies,
-          onOfficeSelect
-        );
-      }
-      
-      // Handle location marker separately to avoid recreating all PHA markers
-      if (selectedLocation) {
+        // Add location marker
         console.log('📍 Adding location marker for:', selectedLocation.name);
         markerManager.current.setLocationMarker(
           map.current,
@@ -161,8 +211,17 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           selectedLocation.name,
           mapboxToken
         );
-      } else {
+        
+        // Apply zoom and bounds restrictions
+        applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
+        
+      } else if (!selectedLocation) {
+        // No location selected - clear everything and remove restrictions
+        console.log('🧹 No location selected - clearing map');
+        markerManager.current.clearAllAgencyMarkers();
         markerManager.current.clearLocationMarker();
+        removeLocationRestrictions();
+        lastPhaAgenciesRef.current = [];
       }
     } else if (map.current?.loaded() && selectedOffice) {
       // Clear location search markers when an office is selected
@@ -183,6 +242,12 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-2 rounded-lg text-sm font-medium backdrop-blur-sm">
         🗺️ Street Map
       </div>
+      {!selectedLocation && !selectedOffice && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Search for a Location</h3>
+          <p className="text-sm text-gray-600">Enter a city, state, or county in the search bar above to view PHAs in that area</p>
+        </div>
+      )}
     </div>
   );
 });

@@ -84,7 +84,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
               size="sm"
               className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 border-blue-200 px-3 py-1.5 text-sm"
             >
-              Show All
+              Clear Search
             </Button>
           )}
         </div>
