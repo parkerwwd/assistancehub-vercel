@@ -81,8 +81,12 @@ export class MapMarkerManager {
         lng = geocodedAgency.geocoded_longitude;
       }
       
-      // Validate coordinates are within valid ranges
-      if (!lat || !lng || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      // Comprehensive coordinate validation
+      if (!lat || !lng || 
+          typeof lat !== 'number' || typeof lng !== 'number' ||
+          isNaN(lat) || isNaN(lng) || 
+          !isFinite(lat) || !isFinite(lng) ||
+          lat < -90 || lat > 90 || lng < -180 || lng > 180) {
         console.warn(`⚠️ Invalid or missing coordinates for PHA: ${agency.name}`, {
           id: agency.id,
           name: agency.name,
@@ -92,7 +96,15 @@ export class MapMarkerManager {
           dbLat: agency.latitude,
           dbLng: agency.longitude,
           geocodedLat: (agency as any).geocoded_latitude,
-          geocodedLng: (agency as any).geocoded_longitude
+          geocodedLng: (agency as any).geocoded_longitude,
+          processedLat: lat,
+          processedLng: lng,
+          latType: typeof lat,
+          lngType: typeof lng,
+          isLatNaN: isNaN(lat),
+          isLngNaN: isNaN(lng),
+          isLatFinite: isFinite(lat),
+          isLngFinite: isFinite(lng)
         });
         
         missingCoordinates.push(agency);
@@ -119,6 +131,25 @@ export class MapMarkerManager {
           markerColor = '#f59e0b'; // Orange for Mod Rehab
         }
         
+        // Extra validation before creating marker
+        if (typeof lat !== 'number' || typeof lng !== 'number' || 
+            isNaN(lat) || isNaN(lng) || 
+            !isFinite(lat) || !isFinite(lng)) {
+          console.error('❌ Invalid coordinates detected before marker creation:', {
+            agency: agency.name,
+            lat: lat,
+            lng: lng,
+            latType: typeof lat,
+            lngType: typeof lng,
+            isLatNaN: isNaN(lat),
+            isLngNaN: isNaN(lng),
+            isLatFinite: isFinite(lat),
+            isLngFinite: isFinite(lng)
+          });
+          skipCount++;
+          return;
+        }
+
         // Create marker with custom styling
         const marker = new mapboxgl.Marker({
           color: markerColor,

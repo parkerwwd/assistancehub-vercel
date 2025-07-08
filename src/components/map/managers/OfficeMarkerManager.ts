@@ -38,8 +38,15 @@ export class OfficeMarkerManager extends BaseMarkerManager {
       }
     }
     
-    if (lat && lng) {
+    // Comprehensive coordinate validation
+    if (lat && lng && 
+        typeof lat === 'number' && typeof lng === 'number' &&
+        !isNaN(lat) && !isNaN(lng) && 
+        isFinite(lat) && isFinite(lng) &&
+        lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
       try {
+        console.log('✅ Valid coordinates for selected office:', { lat, lng });
+        
         // DON'T change map style or fly to location - just add the marker
         // This prevents the bouncing effect when users click pins
         

@@ -10,8 +10,24 @@ export class MarkerUtils {
     const lat = office.latitude;
     const lng = office.longitude;
     
-    if (!lat || !lng) {
-      throw new Error(`No coordinates for office: ${office.name}`);
+    // Comprehensive coordinate validation
+    if (!lat || !lng || 
+        typeof lat !== 'number' || typeof lng !== 'number' ||
+        isNaN(lat) || isNaN(lng) || 
+        !isFinite(lat) || !isFinite(lng) ||
+        lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      console.error(`❌ MarkerUtils: Invalid coordinates for office: ${office.name}`, {
+        id: office.id,
+        name: office.name,
+        lat, lng,
+        latType: typeof lat,
+        lngType: typeof lng,
+        isLatNaN: isNaN(lat),
+        isLngNaN: isNaN(lng),
+        isLatFinite: isFinite(lat),
+        isLngFinite: isFinite(lng)
+      });
+      throw new Error(`Invalid coordinates for office: ${office.name}`);
     }
 
     const marker = new mapboxgl.Marker({

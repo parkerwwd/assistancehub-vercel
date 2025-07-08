@@ -47,8 +47,26 @@ export class ClusterManager {
         lng = geocodedAgency.geocoded_longitude;
       }
       
-      // Validate coordinates are within valid ranges
-      if (!lat || !lng || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      // Comprehensive coordinate validation
+      if (!lat || !lng || 
+          typeof lat !== 'number' || typeof lng !== 'number' ||
+          isNaN(lat) || isNaN(lng) || 
+          !isFinite(lat) || !isFinite(lng) ||
+          lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        console.warn(`⚠️ Cluster: Invalid coordinates for PHA: ${agency.name}`, {
+          id: agency.id,
+          name: agency.name,
+          dbLat: agency.latitude,
+          dbLng: agency.longitude,
+          processedLat: lat,
+          processedLng: lng,
+          latType: typeof lat,
+          lngType: typeof lng,
+          isLatNaN: isNaN(lat),
+          isLngNaN: isNaN(lng),
+          isLatFinite: isFinite(lat),
+          isLngFinite: isFinite(lng)
+        });
         missingCoordinates.push(agency);
         return;
       }
@@ -92,6 +110,25 @@ export class ClusterManager {
     // Create markers for each cluster/point
     clusters.forEach(cluster => {
       const [lng, lat] = cluster.geometry.coordinates;
+      
+      // Validate cluster coordinates before creating markers
+      if (!lng || !lat || 
+          typeof lat !== 'number' || typeof lng !== 'number' ||
+          isNaN(lat) || isNaN(lng) || 
+          !isFinite(lat) || !isFinite(lng) ||
+          lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        console.error(`❌ Invalid cluster coordinates:`, {
+          lng, lat,
+          latType: typeof lat,
+          lngType: typeof lng,
+          isLatNaN: isNaN(lat),
+          isLngNaN: isNaN(lng),
+          isLatFinite: isFinite(lat),
+          isLngFinite: isFinite(lng)
+        });
+        return;
+      }
+      
       const properties = cluster.properties;
       
       if ('cluster' in properties && properties.cluster) {
