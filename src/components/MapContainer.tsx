@@ -109,10 +109,12 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   // Update marker when selected office changes
   useEffect(() => {
     if (map.current?.loaded()) {
+      // Only clear the special selected office markers, NOT all agency markers
       markerManager.current.clearOfficeMarkers();
       
       if (selectedOffice) {
-        // Remove timeout to prevent delay and potential race conditions
+        console.log('📌 Adding selected office marker on top of existing pins');
+        // Add selected office marker ON TOP of existing pins
         markerManager.current.addSelectedOfficeMarker(
           map.current!, 
           selectedOffice, 
@@ -120,6 +122,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           onOfficeSelect
         );
       } else {
+        console.log('📌 Removing selected office marker, keeping all pins');
         markerManager.current.resetToOverviewStyle(map.current);
       }
     }
@@ -185,13 +188,14 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
   // Display PHAs on the map with improved logic
   useEffect(() => {
-    console.log('🗺️ Map data update - PHAs:', phaAgencies?.length || 0, 'Map loaded:', map.current?.loaded(), 'Selected location:', selectedLocation?.name);
+    console.log('🗺️ Map data update - PHAs:', phaAgencies?.length || 0, 'Map loaded:', map.current?.loaded(), 'Selected location:', selectedLocation?.name, 'Selected office:', selectedOffice?.name);
     
-    if (map.current?.loaded() && !selectedOffice) {
+    if (map.current?.loaded()) {
       // Check if PHAs have actually changed to prevent unnecessary re-renders
       const phasChanged = phaAgencies.length !== lastPhaAgenciesRef.current.length ||
         phaAgencies.some((pha, index) => pha.id !== lastPhaAgenciesRef.current[index]?.id);
       
+      // Only redraw PHAs if data has changed OR location changed OR we're switching from office selection back to overview
       if (phasChanged || (selectedLocation && !lastPhaAgenciesRef.current.length)) {
         console.log('🎯 Displaying', phaAgencies.length, 'PHAs on map');
         lastPhaAgenciesRef.current = phaAgencies;
@@ -269,10 +273,6 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           });
         }
       }
-    } else if (map.current?.loaded() && selectedOffice) {
-      // Clear location search markers when an office is selected
-      markerManager.current.clearAllAgencyMarkers();
-      markerManager.current.clearLocationMarker();
     }
   }, [phaAgencies, selectedLocation, selectedOffice, mapboxToken, onOfficeSelect]);
 
