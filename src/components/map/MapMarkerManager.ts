@@ -57,9 +57,9 @@ export class MapMarkerManager {
   // New method to display all PHAs as individual pins without clustering
   displayAllPHAsAsIndividualPins(
     map: mapboxgl.Map, 
-    agencies: PHAAgency[], 
+    agencies: PHAAgency[],
     onOfficeSelect: (office: PHAAgency) => void
-  ): void {
+  ) {
     try {
       // Clear all markers first
       this.clearAllAgencyMarkers();
@@ -153,20 +153,20 @@ export class MapMarkerManager {
           scale: 0.8 // Slightly smaller for many pins
         })
         .setLngLat([lng, lat])
-        // Add simple popup with just the name as a tooltip
-        .setPopup(
-          new mapboxgl.Popup({ 
-            offset: 25,
-            closeButton: false,
-            closeOnClick: false,
-            className: 'pha-popup-tooltip'
-          })
-            .setHTML(`
-              <div style="padding: 8px 12px; font-weight: 600; font-size: 14px;">
-                ${agency.name}
-              </div>
-            `)
-        )
+        // TEMPORARILY REMOVE POPUP TO TEST
+        // .setPopup(
+        //   new mapboxgl.Popup({ 
+        //     offset: 25,
+        //     closeButton: false,
+        //     closeOnClick: false,
+        //     className: 'pha-popup-tooltip'
+        //   })
+        //     .setHTML(`
+        //       <div style="padding: 8px 12px; font-weight: 600; font-size: 14px;">
+        //         ${agency.name}
+        //       </div>
+        //     `)
+        // )
         .addTo(map); // ADD THIS LINE - This was missing!
         
         console.log(`✅ Marker ${successCount + 1} added to map for:`, agency.name, 'at', [lng, lat]);
@@ -183,7 +183,10 @@ export class MapMarkerManager {
         element.addEventListener('click', (e) => {
           e.stopPropagation();
           e.preventDefault();
+          
           console.log('🎯 Individual pin clicked:', agency.name, 'Color:', markerColor, 'Program Type:', agency.program_type);
+          console.log('📍 Pin coordinates:', { lat, lng });
+          console.log('🗺️ Current map center BEFORE click:', map.getCenter());
           console.log('🔍 Purple pin debug - Agency data:', {
             id: agency.id,
             name: agency.name,
@@ -209,7 +212,14 @@ export class MapMarkerManager {
           element.style.filter = 'brightness(1.3) saturate(1.5) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4))';
           element.style.zIndex = '2000';
           
+          console.log('🎬 About to call onOfficeSelect');
           onOfficeSelect(agency);
+          console.log('🗺️ Current map center AFTER onOfficeSelect:', map.getCenter());
+          
+          // Add a small delay to check if map moves after the click
+          setTimeout(() => {
+            console.log('🗺️ Current map center 100ms AFTER click:', map.getCenter());
+          }, 100);
         });
 
         // Enhanced styling for the marker element

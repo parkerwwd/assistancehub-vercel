@@ -104,6 +104,21 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     map.current.on('idle', () => {
       // Map initialization complete with 3D features
     });
+    
+    // Debug: Track all map movements
+    map.current.on('movestart', () => {
+      console.log('🚀 Map movement started');
+      console.trace('Movement stack trace');
+    });
+    
+    map.current.on('moveend', () => {
+      const center = map.current!.getCenter();
+      const zoom = map.current!.getZoom();
+      console.log('🏁 Map movement ended at:', {
+        center: [center.lng.toFixed(4), center.lat.toFixed(4)],
+        zoom: zoom.toFixed(2)
+      });
+    });
 
     // Add 3D controls and features
     Map3DControls.addControls(map.current);
@@ -337,7 +352,13 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       
       // Handle clearing location search
       // Only reset to US view if there's no selected location AND no selected office
-      if (!selectedLocation && !selectedOffice && lastPhaAgenciesRef.current.length > 0) {
+      // AND we're not in the middle of displaying PHAs from a search
+      const shouldResetToUSView = !selectedLocation && 
+                                  !selectedOffice && 
+                                  lastPhaAgenciesRef.current.length > 0 &&
+                                  phaAgencies.length === 0; // Only reset if we've actually cleared the search
+                                  
+      if (shouldResetToUSView) {
         console.log('🧹 Location search cleared - switching to overview mode');
         console.log('🔍 Debug state:', {
           selectedLocation,
@@ -350,6 +371,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         // Reset map to US view
         if (map.current) {
           console.log('🚨 RESETTING MAP TO US VIEW - This might be the issue!');
+          console.log('🚨 Stack trace:', new Error().stack);
           map.current.flyTo({
             center: [-95.7129, 37.0902],
             zoom: 4,
