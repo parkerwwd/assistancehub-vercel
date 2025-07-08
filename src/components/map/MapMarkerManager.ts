@@ -189,15 +189,17 @@ export class MapMarkerManager {
         // Enhanced styling for the marker element
         const element = marker.getElement();
         element.style.cursor = 'pointer';
-        element.style.transition = 'transform 0.2s ease';
+        element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease';
         element.title = agency.name; // Add tooltip
         
         element.addEventListener('mouseenter', () => {
-          element.style.transform = 'scale(1.1)';
+          // Use filter effects instead of transform to avoid movement
+          element.style.filter = 'brightness(1.2) saturate(1.3) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))';
           element.style.zIndex = '1000';
         });
         element.addEventListener('mouseleave', () => {
-          element.style.transform = 'scale(1)';
+          // Reset filter effects
+          element.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
           element.style.zIndex = 'auto';
         });
 

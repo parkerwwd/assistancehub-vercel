@@ -90,11 +90,12 @@ export class OfficeMarkerManager extends BaseMarkerManager {
 
   private styleMarkerElement(element: HTMLElement): void {
     element.style.cursor = 'pointer';
-    element.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-    element.style.transform = 'scale(1.5)';
+    element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease';
+    // Don't apply initial transform scale - this was causing position issues
     element.style.filter = 'drop-shadow(0 4px 8px rgba(239, 68, 68, 0.2))';
 
     element.addEventListener('mouseenter', () => {
+      // Use filter effects only - no transform to avoid movement
       element.style.filter = 'drop-shadow(0 8px 16px rgba(239, 68, 68, 0.4)) brightness(1.1) saturate(1.2)';
     });
     element.addEventListener('mouseleave', () => {
