@@ -80,8 +80,12 @@ const Index = () => {
   const navigate = useNavigate();
 
   const handleStateSearch = () => {
+    console.log('🗺️ State search triggered:', selectedState);
+    
     if (selectedState) {
       const state = STATES.find(s => s.code === selectedState);
+      console.log('🔍 Found state data:', state);
+      
       if (state) {
         const stateLocation: USLocation = {
           name: state.name,
@@ -92,6 +96,7 @@ const Index = () => {
           longitude: state.lng
         };
         
+        console.log('✅ Navigating with state location:', stateLocation);
         navigate('/section8', { state: { searchLocation: stateLocation } });
       }
     }
@@ -99,21 +104,28 @@ const Index = () => {
 
   // Handle location selection from search
   const handleLocationSelect = (location: USLocation) => {
+    console.log('🔍 Home page search - location selected:', location);
     navigate('/section8', { state: { searchLocation: location } });
   };
 
   // Handle city click from popular cities buttons
   const handleCityClick = (cityName: string) => {
+    console.log('🏙️ Popular city clicked:', cityName);
+    
     // Find the city data from our comprehensive cities list
     const cityData = comprehensiveCities.find(city => 
       city.name === cityName.split(',')[0].trim()
     );
     
+    console.log('🔍 Found city data:', cityData);
+    
     if (cityData) {
       // Pass the location object with coordinates
+      console.log('✅ Navigating with city data:', cityData);
       navigate('/section8', { state: { searchLocation: cityData } });
     } else {
       // Fallback to text search if city not found in local data
+      console.log('⚠️ City not found in local data, using text search:', cityName);
       navigate('/section8', { state: { searchQuery: cityName } });
     }
   };
@@ -147,6 +159,7 @@ const Index = () => {
               <UnifiedSearchInput
                 placeholder="City, County, or ZIP"
                 onLocationSelect={handleLocationSelect}
+                autoNavigate={false}
                 className="w-full"
                 variant="default"
                 autoFocus={false}
@@ -257,8 +270,20 @@ const Index = () => {
                     key={stateCode}
                     variant="outline"
                     onClick={() => {
-                      setSelectedState(stateCode);
-                      handleStateSearch();
+                      console.log('📱 Mobile state button clicked:', stateCode);
+                      const state = STATES.find(s => s.code === stateCode);
+                      if (state) {
+                        const stateLocation: USLocation = {
+                          name: state.name,
+                          stateCode: state.code,
+                          state: state.name,
+                          type: 'state',
+                          latitude: state.lat,
+                          longitude: state.lng
+                        };
+                        console.log('✅ Mobile navigating with state location:', stateLocation);
+                        navigate('/section8', { state: { searchLocation: stateLocation } });
+                      }
                     }}
                     className="h-16 flex flex-col items-center justify-center hover:bg-blue-50 hover:border-blue-300 border-2"
                   >

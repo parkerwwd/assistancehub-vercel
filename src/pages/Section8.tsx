@@ -17,6 +17,13 @@ const Section8 = () => {
   const searchLocation = location.state?.searchLocation;
   const searchQuery = location.state?.searchQuery;
   
+  console.log('🚀 Section8 component loaded with route state:', {
+    fullState: location.state,
+    searchLocation,
+    searchQuery,
+    pathname: location.pathname
+  });
+  
   const {
     mapboxToken,
     selectedOffice,
@@ -45,7 +52,9 @@ const Section8 = () => {
 
   // Handle navigation from state page and updates when location state changes
   useEffect(() => {
+    console.log('🎯 Section8 received searchLocation:', searchLocation);
     if (searchLocation && mapRef.current) {
+      console.log('✅ Calling handleCitySelect with:', searchLocation);
       handleCitySelect(searchLocation);
     }
   }, [searchLocation?.name, searchLocation?.latitude, searchLocation?.longitude]);
