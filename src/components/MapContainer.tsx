@@ -133,6 +133,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
   // Track the last rendered PHAs to prevent unnecessary updates
   const lastPhaAgenciesRef = useRef<PHAAgency[]>([]);
+  const displayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Apply location-based zoom and bounds restrictions
   const applyLocationRestrictions = (lat: number, lng: number, radiusMiles: number = 50) => {
@@ -193,6 +194,12 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   useEffect(() => {
     console.log('🗺️ Map data update - PHAs:', phaAgencies?.length || 0, 'Map ready:', isMapReady, 'Map loaded:', map.current?.loaded(), 'Selected location:', selectedLocation?.name, 'Selected office:', selectedOffice?.name);
     
+    // Clear any existing timeout
+    if (displayTimeoutRef.current) {
+      clearTimeout(displayTimeoutRef.current);
+      displayTimeoutRef.current = null;
+    }
+    
     // Log details about the first few PHAs to check coordinates
     if (phaAgencies && phaAgencies.length > 0) {
       console.log('📍 First 3 PHAs details:', phaAgencies.slice(0, 3).map(pha => ({
@@ -224,21 +231,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
             // Location search active - show as individual pins with location marker
             console.log('📍 Location search - displaying', phaAgencies.length, 'PHAs near', selectedLocation.name);
             
-            // Add a small delay to ensure map has finished any animations
-            setTimeout(() => {
-              console.log('🎯 Displaying markers after delay');
-              
-              // Double-check map is still loaded
-              if (!map.current || !map.current.loaded()) {
-                console.error('❌ Map not loaded when trying to display markers');
-                return;
-              }
-              
-              console.log('📍 About to call displayAllPHAsAsIndividualPins with:', {
-                mapLoaded: map.current.loaded(),
-                phaCount: phaAgencies.length,
-                firstPHA: phaAgencies[0] ? { name: phaAgencies[0].name, lat: phaAgencies[0].latitude, lng: phaAgencies[0].longitude } : 'none'
-              });
+            // Check if map is idle and ready
+            if (!map.current.isMoving()) {
+              console.log('✅ Map is idle, displaying markers immediately');
               
               markerManager.current.displayAllPHAsAsIndividualPins(
                 map.current!, 
@@ -255,11 +250,48 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
                 mapboxToken
               );
               
-              // Apply zoom and bounds restrictions after markers are placed
-              setTimeout(() => {
-                applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
-              }, 100);
-            }, 500); // 500ms delay to ensure map has settled
+              // Apply restrictions
+              applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
+            } else {
+              console.log('⏳ Map is moving, will display markers after delay');
+              
+              // Add a small delay to ensure map has finished any animations
+              displayTimeoutRef.current = setTimeout(() => {
+                console.log('🎯 Displaying markers after delay');
+                
+                // Double-check map is still loaded
+                if (!map.current || !map.current.loaded()) {
+                  console.error('❌ Map not loaded when trying to display markers');
+                  return;
+                }
+                
+                console.log('📍 About to call displayAllPHAsAsIndividualPins with:', {
+                  mapLoaded: map.current.loaded(),
+                  phaCount: phaAgencies.length,
+                  firstPHA: phaAgencies[0] ? { name: phaAgencies[0].name, lat: phaAgencies[0].latitude, lng: phaAgencies[0].longitude } : 'none'
+                });
+                
+                markerManager.current.displayAllPHAsAsIndividualPins(
+                  map.current!, 
+                  phaAgencies,
+                  onOfficeSelect
+                );
+                
+                // Add location marker
+                markerManager.current.setLocationMarker(
+                  map.current!,
+                  selectedLocation.lat,
+                  selectedLocation.lng,
+                  selectedLocation.name,
+                  mapboxToken
+                );
+                
+                // Apply zoom and bounds restrictions after markers are placed
+                setTimeout(() => {
+                  applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
+                }, 100);
+              }, 500); // 500ms delay to ensure map has settled
+            }
           } else {
             // No location filter - show with clustering for better performance
             console.log('🌍 Overview mode - showing', phaAgencies.length, 'PHAs with clustering');
@@ -306,6 +338,14 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         }
       }
     }
+    
+    // Cleanup function
+    return () => {
+      if (displayTimeoutRef.current) {
+        clearTimeout(displayTimeoutRef.current);
+        displayTimeoutRef.current = null;
+      }
+    };
   }, [phaAgencies, selectedLocation, selectedOffice, mapboxToken, onOfficeSelect, isMapReady]);
 
 
