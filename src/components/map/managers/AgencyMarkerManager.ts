@@ -37,4 +37,11 @@ export class AgencyMarkerManager extends BaseMarkerManager {
   addSingleMarker(marker: mapboxgl.Marker): void {
     this.addMarker(marker);
   }
+  
+  // Override to add logging
+  getMarkerCount(): number {
+    const count = super.getMarkerCount();
+    console.log(`📊 AgencyMarkerManager.getMarkerCount() = ${count}`);
+    return count;
+  }
 }

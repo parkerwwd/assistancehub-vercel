@@ -222,7 +222,9 @@ export class MapMarkerManager {
         });
 
         marker.addTo(map);
+        // Store marker in agency manager
         this.agencyManager.addSingleMarker(marker);
+        console.log(`💾 Stored marker ${successCount} in agencyManager`);
         successCount++;
       } catch (error) {
         console.error(`❌ Failed to create marker for ${agency.name}:`, error);
@@ -230,8 +232,9 @@ export class MapMarkerManager {
       }
     });
     
-    console.log(`✅ Successfully displayed ${successCount} PHAs as individual pins`);
-    console.log(`❌ Skipped ${skipCount} PHAs due to missing coordinates or errors`);
+    console.log(`✅ Successfully created and displayed ${successCount} agency markers`);
+    console.log(`⚠️ Skipped ${skipCount} agencies (missing or invalid coordinates)`);
+    console.log(`📊 AgencyManager now has ${this.agencyManager.getMarkerCount()} markers stored`);
     
     // Provide detailed feedback about missing coordinates
     if (missingCoordinates.length > 0) {

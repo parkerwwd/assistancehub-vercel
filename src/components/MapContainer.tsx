@@ -224,9 +224,15 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
             // Location search active - show as individual pins with location marker
             console.log('📍 Location search - displaying', phaAgencies.length, 'PHAs near', selectedLocation.name);
             
-            // Wait for any ongoing map movement to complete before showing markers
-            const showMarkersAfterMove = () => {
-              console.log('🎯 Map movement complete, now showing markers');
+            // Add a small delay to ensure map has finished any animations
+            setTimeout(() => {
+              console.log('🎯 Displaying markers after delay');
+              
+              // Double-check map is still loaded
+              if (!map.current || !map.current.loaded()) {
+                console.error('❌ Map not loaded when trying to display markers');
+                return;
+              }
               
               markerManager.current.displayAllPHAsAsIndividualPins(
                 map.current!, 
@@ -247,18 +253,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
               setTimeout(() => {
                 applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
               }, 100);
-            };
-            
-            // Check if map is currently moving
-            if (map.current.isMoving()) {
-              console.log('⏳ Map is moving, waiting for moveend event');
-              // Wait for move to end
-              map.current.once('moveend', showMarkersAfterMove);
-            } else {
-              console.log('✅ Map is idle, showing markers immediately');
-              // Map is already idle, show markers
-              showMarkersAfterMove();
-            }
+            }, 500); // 500ms delay to ensure map has settled
           } else {
             // No location filter - show with clustering for better performance
             console.log('🌍 Overview mode - showing', phaAgencies.length, 'PHAs with clustering');
