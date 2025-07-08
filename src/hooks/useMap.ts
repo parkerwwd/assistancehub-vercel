@@ -44,9 +44,9 @@ export const useMap = (): UseMapReturn => {
     } else if (location.type === 'county') {
       zoomLevel = 10; // County-level zoom
     } else if (location.type === 'city') {
-      zoomLevel = 12; // City-level zoom - focused but shows surrounding area
+      zoomLevel = 14; // MORE FOCUSED city zoom - was 12, now 14 to clearly show the city
     } else if (location.type === 'zip') {
-      zoomLevel = 13; // ZIP code level - more focused
+      zoomLevel = 15; // ZIP code level - even more focused
     }
     
     console.log('🎯 Flying to coordinates:', [location.longitude, location.latitude], 'with zoom:', zoomLevel);
