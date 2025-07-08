@@ -181,15 +181,33 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
       {/* Office List - Improved mobile spacing */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-2 sm:p-4 space-y-2 sm:space-y-3">
+          {/* Show selected office at top of main list if it exists and is not already in the current page */}
+          {selectedOffice && !phaAgencies.some(office => office.id === selectedOffice.id) && (
+            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-2 mb-3">
+              <div className="text-xs text-blue-600 font-medium mb-1 flex items-center gap-1">
+                📌 Selected Office (from map click)
+              </div>
+              <PHAOfficeCard
+                agency={selectedOffice}
+                onOfficeClick={() => onOfficeClick(selectedOffice)}
+              />
+            </div>
+          )}
+          
           {phaAgencies.map((office, index) => {
             const isSelected = selectedOffice?.id === office.id;
             return (
               <div 
                 key={office.id} 
                 className={`transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
-                  isSelected ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
+                  isSelected ? 'ring-2 ring-blue-500 ring-opacity-50 bg-blue-50' : ''
                 }`}
               >
+                {isSelected && (
+                  <div className="text-xs text-blue-600 font-medium mb-1 px-2 flex items-center gap-1">
+                    📌 Selected Office
+                  </div>
+                )}
                 <PHAOfficeCard
                   agency={office}
                   onOfficeClick={() => onOfficeClick(office)}
