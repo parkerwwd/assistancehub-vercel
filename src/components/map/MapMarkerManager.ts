@@ -153,37 +153,20 @@ export class MapMarkerManager {
           scale: 0.8 // Slightly smaller for many pins
         })
         .setLngLat([lng, lat])
-        // Don't add popup to prevent any auto-panning behavior
-        // .setPopup(
-        //   new mapboxgl.Popup({ 
-        //     offset: 25,
-        //     closeButton: false,
-        //     maxWidth: '280px',
-        //     // Disable autopan to prevent map from moving when popup opens
-        //     anchor: 'bottom',
-        //     focusAfterOpen: false,
-        //     className: 'pha-popup'
-        //   })
-        //     .setMaxWidth('280px')
-        //     .setHTML(`
-        //       <div style="padding: 12px; max-width: 280px;">
-        //         <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1f2937;">${agency.name}</h3>
-        //         ${agency.address ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280; line-height: 1.4;">📍 ${agency.address}</p>` : ''}
-        //         ${agency.phone ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280;">📞 ${agency.phone}</p>` : ''}
-        //         ${agency.email ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280;">📧 ${agency.email}</p>` : ''}
-        //         ${agency.program_type ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: ${markerColor}; font-weight: 500; padding: 2px 8px; background: ${markerColor}15; border-radius: 4px; display: inline-block;">🏢 ${agency.program_type}</p>` : ''}
-        //         ${agency.waitlist_status ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">📋 Waitlist: ${agency.waitlist_status}</p>` : ''}
-        //         <button 
-        //           onclick="window.postMessage({ type: 'selectOffice', officeId: '${agency.id}' }, '*')"
-        //           style="margin-top: 8px; padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; width: 100%; transition: background 0.2s;"
-        //           onmouseover="this.style.background='#2563eb'"
-        //           onmouseout="this.style.background='#3b82f6'"
-        //         >
-        //           View Details
-        //         </button>
-        //       </div>
-        //     `)
-        // )
+        // Add simple popup with just the name as a tooltip
+        .setPopup(
+          new mapboxgl.Popup({ 
+            offset: 25,
+            closeButton: false,
+            closeOnClick: false,
+            className: 'pha-popup-tooltip'
+          })
+            .setHTML(`
+              <div style="padding: 8px 12px; font-weight: 600; font-size: 14px;">
+                ${agency.name}
+              </div>
+            `)
+        )
         .addTo(map); // ADD THIS LINE - This was missing!
         
         console.log(`✅ Marker ${successCount + 1} added to map for:`, agency.name, 'at', [lng, lat]);
