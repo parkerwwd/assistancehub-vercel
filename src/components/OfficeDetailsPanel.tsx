@@ -12,7 +12,7 @@ type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 interface OfficeDetailsPanelProps {
   selectedOffice: PHAAgency | null;
-  onOfficeClick: (office: PHAAgency) => void;
+  onOfficeClick: (office: PHAAgency | null) => void;
   phaAgencies: PHAAgency[];
   loading: boolean;
   currentPage: number;
@@ -41,21 +41,22 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
 }) => {
   // Debug logging
   React.useEffect(() => {
-    console.error('📊📊📊 OfficeDetailsPanel props update:', {
+    console.log('📊 OfficeDetailsPanel props update:', {
       timestamp: new Date().toISOString(),
       filteredLocationName: filteredLocation?.name || 'null',
       phaAgenciesCount: phaAgencies.length,
-      hasFilter: hasFilter
+      hasFilter: hasFilter,
+      selectedOffice: selectedOffice?.name || null
     });
     
     // Show first agency to verify we have the right data
     if (phaAgencies.length > 0) {
-      console.error('📊 First agency shown:', {
+      console.log('📊 First agency shown:', {
         name: phaAgencies[0].name,
         address: phaAgencies[0].address
       });
     }
-  }, [phaAgencies, filteredLocation, hasFilter, totalCount]);
+  }, [phaAgencies, filteredLocation, hasFilter, totalCount, selectedOffice]);
   
   // Show empty state when no agencies are available
   if (phaAgencies.length === 0) {
@@ -133,17 +134,69 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
         </div>
       </div>
 
+      {/* Selected Office Details - Show when an office is selected from map */}
+      {selectedOffice && (
+        <div className="p-3 sm:p-4 bg-blue-50 border-b border-blue-200">
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-gray-900">📌 Selected Office</h3>
+              <Button
+                onClick={() => onOfficeClick(null)}
+                variant="outline"
+                size="sm"
+                className="text-gray-600 hover:text-gray-800"
+              >
+                ✕ Clear
+              </Button>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-semibold text-blue-900">{selectedOffice.name}</h4>
+              {selectedOffice.address && (
+                <p className="text-sm text-gray-600">📍 {selectedOffice.address}</p>
+              )}
+              {selectedOffice.city && selectedOffice.state && (
+                <p className="text-sm text-gray-600">
+                  🏙️ {selectedOffice.city}, {selectedOffice.state} {selectedOffice.zip || ''}
+                </p>
+              )}
+              {selectedOffice.phone && (
+                <p className="text-sm text-gray-600">📞 {selectedOffice.phone}</p>
+              )}
+              {selectedOffice.email && (
+                <p className="text-sm text-gray-600">📧 {selectedOffice.email}</p>
+              )}
+              {selectedOffice.program_type && (
+                <div className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                  🏢 {selectedOffice.program_type}
+                </div>
+              )}
+              {selectedOffice.waitlist_status && (
+                <p className="text-sm text-gray-600">📋 Waitlist: {selectedOffice.waitlist_status}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Office List - Improved mobile spacing */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-2 sm:p-4 space-y-2 sm:space-y-3">
-          {phaAgencies.map((office, index) => (
-            <div key={office.id} className="transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
-              <PHAOfficeCard
-                agency={office}
-                onOfficeClick={() => onOfficeClick(office)}
-              />
-            </div>
-          ))}
+          {phaAgencies.map((office, index) => {
+            const isSelected = selectedOffice?.id === office.id;
+            return (
+              <div 
+                key={office.id} 
+                className={`transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
+                  isSelected ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
+                }`}
+              >
+                <PHAOfficeCard
+                  agency={office}
+                  onOfficeClick={() => onOfficeClick(office)}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 
