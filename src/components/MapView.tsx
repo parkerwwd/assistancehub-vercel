@@ -25,6 +25,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
     showFilters,
     mapRef,
     phaAgencies,
+    allPHAAgencies,
     filteredAgencies,
     loading,
     currentPage,
@@ -164,7 +165,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
               <MapContainer
                 ref={mapRef}
                 mapboxToken={mapboxToken}
-                phaAgencies={filteredAgencies || phaAgencies}
+                phaAgencies={allPHAAgencies}
                 onOfficeSelect={setSelectedOffice}
                 onTokenError={setTokenError}
                 selectedOffice={selectedOffice}

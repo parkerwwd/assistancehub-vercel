@@ -19,6 +19,7 @@ export const useMapLogic = () => {
 
   const {
     phaAgencies,
+    allPHAAgencies,
     filteredAgencies,
     filteredLocation,
     loading,
@@ -131,6 +132,7 @@ export const useMapLogic = () => {
     showFilters,
     mapRef,
     phaAgencies,
+    allPHAAgencies,
     filteredAgencies,
     loading,
     currentPage,

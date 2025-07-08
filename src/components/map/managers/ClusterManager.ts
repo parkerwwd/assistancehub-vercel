@@ -14,9 +14,9 @@ export class ClusterManager {
   
   constructor() {
     this.cluster = new Supercluster({
-      radius: 40, // Reduced from 60 - cluster radius in pixels
-      maxZoom: 16, // Increased from 14 - show individual pins at higher zoom levels
-      minPoints: 4 // Increased from 2 - need at least 4 PHAs to form a cluster
+      radius: 20, // Further reduced - cluster radius in pixels
+      maxZoom: 18, // Show individual pins at even higher zoom levels
+      minPoints: 10 // Significantly increased - need at least 10 PHAs to form a cluster
     });
   }
 
