@@ -63,7 +63,20 @@ export class MapMarkerManager {
     // Clear all markers first
     this.clearAllAgencyMarkers();
     
-    console.log(`📍 Displaying ${agencies.length} PHAs as individual pins`);
+    console.log(`📍 displayAllPHAsAsIndividualPins called with ${agencies.length} PHAs`);
+    
+    // Log details about the first few agencies to debug
+    if (agencies.length > 0) {
+      console.log('🔍 First 3 PHAs to display:', agencies.slice(0, 3).map(agency => ({
+        name: agency.name,
+        city: agency.city,
+        state: agency.state,
+        hasDBCoords: !!(agency.latitude && agency.longitude),
+        dbLat: agency.latitude,
+        dbLng: agency.longitude,
+        address: agency.address
+      })));
+    }
     
     let successCount = 0;
     let skipCount = 0;
@@ -179,6 +192,8 @@ export class MapMarkerManager {
               </div>
             `)
         );
+        
+        console.log(`✅ Created marker for ${agency.name} at [${lng}, ${lat}] with color ${markerColor}`);
 
         // Add click handler with event prevention
         marker.getElement().addEventListener('click', (e) => {
@@ -346,9 +361,21 @@ export class MapMarkerManager {
     console.log('📌 Office selected - no visual pin changes');
   }
 
-  // Clear all agency markers (including clusters)
-  clearAllAgencyMarkers(): void {
+  // Clear all markers from all managers
+  clearAllMarkers(): void {
+    console.log('🧹 Clearing ALL markers from all managers');
     this.agencyManager.clearMarkers();
+    this.locationManager.clearLocationMarker();
+    this.officeManager.clearMarkers();
+    this.clusterManager.clearMarkers();
+    this.clearSelection();
+  }
+
+  // Clear only agency markers (not location marker)
+  clearAllAgencyMarkers(): void {
+    console.log('🧹 Clearing only agency markers (keeping location marker)');
+    this.agencyManager.clearMarkers();
+    this.officeManager.clearMarkers();
     this.clusterManager.clearMarkers();
   }
 

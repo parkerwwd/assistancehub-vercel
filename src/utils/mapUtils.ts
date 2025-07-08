@@ -150,6 +150,8 @@ export const filterPHAAgenciesByLocation = (
   agencies: PHAAgency[],
   selectedLocation: USLocation
 ): PHAAgencyWithDistance[] => {
+  console.log(`🔍 filterPHAAgenciesByLocation called with ${agencies.length} agencies, location: ${selectedLocation.name} (${selectedLocation.type})`);
+  
   if (!agencies || agencies.length === 0) {
     return [];
   }
@@ -157,11 +159,14 @@ export const filterPHAAgenciesByLocation = (
   if (selectedLocation.type === 'state') {
     // Enhanced state filtering
     const filteredAgencies = filterByStateName(agencies, selectedLocation.name);
+    console.log(`📊 State filter returned ${filteredAgencies.length} agencies`);
     return filteredAgencies;
   }
 
   if (selectedLocation.type === 'city') {
     // For cities, show all agencies within 50 miles, sorted by distance
+    console.log(`🏙️ City search for ${selectedLocation.name} at [${selectedLocation.latitude}, ${selectedLocation.longitude}]`);
+    
     const agenciesWithDistance = agencies
       .map(agency => {
         // Get agency coordinates - prefer database coordinates, fall back to geocoded ones
@@ -230,6 +235,14 @@ export const filterPHAAgenciesByLocation = (
         _isExactMatch: item.isExactMatch
       } as PHAAgencyWithDistance;
     });
+
+    console.log(`✅ City filter results: ${filteredAgencies.length} agencies within 50 miles`);
+    console.log(`📍 Agencies with coordinates: ${filteredAgencies.filter(a => a.latitude && a.longitude).length}`);
+    console.log(`⚠️ Agencies WITHOUT coordinates: ${filteredAgencies.filter(a => !a.latitude || !a.longitude).length}`);
+    
+    if (filteredAgencies.length > 0 && filteredAgencies.filter(a => a.latitude && a.longitude).length === 0) {
+      console.error('❌ CRITICAL: All filtered agencies are missing coordinates!');
+    }
 
     return filteredAgencies;
   }
