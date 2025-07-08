@@ -197,32 +197,16 @@ export class ClusterManager {
     // Enhanced styling for the marker element
     const element = marker.getElement();
     element.style.cursor = 'pointer';
-    element.style.transition = 'all 0.2s ease';
+    element.style.transition = 'transform 0.2s ease';
     
-    // Add a pulsing effect to draw attention
-    element.style.animation = 'pulse 2s ease-in-out infinite';
-    
-    // Create the pulse animation if it doesn't exist
-    if (!document.querySelector('#marker-pulse-animation')) {
-      const style = document.createElement('style');
-      style.id = 'marker-pulse-animation';
-      style.textContent = `
-        @keyframes pulse {
-          0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-          70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    
+    // Add subtle hover effect only
     element.addEventListener('mouseenter', () => {
-      element.style.transform = 'scale(1.2)';
-      element.style.animation = 'none';
+      element.style.transform = 'scale(1.1)';
+      element.style.zIndex = '1000';
     });
     element.addEventListener('mouseleave', () => {
       element.style.transform = 'scale(1)';
-      element.style.animation = 'pulse 2s ease-in-out infinite';
+      element.style.zIndex = 'auto';
     });
 
     marker.addTo(map);

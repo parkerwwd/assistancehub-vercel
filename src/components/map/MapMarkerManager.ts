@@ -134,10 +134,10 @@ export class MapMarkerManager {
         // Enhanced styling for the marker element
         const element = marker.getElement();
         element.style.cursor = 'pointer';
-        element.style.transition = 'all 0.2s ease';
+        element.style.transition = 'transform 0.2s ease';
         
         element.addEventListener('mouseenter', () => {
-          element.style.transform = 'scale(1.2)';
+          element.style.transform = 'scale(1.1)';
           element.style.zIndex = '1000';
         });
         element.addEventListener('mouseleave', () => {

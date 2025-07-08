@@ -123,26 +123,37 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     }
   }, [selectedOffice, mapboxToken, onOfficeSelect]);
 
+  // Track the last rendered PHAs to prevent unnecessary updates
+  const lastPhaAgenciesRef = useRef<PHAAgency[]>([]);
+
   // Display all PHAs on the map
   useEffect(() => {
     console.log('🗺️ Map data update - PHAs:', phaAgencies?.length || 0, 'Map loaded:', map.current?.loaded(), 'Selected location:', selectedLocation?.name);
     
     if (map.current?.loaded() && !selectedOffice && phaAgencies && phaAgencies.length > 0) {
-      console.log('🎯 Displaying all PHAs on map:', phaAgencies.length);
-      // Clear existing markers first
-      markerManager.current.clearAllAgencyMarkers();
-      markerManager.current.clearLocationMarker();
+      // Check if PHAs have actually changed to prevent unnecessary re-renders
+      const phasChanged = phaAgencies.length !== lastPhaAgenciesRef.current.length ||
+        phaAgencies.some((pha, index) => pha.id !== lastPhaAgenciesRef.current[index]?.id);
       
-      // Always display all PHAs as individual pins
-      markerManager.current.displayAllPHAsAsIndividualPins(
-        map.current, 
-        phaAgencies,
-        onOfficeSelect
-      );
+      if (phasChanged) {
+        console.log('🎯 PHAs changed, updating map:', phaAgencies.length);
+        lastPhaAgenciesRef.current = phaAgencies;
+        
+        // Clear existing markers first
+        markerManager.current.clearAllAgencyMarkers();
+        markerManager.current.clearLocationMarker();
+        
+        // Always display all PHAs as individual pins
+        markerManager.current.displayAllPHAsAsIndividualPins(
+          map.current, 
+          phaAgencies,
+          onOfficeSelect
+        );
+      }
       
-      // If there's a selected location, add its marker too
+      // Handle location marker separately to avoid recreating all PHA markers
       if (selectedLocation) {
-        console.log('📍 Also adding location marker for:', selectedLocation.name);
+        console.log('📍 Adding location marker for:', selectedLocation.name);
         markerManager.current.setLocationMarker(
           map.current,
           selectedLocation.lat,
@@ -150,6 +161,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           selectedLocation.name,
           mapboxToken
         );
+      } else {
+        markerManager.current.clearLocationMarker();
       }
     } else if (map.current?.loaded() && selectedOffice) {
       // Clear location search markers when an office is selected
