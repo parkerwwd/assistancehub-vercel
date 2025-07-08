@@ -46,6 +46,7 @@ const Section8 = () => {
   
   // Handle city selection from header search
   const handleHeaderCitySelect = (location: any) => {
+    console.log('🌟 Section8.handleHeaderCitySelect called with:', location);
     handleLocationSearch(location);
   };
   
@@ -110,6 +111,17 @@ const Section8 = () => {
           <div className="flex h-full">
             {/* Left Panel - Map (Fixed 60% width) */}
             <div className="w-3/5 h-full bg-gray-100">
+              {(() => {
+                console.log('🗺️ MapContainer props:', {
+                  hasSearchLocation: !!state.searchLocation,
+                  searchLocationName: state.searchLocation?.name,
+                  filteredAgenciesCount: state.filteredAgencies.length,
+                  allPHAAgenciesCount: state.allPHAAgencies.length,
+                  selectedLocation: state.selectedLocation,
+                  selectedOffice: state.selectedOffice?.name
+                });
+                return null;
+              })()}
               <MapContainer
                 ref={mapRef}
                 mapboxToken={mapboxToken}

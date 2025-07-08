@@ -108,6 +108,17 @@ function searchMapReducer(state: SearchMapState, action: SearchMapAction): Searc
         ? filterPHAAgenciesByLocation(state.allPHAAgencies, state.searchLocation)
         : state.allPHAAgencies;
       
+      console.log('📊 SearchMapContext APPLY_FILTERS:', {
+        searchLocation: state.searchLocation?.name || 'none',
+        allPHAsCount: state.allPHAAgencies.length,
+        filteredCount: filtered.length,
+        firstFewFiltered: filtered.slice(0, 3).map(a => ({ 
+          name: a.name, 
+          city: a.city,
+          hasCoords: !!(a.latitude && a.longitude)
+        }))
+      });
+      
       // Apply pagination
       const totalCount = filtered.length;
       const totalPages = Math.ceil(totalCount / state.itemsPerPage);
@@ -182,17 +193,21 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Memoized actions
   const actions = useMemo(() => ({
     setSearchLocation: (location: USLocation | null) => {
+      console.log('🎯 SearchMapContext.setSearchLocation called with:', location);
+      
       dispatch({ type: 'SET_SEARCH_LOCATION', payload: location });
       
       // Set map location if provided
       if (location) {
+        const mapLocation = {
+          lat: location.latitude,
+          lng: location.longitude,
+          name: location.type === 'state' ? location.name : `${location.name}, ${location.stateCode}`
+        };
+        console.log('📍 Setting selected location for map:', mapLocation);
         dispatch({ 
           type: 'SET_SELECTED_LOCATION', 
-          payload: {
-            lat: location.latitude,
-            lng: location.longitude,
-            name: location.type === 'state' ? location.name : `${location.name}, ${location.stateCode}`
-          }
+          payload: mapLocation
         });
       } else {
         dispatch({ type: 'SET_SELECTED_LOCATION', payload: null });

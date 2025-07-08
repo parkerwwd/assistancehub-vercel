@@ -9,13 +9,15 @@ import { ClusterManager } from './managers/ClusterManager';
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 export class MapMarkerManager {
-  private agencyManager: AgencyMarkerManager;
-  private locationManager: LocationMarkerManager;
-  private officeManager: OfficeMarkerManager;
-  private clusterManager: ClusterManager;
+  private clusterManager: ClusterManager = new ClusterManager();
+  private officeManager: OfficeMarkerManager = new OfficeMarkerManager();
+  private agencyManager: AgencyMarkerManager = new AgencyMarkerManager();
+  private locationManager: LocationMarkerManager = new LocationMarkerManager();
   private lastMapBounds: mapboxgl.LngLatBounds | null = null;
   private moveEndHandler: (() => void) | null = null;
   private zoomEndHandler: (() => void) | null = null;
+  private selectedOfficeId: string | null = null;
+  private selectedMarker: mapboxgl.Marker | null = null;
 
   constructor() {
     this.agencyManager = new AgencyMarkerManager();
@@ -192,6 +194,22 @@ export class MapMarkerManager {
             email: agency.email,
             isPurple: markerColor === '#a855f7'
           });
+          
+          // Reset previous selected marker
+          if (this.selectedMarker && this.selectedMarker !== marker) {
+            const prevElement = this.selectedMarker.getElement();
+            prevElement.style.transform = 'scale(1)';
+            prevElement.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
+          }
+          
+          // Mark this pin as selected with visual feedback
+          this.selectedOfficeId = agency.id;
+          this.selectedMarker = marker;
+          const element = marker.getElement();
+          element.style.transform = 'scale(1.2)';
+          element.style.filter = 'brightness(1.3) saturate(1.5) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4))';
+          element.style.zIndex = '2000';
+          
           onOfficeSelect(agency);
         });
 
@@ -294,10 +312,21 @@ export class MapMarkerManager {
            Math.abs(newBounds.getWest() - this.lastMapBounds.getWest()) > threshold;
   }
 
+  // Clear visual selection state
+  clearSelection(): void {
+    if (this.selectedMarker) {
+      const element = this.selectedMarker.getElement();
+      element.style.transform = 'scale(1)';
+      element.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
+      element.style.zIndex = 'auto';
+    }
+    this.selectedOfficeId = null;
+    this.selectedMarker = null;
+  }
+
   // No visual selection needed - just let the PHA information panel handle the selection state
   selectExistingPin(office: PHAAgency): void {
-    console.log('📌 Pin clicked - no visual changes, just show PHA info for:', office.name);
-    // Don't change pin appearance - let the information panel show the selection
+    console.log('📌 Pin clicked - visual feedback applied, showing PHA info for:', office.name);
   }
   
   // No need to deselect pins since we don't change their appearance

@@ -28,14 +28,17 @@ export const useMap = (): UseMapReturn => {
   const flyToLocation = useCallback((location: USLocation) => {
     if (!mapRef.current) return;
     
-    // Determine zoom level based on location type
-    let zoomLevel = 10;
+    // Determine appropriate zoom level based on location type
+    let zoomLevel = 12; // Default zoom for most searches
+    
     if (location.type === 'state') {
-      zoomLevel = 6;
+      zoomLevel = 6.5; // Wider view for states
     } else if (location.type === 'county') {
-      zoomLevel = 8;
+      zoomLevel = 10; // County-level zoom
     } else if (location.type === 'city') {
-      zoomLevel = 10;
+      zoomLevel = 12; // City-level zoom - focused but shows surrounding area
+    } else if (location.type === 'zip') {
+      zoomLevel = 13; // ZIP code level - more focused
     }
     
     mapRef.current.flyTo([location.longitude, location.latitude], zoomLevel);
@@ -79,6 +82,14 @@ export const useMap = (): UseMapReturn => {
   
   // Handle location search - sets location filter and flies to location
   const handleLocationSearch = useCallback((location: USLocation) => {
+    console.log('🔍 useMap.handleLocationSearch called with:', {
+      name: location.name,
+      type: location.type,
+      lat: location.latitude,
+      lng: location.longitude,
+      stateCode: location.stateCode
+    });
+    
     // Set the search location (this will trigger filtering)
     actions.setSearchLocation(location);
     

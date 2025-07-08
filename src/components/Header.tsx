@@ -18,8 +18,12 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
   const isMobile = useIsMobile();
 
   const handleCitySelect = (location: any) => {
+    console.log('🎯 Header.handleCitySelect called with:', location);
     if (onCitySelect) {
+      console.log('✅ Calling onCitySelect prop');
       onCitySelect(location);
+    } else {
+      console.log('❌ No onCitySelect prop provided');
     }
   };
 

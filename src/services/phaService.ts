@@ -45,6 +45,13 @@ export const fetchAllPHAData = async (): Promise<FetchPHADataResult> => {
   }
 
   console.log(`✅ Fetched all ${allData.length} PHAs from database`);
+  
+  // Debug: Check how many PHAs have coordinates
+  const phasWithCoords = allData.filter(pha => pha.latitude && pha.longitude);
+  console.log(`📍 PHAs with coordinates: ${phasWithCoords.length}/${allData.length} (${Math.round(phasWithCoords.length/allData.length * 100)}%)`);
+  if (phasWithCoords.length < allData.length * 0.5) {
+    console.warn('⚠️ Less than 50% of PHAs have coordinates! This will affect map display.');
+  }
 
   // Return data as-is, using the coordinates from the database
   return {

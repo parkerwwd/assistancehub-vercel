@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Database } from "@/integrations/supabase/types";
@@ -37,6 +37,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   const map = useRef<mapboxgl.Map | null>(null);
   const markerManager = useRef<MapMarkerManager>(new MapMarkerManager());
   const hasLocationRestrictions = useRef<boolean>(false);
+  const [isMapReady, setIsMapReady] = useState(false);
 
   useImperativeHandle(ref, () => ({
     flyTo: (center: [number, number], zoom: number, options?: any) => {
@@ -85,6 +86,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     // Setup map load events
     map.current.on('load', () => {
       // Map loaded successfully
+      console.log('✅ Map loaded successfully');
+      setIsMapReady(true);
     });
 
     map.current.on('styledata', () => {
@@ -100,6 +103,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     Map3DControls.setup3DFeatures(map.current);
 
     return () => {
+      setIsMapReady(false);
       if (map.current) {
         map.current.remove();
       }
@@ -111,10 +115,11 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     if (map.current?.loaded()) {
       if (selectedOffice) {
         console.log('📌 Office selected - showing in info panel:', selectedOffice.name);
-        // No visual changes to pins - selection is shown in the information panel
+        // Visual selection is handled by the marker click event
       } else {
-        console.log('📌 Office deselected');
-        // No visual changes needed - information panel will handle the state
+        console.log('📌 Office deselected - clearing visual selection');
+        // Clear visual selection when no office is selected
+        markerManager.current.clearSelection();
       }
     }
   }, [selectedOffice]);
@@ -153,13 +158,13 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     // Set max bounds to restrict panning
     map.current.setMaxBounds(bounds);
     
-    // Set zoom restrictions based on search type
-    // For city searches, allow closer zoom but restrict zooming out too far
-    map.current.setMinZoom(9);   // Can't zoom out beyond metro area view
-    map.current.setMaxZoom(18);  // Can zoom in to street level
+    // Set MORE RESTRICTIVE zoom limits for better performance
+    // Users can't zoom out much after searching - they need to use search bar for new locations
+    map.current.setMinZoom(11);   // More restrictive - can't zoom out beyond city view
+    map.current.setMaxZoom(18);  // Can still zoom in to street level
     
     hasLocationRestrictions.current = true;
-    console.log('✅ Location restrictions applied successfully');
+    console.log('✅ Location restrictions applied successfully - MinZoom: 11, MaxZoom: 18');
   };
 
   // Remove all restrictions
@@ -179,9 +184,20 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
 
   // Display PHAs on the map with improved logic
   useEffect(() => {
-    console.log('🗺️ Map data update - PHAs:', phaAgencies?.length || 0, 'Map loaded:', map.current?.loaded(), 'Selected location:', selectedLocation?.name, 'Selected office:', selectedOffice?.name);
+    console.log('🗺️ Map data update - PHAs:', phaAgencies?.length || 0, 'Map ready:', isMapReady, 'Map loaded:', map.current?.loaded(), 'Selected location:', selectedLocation?.name, 'Selected office:', selectedOffice?.name);
     
-    if (map.current?.loaded()) {
+    // Log details about the first few PHAs to check coordinates
+    if (phaAgencies && phaAgencies.length > 0) {
+      console.log('📍 First 3 PHAs details:', phaAgencies.slice(0, 3).map(pha => ({
+        name: pha.name,
+        city: pha.city,
+        latitude: pha.latitude,
+        longitude: pha.longitude,
+        hasCoords: !!(pha.latitude && pha.longitude)
+      })));
+    }
+    
+    if (isMapReady && map.current?.loaded()) {
       // Check if PHAs have actually changed to prevent unnecessary re-renders
       const phasChanged = phaAgencies.length !== lastPhaAgenciesRef.current.length ||
         phaAgencies.some((pha, index) => pha.id !== lastPhaAgenciesRef.current[index]?.id);
@@ -265,7 +281,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         }
       }
     }
-  }, [phaAgencies, selectedLocation, selectedOffice, mapboxToken, onOfficeSelect]);
+  }, [phaAgencies, selectedLocation, selectedOffice, mapboxToken, onOfficeSelect, isMapReady]);
 
 
 
