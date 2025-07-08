@@ -175,19 +175,24 @@ export const filterPHAAgenciesByLocation = (
           agencyLng = geocodedAgency.geocoded_longitude;
         }
         
-        // Skip agencies without any coordinates
+        // Skip agencies without any coordinates, but be less strict for now
         if (!agencyLat || !agencyLng) {
-          // Log agencies being skipped due to missing coordinates
+          // For agencies in the exact search city, try to show them anyway by using fallback logic
           if (agency.city?.toLowerCase() === selectedLocation.name.toLowerCase() ||
               agency.address?.toLowerCase().includes(selectedLocation.name.toLowerCase())) {
-            console.warn(`⚠️ PHA in ${selectedLocation.name} skipped - no coordinates:`, {
+            console.warn(`⚠️ PHA in ${selectedLocation.name} has no coordinates but showing anyway:`, {
               name: agency.name,
               address: agency.address,
               city: agency.city,
               state: agency.state
             });
+            // Use search location coordinates as fallback (they'll appear at the search center)
+            agencyLat = selectedLocation.latitude;
+            agencyLng = selectedLocation.longitude;
+          } else {
+            // Skip agencies outside the search city that don't have coordinates
+            return null;
           }
-          return null;
         }
         
         // Calculate distance

@@ -67,20 +67,35 @@ export class MapMarkerManager {
     let skipCount = 0;
     const bounds = new mapboxgl.LngLatBounds();
     let hasValidCoordinates = false;
+    const missingCoordinates: PHAAgency[] = [];
     
     agencies.forEach(agency => {
-      // Only use database coordinates
-      const lat = agency.latitude;
-      const lng = agency.longitude;
+      // Get agency coordinates - prefer database coordinates, fall back to geocoded ones
+      let lat = agency.latitude;
+      let lng = agency.longitude;
       
+      // If database doesn't have coordinates, check for geocoded ones
       if (!lat || !lng) {
-        console.warn(`⚠️ No coordinates for PHA: ${agency.name} (${agency.city}, ${agency.state})`, {
+        const geocodedAgency = agency as any;
+        lat = geocodedAgency.geocoded_latitude;
+        lng = geocodedAgency.geocoded_longitude;
+      }
+      
+      // Validate coordinates are within valid ranges
+      if (!lat || !lng || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        console.warn(`⚠️ Invalid or missing coordinates for PHA: ${agency.name}`, {
+          id: agency.id,
           name: agency.name,
           address: agency.address,
           city: agency.city,
           state: agency.state,
-          hasDbCoords: !!(agency.latitude && agency.longitude)
+          dbLat: agency.latitude,
+          dbLng: agency.longitude,
+          geocodedLat: (agency as any).geocoded_latitude,
+          geocodedLng: (agency as any).geocoded_longitude
         });
+        
+        missingCoordinates.push(agency);
         skipCount++;
         return;
       }
@@ -94,12 +109,14 @@ export class MapMarkerManager {
         let markerColor = '#10b981'; // Default green
         const programType = agency.program_type?.toLowerCase() || '';
         
-        if (programType.includes('section 8')) {
-          markerColor = '#3b82f6'; // Blue for Section 8
+        if (programType.includes('section 8') || programType.includes('hcv')) {
+          markerColor = '#3b82f6'; // Blue for Section 8/HCV
         } else if (programType.includes('combined')) {
           markerColor = '#a855f7'; // Purple for Combined
-        } else if (programType.includes('low-rent')) {
-          markerColor = '#10b981'; // Green for Low-Rent
+        } else if (programType.includes('low-rent') || programType.includes('public housing')) {
+          markerColor = '#10b981'; // Green for Low-Rent/Public Housing
+        } else if (programType.includes('mod rehab')) {
+          markerColor = '#f59e0b'; // Orange for Mod Rehab
         }
         
         // Create marker with custom styling
@@ -111,14 +128,18 @@ export class MapMarkerManager {
         .setPopup(
           new mapboxgl.Popup({ offset: 25 })
             .setHTML(`
-              <div style="padding: 12px; max-width: 250px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${agency.name}</h3>
-                ${agency.address ? `<p style="margin: 0 0 4px 0; font-size: 14px; color: #6b7280;">${agency.address}</p>` : ''}
-                ${agency.phone ? `<p style="margin: 0; font-size: 14px; color: #6b7280;">📞 ${agency.phone}</p>` : ''}
-                ${agency.program_type ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: ${markerColor}; font-weight: 500;">🏢 ${agency.program_type}</p>` : ''}
+              <div style="padding: 12px; max-width: 280px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1f2937;">${agency.name}</h3>
+                ${agency.address ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280; line-height: 1.4;">📍 ${agency.address}</p>` : ''}
+                ${agency.phone ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280;">📞 ${agency.phone}</p>` : ''}
+                ${agency.email ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280;">📧 ${agency.email}</p>` : ''}
+                ${agency.program_type ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: ${markerColor}; font-weight: 500; padding: 2px 8px; background: ${markerColor}15; border-radius: 4px; display: inline-block;">🏢 ${agency.program_type}</p>` : ''}
+                ${agency.waitlist_status ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">📋 Waitlist: ${agency.waitlist_status}</p>` : ''}
                 <button 
                   onclick="window.postMessage({ type: 'selectOffice', officeId: '${agency.id}' }, '*')"
-                  style="margin-top: 8px; padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
+                  style="margin-top: 8px; padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; width: 100%; transition: background 0.2s;"
+                  onmouseover="this.style.background='#2563eb'"
+                  onmouseout="this.style.background='#3b82f6'"
                 >
                   View Details
                 </button>
@@ -135,6 +156,7 @@ export class MapMarkerManager {
         const element = marker.getElement();
         element.style.cursor = 'pointer';
         element.style.transition = 'transform 0.2s ease';
+        element.title = agency.name; // Add tooltip
         
         element.addEventListener('mouseenter', () => {
           element.style.transform = 'scale(1.1)';
@@ -149,7 +171,7 @@ export class MapMarkerManager {
         this.agencyManager.addSingleMarker(marker);
         successCount++;
       } catch (error) {
-        console.error(`Failed to create marker for ${agency.name}:`, error);
+        console.error(`❌ Failed to create marker for ${agency.name}:`, error);
         skipCount++;
       }
     });
@@ -157,19 +179,29 @@ export class MapMarkerManager {
     console.log(`✅ Successfully displayed ${successCount} PHAs as individual pins`);
     console.log(`❌ Skipped ${skipCount} PHAs due to missing coordinates or errors`);
     
-    // Add detailed summary of which PHAs are missing coordinates
-    if (skipCount > 0) {
-      console.log('📍 PHAs missing coordinates that need geocoding:');
-      agencies.forEach(agency => {
-        if (!agency.latitude || !agency.longitude) {
-          console.log(`   - ${agency.name} | Address: ${agency.address || 'No address'}`);
-        }
+    // Provide detailed feedback about missing coordinates
+    if (missingCoordinates.length > 0) {
+      console.log(`📍 ${missingCoordinates.length} PHAs missing coordinates:`, {
+        totalPHAs: agencies.length,
+        withCoordinates: successCount,
+        missingCoordinates: missingCoordinates.length,
+        missingAddresses: missingCoordinates.filter(pha => !pha.address).length
       });
+      
+      // Log a sample of PHAs that need geocoding
+      console.log('📍 Sample PHAs needing geocoding:');
+      missingCoordinates.slice(0, 5).forEach(pha => {
+        console.log(`   - ${pha.name} | ${pha.address || 'No address'} | ${pha.city}, ${pha.state}`);
+      });
+      
+      if (missingCoordinates.length > 5) {
+        console.log(`   ... and ${missingCoordinates.length - 5} more`);
+      }
     }
     
-    // Don't adjust bounds when showing all PHAs - keep the US overview
+    // Don't adjust bounds when showing all PHAs - keep the current view
     // This lets users see the full distribution of PHAs across the country
-    console.log(`📍 Showing ${successCount} PHAs across the map`);
+    console.log(`🗺️ Showing ${successCount} PHAs across the map`);
   }
 
   // Update clusters when map moves or zoom changes

@@ -29,35 +29,50 @@ export class ClusterManager {
     this.clearMarkers();
 
     // Log total agencies
-    console.log(`📍 Processing ${agencies.length} PHAs for map display`);
+    console.log(`🌍 Processing ${agencies.length} PHAs for clustering`);
 
-    // Convert agencies to GeoJSON features
-    const features: GeoJSON.Feature<GeoJSON.Point, AgencyProperties>[] = agencies
-      .filter(agency => {
-        // Only use database coordinates
-        const lat = agency.latitude;
-        const lng = agency.longitude;
-        
-        if (!lat || !lng) {
-          console.warn(`⚠️ No coordinates for PHA: ${agency.name} (${agency.city}, ${agency.state})`);
-        }
-        
-        return lat && lng;
-      })
-      .map(agency => ({
+    // Convert agencies to GeoJSON features with better coordinate validation
+    const features: GeoJSON.Feature<GeoJSON.Point, AgencyProperties>[] = [];
+    const missingCoordinates: PHAAgency[] = [];
+
+    agencies.forEach(agency => {
+      // Get coordinates with validation
+      let lat = agency.latitude;
+      let lng = agency.longitude;
+      
+      // If database doesn't have coordinates, check for geocoded ones
+      if (!lat || !lng) {
+        const geocodedAgency = agency as any;
+        lat = geocodedAgency.geocoded_latitude;
+        lng = geocodedAgency.geocoded_longitude;
+      }
+      
+      // Validate coordinates are within valid ranges
+      if (!lat || !lng || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        missingCoordinates.push(agency);
+        return;
+      }
+
+      features.push({
         type: 'Feature' as const,
         properties: { agency },
         geometry: {
           type: 'Point' as const,
-          coordinates: [
-            agency.longitude,
-            agency.latitude
-          ]
+          coordinates: [lng, lat]
         }
-      }));
+      });
+    });
 
-    console.log(`✅ ${features.length} PHAs have valid coordinates and will be displayed`);
-    console.log(`❌ ${agencies.length - features.length} PHAs missing coordinates`);
+    console.log(`✅ ${features.length} PHAs have valid coordinates for clustering`);
+    
+    if (missingCoordinates.length > 0) {
+      console.log(`❌ ${missingCoordinates.length} PHAs missing coordinates`, {
+        totalPHAs: agencies.length,
+        withCoordinates: features.length,
+        missingCoordinates: missingCoordinates.length,
+        missingAddresses: missingCoordinates.filter(pha => !pha.address).length
+      });
+    }
 
     // Load features into cluster
     this.cluster.load(features);
@@ -71,6 +86,8 @@ export class ClusterManager {
       [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
       Math.floor(zoom)
     );
+
+    console.log(`🔍 Found ${clusters.length} clusters/points at zoom level ${Math.floor(zoom)}`);
 
     // Create markers for each cluster/point
     clusters.forEach(cluster => {
@@ -157,31 +174,37 @@ export class ClusterManager {
     let markerColor = '#10b981'; // Default green
     const programType = agency.program_type?.toLowerCase() || '';
     
-    if (programType.includes('section 8')) {
-      markerColor = '#3b82f6'; // Blue for Section 8
+    if (programType.includes('section 8') || programType.includes('hcv')) {
+      markerColor = '#3b82f6'; // Blue for Section 8/HCV
     } else if (programType.includes('combined')) {
       markerColor = '#a855f7'; // Purple for Combined
-    } else if (programType.includes('low-rent')) {
-      markerColor = '#10b981'; // Green for Low-Rent
+    } else if (programType.includes('low-rent') || programType.includes('public housing')) {
+      markerColor = '#10b981'; // Green for Low-Rent/Public Housing
+    } else if (programType.includes('mod rehab')) {
+      markerColor = '#f59e0b'; // Orange for Mod Rehab
     }
     
     // Create marker with custom styling
     const marker = new mapboxgl.Marker({
       color: markerColor,
-      scale: 0.9 // Slightly larger than before
+      scale: 0.9 // Slightly larger than individual pins
     })
     .setLngLat([lng, lat])
     .setPopup(
       new mapboxgl.Popup({ offset: 25 })
         .setHTML(`
-          <div style="padding: 12px; max-width: 250px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${agency.name}</h3>
-            ${agency.address ? `<p style="margin: 0 0 4px 0; font-size: 14px; color: #6b7280;">${agency.address}</p>` : ''}
-            ${agency.phone ? `<p style="margin: 0; font-size: 14px; color: #6b7280;">📞 ${agency.phone}</p>` : ''}
-            ${agency.program_type ? `<p style="margin: 0 0 4px 0; font-size: 13px; color: ${markerColor}; font-weight: 500;">🏢 ${agency.program_type}</p>` : ''}
+          <div style="padding: 12px; max-width: 280px;">
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1f2937;">${agency.name}</h3>
+            ${agency.address ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280; line-height: 1.4;">📍 ${agency.address}</p>` : ''}
+            ${agency.phone ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280;">📞 ${agency.phone}</p>` : ''}
+            ${agency.email ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280;">📧 ${agency.email}</p>` : ''}
+            ${agency.program_type ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: ${markerColor}; font-weight: 500; padding: 2px 8px; background: ${markerColor}15; border-radius: 4px; display: inline-block;">🏢 ${agency.program_type}</p>` : ''}
+            ${agency.waitlist_status ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">📋 Waitlist: ${agency.waitlist_status}</p>` : ''}
             <button 
               onclick="window.postMessage({ type: 'selectOffice', officeId: '${agency.id}' }, '*')"
-              style="margin-top: 8px; padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
+              style="margin-top: 8px; padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; width: 100%; transition: background 0.2s;"
+              onmouseover="this.style.background='#2563eb'"
+              onmouseout="this.style.background='#3b82f6'"
             >
               View Details
             </button>
@@ -198,6 +221,7 @@ export class ClusterManager {
     const element = marker.getElement();
     element.style.cursor = 'pointer';
     element.style.transition = 'transform 0.2s ease';
+    element.title = agency.name; // Add tooltip
     
     // Add subtle hover effect only
     element.addEventListener('mouseenter', () => {

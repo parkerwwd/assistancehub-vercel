@@ -128,7 +128,7 @@ const Section8 = () => {
             filteredLocation={filteredLocation}
             mapRef={mapRef}
             phaAgencies={phaAgencies}
-            filteredAgencies={filteredAgencies}
+            filteredAgencies={filteredLocation ? filteredAgencies : allPHAAgencies}
             allPHAAgencies={allPHAAgencies}
             loading={loading}
             currentPage={currentPage}
@@ -150,15 +150,15 @@ const Section8 = () => {
           <div className="flex h-full">
             {/* Left Panel - Map (Fixed 60% width) */}
             <div className="w-3/5 h-full bg-gray-100">
-              <MapContainer
-                ref={mapRef}
-                mapboxToken={mapboxToken}
-                phaAgencies={filteredLocation ? filteredAgencies : []}
-                onOfficeSelect={handleOfficeClick}
-                onTokenError={setTokenError}
-                selectedOffice={selectedOffice}
-                selectedLocation={selectedLocation}
-              />
+                          <MapContainer
+              ref={mapRef}
+              mapboxToken={mapboxToken}
+              phaAgencies={filteredLocation ? filteredAgencies : allPHAAgencies}
+              onOfficeSelect={handleOfficeClick}
+              onTokenError={setTokenError}
+              selectedOffice={selectedOffice}
+              selectedLocation={selectedLocation}
+            />
             </div>
             
             {/* Fixed Divider Line */}

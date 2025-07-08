@@ -184,35 +184,69 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     console.log('🔓 Removed location restrictions');
   };
 
-  // Display PHAs on the map (only when there's a location search)
+  // Display PHAs on the map with improved logic
   useEffect(() => {
     console.log('🗺️ Map data update - PHAs:', phaAgencies?.length || 0, 'Map loaded:', map.current?.loaded(), 'Selected location:', selectedLocation?.name);
     
     if (map.current?.loaded() && !selectedOffice) {
-      // Only show PHAs if there's a selected location (search active)
-      if (selectedLocation && phaAgencies && phaAgencies.length > 0) {
-        // Check if PHAs have actually changed to prevent unnecessary re-renders
-        const phasChanged = phaAgencies.length !== lastPhaAgenciesRef.current.length ||
-          phaAgencies.some((pha, index) => pha.id !== lastPhaAgenciesRef.current[index]?.id);
+      // Check if PHAs have actually changed to prevent unnecessary re-renders
+      const phasChanged = phaAgencies.length !== lastPhaAgenciesRef.current.length ||
+        phaAgencies.some((pha, index) => pha.id !== lastPhaAgenciesRef.current[index]?.id);
+      
+      if (phasChanged || (selectedLocation && !lastPhaAgenciesRef.current.length)) {
+        console.log('🎯 Displaying', phaAgencies.length, 'PHAs on map');
+        lastPhaAgenciesRef.current = phaAgencies;
         
-        if (phasChanged) {
-          console.log('🎯 Location search - displaying', phaAgencies.length, 'PHAs near', selectedLocation.name);
-          lastPhaAgenciesRef.current = phaAgencies;
-          
-          // Clear existing markers first
-          markerManager.current.clearAllAgencyMarkers();
-          markerManager.current.clearLocationMarker();
-          
-          // Display PHAs as individual pins
-          markerManager.current.displayAllPHAsAsIndividualPins(
-            map.current, 
-            phaAgencies,
-            onOfficeSelect
-          );
+        // Clear existing markers first
+        markerManager.current.clearAllAgencyMarkers();
+        markerManager.current.clearLocationMarker();
+        
+        // Display PHAs based on context
+        if (phaAgencies && phaAgencies.length > 0) {
+          if (selectedLocation) {
+            // Location search active - show as individual pins with location marker
+            console.log('📍 Location search - displaying', phaAgencies.length, 'PHAs near', selectedLocation.name);
+            markerManager.current.displayAllPHAsAsIndividualPins(
+              map.current, 
+              phaAgencies,
+              onOfficeSelect
+            );
+            
+            // Add location marker
+            markerManager.current.setLocationMarker(
+              map.current,
+              selectedLocation.lat,
+              selectedLocation.lng,
+              selectedLocation.name,
+              mapboxToken
+            );
+            
+            // Apply zoom and bounds restrictions after a delay to let the map fly to location first
+            setTimeout(() => {
+              applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
+            }, 500);
+          } else {
+            // No location filter - show with clustering for better performance
+            console.log('🌍 Overview mode - showing', phaAgencies.length, 'PHAs with clustering');
+            markerManager.current.updateClusters(
+              map.current,
+              phaAgencies,
+              onOfficeSelect
+            );
+            
+            // Remove any location restrictions
+            removeLocationRestrictions();
+          }
+        } else {
+          // No PHAs to display
+          console.log('🧹 No PHAs to display - clearing map');
+          removeLocationRestrictions();
         }
-        
-        // Add location marker
-        console.log('📍 Adding location marker for:', selectedLocation.name);
+      }
+      
+      // Handle location changes without PHA data changes
+      if (!phasChanged && selectedLocation && phaAgencies.length > 0) {
+        // Just update the location marker if PHAs haven't changed
         markerManager.current.setLocationMarker(
           map.current,
           selectedLocation.lat,
@@ -220,21 +254,14 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           selectedLocation.name,
           mapboxToken
         );
-        
-        // Apply zoom and bounds restrictions after a delay to let the map fly to location first
-        setTimeout(() => {
-          applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
-        }, 500); // Wait for fly animation to complete
-        
-      } else if (!selectedLocation) {
-        // No location selected - clear everything and remove restrictions
-        console.log('🧹 No location selected - clearing map');
-        markerManager.current.clearAllAgencyMarkers();
-        markerManager.current.clearLocationMarker();
+      }
+      
+      // Handle clearing location search
+      if (!selectedLocation && lastPhaAgenciesRef.current.length > 0) {
+        console.log('🧹 Location search cleared - switching to overview mode');
         removeLocationRestrictions();
-        lastPhaAgenciesRef.current = [];
         
-        // Reset map to US view when clearing search
+        // Reset map to US view
         if (map.current) {
           map.current.flyTo({
             center: [-95.7129, 37.0902],
@@ -262,10 +289,10 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-2 rounded-lg text-sm font-medium backdrop-blur-sm">
         🗺️ Street Map
       </div>
-      {!selectedLocation && !selectedOffice && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Search for a Location</h3>
-          <p className="text-sm text-gray-600">Enter a city, state, or county in the search bar above to view PHAs in that area</p>
+      {!selectedLocation && !selectedOffice && phaAgencies.length === 0 && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center max-w-sm">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">No PHA Offices Found</h3>
+          <p className="text-sm text-gray-600">Try searching for a specific location to find nearby housing authorities</p>
         </div>
       )}
     </div>

@@ -166,7 +166,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
               <MapContainer
                 ref={mapRef}
                 mapboxToken={mapboxToken}
-                phaAgencies={filteredLocation ? filteredAgencies : []}
+                phaAgencies={filteredLocation ? filteredAgencies : allPHAAgencies}
                 onOfficeSelect={setSelectedOffice}
                 onTokenError={setTokenError}
                 selectedOffice={selectedOffice}
