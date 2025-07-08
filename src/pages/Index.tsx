@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { USLocation } from "@/data/locations";
 import { comprehensiveCities } from "@/data/locations/cities";
 import USMap from "@/components/USMap";
+import UnifiedSearchInput from "@/components/UnifiedSearchInput";
 
 const STATES = [
   { code: 'AL', name: 'Alabama', lat: 32.318, lng: -86.902 },
@@ -76,14 +77,7 @@ const POPULAR_CITIES = [
 
 const Index = () => {
   const [selectedState, setSelectedState] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState<number>(-1);
-  const [filteredCities, setFilteredCities] = useState<USLocation[]>([]);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const handleStateSearch = () => {
     if (selectedState) {
@@ -103,306 +97,9 @@ const Index = () => {
     }
   };
 
-  // Filter cities based on search input
-  const filterCities = async (query: string) => {
-    if (!query.trim()) {
-      setFilteredCities([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    // Check if the query is a ZIP code (5 digits or 5+4 format)
-    const zipCodeRegex = /^\d{5}(-\d{4})?$/;
-    const isZipCode = zipCodeRegex.test(query.trim());
-
-    if (isZipCode) {
-      // For ZIP codes, we'll create a special suggestion
-      setFilteredCities([{
-        name: `ZIP Code ${query.trim()}`,
-        type: 'zip' as any,
-        state: 'United States',
-        stateCode: 'US',
-        latitude: 0, // Will be geocoded later
-        longitude: 0, // Will be geocoded later
-        zipCode: query.trim()
-      } as any]);
-      setShowSuggestions(true);
-      return;
-    }
-
-    // First, filter local cities for instant results
-    const lowerQuery = query.toLowerCase();
-    const localCities = comprehensiveCities.filter(city => 
-      city.name.toLowerCase().includes(lowerQuery) ||
-      city.state.toLowerCase().includes(lowerQuery) ||
-      city.stateCode.toLowerCase().includes(lowerQuery)
-    );
-
-    // If we have enough local results, use them
-    if (localCities.length >= 5) {
-      setFilteredCities(localCities.slice(0, 10));
-      setShowSuggestions(true);
-      return;
-    }
-
-    // Otherwise, use Mapbox geocoding for comprehensive search
-    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-    if (query.length >= 3 && mapboxToken) { // Only search after 3 characters
-      try {
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
-          `access_token=${mapboxToken}&` +
-          `country=US&` +
-          `types=place&` + // Only search for cities/places
-          `limit=10`
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Convert Mapbox results to our format
-          const mapboxCities = data.features
-            .filter((feature: any) => feature.place_type.includes('place'))
-            .map((feature: any) => {
-              const [stateName, stateCode] = feature.context?.find((c: any) => c.id.startsWith('region'))?.text 
-                ? [feature.context.find((c: any) => c.id.startsWith('region')).text, 
-                   feature.context.find((c: any) => c.id.startsWith('region')).short_code?.replace('US-', '') || '']
-                : ['', ''];
-              
-              return {
-                name: feature.text,
-                state: stateName,
-                stateCode: stateCode.toUpperCase(),
-                latitude: feature.center[1],
-                longitude: feature.center[0],
-                type: 'city' as const,
-                mapboxId: feature.id // Keep track of Mapbox results
-              };
-            });
-
-          // Combine local and Mapbox results, removing duplicates
-          const combinedResults = [...localCities];
-          mapboxCities.forEach((mapboxCity: any) => {
-            if (!combinedResults.some(local => 
-              local.name.toLowerCase() === mapboxCity.name.toLowerCase() && 
-              local.stateCode === mapboxCity.stateCode
-            )) {
-              combinedResults.push(mapboxCity);
-            }
-          });
-
-          setFilteredCities(combinedResults.slice(0, 10));
-          setShowSuggestions(true);
-        }
-      } catch (error) {
-        console.error('Error fetching cities from Mapbox:', error);
-        // Fall back to local results only
-        setFilteredCities(localCities.slice(0, 10));
-        setShowSuggestions(true);
-      }
-    } else {
-      // For short queries, just use local results
-      setFilteredCities(localCities.slice(0, 10));
-      setShowSuggestions(true);
-    }
-  };
-
-  // Handle search input change
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    
-    // Clear existing timeout
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
-    
-    // For empty queries, clear immediately
-    if (!value.trim()) {
-      setFilteredCities([]);
-      setShowSuggestions(false);
-      return;
-    }
-    
-    // For non-empty queries, debounce the search
-    const timeout = setTimeout(() => {
-      filterCities(value);
-    }, 300); // 300ms debounce
-    
-    setDebounceTimeout(timeout);
-  };
-
-  // Handle search submission - updated to handle ZIP codes
-  const handleSearchSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Check if it's a ZIP code
-      const zipCodeRegex = /^\d{5}(-\d{4})?$/;
-      const isZipCode = zipCodeRegex.test(searchQuery.trim());
-      
-      if (isZipCode) {
-        // Handle ZIP code search with geocoding
-        await handleZipCodeSearch(searchQuery.trim());
-      } else {
-        // Try to find the city in our local data first
-        const cityData = comprehensiveCities.find(city => 
-          `${city.name}, ${city.stateCode}`.toLowerCase() === searchQuery.trim().toLowerCase() ||
-          city.name.toLowerCase() === searchQuery.trim().toLowerCase()
-        );
-        
-        if (cityData) {
-          // Use local city data with coordinates
-          navigate('/section8', { state: { searchLocation: cityData } });
-        } else {
-          // If not found locally, try geocoding with Mapbox
-          try {
-            const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-            if (mapboxToken) {
-              const response = await fetch(
-                `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?` +
-                `access_token=${mapboxToken}&` +
-                `country=US&` +
-                `types=place&` +
-                `limit=1`
-              );
-              
-              if (response.ok) {
-                const data = await response.json();
-                if (data.features && data.features.length > 0) {
-                  const feature = data.features[0];
-                  const [lng, lat] = feature.center;
-                  
-                  // Create location object from geocoded data
-                  const geoLocation = {
-                    name: feature.text || searchQuery,
-                    type: 'city' as const,
-                    state: feature.context?.find((c: any) => c.id.startsWith('region'))?.text || '',
-                    stateCode: feature.context?.find((c: any) => c.id.startsWith('region'))?.short_code?.replace('US-', '') || '',
-                    latitude: lat,
-                    longitude: lng
-                  };
-                  
-                  navigate('/section8', { state: { searchLocation: geoLocation } });
-                  return;
-                }
-              }
-            }
-          } catch (error) {
-            console.error('Error geocoding search query:', error);
-          }
-          
-          // Final fallback to text search
-          navigate('/section8', { state: { searchQuery: searchQuery.trim() } });
-        }
-      }
-    }
-  };
-
-  // Handle ZIP code search with geocoding
-  const handleZipCodeSearch = async (zipCode: string) => {
-    try {
-      // Use Mapbox geocoding to get coordinates for the ZIP code
-      const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-      if (!mapboxToken) {
-        console.error('Mapbox token not found');
-        // Fallback to regular search
-        navigate('/section8', { state: { searchQuery: zipCode } });
-        return;
-      }
-
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(zipCode)}.json?access_token=${mapboxToken}&limit=1&country=US&types=postcode`
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (data.features && data.features.length > 0) {
-          const feature = data.features[0];
-          const [lng, lat] = feature.center;
-          const placeName = feature.place_name || feature.text || zipCode;
-          
-          // Create a location object for the ZIP code
-          const zipLocation = {
-            name: placeName.split(',')[0] || `ZIP ${zipCode}`,
-            type: 'city' as const,
-            state: 'United States',
-            stateCode: 'US',
-            latitude: lat,
-            longitude: lng
-          };
-          
-          console.log('✅ Geocoded ZIP code:', zipCode, '→', { lat, lng, placeName });
-          
-          // Navigate to section8 page with the geocoded location
-          navigate('/section8', { state: { searchLocation: zipLocation } });
-        } else {
-          console.warn('⚠️ No geocoding results for ZIP code:', zipCode);
-          // Fallback to regular search
-          navigate('/section8', { state: { searchQuery: zipCode } });
-        }
-      } else {
-        console.error('❌ Geocoding API error:', response.status);
-        // Fallback to regular search
-        navigate('/section8', { state: { searchQuery: zipCode } });
-      }
-    } catch (error) {
-      console.error('❌ Error geocoding ZIP code:', error);
-      // Fallback to regular search
-      navigate('/section8', { state: { searchQuery: zipCode } });
-    }
-  };
-
-  // Handle suggestion selection - updated to handle ZIP codes
-  const handleSuggestionSelect = async (city: USLocation | any) => {
-    if (city.type === 'zip' && city.zipCode) {
-      // Handle ZIP code selection
-      setSearchQuery(city.zipCode);
-      setShowSuggestions(false);
-      setSelectedSuggestionIndex(-1);
-      await handleZipCodeSearch(city.zipCode);
-    } else {
-      // Handle regular city selection - pass location object with coordinates
-      const searchText = `${city.name}, ${city.stateCode}`;
-      setSearchQuery(searchText);
-      setShowSuggestions(false);
-      setSelectedSuggestionIndex(-1);
-      
-      // Pass the location object with coordinates so Section8 page can filter properly
-      navigate('/section8', { state: { searchLocation: city } });
-    }
-  };
-
-  // Handle keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedSuggestionIndex(prev => 
-          prev < filteredCities.length - 1 ? prev + 1 : 0
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedSuggestionIndex(prev => 
-          prev > 0 ? prev - 1 : filteredCities.length - 1
-        );
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedSuggestionIndex >= 0 && filteredCities[selectedSuggestionIndex]) {
-          handleSuggestionSelect(filteredCities[selectedSuggestionIndex]);
-        } else if (searchQuery.trim()) {
-          handleSearchSubmit(e);
-        }
-        break;
-      case 'Escape':
-        setShowSuggestions(false);
-        setSelectedSuggestionIndex(-1);
-        searchInputRef.current?.blur();
-        break;
-    }
+  // Handle location selection from search
+  const handleLocationSelect = (location: USLocation) => {
+    navigate('/section8', { state: { searchLocation: location } });
   };
 
   // Handle city click from popular cities buttons
@@ -420,29 +117,6 @@ const Index = () => {
       navigate('/section8', { state: { searchQuery: cityName } });
     }
   };
-
-  // Close suggestions when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current && 
-        !suggestionsRef.current.contains(event.target as Node) &&
-        !searchInputRef.current?.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false);
-        setSelectedSuggestionIndex(-1);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      // Clean up any pending debounce timeout
-      if (debounceTimeout) {
-        clearTimeout(debounceTimeout);
-      }
-    };
-  }, [debounceTimeout]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -470,66 +144,13 @@ const Index = () => {
 
             {/* Search Bar with Autocomplete - Mobile Optimized */}
             <div className="max-w-xl md:max-w-2xl mx-auto mb-6 sm:mb-8 relative px-2 sm:px-0">
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
-                  <Target className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
-                </div>
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="City, County, or ZIP"
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  onFocus={() => { if (searchQuery) filterCities(searchQuery); }}
-                  className="w-full pl-10 sm:pl-12 pr-16 sm:pr-20 py-4 sm:py-6 text-base sm:text-lg rounded-full border-0 shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none relative z-10"
-                  aria-label="Search for Section 8 housing"
-                  autoComplete="off"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-1 sm:right-2 top-1 sm:top-2 bottom-1 sm:bottom-2 px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-full transition-colors duration-200 flex items-center gap-1 sm:gap-2 z-10 text-sm sm:text-base"
-                >
-                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <span className="hidden sm:inline">Search</span>
-                </button>
-                
-                {/* Autocomplete Suggestions - Mobile Optimized */}
-                {showSuggestions && filteredCities.length > 0 && (
-                  <div 
-                    ref={suggestionsRef}
-                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-[100] max-h-[50vh] overflow-y-auto overscroll-contain"
-                    style={{ maxWidth: '100%' }}
-                  >
-                    {filteredCities.map((city, index) => (
-                      <div
-                        key={`${city.name}-${city.stateCode}`}
-                        className={`px-3 sm:px-4 py-4 cursor-pointer transition-colors duration-150 flex items-center gap-2 sm:gap-3 touch-manipulation ${
-                          index === selectedSuggestionIndex 
-                            ? 'bg-blue-50 text-blue-900' 
-                            : 'hover:bg-gray-50 active:bg-gray-100'
-                        }`}
-                        onClick={() => handleSuggestionSelect(city)}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          handleSuggestionSelect(city);
-                        }}
-                        onMouseEnter={() => setSelectedSuggestionIndex(index)}
-                      >
-                        <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 text-sm sm:text-base truncate">
-                            {city.name}
-                          </div>
-                          <div className="text-xs sm:text-sm text-gray-500">
-                            {city.state} ({city.stateCode})
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </form>
+              <UnifiedSearchInput
+                placeholder="City, County, or ZIP"
+                onLocationSelect={handleLocationSelect}
+                className="w-full"
+                variant="default"
+                autoFocus={false}
+              />
             </div>
 
             {/* Popular Cities - Mobile Optimized */}

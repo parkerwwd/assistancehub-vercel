@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Menu, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import CitySearch from './CitySearch';
+import UnifiedSearchInput from './UnifiedSearchInput';
 import { USLocation } from "@/data/usLocations";
 import logoImage from "@/assets/Black.png";
 
@@ -88,10 +88,11 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
             {showSearch && !isMobile && (
               <div className="hidden md:flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-2 min-w-80">
                 <Search className="w-4 h-4 text-gray-400" />
-                <CitySearch 
-                  onCitySelect={handleCitySelect} 
+                <UnifiedSearchInput 
+                  onLocationSelect={handleCitySelect} 
                   placeholder="Search by city, state..."
                   variant="header"
+                  autoNavigate={false}
                 />
               </div>
             )}
@@ -125,10 +126,11 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
               <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-3 min-h-[52px] touch-manipulation">
                 <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
                 <div className="flex-1 relative touch-manipulation">
-                  <CitySearch 
-                    onCitySelect={handleCitySelect} 
+                  <UnifiedSearchInput 
+                    onLocationSelect={handleCitySelect} 
                     placeholder="Search city, state, ZIP..."
                     variant="header"
+                    autoNavigate={false}
                   />
                 </div>
               </div>
@@ -201,13 +203,14 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 <div className="pt-4 border-t">
                   <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-4 py-3">
                     <Search className="w-5 h-5 text-gray-400" />
-                    <CitySearch 
-                      onCitySelect={(location) => {
+                    <UnifiedSearchInput 
+                      onLocationSelect={(location) => {
                         handleCitySelect(location);
                         setIsMobileMenuOpen(false);
                       }} 
                       placeholder="Search by city..."
                       variant="header"
+                      autoNavigate={false}
                     />
                   </div>
                 </div>

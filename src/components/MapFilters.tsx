@@ -3,7 +3,7 @@ import React from 'react';
 import { Filter, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { USLocation } from "@/data/usLocations";
-import CitySearch from "./CitySearch";
+import UnifiedSearchInput from "./UnifiedSearchInput";
 
 interface MapFiltersProps {
   showFilters: boolean;
@@ -26,7 +26,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
         <div className="p-3">
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-0">
-              <CitySearch onCitySelect={onCitySelect} />
+              <UnifiedSearchInput onLocationSelect={onCitySelect} autoNavigate={false} variant="compact" />
             </div>
             <Button
               variant="outline"
