@@ -51,10 +51,29 @@ export const usePHAData = () => {
     location: USLocation | null,
     page: number
   ) => {
+    console.log('🔍 updateDisplayedAgencies called with:', {
+      allAgenciesCount: allAgencies.length,
+      location: location ? {
+        name: location.name,
+        type: location.type,
+        stateCode: location.stateCode,
+        latitude: location.latitude,
+        longitude: location.longitude
+      } : null,
+      page
+    });
+
     // Step 1: Apply location filter if any
     const filtered = location
       ? filterPHAAgenciesByLocation(allAgencies, location)
       : allAgencies;
+
+    console.log('📊 Filtering results:', {
+      beforeFiltering: allAgencies.length,
+      afterFiltering: filtered.length,
+      hasLocation: !!location,
+      locationName: location?.name || null
+    });
 
     setFilteredAgencies(filtered);
 

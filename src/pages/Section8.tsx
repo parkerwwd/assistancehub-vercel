@@ -54,11 +54,19 @@ const Section8 = () => {
   // Handle navigation from state page and updates when location state changes
   useEffect(() => {
     console.log('🎯 Section8 received searchLocation:', searchLocation);
-    if (searchLocation && mapRef.current) {
+    if (searchLocation) {
       console.log('✅ Calling handleCitySelect with:', searchLocation);
       handleCitySelect(searchLocation);
     }
   }, [searchLocation?.name, searchLocation?.latitude, searchLocation?.longitude]);
+  
+  // Handle map initialization with pending search location
+  useEffect(() => {
+    if (searchLocation && mapRef.current) {
+      console.log('🗺️ Map is ready, applying search location:', searchLocation);
+      handleCitySelect(searchLocation);
+    }
+  }, [mapRef.current, searchLocation, handleCitySelect]);
       
   // Handle search query from city buttons (e.g., "Los Angeles, CA")
   useEffect(() => {
