@@ -109,24 +109,17 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   // Update marker when selected office changes
   useEffect(() => {
     if (map.current?.loaded()) {
-      // Only clear the special selected office markers, NOT all agency markers
-      markerManager.current.clearOfficeMarkers();
-      
       if (selectedOffice) {
-        console.log('📌 Adding selected office marker on top of existing pins');
-        // Add selected office marker ON TOP of existing pins
-        markerManager.current.addSelectedOfficeMarker(
-          map.current!, 
-          selectedOffice, 
-          mapboxToken, 
-          onOfficeSelect
-        );
+        console.log('📌 Selecting existing pin instead of adding duplicate marker');
+        // Select the existing pin instead of adding a new marker
+        markerManager.current.selectExistingPin(selectedOffice);
       } else {
-        console.log('📌 Removing selected office marker, keeping all pins');
-        markerManager.current.resetToOverviewStyle(map.current);
+        console.log('📌 Deselecting all pins');
+        // Deselect all pins when no office is selected
+        markerManager.current.deselectAllPins();
       }
     }
-  }, [selectedOffice, mapboxToken, onOfficeSelect]);
+  }, [selectedOffice]);
 
   // Track the last rendered PHAs to prevent unnecessary updates
   const lastPhaAgenciesRef = useRef<PHAAgency[]>([]);
@@ -203,6 +196,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         // Clear existing markers first
         markerManager.current.clearAllAgencyMarkers();
         markerManager.current.clearLocationMarker();
+        markerManager.current.deselectAllPins(); // Clear any pin selections
         
         // Display PHAs based on context
         if (phaAgencies && phaAgencies.length > 0) {

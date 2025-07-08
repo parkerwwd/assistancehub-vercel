@@ -189,8 +189,9 @@ export class MapMarkerManager {
         // Enhanced styling for the marker element
         const element = marker.getElement();
         element.style.cursor = 'pointer';
-        element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease';
+        element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease, border 0.2s ease';
         element.title = agency.name; // Add tooltip
+        element.setAttribute('data-agency-id', agency.id); // Add identifier for selection
         
         element.addEventListener('mouseenter', () => {
           // Use filter effects instead of transform to avoid movement
@@ -285,14 +286,51 @@ export class MapMarkerManager {
            Math.abs(newBounds.getWest() - this.lastMapBounds.getWest()) > threshold;
   }
 
-  // Add selected office marker (without clustering)
+  // Select an existing pin instead of adding a new marker
+  selectExistingPin(office: PHAAgency): void {
+    // First, deselect any currently selected pins
+    this.deselectAllPins();
+    
+    // Find and select the pin for this office
+    const elements = document.querySelectorAll(`[data-agency-id="${office.id}"]`);
+    elements.forEach(element => {
+      const htmlElement = element as HTMLElement;
+      // Add selection styling
+      htmlElement.style.border = '4px solid #ef4444';
+      htmlElement.style.borderRadius = '50%';
+      htmlElement.style.filter = 'brightness(1.3) saturate(1.4) drop-shadow(0 6px 16px rgba(239, 68, 68, 0.4))';
+      htmlElement.style.zIndex = '1000';
+      htmlElement.setAttribute('data-selected', 'true');
+    });
+    
+    console.log('✅ Selected existing pin for:', office.name);
+  }
+  
+  // Deselect all pins
+  deselectAllPins(): void {
+    const selectedElements = document.querySelectorAll('[data-selected="true"]');
+    selectedElements.forEach(element => {
+      const htmlElement = element as HTMLElement;
+      // Remove selection styling
+      htmlElement.style.border = '';
+      htmlElement.style.borderRadius = '';
+      htmlElement.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
+      htmlElement.style.zIndex = 'auto';
+      htmlElement.removeAttribute('data-selected');
+    });
+    
+    console.log('✅ Deselected all pins');
+  }
+
+  // Add selected office marker (without clustering) - DEPRECATED, use selectExistingPin instead
   async addSelectedOfficeMarker(
     map: mapboxgl.Map, 
     office: PHAAgency, 
     mapboxToken: string, 
     onOfficeSelect: (office: PHAAgency) => void
   ): Promise<void> {
-    await this.officeManager.addSelectedOfficeMarker(map, office, mapboxToken, onOfficeSelect);
+    // Use the new selection approach instead of adding duplicate markers
+    this.selectExistingPin(office);
   }
 
   // Clear all agency markers (including clusters)
