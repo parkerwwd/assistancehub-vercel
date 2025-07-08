@@ -154,7 +154,16 @@ export class MapMarkerManager {
         })
         .setLngLat([lng, lat])
         .setPopup(
-          new mapboxgl.Popup({ offset: 25 })
+          new mapboxgl.Popup({ 
+            offset: 25,
+            closeButton: false,
+            maxWidth: '280px',
+            // Disable autopan to prevent map from moving when popup opens
+            anchor: 'bottom',
+            focusAfterOpen: false,
+            className: 'pha-popup'
+          })
+            .setMaxWidth('280px')
             .setHTML(`
               <div style="padding: 12px; max-width: 280px;">
                 <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1f2937;">${agency.name}</h3>

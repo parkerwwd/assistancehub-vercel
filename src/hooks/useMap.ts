@@ -111,10 +111,19 @@ export const useMap = (): UseMapReturn => {
   
   // Handle office selection - set selected office and optionally fly to it
   const handleOfficeSelection = useCallback((office: PHAAgency | null, shouldFlyTo = false) => {
+    console.log('🎯 handleOfficeSelection called:', {
+      office: office?.name || 'null',
+      shouldFlyTo,
+      officeCoords: office ? [office.longitude, office.latitude] : 'no office'
+    });
+    
     actions.setSelectedOffice(office);
     
     if (office && shouldFlyTo) {
+      console.log('✈️ Flying to office location because shouldFlyTo is true');
       flyToOffice(office);
+    } else {
+      console.log('📌 NOT flying to office - shouldFlyTo is', shouldFlyTo);
     }
   }, [actions, flyToOffice]);
   
