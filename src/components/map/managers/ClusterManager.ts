@@ -255,7 +255,16 @@ export class ClusterManager {
     marker.getElement().addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
-      console.log('🎯 Cluster pin clicked:', agency.name);
+      console.log('🎯 Cluster pin clicked:', agency.name, 'Color:', markerColor, 'Program Type:', agency.program_type);
+      console.log('🔍 Purple cluster pin debug - Agency data:', {
+        id: agency.id,
+        name: agency.name,
+        program_type: agency.program_type,
+        address: agency.address,
+        phone: agency.phone,
+        email: agency.email,
+        isPurple: markerColor === '#a855f7'
+      });
       onOfficeSelect(agency);
     });
 

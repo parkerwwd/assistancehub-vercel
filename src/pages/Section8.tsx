@@ -98,10 +98,25 @@ const Section8 = () => {
     }
   }, [searchLocation, searchQuery]);
 
-  const handleOfficeClick = (office: PHAAgency) => {
-    // This is for pin clicks - don't fly to location (prevents bouncing)
-    console.log('📌 Pin clicked:', office.name);
-    setSelectedOffice(office);
+  const handleOfficeClick = (office: PHAAgency | null) => {
+    if (office) {
+      // This is for pin clicks - don't fly to location (prevents bouncing)
+      console.log('📌 Pin clicked:', office.name, 'Program Type:', office.program_type);
+      console.log('🔍 handleOfficeClick - Full office data:', {
+        id: office.id,
+        name: office.name,
+        program_type: office.program_type,
+        address: office.address,
+        phone: office.phone,
+        email: office.email,
+        city: office.city,
+        state: office.state
+      });
+      setSelectedOffice(office);
+    } else {
+      console.log('📌 Clearing selected office');
+      setSelectedOffice(null);
+    }
   };
   
   const handleOfficeListClick = (office: PHAAgency) => {
