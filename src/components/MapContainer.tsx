@@ -123,22 +123,42 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     }
   }, [selectedOffice, mapboxToken, onOfficeSelect]);
 
-  // Handle location search flow: show found agencies OR just the location if no agencies found
+  // Display all PHAs on the map
   useEffect(() => {
-    if (map.current?.loaded() && !selectedOffice) {
-      markerManager.current.handleLocationSearch(
+    console.log('🗺️ Map data update - PHAs:', phaAgencies?.length || 0, 'Map loaded:', map.current?.loaded(), 'Selected location:', selectedLocation?.name);
+    
+    if (map.current?.loaded() && !selectedOffice && phaAgencies && phaAgencies.length > 0) {
+      console.log('🎯 Displaying all PHAs on map:', phaAgencies.length);
+      // Clear existing markers first
+      markerManager.current.clearAllAgencyMarkers();
+      markerManager.current.clearLocationMarker();
+      
+      // Always display all PHAs as individual pins
+      markerManager.current.displayAllPHAsAsIndividualPins(
         map.current, 
-        phaAgencies || [],
-        selectedLocation,
-        mapboxToken, 
+        phaAgencies,
         onOfficeSelect
       );
+      
+      // If there's a selected location, add its marker too
+      if (selectedLocation) {
+        console.log('📍 Also adding location marker for:', selectedLocation.name);
+        markerManager.current.setLocationMarker(
+          map.current,
+          selectedLocation.lat,
+          selectedLocation.lng,
+          selectedLocation.name,
+          mapboxToken
+        );
+      }
     } else if (map.current?.loaded() && selectedOffice) {
       // Clear location search markers when an office is selected
       markerManager.current.clearAllAgencyMarkers();
       markerManager.current.clearLocationMarker();
     }
   }, [phaAgencies, selectedLocation, selectedOffice, mapboxToken, onOfficeSelect]);
+
+
 
   return (
     <div className="relative w-full h-full">

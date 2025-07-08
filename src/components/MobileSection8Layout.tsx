@@ -172,7 +172,7 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
         <MapContainer
           ref={mapRef}
           mapboxToken={mapboxToken}
-          phaAgencies={allPHAAgencies || phaAgencies}
+          phaAgencies={filteredAgencies || allPHAAgencies || phaAgencies}
           onOfficeSelect={handleOfficeClick}
           onTokenError={setTokenError}
           selectedOffice={selectedOffice}

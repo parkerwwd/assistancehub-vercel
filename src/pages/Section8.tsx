@@ -153,7 +153,7 @@ const Section8 = () => {
               <MapContainer
                 ref={mapRef}
                 mapboxToken={mapboxToken}
-                phaAgencies={allPHAAgencies}
+                phaAgencies={filteredLocation ? filteredAgencies : allPHAAgencies}
                 onOfficeSelect={handleOfficeClick}
                 onTokenError={setTokenError}
                 selectedOffice={selectedOffice}

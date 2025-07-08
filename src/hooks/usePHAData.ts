@@ -31,6 +31,7 @@ export const usePHAData = () => {
       const result = await fetchAllPHAData();
 
       // Store all agencies
+      console.log('✅ Loaded', result.count, 'PHAs from database');
       setAllPHAAgencies(result.data);
       setTotalCount(result.count);
 

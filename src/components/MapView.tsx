@@ -20,6 +20,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const {
     mapboxToken,
     selectedOffice,
+    selectedLocation,
     filteredLocation,
     tokenError,
     showFilters,
@@ -165,10 +166,11 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
               <MapContainer
                 ref={mapRef}
                 mapboxToken={mapboxToken}
-                phaAgencies={allPHAAgencies}
+                phaAgencies={filteredLocation ? filteredAgencies : allPHAAgencies}
                 onOfficeSelect={setSelectedOffice}
                 onTokenError={setTokenError}
                 selectedOffice={selectedOffice}
+                selectedLocation={selectedLocation}
               />
             </div>
           </ResizablePanel>

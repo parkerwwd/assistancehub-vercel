@@ -167,19 +167,9 @@ export class MapMarkerManager {
       });
     }
     
-    // Adjust map bounds to show all pins if we have any valid coordinates
-    if (hasValidCoordinates && successCount > 0) {
-      try {
-        map.fitBounds(bounds, {
-          padding: { top: 50, bottom: 50, left: 50, right: 50 },
-          maxZoom: 12, // Don't zoom in too close
-          duration: 800 // Smooth animation
-        });
-        console.log('📍 Adjusted map bounds to show all PHAs with coordinates');
-      } catch (error) {
-        console.error('Failed to adjust map bounds:', error);
-      }
-    }
+    // Don't adjust bounds when showing all PHAs - keep the US overview
+    // This lets users see the full distribution of PHAs across the country
+    console.log(`📍 Showing ${successCount} PHAs across the map`);
   }
 
   // Update clusters when map moves or zoom changes
