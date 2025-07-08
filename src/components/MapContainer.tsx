@@ -336,12 +336,20 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       }
       
       // Handle clearing location search
-      if (!selectedLocation && lastPhaAgenciesRef.current.length > 0) {
+      // Only reset to US view if there's no selected location AND no selected office
+      if (!selectedLocation && !selectedOffice && lastPhaAgenciesRef.current.length > 0) {
         console.log('🧹 Location search cleared - switching to overview mode');
+        console.log('🔍 Debug state:', {
+          selectedLocation,
+          selectedOffice: selectedOffice?.name,
+          phaAgenciesLength: phaAgencies.length,
+          lastPhaAgenciesLength: lastPhaAgenciesRef.current.length
+        });
         removeLocationRestrictions();
         
         // Reset map to US view
         if (map.current) {
+          console.log('🚨 RESETTING MAP TO US VIEW - This might be the issue!');
           map.current.flyTo({
             center: [-95.7129, 37.0902],
             zoom: 4,
