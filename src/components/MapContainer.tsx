@@ -234,6 +234,12 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
                 return;
               }
               
+              console.log('📍 About to call displayAllPHAsAsIndividualPins with:', {
+                mapLoaded: map.current.loaded(),
+                phaCount: phaAgencies.length,
+                firstPHA: phaAgencies[0] ? { name: phaAgencies[0].name, lat: phaAgencies[0].latitude, lng: phaAgencies[0].longitude } : 'none'
+              });
+              
               markerManager.current.displayAllPHAsAsIndividualPins(
                 map.current!, 
                 phaAgencies,

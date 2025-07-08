@@ -60,10 +60,17 @@ export class MapMarkerManager {
     agencies: PHAAgency[], 
     onOfficeSelect: (office: PHAAgency) => void
   ): void {
-    // Clear all markers first
-    this.clearAllAgencyMarkers();
-    
-    console.log(`📍 displayAllPHAsAsIndividualPins called with ${agencies.length} PHAs`);
+    try {
+      // Clear all markers first
+      this.clearAllAgencyMarkers();
+      
+      console.log(`📍 displayAllPHAsAsIndividualPins called with ${agencies.length} PHAs`);
+      
+      // Verify map is ready
+      if (!map || !map.loaded()) {
+        console.error('❌ Map is not loaded in displayAllPHAsAsIndividualPins');
+        return;
+      }
     
     // Log details about the first few agencies to debug
     if (agencies.length > 0) {
@@ -171,8 +178,16 @@ export class MapMarkerManager {
         
         console.log(`✅ Marker ${successCount + 1} added to map for:`, agency.name, 'at', [lng, lat]);
 
+        // Get marker element with null check
+        const element = marker.getElement();
+        if (!element) {
+          console.error(`❌ Marker element is null for ${agency.name}`);
+          skipCount++;
+          return;
+        }
+
         // Add click handler with event prevention
-        marker.getElement().addEventListener('click', (e) => {
+        element.addEventListener('click', (e) => {
           e.stopPropagation();
           e.preventDefault();
           console.log('🎯 Individual pin clicked:', agency.name, 'Color:', markerColor, 'Program Type:', agency.program_type);
@@ -205,7 +220,6 @@ export class MapMarkerManager {
         });
 
         // Enhanced styling for the marker element
-        const element = marker.getElement();
         element.style.cursor = 'pointer';
         element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease';
         element.title = agency.name; // Add tooltip
@@ -221,11 +235,10 @@ export class MapMarkerManager {
           element.style.zIndex = 'auto';
         });
 
-        marker.addTo(map);
         // Store marker in agency manager
         this.agencyManager.addSingleMarker(marker);
-        console.log(`💾 Stored marker ${successCount} in agencyManager`);
         successCount++;
+        console.log(`💾 Stored marker ${successCount} in agencyManager`);
       } catch (error) {
         console.error(`❌ Failed to create marker for ${agency.name}:`, error);
         skipCount++;
@@ -259,6 +272,9 @@ export class MapMarkerManager {
     // Don't adjust bounds when showing all PHAs - keep the current view
     // This lets users see the full distribution of PHAs across the country
     console.log(`🗺️ Showing ${successCount} PHAs across the map`);
+  } catch (error) {
+    console.error('❌ Error in displayAllPHAsAsIndividualPins:', error);
+  }
   }
 
   // Update clusters when map moves or zoom changes
