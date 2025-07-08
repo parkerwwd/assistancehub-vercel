@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import MapContainer from "@/components/MapContainer";
@@ -21,6 +21,11 @@ const Section8 = () => {
   
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || "";
   
+  // Create stable callback for token errors
+  const handleTokenError = useCallback((error: string) => {
+    console.error('Mapbox token error:', error);
+  }, []);
+  
   // Handle navigation from home page search (only runs once when location changes)
   useEffect(() => {
     if (searchLocation) {
@@ -36,31 +41,31 @@ const Section8 = () => {
   }, [searchLocation, handleLocationSearch, resetToUSView]);
   
   // Handle office clicks from map pins (no flyTo to prevent bouncing)
-  const handleOfficeClick = (office: PHAAgency | null) => {
+  const handleOfficeClick = useCallback((office: PHAAgency | null) => {
     handleOfficeSelection(office, false);
-  };
+  }, [handleOfficeSelection]);
   
   // Handle office clicks from list (with flyTo to show on map)
-  const handleOfficeListClick = (office: PHAAgency) => {
+  const handleOfficeListClick = useCallback((office: PHAAgency) => {
     handleOfficeSelection(office, true);
-  };
+  }, [handleOfficeSelection]);
   
   // Handle city selection from header search
-  const handleHeaderCitySelect = (location: any) => {
+  const handleHeaderCitySelect = useCallback((location: any) => {
     console.log('🌟 Section8.handleHeaderCitySelect called with:', location);
     handleLocationSearch(location);
-  };
+  }, [handleLocationSearch]);
   
   // Handle pagination
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     actions.setCurrentPage(page);
-  };
+  }, [actions]);
   
   // Handle clear search
-  const handleClearSearch = () => {
+  const handleClearSearch = useCallback(() => {
     actions.clearSearch();
     resetToUSView();
-  };
+  }, [actions, resetToUSView]);
   
   if (!mapboxToken) {
     return (
@@ -105,7 +110,7 @@ const Section8 = () => {
             handleBackToPHADetail={() => {}}
             handlePageChange={handlePageChange}
             clearLocationFilter={handleClearSearch}
-            setTokenError={() => {}}
+            setTokenError={handleTokenError}
             selectedLocation={state.selectedLocation}
           />
         ) : (
@@ -128,7 +133,7 @@ const Section8 = () => {
                 mapboxToken={mapboxToken}
                 phaAgencies={state.searchLocation ? state.filteredAgencies : state.allPHAAgencies}
                 onOfficeSelect={handleOfficeClick}
-                onTokenError={() => {}}
+                onTokenError={handleTokenError}
                 selectedOffice={state.selectedOffice}
                 selectedLocation={state.selectedLocation}
               />
