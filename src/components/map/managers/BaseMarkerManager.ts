@@ -5,6 +5,7 @@ export abstract class BaseMarkerManager {
   protected markers: mapboxgl.Marker[] = [];
 
   clearMarkers(): void {
+    console.log(`🧹 BaseMarkerManager.clearMarkers() called - removing ${this.markers.length} markers`);
     this.markers.forEach(marker => marker.remove());
     this.markers = [];
   }

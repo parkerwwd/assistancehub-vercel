@@ -85,47 +85,22 @@ export class MapMarkerManager {
     const missingCoordinates: PHAAgency[] = [];
     
     agencies.forEach(agency => {
-      // Get agency coordinates - prefer database coordinates, fall back to geocoded ones
-      let lat = agency.latitude;
-      let lng = agency.longitude;
+      const lat = agency.latitude;
+      const lng = agency.longitude;
       
-      // If database doesn't have coordinates, check for geocoded ones
+      // Skip agencies without coordinates
       if (!lat || !lng) {
-        const geocodedAgency = agency as any;
-        lat = geocodedAgency.geocoded_latitude;
-        lng = geocodedAgency.geocoded_longitude;
+        console.log(`⚠️ Skipping ${agency.name} - no coordinates`);
+        return; // Use return instead of continue in forEach
       }
       
-      // Comprehensive coordinate validation
-      if (!lat || !lng || 
-          typeof lat !== 'number' || typeof lng !== 'number' ||
-          isNaN(lat) || isNaN(lng) || 
-          !isFinite(lat) || !isFinite(lng) ||
-          lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-        console.warn(`⚠️ Invalid or missing coordinates for PHA: ${agency.name}`, {
-          id: agency.id,
-          name: agency.name,
-          address: agency.address,
-          city: agency.city,
-          state: agency.state,
-          dbLat: agency.latitude,
-          dbLng: agency.longitude,
-          geocodedLat: (agency as any).geocoded_latitude,
-          geocodedLng: (agency as any).geocoded_longitude,
-          processedLat: lat,
-          processedLng: lng,
-          latType: typeof lat,
-          lngType: typeof lng,
-          isLatNaN: isNaN(lat),
-          isLngNaN: isNaN(lng),
-          isLatFinite: isFinite(lat),
-          isLngFinite: isFinite(lng)
-        });
-        
-        missingCoordinates.push(agency);
-        skipCount++;
-        return;
+      // Validate coordinates are reasonable
+      if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+        console.error(`❌ Invalid coordinates for ${agency.name}: lat=${lat}, lng=${lng}`);
+        return; // Use return instead of continue in forEach
       }
+      
+      console.log(`📍 Creating marker ${successCount + 1} for ${agency.name} at [lng: ${lng}, lat: ${lat}]`);
       
       try {
         // Add to bounds
@@ -194,7 +169,7 @@ export class MapMarkerManager {
         )
         .addTo(map); // ADD THIS LINE - This was missing!
         
-        console.log(`✅ Created marker for ${agency.name} at [${lng}, ${lat}] with color ${markerColor}`);
+        console.log(`✅ Marker ${successCount + 1} added to map for:`, agency.name, 'at', [lng, lat]);
 
         // Add click handler with event prevention
         marker.getElement().addEventListener('click', (e) => {
