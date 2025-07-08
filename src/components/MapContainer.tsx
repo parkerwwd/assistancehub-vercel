@@ -112,14 +112,13 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       markerManager.current.clearOfficeMarkers();
       
       if (selectedOffice) {
-        setTimeout(() => {
-          markerManager.current.addSelectedOfficeMarker(
-            map.current!, 
-            selectedOffice, 
-            mapboxToken, 
-            onOfficeSelect
-          );
-        }, 100);
+        // Remove timeout to prevent delay and potential race conditions
+        markerManager.current.addSelectedOfficeMarker(
+          map.current!, 
+          selectedOffice, 
+          mapboxToken, 
+          onOfficeSelect
+        );
       } else {
         markerManager.current.resetToOverviewStyle(map.current);
       }

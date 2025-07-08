@@ -15,7 +15,7 @@ export class OfficeMarkerManager extends BaseMarkerManager {
   ): Promise<void> {
     if (!map || !mapboxToken) return;
     
-    console.log('📍 Adding marker for selected office:', office.name);
+    console.log('📍 Adding marker for selected office (no animation):', office.name);
     
     // Use database coordinates first
     let lat = office.latitude;
@@ -40,42 +40,24 @@ export class OfficeMarkerManager extends BaseMarkerManager {
     
     if (lat && lng) {
       try {
-        // Switch to satellite style for office detail view
-        if (map.getStyle().name !== 'Mapbox Satellite Streets') {
-          map.setStyle('mapbox://styles/mapbox/satellite-streets-v12');
-        }
-
-        // Fly to office with close zoom level
-        console.log('🚁 Flying to office coordinates:', { lat, lng });
-        map.flyTo({
-          center: [lng, lat],
-          zoom: 18,
-          pitch: 0,
-          bearing: 0,
-          duration: 400, // Much faster - 400ms
-          curve: 1.2, // Reduced curve for quicker animation
-          easing: (t) => t, // Linear easing for snappy feel
-          essential: true
-        });
-
+        // DON'T change map style or fly to location - just add the marker
+        // This prevents the bouncing effect when users click pins
+        
         const marker = new mapboxgl.Marker({
           color: '#ef4444',
-          scale: 1.5
+          scale: 1.2 // Slightly larger but not too dramatic
         })
         .setLngLat([lng, lat])
         .setPopup(this.createOfficePopup(office));
         
-        marker.getElement().addEventListener('click', () => {
-          console.log('🎯 3D Marker clicked:', office.name);
-          onOfficeSelect(office);
-        });
+        // Don't add another click handler - this prevents double-clicking issues
         
         this.styleMarkerElement(marker.getElement());
         
         marker.addTo(map);
         this.addMarker(marker);
         
-        console.log('✅ Added 3D marker for selected office:', office.name, 'at', { lat, lng });
+        console.log('✅ Added selected office marker (no animation):', office.name, 'at', { lat, lng });
       } catch (error) {
         console.warn('⚠️ Failed to add marker for office:', office.name, error);
       }
@@ -114,17 +96,11 @@ export class OfficeMarkerManager extends BaseMarkerManager {
   }
 
   resetToOverviewStyle(map: mapboxgl.Map): void {
-    if (map && map.getStyle().name === 'Mapbox Satellite Streets') {
-      map.setStyle('mapbox://styles/mapbox/satellite-streets-v12');
-      map.flyTo({
-        center: [-95.7129, 37.0902],
-        zoom: 4,
-        pitch: 45,
-        bearing: 0,
-        duration: 500, // Much faster - 500ms
-        curve: 1.2, // Reduced curve for quicker animation
-        easing: (t) => t // Linear easing for snappy feel
-      });
-    }
+    // Don't automatically fly to overview when deselecting office
+    // This prevents unwanted animation when users just want to close the office details
+    console.log('🔄 Resetting to overview style (no animation)');
+    
+    // Just clear markers without changing map position
+    this.clearMarkers();
   }
 }

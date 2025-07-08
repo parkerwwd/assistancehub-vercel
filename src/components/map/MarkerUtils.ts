@@ -19,8 +19,10 @@ export class MarkerUtils {
       scale: 1.0
     }).setLngLat([lng, lat]);
 
-    // Add click handler
-    marker.getElement().addEventListener('click', () => {
+    // Add click handler with event prevention
+    marker.getElement().addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
       console.log('🎯 Marker clicked:', office.name);
       onOfficeSelect(office);
     });

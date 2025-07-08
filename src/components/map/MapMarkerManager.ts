@@ -147,8 +147,11 @@ export class MapMarkerManager {
             `)
         );
 
-        // Add click handler
-        marker.getElement().addEventListener('click', () => {
+        // Add click handler with event prevention
+        marker.getElement().addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          console.log('🎯 Individual pin clicked:', agency.name);
           onOfficeSelect(agency);
         });
 
