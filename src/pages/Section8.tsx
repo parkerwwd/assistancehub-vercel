@@ -52,13 +52,21 @@ const Section8 = () => {
 
   const isMobile = useIsMobile();
 
-  // Handle navigation from search location - apply immediately for data, then when map is ready for view
+  // Handle navigation from search location
   useEffect(() => {
     if (searchLocation) {
-      console.log('🎯 Section8 applying searchLocation:', searchLocation);
+      console.log('🎯 Section8 received searchLocation:', searchLocation.name);
       handleCitySelect(searchLocation);
     }
   }, [searchLocation, handleCitySelect]);
+
+  // Ensure map zooms when it becomes ready (if there's a pending search location)
+  useEffect(() => {
+    if (searchLocation && mapRef.current) {
+      console.log('🗺️ Map became ready, re-applying location to ensure zoom');
+      handleCitySelect(searchLocation);
+    }
+  }, [mapRef.current]);
       
   // Handle search query from city buttons (e.g., "Los Angeles, CA")
   useEffect(() => {

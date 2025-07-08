@@ -45,10 +45,12 @@ export const useMapLogic = () => {
   };
 
   const handleCitySelect = async (location: USLocation) => {
+    console.log('🔍 handleCitySelect called for:', location.name, 'Map ready:', !!mapRef.current);
+    
     // Clear any selected office first
     setSelectedOffice(null);
     
-    // Apply location filter to PHA agencies
+    // Apply location filter to PHA agencies (this can happen immediately)
     applyLocationFilter(location);
     
     // Set selected location for marker
@@ -61,19 +63,22 @@ export const useMapLogic = () => {
     };
     setSelectedLocation(locationData);
     
-    // Determine appropriate zoom level based on location type
-    let zoomLevel = 10;
-    if (location.type === 'state') {
-      zoomLevel = 6;
-    } else if (location.type === 'county') {
-      zoomLevel = 8;
-    } else if (location.type === 'city') {
-      zoomLevel = 10;
-    }
-
-    // Fly to the selected location with appropriate zoom level
+    // Only zoom if map is ready
     if (mapRef.current) {
+      // Determine appropriate zoom level based on location type
+      let zoomLevel = 10;
+      if (location.type === 'state') {
+        zoomLevel = 6;
+      } else if (location.type === 'county') {
+        zoomLevel = 8;
+      } else if (location.type === 'city') {
+        zoomLevel = 10;
+      }
+
+      console.log('🗺️ Flying to:', location.name, 'at zoom:', zoomLevel);
       mapRef.current.flyTo([location.longitude, location.latitude], zoomLevel);
+    } else {
+      console.log('⏳ Map not ready yet, zoom will happen when map loads');
     }
   };
 
