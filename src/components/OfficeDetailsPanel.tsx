@@ -149,31 +149,10 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
                 ✕ Clear
               </Button>
             </div>
-            <div className="space-y-2">
-              <h4 className="font-semibold text-blue-900">{selectedOffice.name}</h4>
-              {selectedOffice.address && (
-                <p className="text-sm text-gray-600">📍 {selectedOffice.address}</p>
-              )}
-              {selectedOffice.city && selectedOffice.state && (
-                <p className="text-sm text-gray-600">
-                  🏙️ {selectedOffice.city}, {selectedOffice.state} {selectedOffice.zip || ''}
-                </p>
-              )}
-              {selectedOffice.phone && (
-                <p className="text-sm text-gray-600">📞 {selectedOffice.phone}</p>
-              )}
-              {selectedOffice.email && (
-                <p className="text-sm text-gray-600">📧 {selectedOffice.email}</p>
-              )}
-              {selectedOffice.program_type && (
-                <div className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-                  🏢 {selectedOffice.program_type}
-                </div>
-              )}
-              {selectedOffice.waitlist_status && (
-                <p className="text-sm text-gray-600">📋 Waitlist: {selectedOffice.waitlist_status}</p>
-              )}
-            </div>
+            <PHAOfficeCard
+              agency={selectedOffice}
+              onOfficeClick={() => onOfficeClick(selectedOffice)}
+            />
           </div>
         </div>
       )}
@@ -181,19 +160,6 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
       {/* Office List - Improved mobile spacing */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-2 sm:p-4 space-y-2 sm:space-y-3">
-          {/* Show selected office at top of main list if it exists and is not already in the current page */}
-          {selectedOffice && !phaAgencies.some(office => office.id === selectedOffice.id) && (
-            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-2 mb-3">
-              <div className="text-xs text-blue-600 font-medium mb-1 flex items-center gap-1">
-                📌 Selected Office (from map click)
-              </div>
-              <PHAOfficeCard
-                agency={selectedOffice}
-                onOfficeClick={() => onOfficeClick(selectedOffice)}
-              />
-            </div>
-          )}
-          
           {phaAgencies.map((office, index) => {
             const isSelected = selectedOffice?.id === office.id;
             return (
