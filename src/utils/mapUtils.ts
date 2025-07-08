@@ -161,7 +161,10 @@ export const filterPHAAgenciesByLocation = (
   }
 
   if (selectedLocation.type === 'city') {
+    console.log('🏙️ Filtering PHAs by city:', selectedLocation.name, 'Total agencies:', agencies.length);
+    
     // For cities, show all agencies within 50 miles (increased from 25), sorted by distance
+    let debugCounter = 0;
     const agenciesWithDistance = agencies
       .map(agency => {
         // Get agency coordinates - prefer database coordinates, fall back to geocoded ones
@@ -203,8 +206,22 @@ export const filterPHAAgenciesByLocation = (
           agencyLng
         );
         
+        // Debug: Log distance calculation for first few agencies
+        if (debugCounter < 5) {
+          console.log('📏 Distance calculation:', {
+            agencyName: agency.name,
+            agencyCoords: [agencyLat, agencyLng],
+            searchCoords: [selectedLocation.latitude, selectedLocation.longitude],
+            distance: distance.toFixed(2) + ' miles'
+          });
+          debugCounter++;
+        }
+        
         // Check if it's within range (increased to 50 miles)
         if (distance > 50) {
+          if (debugCounter < 5) {
+            console.log('❌ Agency too far:', agency.name, distance.toFixed(2) + ' miles');
+          }
           return null;
         }
         
@@ -214,6 +231,10 @@ export const filterPHAAgenciesByLocation = (
           agency.name?.toLowerCase().includes(cityNameLower) ||
           agency.address?.toLowerCase().includes(cityNameLower) ||
           agency.city?.toLowerCase() === cityNameLower;
+        
+        if (debugCounter < 5) {
+          console.log('✅ Agency included:', agency.name, distance.toFixed(2) + ' miles', isExactMatch ? '(exact match)' : '');
+        }
         
         return { agency, distance, isExactMatch };
       })
@@ -235,6 +256,14 @@ export const filterPHAAgenciesByLocation = (
         _distance: item.distance,
         _isExactMatch: item.isExactMatch
       } as PHAAgencyWithDistance;
+    });
+
+    console.log('📍 City filtering results:', {
+      totalAgencies: agencies.length,
+      withValidCoordinates: agenciesWithDistance.length,
+      finalFilteredCount: filteredAgencies.length,
+      searchLocation: selectedLocation.name,
+      searchCoords: [selectedLocation.latitude, selectedLocation.longitude]
     });
 
     return filteredAgencies;
