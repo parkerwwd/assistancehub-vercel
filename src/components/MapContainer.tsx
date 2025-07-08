@@ -223,25 +223,42 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
           if (selectedLocation) {
             // Location search active - show as individual pins with location marker
             console.log('📍 Location search - displaying', phaAgencies.length, 'PHAs near', selectedLocation.name);
-            markerManager.current.displayAllPHAsAsIndividualPins(
-              map.current, 
-              phaAgencies,
-              onOfficeSelect
-            );
             
-            // Add location marker
-            markerManager.current.setLocationMarker(
-              map.current,
-              selectedLocation.lat,
-              selectedLocation.lng,
-              selectedLocation.name,
-              mapboxToken
-            );
+            // Wait for any ongoing map movement to complete before showing markers
+            const showMarkersAfterMove = () => {
+              console.log('🎯 Map movement complete, now showing markers');
+              
+              markerManager.current.displayAllPHAsAsIndividualPins(
+                map.current!, 
+                phaAgencies,
+                onOfficeSelect
+              );
+              
+              // Add location marker
+              markerManager.current.setLocationMarker(
+                map.current!,
+                selectedLocation.lat,
+                selectedLocation.lng,
+                selectedLocation.name,
+                mapboxToken
+              );
+              
+              // Apply zoom and bounds restrictions after markers are placed
+              setTimeout(() => {
+                applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
+              }, 100);
+            };
             
-            // Apply zoom and bounds restrictions after a delay to let the map fly to location first
-            setTimeout(() => {
-              applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
-            }, 500);
+            // Check if map is currently moving
+            if (map.current.isMoving()) {
+              console.log('⏳ Map is moving, waiting for moveend event');
+              // Wait for move to end
+              map.current.once('moveend', showMarkersAfterMove);
+            } else {
+              console.log('✅ Map is idle, showing markers immediately');
+              // Map is already idle, show markers
+              showMarkersAfterMove();
+            }
           } else {
             // No location filter - show with clustering for better performance
             console.log('🌍 Overview mode - showing', phaAgencies.length, 'PHAs with clustering');

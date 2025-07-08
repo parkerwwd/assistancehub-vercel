@@ -27,10 +27,11 @@ const Section8 = () => {
       handleLocationSearch(searchLocation);
     } else {
       // If no search location, reset to US view after a delay
-      const timer = setTimeout(() => {
-        resetToUSView();
-      }, 1000);
-      return () => clearTimeout(timer);
+      // COMMENTED OUT: This might interfere with header searches
+      // const timer = setTimeout(() => {
+      //   resetToUSView();
+      // }, 1000);
+      // return () => clearTimeout(timer);
     }
   }, [searchLocation, handleLocationSearch, resetToUSView]);
   

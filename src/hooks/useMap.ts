@@ -102,8 +102,11 @@ export const useMap = (): UseMapReturn => {
     // Set the search location (this will trigger filtering)
     actions.setSearchLocation(location);
     
-    // Fly to the location
-    flyToLocation(location);
+    // Fly to the location with a small delay to ensure state is updated
+    setTimeout(() => {
+      console.log('🚁 Now flying to location after state update');
+      flyToLocation(location);
+    }, 100);
   }, [actions, flyToLocation]);
   
   // Handle office selection - set selected office and optionally fly to it
