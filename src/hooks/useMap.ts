@@ -42,11 +42,11 @@ export const useMap = (): UseMapReturn => {
     if (location.type === 'state') {
       zoomLevel = 6.5; // Wider view for states
     } else if (location.type === 'county') {
-      zoomLevel = 10; // County-level zoom
+      zoomLevel = 9; // County-level zoom - was 10, now 9 for wider view
     } else if (location.type === 'city') {
-      zoomLevel = 14; // MORE FOCUSED city zoom - was 12, now 14 to clearly show the city
+      zoomLevel = 11; // City zoom - was 14, now 11 to show more surrounding area
     } else if (location.type === 'zip') {
-      zoomLevel = 15; // ZIP code level - even more focused
+      zoomLevel = 13; // ZIP code level - was 15, now 13 for better context
     }
     
     console.log('🎯 Flying to coordinates:', [location.longitude, location.latitude], 'with zoom:', zoomLevel);

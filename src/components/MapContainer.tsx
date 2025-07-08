@@ -183,11 +183,11 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     
     // Set MORE RESTRICTIVE zoom limits for better performance
     // Users can't zoom out much after searching - they need to use search bar for new locations
-    map.current.setMinZoom(11);   // More restrictive - can't zoom out beyond city view
+    map.current.setMinZoom(8);   // Allow zooming out to see wider area - was 11, now 8
     map.current.setMaxZoom(18);  // Can still zoom in to street level
     
     hasLocationRestrictions.current = true;
-    console.log('✅ Location restrictions applied successfully - MinZoom: 11, MaxZoom: 18');
+    console.log('✅ Location restrictions applied successfully - MinZoom: 8, MaxZoom: 18');
   };
 
   // Remove all restrictions
