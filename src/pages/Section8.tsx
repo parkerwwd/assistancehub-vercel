@@ -17,12 +17,13 @@ const Section8 = () => {
   const searchLocation = location.state?.searchLocation;
   const searchQuery = location.state?.searchQuery;
   
-  console.log('🚀 Section8 component loaded with route state:', {
-    fullState: location.state,
-    searchLocation,
-    searchQuery,
-    pathname: location.pathname
-  });
+  // Log only when there's a search location or query
+  if (searchLocation || searchQuery) {
+    console.log('🚀 Section8 loaded with search:', {
+      searchLocation: searchLocation?.name,
+      searchQuery
+    });
+  }
   
   const {
     mapboxToken,
@@ -51,22 +52,13 @@ const Section8 = () => {
 
   const isMobile = useIsMobile();
 
-  // Handle navigation from state page and updates when location state changes
+  // Handle navigation from search location - apply immediately for data, then when map is ready for view
   useEffect(() => {
-    console.log('🎯 Section8 received searchLocation:', searchLocation);
     if (searchLocation) {
-      console.log('✅ Calling handleCitySelect with:', searchLocation);
+      console.log('🎯 Section8 applying searchLocation:', searchLocation);
       handleCitySelect(searchLocation);
     }
-  }, [searchLocation?.name, searchLocation?.latitude, searchLocation?.longitude]);
-  
-  // Handle map initialization with pending search location
-  useEffect(() => {
-    if (searchLocation && mapRef.current) {
-      console.log('🗺️ Map is ready, applying search location:', searchLocation);
-      handleCitySelect(searchLocation);
-    }
-  }, [mapRef.current, searchLocation, handleCitySelect]);
+  }, [searchLocation, handleCitySelect]);
       
   // Handle search query from city buttons (e.g., "Los Angeles, CA")
   useEffect(() => {

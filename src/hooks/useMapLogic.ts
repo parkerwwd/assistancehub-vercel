@@ -45,8 +45,6 @@ export const useMapLogic = () => {
   };
 
   const handleCitySelect = async (location: USLocation) => {
-    console.log('🔍 City selected:', location.name, 'Coords:', location.latitude, location.longitude);
-    
     // Clear any selected office first
     setSelectedOffice(null);
     
@@ -61,7 +59,6 @@ export const useMapLogic = () => {
             location.type === 'county' ? `${location.name}, ${location.stateCode}` :
             `${location.name}, ${location.stateCode}`
     };
-    console.log('📌 Setting selected location state:', locationData);
     setSelectedLocation(locationData);
     
     // Determine appropriate zoom level based on location type
@@ -77,7 +74,6 @@ export const useMapLogic = () => {
     // Fly to the selected location with appropriate zoom level
     if (mapRef.current) {
       mapRef.current.flyTo([location.longitude, location.latitude], zoomLevel);
-      // Don't set marker here - let MapContainer handle it via selectedLocation state
     }
   };
 
