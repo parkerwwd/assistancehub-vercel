@@ -216,8 +216,19 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       const phasChanged = phaAgencies.length !== lastPhaAgenciesRef.current.length ||
         phaAgencies.some((pha, index) => pha.id !== lastPhaAgenciesRef.current[index]?.id);
       
+      console.log('🔍 PHA display check:', {
+        phasChanged,
+        selectedLocation: !!selectedLocation,
+        lastPHAsLength: lastPhaAgenciesRef.current.length,
+        currentPHAsLength: phaAgencies.length,
+        condition1: phasChanged,
+        condition2: selectedLocation && !lastPhaAgenciesRef.current.length,
+        willDisplay: phasChanged || (selectedLocation && !lastPhaAgenciesRef.current.length)
+      });
+      
       // Only redraw PHAs if data has changed OR location changed OR we're switching from office selection back to overview
-      if (phasChanged || (selectedLocation && !lastPhaAgenciesRef.current.length)) {
+      // Simplified: Always display when we have a location and PHAs
+      if ((phasChanged || selectedLocation) && phaAgencies.length > 0) {
         console.log('🎯 Displaying', phaAgencies.length, 'PHAs on map');
         lastPhaAgenciesRef.current = phaAgencies;
         
@@ -235,6 +246,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
             if (!map.current.isMoving()) {
               console.log('✅ Map is idle, displaying markers immediately');
               
+              console.log('🎯 CALLING displayAllPHAsAsIndividualPins NOW');
               markerManager.current.displayAllPHAsAsIndividualPins(
                 map.current!, 
                 phaAgencies,
