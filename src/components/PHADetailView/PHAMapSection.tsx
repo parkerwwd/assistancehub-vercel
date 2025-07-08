@@ -16,6 +16,7 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
   const mapRef = useRef<MapContainerRef>(null);
   const [tokenError, setTokenError] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [officeWithCoords, setOfficeWithCoords] = useState<PHAAgency | null>(null);
   const mapboxToken = "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjenhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
 
   const handleOfficeSelect = (selectedOffice: PHAAgency) => {
@@ -26,6 +27,16 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
   useEffect(() => {
     const geocodeAndSetMarker = async () => {
       if (!office.address || !mapRef.current) return;
+      
+      // Check if office already has coordinates
+      if (office.latitude && office.longitude) {
+        console.log('🗺️ PHAMapSection - Office already has coordinates:', { lat: office.latitude, lng: office.longitude });
+        setOfficeWithCoords(office);
+        
+        // Fly to the location
+        mapRef.current.flyTo([office.longitude, office.latitude], 17);
+        return;
+      }
       
       setIsGeocoding(true);
       
@@ -38,8 +49,13 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
         if (coordinates) {
           const { lat, lng } = coordinates;
           
-          // Set the location marker WITHOUT hover card (showHoverCard: false)
-          mapRef.current.setLocationMarker(lat, lng, office.name, false);
+          // Create office with coordinates
+          const officeWithLatLng = {
+            ...office,
+            latitude: lat,
+            longitude: lng
+          };
+          setOfficeWithCoords(officeWithLatLng);
           
           // Fly to the location with zoom level 17
           mapRef.current.flyTo([lng, lat], 17);
@@ -47,9 +63,13 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
           console.log('✅ PHAMapSection - Successfully geocoded and marked location:', office.name, { lat, lng });
         } else {
           console.warn('⚠️ PHAMapSection - No geocoding results for address:', office.address);
+          // Still set the office even without coordinates
+          setOfficeWithCoords(office);
         }
       } catch (error) {
         console.error('❌ PHAMapSection - Geocoding error:', error);
+        // Still set the office even on error
+        setOfficeWithCoords(office);
       } finally {
         setIsGeocoding(false);
       }
@@ -61,7 +81,7 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [office.address, office.name, mapboxToken]);
+  }, [office, mapboxToken]);
 
   return (
     <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
@@ -80,10 +100,10 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
             <MapContainer
               ref={mapRef}
               mapboxToken={mapboxToken}
-              phaAgencies={[]}
+              phaAgencies={officeWithCoords ? [officeWithCoords] : [office]}
               onOfficeSelect={handleOfficeSelect}
               onTokenError={setTokenError}
-              selectedOffice={null}
+              selectedOffice={officeWithCoords || office}
               selectedLocation={null}
             />
           ) : (
