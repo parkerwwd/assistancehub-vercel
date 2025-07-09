@@ -63,7 +63,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 Home
               </Link>
               <Link 
-                to="/section8" 
+                to="/" 
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
                 Search Housing
@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
 
             {/* CTA Button */}
             <div className="hidden md:flex items-center gap-4">
-              <Link to="/section8">
+              <Link to="/">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                   <Search className="w-4 h-4 mr-2" />
                   Find Housing
@@ -174,7 +174,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 Home
               </Link>
               <Link
-                to="/section8"
+                to="/"
                 className="block px-4 py-4 text-lg font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -222,7 +222,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
               
               {/* Mobile CTA */}
               <div className="pt-6">
-                <Link to="/section8" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
                   <Button className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-4 text-lg">
                     <Search className="w-5 h-5 mr-2" />
                     Find Housing
