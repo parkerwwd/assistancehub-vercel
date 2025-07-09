@@ -7,7 +7,6 @@ import PHAHeroSection from "./PHADetailView/PHAHeroSection";
 import PHABasicInfo from "./PHADetailView/PHABasicInfo";
 import PHAContactInfo from "./PHADetailView/PHAContactInfo";
 import PHAHousingPrograms from "./PHADetailView/PHAHousingPrograms";
-import PHAWalkScore from "./PHADetailView/PHAWalkScore";
 import PHALastUpdated from "./PHADetailView/PHALastUpdated";
 import PHADataSource from "./PHADetailView/PHADataSource";
 import PHAMapSection from "./PHADetailView/PHAMapSection";
@@ -58,9 +57,6 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
 
             {/* Program Information */}
             <PHAHousingPrograms office={office} />
-
-            {/* Walk Score Section */}
-            <PHAWalkScore office={office} />
           </div>
 
           {/* Right Column - Contact & Meta Info */}
