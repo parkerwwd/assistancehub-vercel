@@ -2,13 +2,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Linkedin } from 'lucide-react';
+import logoImage from '../assets/logo.png';
 
 const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content - Mobile optimized */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mb-8">
+          {/* Logo */}
+          <div className="flex justify-center sm:justify-start">
+            <Link to="/" className="flex items-center gap-2">
+              <img 
+                src={logoImage} 
+                alt="JetWord AssistanceHub" 
+                className="h-10 w-auto"
+              />
+            </Link>
+          </div>
+
           {/* Quick Links */}
           <div>
             <h4 className="font-semibold mb-3 sm:mb-4 text-gray-100">Quick Links</h4>
