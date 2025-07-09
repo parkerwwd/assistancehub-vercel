@@ -114,7 +114,7 @@ const Index = () => {
           <div className="text-center max-w-4xl mx-auto">
             {/* Main Heading - Mobile Optimized */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-              Search Section 8 Housing Nationwide
+              Find Affordable Housing in Your Area
             </h1>
             
             {/* Subtitle - Mobile Optimized */}
