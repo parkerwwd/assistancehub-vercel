@@ -186,65 +186,6 @@ const Index = () => {
             <div className="h-96 mb-6">
               <USMap selectedState={selectedState} onStateClick={setSelectedState} />
             </div>
-            
-            {/* Popular States - Desktop */}
-            <div className="text-center pt-4 border-t border-gray-200">
-              <p className="text-lg font-medium text-gray-800 mb-4">Popular states to explore:</p>
-              <div className="flex flex-wrap justify-center gap-3">
-                {['CA', 'TX', 'FL', 'NY', 'IL', 'GA'].map((stateCode) => {
-                  const state = STATES.find(s => s.code === stateCode);
-                  return (
-                    <Button
-                      key={stateCode}
-                      variant="outline"
-                      onClick={() => setSelectedState(stateCode)}
-                      className="hover:bg-blue-50 hover:border-blue-300 px-4 py-2 text-sm font-medium"
-                    >
-                      <MapPin className="w-4 h-4 mr-2" />
-                      {state?.name}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Popular States Grid - Mobile Only */}
-          <div className="md:hidden">
-            <p className="text-center text-base font-medium text-gray-800 mb-4">
-              Popular states to explore:
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {['CA', 'TX', 'FL', 'NY', 'IL', 'GA', 'PA', 'OH'].map((stateCode) => {
-                const state = STATES.find(s => s.code === stateCode);
-                return (
-                  <Button
-                    key={stateCode}
-                    variant="outline"
-                    onClick={() => {
-                      console.log('📱 Mobile state button clicked:', stateCode);
-                      const state = STATES.find(s => s.code === stateCode);
-                      if (state) {
-                        const stateLocation: USLocation = {
-                          name: state.name,
-                          stateCode: state.code,
-                          state: state.name,
-                          type: 'state',
-                          latitude: state.lat,
-                          longitude: state.lng
-                        };
-                        console.log('✅ Mobile navigating with state location:', stateLocation);
-                        navigate('/section8', { state: { searchLocation: stateLocation } });
-                      }
-                    }}
-                    className="h-16 flex flex-col items-center justify-center hover:bg-blue-50 hover:border-blue-300 border-2"
-                  >
-                    <span className="text-lg font-bold text-blue-600">{stateCode}</span>
-                    <span className="text-xs text-gray-600">{state?.name}</span>
-                  </Button>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>
