@@ -262,21 +262,21 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
               console.log('✅ Map is idle, displaying markers immediately');
               
               console.log('🎯 CALLING displayAllPHAsAsIndividualPins NOW');
-              markerManager.current.displayAllPHAsAsIndividualPins(
+            markerManager.current.displayAllPHAsAsIndividualPins(
                 map.current!, 
-                phaAgencies,
-                onOfficeSelect
-              );
-              
-              // Add location marker
-              markerManager.current.setLocationMarker(
+              phaAgencies,
+              onOfficeSelect
+            );
+            
+            // Add location marker
+            markerManager.current.setLocationMarker(
                 map.current!,
-                selectedLocation.lat,
-                selectedLocation.lng,
-                selectedLocation.name,
-                mapboxToken
-              );
-              
+              selectedLocation.lat,
+              selectedLocation.lng,
+              selectedLocation.name,
+              mapboxToken
+            );
+            
               // Apply restrictions
               applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
             } else {

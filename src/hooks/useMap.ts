@@ -105,7 +105,7 @@ export const useMap = (): UseMapReturn => {
     // Fly to the location with a small delay to ensure state is updated
     setTimeout(() => {
       console.log('🚁 Now flying to location after state update');
-      flyToLocation(location);
+    flyToLocation(location);
     }, 100);
   }, [actions, flyToLocation]);
   

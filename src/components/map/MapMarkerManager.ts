@@ -57,13 +57,13 @@ export class MapMarkerManager {
   // New method to display all PHAs as individual pins without clustering
   displayAllPHAsAsIndividualPins(
     map: mapboxgl.Map, 
-    agencies: PHAAgency[],
+    agencies: PHAAgency[], 
     onOfficeSelect: (office: PHAAgency) => void
   ) {
     try {
-      // Clear all markers first
-      this.clearAllAgencyMarkers();
-      
+    // Clear all markers first
+    this.clearAllAgencyMarkers();
+    
       console.log(`📍 displayAllPHAsAsIndividualPins called with ${agencies.length} PHAs`);
       
       // Verify map is ready

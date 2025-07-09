@@ -45,7 +45,7 @@ export const fetchAllPHAData = async (): Promise<FetchPHADataResult> => {
   }
 
   console.log(`✅ Fetched all ${allData.length} PHAs from database`);
-  
+
   // Debug: Check how many PHAs have coordinates
   const phasWithCoords = allData.filter(pha => pha.latitude && pha.longitude);
   console.log(`📍 PHAs with coordinates: ${phasWithCoords.length}/${allData.length} (${Math.round(phasWithCoords.length/allData.length * 100)}%)`);
