@@ -10,8 +10,6 @@ import PHADetail from "./pages/PHADetail";
 import SNAP from "./pages/SNAP";
 import DataAdmin from "./pages/DataAdmin";
 import Auth from "./pages/Auth";
-import State from "./pages/State";
-import StateOffices from "./pages/StateOffices";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SearchMapProvider } from "./contexts/SearchMapContext";
@@ -34,8 +32,6 @@ const App = () => (
           <Route path="/pha/:id" element={<PHADetail />} />
           <Route path="/snap" element={<SNAP />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/state/:state" element={<State />} />
-          <Route path="/state/:state/offices" element={<StateOffices />} />
           <Route path="/data-admin" element={
             <ProtectedRoute>
               <DataAdmin />

@@ -69,12 +69,6 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 Search Housing
               </Link>
               <Link 
-                to="/state/california" 
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-              >
-                State List
-              </Link>
-              <Link 
                 to="/snap" 
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
@@ -179,13 +173,6 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Search Housing
-              </Link>
-              <Link
-                to="/state/california"
-                className="block px-4 py-4 text-lg font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                State List
               </Link>
               <Link
                 to="/snap"

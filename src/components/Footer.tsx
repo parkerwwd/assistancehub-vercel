@@ -35,11 +35,6 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/state/california" className="text-sm text-gray-400 hover:text-white transition-colors">
-                  State Lists
-                </Link>
-              </li>
-              <li>
                 <Link to="/snap" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Resources
                 </Link>
