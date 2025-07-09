@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Linkedin } from 'lucide-react';
 import logoImage from '../assets/logo.png';
 
 const Footer = () => {
@@ -64,23 +63,10 @@ const Footer = () => {
         {/* Divider */}
         <div className="border-t border-gray-800 pt-6 sm:pt-8">
           {/* Bottom Footer - Mobile optimized */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
+          <div className="text-center">
+            <p className="text-xs sm:text-sm text-gray-400">
               © {new Date().getFullYear()} AssistanceHub. All rights reserved.
             </p>
-            
-            {/* Social Links - Larger touch targets on mobile */}
-            <div className="flex items-center gap-3 sm:gap-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors p-2 -m-2">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors p-2 -m-2">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors p-2 -m-2">
-                <Linkedin className="w-5 h-5" />
-              </a>
-            </div>
           </div>
         </div>
       </div>
