@@ -49,34 +49,34 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 <img 
                   src={logoImage} 
                   alt="JetWord AssistanceHub" 
-                  className="h-10 sm:h-12 w-auto"
+                  className="h-8 sm:h-9 w-auto"
                 />
               </Link>
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="hidden md:flex items-center gap-6">
               <Link 
                 to="/" 
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-2"
               >
                 Home
               </Link>
               <Link 
                 to="/" 
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-2"
               >
                 Search Housing
               </Link>
               <Link 
                 to="/snap" 
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-2"
               >
                 Resources
               </Link>
               <Link 
                 to="/about" 
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-2"
               >
                 About Us
               </Link>
@@ -96,9 +96,9 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
             )}
 
             {/* CTA Button */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center">
               <Link to="/">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 h-10">
                   <Search className="w-4 h-4 mr-2" />
                   Find Housing
                 </Button>
@@ -145,7 +145,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 <img 
                   src={logoImage} 
                   alt="AssistanceHub" 
-                  className="h-8 w-auto"
+                  className="h-7 w-auto"
                 />
               </Link>
               <Button
