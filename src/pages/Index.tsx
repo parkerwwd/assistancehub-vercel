@@ -214,9 +214,11 @@ const Index = () => {
                 <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
                   Learn about the application process for federal housing assistance.
                 </p>
-                <Button variant="outline" className="w-full text-sm sm:text-base">
-                  Read More <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
-                </Button>
+                <a href="https://jetword.com/how-to-find-low-income-housing-with-no-waiting-list/" target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" className="w-full text-sm sm:text-base">
+                    Read More <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                  </Button>
+                </a>
               </CardContent>
             </Card>
 
