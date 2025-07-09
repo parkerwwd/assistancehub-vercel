@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Search, Home, Users, FileText, CheckCircle, ArrowRight, Target, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { USLocation } from "@/data/locations";
-import { comprehensiveCities } from "@/data/locations/cities";
 import USMap from "@/components/USMap";
 import UnifiedSearchInput from "@/components/UnifiedSearchInput";
 
@@ -66,15 +65,6 @@ const STATES = [
   { code: 'DC', name: 'District of Columbia', lat: 38.8974, lng: -77.0365 },
 ];
 
-const POPULAR_CITIES = [
-  'Los Angeles, CA',
-  'San Francisco, CA',
-  'Atlanta, GA',
-  'New York, NY',
-  'Austin, TX',
-  'Seattle, WA'
-];
-
 const Index = () => {
   const [selectedState, setSelectedState] = useState<string>("");
   const navigate = useNavigate();
@@ -106,28 +96,6 @@ const Index = () => {
   const handleLocationSelect = (location: USLocation) => {
     console.log('🔍 Home page search - location selected:', location);
     navigate('/section8', { state: { searchLocation: location } });
-  };
-
-  // Handle city click from popular cities buttons
-  const handleCityClick = (cityName: string) => {
-    console.log('🏙️ Popular city clicked:', cityName);
-    
-    // Find the city data from our comprehensive cities list
-    const cityData = comprehensiveCities.find(city => 
-      city.name === cityName.split(',')[0].trim()
-    );
-    
-    console.log('🔍 Found city data:', cityData);
-    
-    if (cityData) {
-      // Pass the location object with coordinates
-      console.log('✅ Navigating with city data:', cityData);
-      navigate('/section8', { state: { searchLocation: cityData } });
-    } else {
-      // Fallback to text search if city not found in local data
-      console.log('⚠️ City not found in local data, using text search:', cityName);
-      navigate('/section8', { state: { searchQuery: cityName } });
-    }
   };
 
   return (
@@ -164,22 +132,6 @@ const Index = () => {
                 variant="default"
                 autoFocus={false}
               />
-            </div>
-
-            {/* Popular Cities - Mobile Optimized */}
-            <div className="mb-6 sm:mb-10">
-              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-2 sm:px-0">
-                {POPULAR_CITIES.map((city) => (
-                  <Button
-                    key={city}
-                    onClick={() => handleCityClick(city)}
-                    className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-                  >
-                    <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span>{city.split(',')[0]}</span>
-                  </Button>
-                ))}
-              </div>
             </div>
 
             {/* Down Arrow - Hidden on small mobile */}
