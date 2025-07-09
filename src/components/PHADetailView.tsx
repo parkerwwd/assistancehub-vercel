@@ -10,6 +10,7 @@ import PHAHousingPrograms from "./PHADetailView/PHAHousingPrograms";
 import PHALastUpdated from "./PHADetailView/PHALastUpdated";
 import PHADataSource from "./PHADetailView/PHADataSource";
 import PHAMapSection from "./PHADetailView/PHAMapSection";
+import PHADescription from "./PHADetailView/PHADescription";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -51,6 +52,9 @@ const PHADetailView: React.FC<PHADetailViewProps> = ({ office, onViewHousing, on
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
             <PHABasicInfo office={office} onShowMap={onShowMap} />
+
+            {/* Description */}
+            <PHADescription office={office} />
 
             {/* Map Section */}
             <PHAMapSection office={office} />
