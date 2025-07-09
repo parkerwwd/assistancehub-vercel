@@ -233,9 +233,11 @@ const Index = () => {
                 <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
                   Track your application and stay informed about your status.
                 </p>
-                <Button variant="outline" className="w-full text-sm sm:text-base">
-                  Read More <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
-                </Button>
+                <a href="https://jetword.com/how-to-check-your-section-8-application-or-waitlist-status/" target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" className="w-full text-sm sm:text-base">
+                    Read More <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                  </Button>
+                </a>
               </CardContent>
             </Card>
 
