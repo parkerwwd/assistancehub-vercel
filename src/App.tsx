@@ -10,6 +10,7 @@ import PHADetail from "./pages/PHADetail";
 import SNAP from "./pages/SNAP";
 import DataAdmin from "./pages/DataAdmin";
 import Auth from "./pages/Auth";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SearchMapProvider } from "./contexts/SearchMapContext";
@@ -37,6 +38,7 @@ const App = () => (
               <DataAdmin />
             </ProtectedRoute>
           } />
+          <Route path="/about" element={<About />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

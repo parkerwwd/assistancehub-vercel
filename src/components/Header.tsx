@@ -75,7 +75,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 Resources
               </Link>
               <Link 
-                to="/data-admin" 
+                to="/about" 
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
                 About Us
@@ -182,7 +182,7 @@ const Header: React.FC<HeaderProps> = ({ onCitySelect, showSearch = false }) => 
                 Resources
               </Link>
               <Link
-                to="/data-admin"
+                to="/about"
                 className="block px-4 py-4 text-lg font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
