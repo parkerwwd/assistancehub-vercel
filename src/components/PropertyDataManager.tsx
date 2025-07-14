@@ -67,6 +67,20 @@ const PropertyDataManager: React.FC = () => {
       return index >= 0 ? values[index]?.trim().replace(/^"|"$/g, '') || '' : '';
     };
     
+    // Debug logging for problematic fields
+    console.log('LIHTC Parser Debug:', {
+      projectName: getValue('project'),
+      yr_pis: getValue('yr_pis'),
+      li_units: getValue('li_units'),
+      n_0br: getValue('n_0br'),
+      n_1br: getValue('n_1br'),
+      n_2br: getValue('n_2br'),
+      n_3br: getValue('n_3br'),
+      n_4br: getValue('n_4br'),
+      headers_length: headers.length,
+      values_length: values.length
+    });
+    
     // Determine property type based on various factors
     let propertyType = 'tax_credit'; // Default for LIHTC
     const type = getValue('type');
@@ -86,6 +100,12 @@ const PropertyDataManager: React.FC = () => {
     const lat = parseFloat(getValue('latitude'));
     const lng = parseFloat(getValue('longitude'));
     
+    // Parse and validate year
+    const yearValue = parseInt(getValue('yr_pis'));
+    const currentYear = new Date().getFullYear();
+    // Only accept years between 1900 and current year + 5
+    const validYear = yearValue && yearValue >= 1900 && yearValue <= currentYear + 5 ? yearValue : null;
+    
     return {
       name: getValue('project') || getValue('google_name'),
       address: getValue('proj_add'),
@@ -104,8 +124,8 @@ const PropertyDataManager: React.FC = () => {
       website: getValue('website') || null,
       latitude: !isNaN(lat) ? lat : null,
       longitude: !isNaN(lng) ? lng : null,
-      // Add new LIHTC fields
-      year_put_in_service: parseInt(getValue('yr_pis')) || null,
+      // Add new LIHTC fields with validation
+      year_put_in_service: validYear,
       low_income_units: parseInt(getValue('li_units')) || null,
       units_studio: parseInt(getValue('n_0br')) || 0,
       units_1br: parseInt(getValue('n_1br')) || 0,
@@ -169,10 +189,15 @@ const PropertyDataManager: React.FC = () => {
               
               // Parse specific fields
               if (header === 'units_total' || header === 'units_available' || 
-                  header === 'year_put_in_service' || header === 'low_income_units' ||
+                  header === 'low_income_units' ||
                   header === 'units_studio' || header === 'units_1br' || 
                   header === 'units_2br' || header === 'units_3br' || header === 'units_4br') {
                 property[header] = value ? parseInt(value) : null;
+              } else if (header === 'year_put_in_service') {
+                // Validate year
+                const yearValue = value ? parseInt(value) : null;
+                const currentYear = new Date().getFullYear();
+                property[header] = yearValue && yearValue >= 1900 && yearValue <= currentYear + 5 ? yearValue : null;
               } else if (header === 'rent_range_min' || header === 'rent_range_max') {
                 property[header] = value ? parseFloat(value) : null;
               } else if (header === 'waitlist_open') {
