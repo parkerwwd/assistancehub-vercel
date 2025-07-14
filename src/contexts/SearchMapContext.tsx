@@ -72,7 +72,7 @@ const initialState: SearchMapState = {
   totalCount: 0,
   itemsPerPage: 20,
   showPHAs: true,
-  showProperties: false
+  showProperties: true
 };
 
 // Reducer

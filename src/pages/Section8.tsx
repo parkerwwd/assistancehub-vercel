@@ -5,11 +5,11 @@ import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import MapContainer from "@/components/MapContainer";
 import Header from "@/components/Header";
 import MobileSection8Layout from "@/components/MobileSection8Layout";
-import { MapToggles } from "@/components/MapToggles";
 import { useSearchMap } from "@/contexts/SearchMapContext";
 import { useMap } from "@/hooks/useMap";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Database } from "@/integrations/supabase/types";
+import { Property } from "@/types/property";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -42,13 +42,19 @@ const Section8 = () => {
   }, [searchLocation, handleLocationSearch, resetToUSView]);
   
   // Handle office clicks from map pins (no flyTo to prevent bouncing)
-  const handleOfficeClick = useCallback((office: PHAAgency | null) => {
-    handleOfficeSelection(office, false);
+  const handleOfficeClick = useCallback((office: PHAAgency | Property | null) => {
+    // For now, only handle PHAs for the map selection
+    if (office && 'supports_hcv' in office) {
+      handleOfficeSelection(office as PHAAgency, false);
+    }
   }, [handleOfficeSelection]);
   
   // Handle office clicks from list (with flyTo to show on map)
-  const handleOfficeListClick = useCallback((office: PHAAgency) => {
-    handleOfficeSelection(office, true);
+  const handleOfficeListClick = useCallback((office: PHAAgency | Property) => {
+    // For now, only handle PHAs for the map selection
+    if ('supports_hcv' in office) {
+      handleOfficeSelection(office as PHAAgency, true);
+    }
   }, [handleOfficeSelection]);
   
   // Handle city selection from header search
@@ -92,7 +98,7 @@ const Section8 = () => {
         {isMobile ? (
           <MobileSection8Layout
             mapboxToken={mapboxToken}
-            selectedOffice={state.selectedOffice}
+            selectedOffice={state.selectedOffice && 'supports_hcv' in state.selectedOffice ? state.selectedOffice as PHAAgency : null}
             filteredLocation={state.searchLocation}
             mapRef={mapRef}
             phaAgencies={state.paginatedAgencies}
@@ -104,8 +110,8 @@ const Section8 = () => {
             totalCount={state.totalCount}
             viewState="overview"
             detailOffice={null}
-            setSelectedOffice={actions.setSelectedOffice}
-            handleOfficeClick={handleOfficeListClick}
+            setSelectedOffice={(office) => actions.setSelectedOffice(office)}
+            handleOfficeClick={handleOfficeListClick as any}
             handleViewHousing={() => {}}
             handleBackToOverview={() => {}}
             handleBackToPHADetail={() => {}}
@@ -130,10 +136,6 @@ const Section8 = () => {
                 return null;
               })()}
               <div className="relative h-full">
-                {/* Map Toggles - positioned over the map */}
-                <div className="absolute top-4 left-4 z-10">
-                  <MapToggles />
-                </div>
                 <MapContainer
                   ref={mapRef}
                   mapboxToken={mapboxToken}

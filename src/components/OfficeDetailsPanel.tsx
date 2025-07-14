@@ -10,12 +10,13 @@ import { Database } from "@/integrations/supabase/types";
 import { USLocation } from "@/data/usLocations";
 import { Property } from "@/types/property";
 import { useSearchMap } from "@/contexts/SearchMapContext";
+import { MapToggles } from "./MapToggles";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 interface OfficeDetailsPanelProps {
-  selectedOffice: PHAAgency | null;
-  onOfficeClick: (office: PHAAgency | null) => void;
+  selectedOffice: PHAAgency | Property | null;
+  onOfficeClick: (office: PHAAgency | Property | null) => void;
   phaAgencies: PHAAgency[];
   loading: boolean;
   currentPage: number;
@@ -42,11 +43,16 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
   filteredLocation,
   onShowMap
 }) => {
-  // For now, we'll just show PHAs - properties will be added later
-  const showPHAs = true;
-  const showProperties = false;
-  const paginatedProperties: any[] = [];
-  const selectedProperty = null;
+  // Get property data and toggle states from context
+  const { state } = useSearchMap();
+  const { showPHAs, showProperties, filteredProperties } = state;
+  
+  // Paginate properties (simple approach - just take first 10 for now)
+  const paginatedProperties = filteredProperties.slice(0, 10);
+  
+  // Determine if selected office is a property
+  const selectedProperty = selectedOffice && 'property_type' in selectedOffice ? selectedOffice as Property : null;
+  const selectedPHA = selectedOffice && 'supports_hcv' in selectedOffice ? selectedOffice as PHAAgency : null;
   
   // Debug logging
   React.useEffect(() => {
@@ -112,11 +118,14 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
           <h2 className="text-xl font-semibold text-gray-900">
             {hasFilter && filteredLocation?.name 
               ? `Locations in ${filteredLocation.name}`
-              : 'All Locations'
-            }
+              : 'All Locations'}
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            {totalCount} total results • Page {currentPage} of {totalPages}
+            {showPHAs && showProperties
+              ? `Showing ${phaAgencies.length} PHAs and ${paginatedProperties.length} properties`
+              : showPHAs
+              ? `${totalCount} Public Housing Agencies`
+              : `${paginatedProperties.length} Properties`}
           </p>
         </div>
         {hasFilter && onShowAll && (
@@ -129,6 +138,11 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
             Show all
           </Button>
         )}
+      </div>
+
+      {/* Filter toggles */}
+      <div className="mb-4">
+        <MapToggles />
       </div>
 
       {/* List of offices and properties */}
@@ -147,7 +161,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
           <PropertyCard
             key={property.id}
             property={property}
-            onPropertyClick={handlePropertyClick}
+            onPropertyClick={() => onOfficeClick(property)}
           />
         ))}
       </div>
