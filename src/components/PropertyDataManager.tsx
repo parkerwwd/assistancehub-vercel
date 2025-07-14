@@ -22,12 +22,15 @@ const PropertyDataManager: React.FC = () => {
     status: 'idle'
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLIHTCFormat, setIsLIHTCFormat] = useState(false);
   
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type === 'text/csv') {
       setSelectedFile(file);
       setUploadProgress({ total: 0, processed: 0, errors: 0, status: 'idle' });
+      // Check if it's LIHTC format by filename
+      setIsLIHTCFormat(file.name.toLowerCase().includes('lihtc') || file.name.toLowerCase().includes('location'));
     } else {
       toast({
         title: "Invalid file type",
@@ -57,6 +60,55 @@ const PropertyDataManager: React.FC = () => {
     });
   };
   
+  // Parse LIHTC format
+  const parseLIHTCData = (headers: string[], values: string[]): any => {
+    const getValue = (fieldName: string) => {
+      const index = headers.indexOf(fieldName);
+      return index >= 0 ? values[index]?.trim().replace(/^"|"$/g, '') || '' : '';
+    };
+    
+    // Determine property type based on various factors
+    let propertyType = 'tax_credit'; // Default for LIHTC
+    const type = getValue('type');
+    if (type === '1') propertyType = 'public_housing';
+    else if (type === '2') propertyType = 'tax_credit';
+    else if (type === '3') propertyType = 'section_8';
+    
+    // Build bedroom types array
+    const bedroomTypes: string[] = [];
+    if (parseInt(getValue('n_0br')) > 0) bedroomTypes.push('studio');
+    if (parseInt(getValue('n_1br')) > 0) bedroomTypes.push('1br');
+    if (parseInt(getValue('n_2br')) > 0) bedroomTypes.push('2br');
+    if (parseInt(getValue('n_3br')) > 0) bedroomTypes.push('3br');
+    if (parseInt(getValue('n_4br')) > 0) bedroomTypes.push('4br+');
+    
+    // Parse coordinates
+    const lat = parseFloat(getValue('latitude'));
+    const lng = parseFloat(getValue('longitude'));
+    
+    return {
+      name: getValue('project') || getValue('google_name'),
+      address: getValue('proj_add'),
+      city: getValue('proj_cty'),
+      state: getValue('proj_st'),
+      zip: getValue('proj_zip'),
+      property_type: propertyType,
+      units_total: parseInt(getValue('n_units')) || null,
+      units_available: null, // LIHTC doesn't have this
+      bedroom_types: bedroomTypes,
+      rent_range_min: null, // Would need to calculate based on area
+      rent_range_max: null,
+      waitlist_open: null,
+      phone: getValue('phone') || null,
+      email: null, // Not in LIHTC data
+      website: getValue('website') || null,
+      latitude: !isNaN(lat) ? lat : null,
+      longitude: !isNaN(lng) ? lng : null,
+      // Store some LIHTC-specific data in a metadata field if needed
+      pha_id: null // No PHA association in LIHTC data
+    };
+  };
+  
   const handleUpload = async () => {
     if (!selectedFile) {
       toast({
@@ -73,83 +125,125 @@ const PropertyDataManager: React.FC = () => {
       const text = await selectedFile.text();
       const lines = text.split('\n').filter(line => line.trim());
       const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-      const properties = [];
       
-      // Skip header row
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].match(/(".*?"|[^,]+)/g) || [];
-        const property: any = {};
+      // For large files, show total count
+      const totalRecords = lines.length - 1; // Minus header
+      console.log(`📊 Processing ${totalRecords.toLocaleString()} property records...`);
+      
+      // Detect if this is LIHTC format
+      const isLIHTC = headers.includes('hud_id') || headers.includes('project');
+      
+      // Process in chunks to avoid memory issues
+      const chunkSize = 5000; // Process 5k records at a time
+      const batchSize = 50; // Reduced from 100 for better reliability
+      let allProcessed = 0;
+      let allErrors = 0;
+      
+      setUploadProgress(prev => ({ ...prev, total: totalRecords }));
+      
+      // Process file in chunks
+      for (let chunkStart = 1; chunkStart < lines.length; chunkStart += chunkSize) {
+        const chunkEnd = Math.min(chunkStart + chunkSize, lines.length);
+        const properties: any[] = [];
         
-        headers.forEach((header, index) => {
-          let value = values[index]?.trim().replace(/^"|"$/g, '') || '';
+        // Parse chunk
+        for (let i = chunkStart; i < chunkEnd; i++) {
+          const values = lines[i].match(/(".*?"|[^,]+)/g) || [];
+          let property: any = {};
           
-          // Parse specific fields
-          if (header === 'units_total' || header === 'units_available') {
-            property[header] = value ? parseInt(value) : null;
-          } else if (header === 'rent_range_min' || header === 'rent_range_max') {
-            property[header] = value ? parseFloat(value) : null;
-          } else if (header === 'waitlist_open') {
-            property[header] = value.toLowerCase() === 'true';
-          } else if (header === 'bedroom_types') {
-            property[header] = value ? value.split(';').map(t => t.trim()) : [];
-          } else if (header === 'latitude' || header === 'longitude') {
-            property[header] = value ? parseFloat(value) : null;
+          if (isLIHTC) {
+            // Use LIHTC parser
+            property = parseLIHTCData(headers, values.map(v => v.trim()));
           } else {
-            property[header] = value || null;
+            // Use standard parser
+            headers.forEach((header, index) => {
+              let value = values[index]?.trim().replace(/^"|"$/g, '') || '';
+              
+              // Parse specific fields
+              if (header === 'units_total' || header === 'units_available') {
+                property[header] = value ? parseInt(value) : null;
+              } else if (header === 'rent_range_min' || header === 'rent_range_max') {
+                property[header] = value ? parseFloat(value) : null;
+              } else if (header === 'waitlist_open') {
+                property[header] = value.toLowerCase() === 'true';
+              } else if (header === 'bedroom_types') {
+                property[header] = value ? value.split(';').map(t => t.trim()) : [];
+              } else if (header === 'latitude' || header === 'longitude') {
+                property[header] = value ? parseFloat(value) : null;
+              } else {
+                property[header] = value || null;
+              }
+            });
           }
-        });
-        
-        properties.push(property);
-      }
-      
-      setUploadProgress(prev => ({ ...prev, total: properties.length, status: 'processing' }));
-      
-      // Upload in batches
-      const batchSize = 100;
-      let processed = 0;
-      let errors = 0;
-      
-      for (let i = 0; i < properties.length; i += batchSize) {
-        const batch = properties.slice(i, i + batchSize);
-        
-        const { error } = await supabase
-          .from('properties')
-          .upsert(batch, { 
-            onConflict: 'name,address', // Adjust based on your unique constraints
-            ignoreDuplicates: false 
-          });
-        
-        if (error) {
-          console.error('Batch upload error:', error);
-          errors += batch.length;
-        } else {
-          processed += batch.length;
+          
+          // Only add properties with valid data
+          if (property.name && property.address) {
+            properties.push(property);
+          }
         }
         
-        setUploadProgress(prev => ({
-          ...prev,
-          processed: processed + errors,
-          errors
-        }));
+        // Upload chunk in batches
+        for (let i = 0; i < properties.length; i += batchSize) {
+          const batch = properties.slice(i, i + batchSize);
+          
+          try {
+            const { error } = await supabase
+              .from('properties')
+              .upsert(batch, { 
+                onConflict: 'name,address',
+                ignoreDuplicates: false 
+              });
+            
+            if (error) {
+              console.error('Batch upload error:', error);
+              allErrors += batch.length;
+            } else {
+              allProcessed += batch.length;
+            }
+          } catch (err) {
+            console.error('Batch failed:', err);
+            allErrors += batch.length;
+          }
+          
+          // Update progress
+          setUploadProgress(prev => ({
+            ...prev,
+            processed: allProcessed + allErrors,
+            errors: allErrors
+          }));
+          
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        // Free memory after each chunk
+        properties.length = 0;
       }
       
       setUploadProgress(prev => ({ ...prev, status: 'complete' }));
       
+      const message = totalRecords > 10000 
+        ? `🎉 Large dataset processed! Successfully uploaded ${allProcessed.toLocaleString()} of ${totalRecords.toLocaleString()} properties.`
+        : `Successfully uploaded ${allProcessed} properties.`;
+      
       toast({
         title: "Upload complete",
-        description: `Successfully uploaded ${processed} properties. ${errors} errors.`,
-        variant: errors > 0 ? "destructive" : "default"
+        description: `${message} ${allErrors > 0 ? `${allErrors} errors.` : ''}`,
+        variant: allErrors > 0 ? "destructive" : "default"
       });
       
       // Reset file selection
       setSelectedFile(null);
+      setIsLIHTCFormat(false);
       
     } catch (error) {
       console.error('Upload error:', error);
       setUploadProgress(prev => ({ ...prev, status: 'error' }));
       toast({
         title: "Upload failed",
-        description: "An error occurred while uploading properties",
+        description: error instanceof Error && error.message.includes('memory') 
+          ? "File too large. Try splitting into smaller files (max 20,000 records each)."
+          : "An error occurred while uploading properties",
         variant: "destructive"
       });
     }
@@ -174,6 +268,11 @@ const PropertyDataManager: React.FC = () => {
                   <span className="text-sm text-gray-600">
                     {selectedFile ? selectedFile.name : 'Drop CSV file or click to upload'}
                   </span>
+                  {isLIHTCFormat && (
+                    <span className="text-xs text-green-600 font-semibold">
+                      LIHTC format detected ✓
+                    </span>
+                  )}
                 </span>
                 <input
                   id="property-file-upload"
@@ -223,34 +322,53 @@ const PropertyDataManager: React.FC = () => {
         </CardContent>
       </Card>
       
+      {/* Large File Tips */}
+      {selectedFile && selectedFile.size > 10 * 1024 * 1024 && (
+        <Alert className="border-yellow-500 bg-yellow-50">
+          <AlertCircle className="h-4 w-4 text-yellow-600" />
+          <AlertDescription>
+            <strong>Large file detected!</strong> For files with 50,000+ records:
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>Upload may take 10-15 minutes</li>
+              <li>Keep this tab open during upload</li>
+              <li>Progress updates every 50 properties</li>
+              <li>If it fails, try splitting into smaller files</li>
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {/* Instructions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">CSV Format Requirements</CardTitle>
+          <CardTitle className="text-lg">CSV Format Support</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p className="font-semibold">Required columns:</p>
-            <ul className="list-disc list-inside space-y-1 ml-4">
-              <li><code>name</code> - Property name</li>
-              <li><code>address</code> - Street address</li>
-              <li><code>city</code> - City name</li>
-              <li><code>state</code> - 2-letter state code</li>
-              <li><code>zip</code> - ZIP code</li>
-            </ul>
+          <div className="space-y-4 text-sm text-gray-600">
+            <div>
+              <p className="font-semibold text-green-600 mb-2">✓ LIHTC Format (Auto-detected)</p>
+              <p>We automatically detect and parse LIHTC data with fields like:</p>
+              <ul className="list-disc list-inside space-y-1 ml-4 mt-1">
+                <li><code>hud_id</code>, <code>project</code>, <code>proj_add</code>, <code>proj_cty</code>, <code>proj_st</code>, <code>proj_zip</code></li>
+                <li><code>n_units</code>, <code>n_0br</code>, <code>n_1br</code>, <code>n_2br</code>, <code>n_3br</code>, <code>n_4br</code></li>
+                <li><code>latitude</code>, <code>longitude</code>, <code>phone</code>, <code>website</code></li>
+              </ul>
+            </div>
             
-            <p className="font-semibold mt-4">Optional columns:</p>
-            <ul className="list-disc list-inside space-y-1 ml-4">
-              <li><code>property_type</code> - Type: tax_credit, section_8, public_housing</li>
-              <li><code>units_total</code> - Total number of units</li>
-              <li><code>units_available</code> - Number of available units</li>
-              <li><code>bedroom_types</code> - Semicolon-separated: studio;1br;2br</li>
-              <li><code>rent_range_min</code> - Minimum rent amount</li>
-              <li><code>rent_range_max</code> - Maximum rent amount</li>
-              <li><code>waitlist_open</code> - true/false</li>
-              <li><code>phone</code>, <code>email</code>, <code>website</code> - Contact info</li>
-              <li><code>latitude</code>, <code>longitude</code> - GPS coordinates</li>
-            </ul>
+            <div>
+              <p className="font-semibold mb-2">Standard Format</p>
+              <p>Or use our standard format with these columns:</p>
+              <ul className="list-disc list-inside space-y-1 ml-4">
+                <li><code>name</code>, <code>address</code>, <code>city</code>, <code>state</code>, <code>zip</code></li>
+                <li><code>property_type</code> - Type: tax_credit, section_8, public_housing</li>
+                <li><code>units_total</code>, <code>units_available</code></li>
+                <li><code>bedroom_types</code> - Semicolon-separated: studio;1br;2br</li>
+                <li><code>rent_range_min</code>, <code>rent_range_max</code></li>
+                <li><code>waitlist_open</code> - true/false</li>
+                <li><code>phone</code>, <code>email</code>, <code>website</code></li>
+                <li><code>latitude</code>, <code>longitude</code></li>
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -258,4 +376,4 @@ const PropertyDataManager: React.FC = () => {
   );
 };
 
-export default PropertyDataManager;
+export default PropertyDataManager; 
