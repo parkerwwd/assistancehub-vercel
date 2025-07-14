@@ -39,7 +39,10 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markerManager = useRef<MapMarkerManager>(new MapMarkerManager());
-  const propertyMarkerManager = useRef<PropertyMarkerManager>(new PropertyMarkerManager());
+  const propertyMarkerManager = useRef<PropertyMarkerManager>(new PropertyMarkerManager({
+    onClick: onOfficeSelect as (property: Property) => void,
+    color: '#EF4444'
+  }));
   const hasLocationRestrictions = useRef<boolean>(false);
   const [isMapReady, setIsMapReady] = useState(false);
   
@@ -154,42 +157,65 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     }
   }, [selectedOffice]);
 
-  // Update markers when agencies or properties change
+  // Add map move listener for viewport-based rendering
   useEffect(() => {
     if (!map.current || !isMapReady) return;
     
-    console.log('🔄 Updating markers with toggle states:', {
-      showPHAs,
-      showProperties,
-      phaCount: phaAgencies.length,
-      propertyCount: filteredProperties.length
-    });
+    const updateVisibleMarkers = () => {
+      if (!map.current) return;
+      
+      const bounds = map.current.getBounds();
+      
+      // Filter to only visible markers
+      const visiblePHAs = showPHAs ? phaAgencies.filter(pha => {
+        if (!pha.latitude || !pha.longitude || !bounds) return false;
+        return bounds.contains([pha.longitude, pha.latitude]);
+      }) : [];
+      
+      const visibleProperties = showProperties ? filteredProperties.filter(prop => {
+        if (!prop.latitude || !prop.longitude || !bounds) return false;
+        return bounds.contains([prop.longitude, prop.latitude]);
+      }) : [];
+      
+      // Clear and re-add markers
+      markerManager.current.clearAllAgencyMarkers();
+      propertyMarkerManager.current.clearMarkers();
+      
+      if (showPHAs && visiblePHAs.length > 0) {
+        markerManager.current.displayAllPHAsAsIndividualPins(
+          map.current, 
+          visiblePHAs, 
+          onOfficeSelect as (office: PHAAgency) => void
+        );
+      }
+      
+      if (showProperties && visibleProperties.length > 0) {
+        propertyMarkerManager.current.addPropertyMarkers(
+          map.current,
+          visibleProperties
+        );
+      }
+    };
     
-    // Clear all markers first
-    markerManager.current.clearAllAgencyMarkers();
-    propertyMarkerManager.current.clearMarkers();
+    // Debounced version to avoid too many updates
+    let moveTimeout: NodeJS.Timeout;
+    const debouncedUpdate = () => {
+      clearTimeout(moveTimeout);
+      moveTimeout = setTimeout(updateVisibleMarkers, 150);
+    };
     
-    // Add PHA markers if enabled
-    if (showPHAs && phaAgencies.length > 0) {
-      markerManager.current.displayAllPHAsAsIndividualPins(
-        map.current, 
-        phaAgencies, 
-        onOfficeSelect as (office: PHAAgency) => void
-      );
-    }
+    map.current.on('moveend', debouncedUpdate);
+    map.current.on('zoomend', debouncedUpdate);
     
-    // Add property markers if enabled  
-    if (showProperties && filteredProperties.length > 0) {
-      // Create property marker manager with click handler
-      propertyMarkerManager.current = new PropertyMarkerManager({
-        onClick: onOfficeSelect as (property: Property) => void,
-        color: '#EF4444'
-      });
-      propertyMarkerManager.current.addPropertyMarkers(
-        map.current,
-        filteredProperties
-      );
-    }
+    // Initial render
+    updateVisibleMarkers();
+    
+    return () => {
+      if (map.current) {
+        map.current.off('moveend', debouncedUpdate);
+        map.current.off('zoomend', debouncedUpdate);
+      }
+    };
   }, [phaAgencies, filteredProperties, onOfficeSelect, isMapReady, showPHAs, showProperties]);
 
   // Track the last rendered PHAs to prevent unnecessary updates

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useMemo, useRef } from 'react';
 import { Database } from "@/integrations/supabase/types";
 import { USLocation } from "@/data/usLocations";
 import { fetchAllPHAData } from "@/services/phaService";
@@ -194,6 +194,13 @@ const SearchMapContext = createContext<SearchMapContextValue | undefined>(undefi
 export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(searchMapReducer, initialState);
   
+  // Cache for location data to avoid refetching
+  const locationCacheRef = useRef<Map<string, { properties: Property[], timestamp: number }>>(new Map());
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  
+  // Debounce timer ref
+  const fetchDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Fetch data on mount - for now, still fetch all PHAs but no properties
   useEffect(() => {
     const fetchData = async () => {
@@ -228,9 +235,29 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   
   // Fetch location-specific properties when search location changes
   useEffect(() => {
-    if (!state.searchLocation) return;
+    if (!state.searchLocation) {
+      // Clear properties when no location
+      dispatch({ type: 'SET_ALL_PROPERTIES', payload: [] });
+      return;
+    }
     
-    const fetchLocationData = async () => {
+    // Clear previous debounce timer
+    if (fetchDebounceRef.current) {
+      clearTimeout(fetchDebounceRef.current);
+    }
+    
+    // Debounce the fetch to avoid rapid requests
+    fetchDebounceRef.current = setTimeout(async () => {
+      const cacheKey = `${state.searchLocation.name}-${state.searchLocation.stateCode}`;
+      
+      // Check cache first
+      const cached = locationCacheRef.current.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        console.log('📦 Using cached properties for:', state.searchLocation.name);
+        dispatch({ type: 'SET_ALL_PROPERTIES', payload: cached.properties });
+        return;
+      }
+      
       try {
         console.log('🔍 Fetching properties for location:', state.searchLocation.name);
         
@@ -243,20 +270,41 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           west: state.searchLocation.longitude - radiusInDegrees
         };
         
-        // Fetch properties within bounds
+        // Fetch properties within bounds with pagination
         const propertiesResult = await fetchPropertiesByLocation({ 
           location: state.searchLocation,
-          bounds 
+          bounds,
+          page: 1,
+          limit: 200 // Increased limit for initial load
         });
         
         console.log(`✅ Fetched ${propertiesResult.data.length} properties for ${state.searchLocation.name}`);
+        
+        // Update cache
+        locationCacheRef.current.set(cacheKey, {
+          properties: propertiesResult.data,
+          timestamp: Date.now()
+        });
+        
+        // Clean old cache entries
+        for (const [key, value] of locationCacheRef.current.entries()) {
+          if (Date.now() - value.timestamp > CACHE_DURATION * 2) {
+            locationCacheRef.current.delete(key);
+          }
+        }
+        
         dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
       } catch (error) {
         console.error('Error fetching location properties:', error);
       }
-    };
+    }, 300); // 300ms debounce
     
-    fetchLocationData();
+    // Cleanup
+    return () => {
+      if (fetchDebounceRef.current) {
+        clearTimeout(fetchDebounceRef.current);
+      }
+    };
   }, [state.searchLocation]);
   
   // Memoized actions

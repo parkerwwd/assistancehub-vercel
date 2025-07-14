@@ -11,12 +11,15 @@ interface FetchPropertiesParams {
     east: number;
     west: number;
   };
+  page?: number;
+  limit?: number;
 }
 
 interface PropertyServiceResult {
   data: Property[];
   error: Error | null;
   count: number;
+  hasMore?: boolean;
 }
 
 export const fetchAllProperties = async (): Promise<PropertyServiceResult> => {
@@ -46,10 +49,12 @@ export const fetchAllProperties = async (): Promise<PropertyServiceResult> => {
 export const fetchPropertiesByLocation = async ({ 
   location, 
   filters,
-  bounds 
+  bounds,
+  page = 1,
+  limit = 100 // Limit to 100 properties per request
 }: FetchPropertiesParams): Promise<PropertyServiceResult> => {
   try {
-    console.log('📡 Fetching properties with params:', { location, filters, bounds });
+    console.log('📡 Fetching properties with params:', { location, filters, bounds, page, limit });
     
     let query = supabase
       .from('properties')
@@ -116,8 +121,13 @@ export const fetchPropertiesByLocation = async ({
       }
     }
 
-    // Sort by name
+    // Sort by name for consistent ordering
     query = query.order('name');
+
+    // Apply pagination
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+    query = query.range(from, to);
 
     const { data, error, count } = await query;
 
@@ -126,8 +136,10 @@ export const fetchPropertiesByLocation = async ({
       return { data: [], error, count: 0 };
     }
 
-    console.log(`✅ Fetched ${data?.length || 0} properties for location`);
-    return { data: data || [], error: null, count: count || 0 };
+    const hasMore = count ? count > (page * limit) : false;
+
+    console.log(`✅ Fetched ${data?.length || 0} properties for location (page ${page})`);
+    return { data: data || [], error: null, count: count || 0, hasMore };
   } catch (error) {
     console.error('❌ Unexpected error fetching properties:', error);
     return { data: [], error: error as Error, count: 0 };

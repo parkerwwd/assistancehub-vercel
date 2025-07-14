@@ -10,7 +10,7 @@ interface PropertyCardProps {
   onPropertyClick: (property: Property) => void;
 }
 
-export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onPropertyClick }) => {
+export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropertyClick }) => {
   const getPropertyTypeBadge = (type: string | null) => {
     switch (type) {
       case PropertyType.TAX_CREDIT:
@@ -111,4 +111,6 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, onProperty
       </CardContent>
     </Card>
   );
-};
+});
+
+PropertyCard.displayName = 'PropertyCard';
