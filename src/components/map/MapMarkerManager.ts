@@ -200,7 +200,6 @@ export class MapMarkerManager {
           // Reset previous selected marker
           if (this.selectedMarker && this.selectedMarker !== marker) {
             const prevElement = this.selectedMarker.getElement();
-            prevElement.style.transform = 'scale(1)';
             prevElement.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
           }
           
@@ -208,7 +207,7 @@ export class MapMarkerManager {
           this.selectedOfficeId = agency.id;
           this.selectedMarker = marker;
           const element = marker.getElement();
-          element.style.transform = 'scale(1.2)';
+          // Use filter effects instead of transform for selection
           element.style.filter = 'brightness(1.3) saturate(1.5) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4))';
           element.style.zIndex = '2000';
           
@@ -224,7 +223,7 @@ export class MapMarkerManager {
 
         // Enhanced styling for the marker element
         element.style.cursor = 'pointer';
-        element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease';
+        element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease, z-index 0.2s ease';
         element.title = agency.name; // Add tooltip
         
         element.addEventListener('mouseenter', () => {
@@ -327,14 +326,16 @@ export class MapMarkerManager {
 
   // Clear visual selection state
   clearSelection(): void {
+    console.log('🔄 Clearing map marker selection');
+    this.selectedOfficeId = null;
     if (this.selectedMarker) {
       const element = this.selectedMarker.getElement();
-      element.style.transform = 'scale(1)';
-      element.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
-      element.style.zIndex = 'auto';
+      if (element) {
+        element.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
+        element.style.zIndex = 'auto';
+      }
+      this.selectedMarker = null;
     }
-    this.selectedOfficeId = null;
-    this.selectedMarker = null;
   }
 
   // No visual selection needed - just let the PHA information panel handle the selection state

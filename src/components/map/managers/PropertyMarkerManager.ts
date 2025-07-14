@@ -55,7 +55,7 @@ export class PropertyMarkerManager extends BaseMarkerManager {
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
+      transition: filter 0.2s ease, box-shadow 0.2s ease, z-index 0.2s ease, background-color 0.2s ease;
     `;
     
     // Add icon
@@ -69,12 +69,16 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     
     // Hover effect
     el.addEventListener('mouseenter', () => {
-      el.style.transform = 'scale(1.1)';
+      // Use filter effects instead of transform to avoid marker jumping
+      el.style.filter = 'brightness(1.2) saturate(1.3) drop-shadow(0 4px 12px rgba(0,0,0,0.4))';
+      el.style.boxShadow = '0 4px 8px rgba(0,0,0,0.5)';
       el.style.zIndex = '1000';
     });
     
     el.addEventListener('mouseleave', () => {
-      el.style.transform = 'scale(1)';
+      // Reset filter effects
+      el.style.filter = 'brightness(1) saturate(1)';
+      el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
       el.style.zIndex = '1';
     });
     
@@ -138,7 +142,8 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     const entry = this.propertiesMap.get(propertyId);
     if (entry) {
       const element = entry.marker.getElement();
-      element.style.transform = 'scale(1.2)';
+      // Use filter effects instead of transform
+      element.style.filter = 'brightness(1.3) saturate(1.5) drop-shadow(0 6px 16px rgba(0,0,0,0.5))';
       element.style.zIndex = '1000';
       element.style.backgroundColor = '#DC2626'; // Darker red when selected
     }
@@ -147,7 +152,8 @@ export class PropertyMarkerManager extends BaseMarkerManager {
   unhighlightAll(): void {
     this.propertiesMap.forEach(({ marker }) => {
       const element = marker.getElement();
-      element.style.transform = 'scale(1)';
+      // Reset filter effects
+      element.style.filter = 'brightness(1) saturate(1)';
       element.style.zIndex = '1';
       element.style.backgroundColor = this.color;
     });
