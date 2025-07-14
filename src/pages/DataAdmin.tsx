@@ -2,9 +2,10 @@
 import React from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import PHADataManager from "@/components/PHADataManager";
+import PropertyDataManager from "@/components/PropertyDataManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Database, FileText, Users, Activity, LogOut, TrendingUp, Shield, Zap, MapPin } from "lucide-react";
+import { Database, FileText, Users, Activity, LogOut, TrendingUp, Shield, Zap, MapPin, Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useDataAdminStats } from "@/hooks/useDataAdminStats";
@@ -276,6 +277,22 @@ const DataAdmin = () => {
               </div>
             </div>
             <PHADataManager />
+          </div>
+
+          {/* Properties Data Section */}
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 lg:p-8 border border-gray-100">
+            <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <div className="p-3 sm:p-4 bg-gradient-to-br from-red-500 to-red-600 rounded-xl sm:rounded-2xl shadow-lg">
+                <Home className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+                  Section 8 Properties Data
+                </h2>
+                <p className="text-sm sm:text-base text-gray-600">Upload and manage affordable housing properties</p>
+              </div>
+            </div>
+            <PropertyDataManager />
           </div>
 
           {/* SNAP Data Section */}
