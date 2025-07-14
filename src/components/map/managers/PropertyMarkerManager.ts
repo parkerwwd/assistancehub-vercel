@@ -120,8 +120,7 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     if (this.onClick) {
       el.addEventListener('click', (e) => {
         e.stopPropagation();
-        // Navigate to property detail page
-        window.location.href = `/property/${property.id}`;
+        console.log('🏠 Property marker clicked:', property.name);
         this.onClick!(property);
       });
     }

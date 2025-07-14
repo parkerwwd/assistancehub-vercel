@@ -101,7 +101,6 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
       <div className="p-6 bg-white">
                   <EmptyOfficeState 
             loading={false}
-            onShowAll={() => {}}
             hasFilter={hasFilter}
             filteredLocation={filteredLocation}
           />
@@ -145,6 +144,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
             key={office.id}
             agency={office}
             onOfficeClick={() => onOfficeClick(office)}
+            isSelected={selectedOffice?.id === office.id}
           />
         ))}
         
@@ -154,6 +154,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
             key={property.id}
             property={property}
             onPropertyClick={() => onOfficeClick(property)}
+            isSelected={selectedOffice?.id === property.id}
           />
         ))}
       </div>

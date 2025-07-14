@@ -9,16 +9,22 @@ import { Property, PropertyType } from '@/types/property';
 interface PropertyCardProps {
   property: Property;
   onPropertyClick: (property: Property) => void;
+  isSelected?: boolean;
 }
 
-export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropertyClick }) => {
+export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropertyClick, isSelected = false }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    // Navigate to property detail page
+    if (onPropertyClick) {
+      // Call the parent handler for selection
+      onPropertyClick(property);
+    }
+  };
+
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation();
     navigate(`/property/${property.id}`);
-    // Also call the parent handler if needed
-    onPropertyClick(property);
   };
 
   const getPropertyTypeBadge = (type: string | null) => {
@@ -55,7 +61,11 @@ export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropert
   
   return (
     <Card 
-      className="hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-red-500"
+      className={`hover:shadow-lg transition-all duration-200 cursor-pointer border-l-4 ${
+        isSelected 
+          ? 'border-l-red-500 bg-red-50 shadow-md' 
+          : 'border-l-red-300 bg-white hover:border-l-red-400'
+      }`}
       onClick={handleClick}
     >
       <CardContent className="p-4">
@@ -117,6 +127,14 @@ export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropert
               Website
             </Button>
           )}
+          <Button 
+            size="sm" 
+            variant={isSelected ? "default" : "outline"} 
+            className="flex-1"
+            onClick={handleViewDetails}
+          >
+            View Details
+          </Button>
         </div>
       </CardContent>
     </Card>

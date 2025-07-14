@@ -12,9 +12,10 @@ type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 interface PHAOfficeCardProps {
   agency: PHAAgency | PHAAgencyWithDistance;
   onOfficeClick?: (office: PHAAgency) => void;
+  isSelected?: boolean;
 }
 
-const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
+const PHAOfficeCard = ({ agency, onOfficeClick, isSelected = false }: PHAOfficeCardProps) => {
   const navigate = useNavigate();
   
   // Build full address using only the address field since city, state, zip don't exist in current schema
@@ -26,13 +27,20 @@ const PHAOfficeCard = ({ agency, onOfficeClick }: PHAOfficeCardProps) => {
   const isExactMatch = (agency as PHAAgencyWithDistance)._isExactMatch;
 
   const handleClick = () => {
-    // Navigate to the dedicated PHA detail page
-    navigate(`/pha/${agency.id}`);
+    if (onOfficeClick) {
+      // If there's an onOfficeClick handler, use it (for selection)
+      onOfficeClick(agency);
+    } else {
+      // Otherwise navigate to detail page
+      navigate(`/pha/${agency.id}`);
+    }
   };
 
   return (
     <Card 
-      className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer border border-gray-200 bg-white active:shadow-md" 
+      className={`overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer border ${
+        isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
+      } active:shadow-md`} 
       onClick={handleClick}
     >
       <div className="p-4 sm:p-5">

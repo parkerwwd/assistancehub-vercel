@@ -49,19 +49,22 @@ const Section8 = () => {
   
   // Handle office clicks from map pins (no flyTo to prevent bouncing)
   const handleOfficeClick = useCallback((office: PHAAgency | Property | null) => {
-    // For now, only handle PHAs for the map selection
-    if (office && 'supports_hcv' in office) {
-      handleOfficeSelection(office as PHAAgency, false);
-    }
-  }, [handleOfficeSelection]);
+    console.log('🎯 Map pin clicked:', office?.name);
+    // Set the selected office in context (works for both PHAs and properties)
+    actions.setSelectedOffice(office);
+  }, [actions]);
   
   // Handle office clicks from list (with flyTo to show on map)
   const handleOfficeListClick = useCallback((office: PHAAgency | Property) => {
-    // For now, only handle PHAs for the map selection
+    console.log('📋 List item clicked:', office.name);
+    // Set the selected office in context
+    actions.setSelectedOffice(office);
+    
+    // If it's a PHA and we want to fly to it on the map
     if ('supports_hcv' in office) {
       handleOfficeSelection(office as PHAAgency, true);
     }
-  }, [handleOfficeSelection]);
+  }, [actions, handleOfficeSelection]);
   
   // Handle city selection from header search
   const handleHeaderCitySelect = useCallback((location: any) => {
