@@ -16,7 +16,7 @@ const DataAdmin = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const { toast } = useToast();
-  const { totalDataSources, filesProcessed, recordsManaged, phasWithoutCoordinates, lastActivity, isLoading } = useDataAdminStats();
+  const { totalDataSources, filesProcessed, recordsManaged, propertyCount, phasWithoutCoordinates, lastActivity, isLoading } = useDataAdminStats();
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeProgress, setGeocodeProgress] = useState<{ current: number; total: number } | null>(null);
 
@@ -136,7 +136,7 @@ const DataAdmin = () => {
         </div>
 
         {/* Mobile-optimized Overview Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
           <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 sm:pb-3 p-3 sm:p-6">
               <CardTitle className="text-xs sm:text-sm font-semibold text-gray-700">Data Sources</CardTitle>
@@ -175,7 +175,7 @@ const DataAdmin = () => {
 
           <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-purple-50 to-violet-50 hover:from-purple-100 hover:to-violet-100">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 sm:pb-3 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-semibold text-gray-700">Records Managed</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-semibold text-gray-700">PHA Records</CardTitle>
               <div className="p-1.5 sm:p-2 bg-purple-500 rounded-lg group-hover:bg-purple-600 transition-colors">
                 <Users className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
               </div>
@@ -186,7 +186,25 @@ const DataAdmin = () => {
               </div>
               <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-1">
                 <Database className="h-2 w-2 sm:h-3 sm:w-3" />
-                Across all databases
+                Housing authorities
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-red-50 to-rose-50 hover:from-red-100 hover:to-rose-100">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 sm:pb-3 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-semibold text-gray-700">Properties</CardTitle>
+              <div className="p-1.5 sm:p-2 bg-red-500 rounded-lg group-hover:bg-red-600 transition-colors">
+                <Home className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-700 mb-1">
+                {isLoading ? '...' : propertyCount.toLocaleString()}
+              </div>
+              <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-1">
+                <Home className="h-2 w-2 sm:h-3 sm:w-3" />
+                Section 8 properties
               </p>
             </CardContent>
           </Card>

@@ -6,6 +6,7 @@ interface DataAdminStats {
   totalDataSources: number;
   filesProcessed: number;
   recordsManaged: number;
+  propertyCount: number;
   lastActivity: string;
   isLoading: boolean;
 }
@@ -14,6 +15,7 @@ export const useDataAdminStats = () => {
   const [totalDataSources, setTotalDataSources] = useState(0);
   const [filesProcessed, setFilesProcessed] = useState(0);
   const [recordsManaged, setRecordsManaged] = useState(0);
+  const [propertyCount, setPropertyCount] = useState(0);
   const [phasWithoutCoordinates, setPhasWithoutCoordinates] = useState(0);
   const [lastActivity, setLastActivity] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +36,11 @@ export const useDataAdminStats = () => {
           .from('pha_agencies')
           .select('*', { count: 'exact', head: true });
 
+        // Fetch total property records
+        const { count: propCount } = await supabase
+          .from('properties')
+          .select('*', { count: 'exact', head: true });
+
         // Fetch PHAs without coordinates
         const { count: noCoordCount } = await supabase
           .from('pha_agencies')
@@ -50,8 +57,9 @@ export const useDataAdminStats = () => {
 
         setFilesProcessed(filesCount || 0);
         setRecordsManaged(phaCount || 0);
+        setPropertyCount(propCount || 0);
         setPhasWithoutCoordinates(noCoordCount || 0);
-        setTotalDataSources(1); // We have one data source - the CSV upload
+        setTotalDataSources(2); // We have two data sources - PHA CSV and Properties CSV
         
         if (lastActivityData?.created_at) {
           setLastActivity(new Date(lastActivityData.created_at).toLocaleString());
@@ -70,6 +78,7 @@ export const useDataAdminStats = () => {
     totalDataSources,
     filesProcessed,
     recordsManaged,
+    propertyCount,
     phasWithoutCoordinates,
     lastActivity,
     isLoading
