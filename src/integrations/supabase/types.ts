@@ -120,6 +120,100 @@ export type Database = {
         }
         Relationships: []
       }
+      properties: {
+        Row: {
+          id: string
+          pha_id: string | null
+          name: string
+          address: string
+          city: string | null
+          state: string | null
+          zip: string | null
+          property_type: string | null
+          units_total: number | null
+          units_available: number | null
+          bedroom_types: string[] | null
+          rent_range_min: number | null
+          rent_range_max: number | null
+          waitlist_open: boolean
+          waitlist_status: string | null
+          phone: string | null
+          email: string | null
+          website: string | null
+          accessibility_features: string[] | null
+          amenities: string[] | null
+          pet_policy: string | null
+          smoking_policy: string | null
+          latitude: number | null
+          longitude: number | null
+          last_updated: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          pha_id?: string | null
+          name: string
+          address: string
+          city?: string | null
+          state?: string | null
+          zip?: string | null
+          property_type?: string | null
+          units_total?: number | null
+          units_available?: number | null
+          bedroom_types?: string[] | null
+          rent_range_min?: number | null
+          rent_range_max?: number | null
+          waitlist_open?: boolean
+          waitlist_status?: string | null
+          phone?: string | null
+          email?: string | null
+          website?: string | null
+          accessibility_features?: string[] | null
+          amenities?: string[] | null
+          pet_policy?: string | null
+          smoking_policy?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          last_updated?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          pha_id?: string | null
+          name?: string
+          address?: string
+          city?: string | null
+          state?: string | null
+          zip?: string | null
+          property_type?: string | null
+          units_total?: number | null
+          units_available?: number | null
+          bedroom_types?: string[] | null
+          rent_range_min?: number | null
+          rent_range_max?: number | null
+          waitlist_open?: boolean
+          waitlist_status?: string | null
+          phone?: string | null
+          email?: string | null
+          website?: string | null
+          accessibility_features?: string[] | null
+          amenities?: string[] | null
+          pet_policy?: string | null
+          smoking_policy?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          last_updated?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_pha_id_fkey"
+            columns: ["pha_id"]
+            referencedRelation: "pha_agencies"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

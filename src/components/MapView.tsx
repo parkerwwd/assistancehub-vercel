@@ -5,6 +5,7 @@ import PHADetailView from "./PHADetailView";
 import HousingListings from "./HousingListings";
 import TokenInput from "./TokenInput";
 import MapFilters from "./MapFilters";
+import { MapToggles } from "./MapToggles";
 import MapContainer from "./MapContainer";
 import { useMapLogic } from "@/hooks/useMapLogic";
 import { Database } from "@/integrations/supabase/types";
@@ -149,11 +150,18 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
       {/* Search bar above the map - only show if not hidden */}
       {!hideSearch && (
         <div className="p-4 border-b bg-white">
-          <MapFilters
-            showFilters={showFilters}
-            onToggleFilters={() => setShowFilters(!showFilters)}
-            onCitySelect={handleCitySelectWithReset}
-          />
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <MapFilters
+                showFilters={showFilters}
+                onToggleFilters={() => setShowFilters(!showFilters)}
+                onCitySelect={handleCitySelectWithReset}
+              />
+            </div>
+            <div className="lg:w-64">
+              <MapToggles />
+            </div>
+          </div>
         </div>
       )}
       
