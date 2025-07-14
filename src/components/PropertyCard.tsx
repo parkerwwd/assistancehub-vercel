@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,15 @@ interface PropertyCardProps {
 }
 
 export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropertyClick }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    // Navigate to property detail page
+    navigate(`/property/${property.id}`);
+    // Also call the parent handler if needed
+    onPropertyClick(property);
+  };
+
   const getPropertyTypeBadge = (type: string | null) => {
     switch (type) {
       case PropertyType.TAX_CREDIT:
@@ -46,7 +56,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropert
   return (
     <Card 
       className="hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-red-500"
-      onClick={() => onPropertyClick(property)}
+      onClick={handleClick}
     >
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">
