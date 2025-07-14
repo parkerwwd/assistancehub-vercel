@@ -4,7 +4,7 @@ import { USLocation } from "@/data/usLocations";
 import { fetchAllPHAData } from "@/services/phaService";
 import { filterPHAAgenciesByLocation } from "@/utils/mapUtils";
 import { Property } from "@/types/property";
-import { fetchAllProperties } from "@/services/propertyService";
+import { fetchPropertiesByLocation } from "@/services/propertyService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -132,18 +132,8 @@ function searchMapReducer(state: SearchMapState, action: SearchMapAction): Searc
         ? filterPHAAgenciesByLocation(state.allPHAAgencies, state.searchLocation)
         : state.allPHAAgencies;
       
-      // Apply location filter to properties
-      const filteredProps = state.searchLocation
-        ? state.allProperties.filter(prop => {
-            if (!prop.latitude || !prop.longitude) return false;
-            // Simple distance filter - could be enhanced
-            const distance = Math.sqrt(
-              Math.pow(prop.latitude - state.searchLocation!.latitude, 2) +
-              Math.pow(prop.longitude - state.searchLocation!.longitude, 2)
-            );
-            return distance < 0.5; // Roughly 50 miles
-          })
-        : state.allProperties;
+      // Properties are already filtered server-side, so just use them as-is
+      const filteredProps = state.allProperties;
       
       console.log('📊 SearchMapContext APPLY_FILTERS:', {
         searchLocation: state.searchLocation?.name || 'none',
@@ -204,21 +194,18 @@ const SearchMapContext = createContext<SearchMapContextValue | undefined>(undefi
 export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(searchMapReducer, initialState);
   
-  // Fetch data on mount
+  // Fetch data on mount - for now, still fetch all PHAs but no properties
   useEffect(() => {
     const fetchData = async () => {
       try {
         dispatch({ type: 'SET_LOADING', payload: true });
         dispatch({ type: 'SET_ERROR', payload: null });
         
-        // Fetch both PHAs and properties in parallel
-        const [phaResult, propertiesResult] = await Promise.all([
-          fetchAllPHAData(),
-          fetchAllProperties()
-        ]);
+        // Initially only fetch PHAs (they're fewer in number)
+        const phaResult = await fetchAllPHAData();
         
         dispatch({ type: 'SET_ALL_AGENCIES', payload: phaResult.data });
-        dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
+        dispatch({ type: 'SET_ALL_PROPERTIES', payload: [] }); // Start with no properties
         
         // Apply initial filters
         dispatch({ type: 'APPLY_FILTERS' });
@@ -238,6 +225,39 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       dispatch({ type: 'APPLY_FILTERS' });
     }
   }, [state.allPHAAgencies, state.allProperties, state.searchLocation, state.currentPage, state.showPHAs, state.showProperties]);
+  
+  // Fetch location-specific properties when search location changes
+  useEffect(() => {
+    if (!state.searchLocation) return;
+    
+    const fetchLocationData = async () => {
+      try {
+        console.log('🔍 Fetching properties for location:', state.searchLocation.name);
+        
+        // Calculate bounds for the search area (roughly 50 mile radius)
+        const radiusInDegrees = 0.7; // Roughly 50 miles
+        const bounds = {
+          north: state.searchLocation.latitude + radiusInDegrees,
+          south: state.searchLocation.latitude - radiusInDegrees,
+          east: state.searchLocation.longitude + radiusInDegrees,
+          west: state.searchLocation.longitude - radiusInDegrees
+        };
+        
+        // Fetch properties within bounds
+        const propertiesResult = await fetchPropertiesByLocation({ 
+          location: state.searchLocation,
+          bounds 
+        });
+        
+        console.log(`✅ Fetched ${propertiesResult.data.length} properties for ${state.searchLocation.name}`);
+        dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
+      } catch (error) {
+        console.error('Error fetching location properties:', error);
+      }
+    };
+    
+    fetchLocationData();
+  }, [state.searchLocation]);
   
   // Memoized actions
   const actions = useMemo(() => ({
@@ -296,13 +316,28 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         dispatch({ type: 'SET_LOADING', payload: true });
         dispatch({ type: 'SET_ERROR', payload: null });
         
-        const [phaResult, propertiesResult] = await Promise.all([
-          fetchAllPHAData(),
-          fetchAllProperties()
-        ]);
-        
+        // Always fetch PHAs
+        const phaResult = await fetchAllPHAData();
         dispatch({ type: 'SET_ALL_AGENCIES', payload: phaResult.data });
-        dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
+        
+        // Only fetch properties if there's a search location
+        if (state.searchLocation) {
+          const radiusInDegrees = 0.7; // Roughly 50 miles
+          const bounds = {
+            north: state.searchLocation.latitude + radiusInDegrees,
+            south: state.searchLocation.latitude - radiusInDegrees,
+            east: state.searchLocation.longitude + radiusInDegrees,
+            west: state.searchLocation.longitude - radiusInDegrees
+          };
+          
+          const propertiesResult = await fetchPropertiesByLocation({ 
+            location: state.searchLocation,
+            bounds 
+          });
+          dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
+        } else {
+          dispatch({ type: 'SET_ALL_PROPERTIES', payload: [] });
+        }
         
         // Apply filters after refresh
         dispatch({ type: 'APPLY_FILTERS' });
