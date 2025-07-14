@@ -316,10 +316,10 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-2 rounded-lg text-sm font-medium backdrop-blur-sm">
         🗺️ Street Map
       </div>
-      {!selectedLocation && !selectedOffice && phaAgencies.length === 0 && (
+      {!selectedLocation && !selectedOffice && phaAgencies.length === 0 && filteredProperties.length === 0 && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center max-w-sm">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">No PHA Offices Found</h3>
-          <p className="text-sm text-gray-600">Try searching for a specific location to find nearby housing authorities</p>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Search for a Location</h3>
+          <p className="text-sm text-gray-600">Search for a city, county, or state to find housing assistance options in your area</p>
         </div>
       )}
     </div>

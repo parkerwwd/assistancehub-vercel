@@ -54,7 +54,12 @@ export const fetchPropertiesByLocation = async ({
   limit = 100 // Limit to 100 properties per request
 }: FetchPropertiesParams): Promise<PropertyServiceResult> => {
   try {
-    console.log('📡 Fetching properties with params:', { location, filters, bounds, page, limit });
+    console.log('📡 Fetching properties with params:', { 
+      location: location ? `${location.name}, ${location.stateCode} (${location.type})` : 'none',
+      bounds: bounds ? `N:${bounds.north.toFixed(2)} S:${bounds.south.toFixed(2)} E:${bounds.east.toFixed(2)} W:${bounds.west.toFixed(2)}` : 'none',
+      page, 
+      limit 
+    });
     
     let query = supabase
       .from('properties')
@@ -66,10 +71,14 @@ export const fetchPropertiesByLocation = async ({
     if (location) {
       if (location.type === 'state') {
         query = query.eq('state', location.stateCode);
+        console.log('🔍 Filtering by state:', location.stateCode);
       } else if (location.type === 'city') {
-        query = query.eq('city', location.name).eq('state', location.stateCode);
+        // For cities, just use bounds filtering instead of exact city match
+        // This avoids issues with city name mismatches
+        console.log('🔍 City search - using bounds filtering for:', location.name);
       } else if (location.type === 'county') {
         query = query.eq('state', location.stateCode);
+        console.log('🔍 Filtering by county in state:', location.stateCode);
         // Note: We don't have county data in properties table yet
       }
     }
@@ -81,6 +90,7 @@ export const fetchPropertiesByLocation = async ({
         .lte('latitude', bounds.north)
         .gte('longitude', bounds.west)
         .lte('longitude', bounds.east);
+      console.log('📍 Applied bounds filter');
     }
 
     // Apply property filters
@@ -138,7 +148,19 @@ export const fetchPropertiesByLocation = async ({
 
     const hasMore = count ? count > (page * limit) : false;
 
-    console.log(`✅ Fetched ${data?.length || 0} properties for location (page ${page})`);
+    console.log(`✅ Property query results:`, {
+      found: data?.length || 0,
+      total: count || 0,
+      page,
+      hasMore,
+      firstProperty: data && data.length > 0 ? {
+        name: data[0].name,
+        city: data[0].city,
+        state: data[0].state,
+        coords: [data[0].latitude, data[0].longitude]
+      } : 'none'
+    });
+    
     return { data: data || [], error: null, count: count || 0, hasMore };
   } catch (error) {
     console.error('❌ Unexpected error fetching properties:', error);

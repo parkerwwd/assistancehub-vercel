@@ -343,6 +343,9 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             bounds 
           });
           dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
+          
+          // Apply filters after data is loaded
+          dispatch({ type: 'APPLY_FILTERS' });
         } catch (error) {
           console.error('❌ Error fetching data for location:', error);
           dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch data' });
