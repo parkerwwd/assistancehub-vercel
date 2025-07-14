@@ -9,6 +9,7 @@ import PropertyAmenities from "./PropertyDetailView/PropertyAmenities";
 import PropertyAvailability from "./PropertyDetailView/PropertyAvailability";
 import PropertyPolicies from "./PropertyDetailView/PropertyPolicies";
 import PropertyMapSection from "./PropertyDetailView/PropertyMapSection";
+import PropertyOtherInfo from "./PropertyDetailView/PropertyOtherInfo";
 
 interface PropertyDetailViewProps {
   property: Property;
@@ -49,6 +50,9 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ property, onBac
 
             {/* Availability */}
             <PropertyAvailability property={property} />
+
+            {/* Other Information (LIHTC Data) */}
+            <PropertyOtherInfo property={property} />
 
             {/* Map Section */}
             <PropertyMapSection property={property} />

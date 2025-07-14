@@ -148,6 +148,13 @@ export type Database = {
           longitude: number | null
           last_updated: string
           created_at: string
+          year_put_in_service: number | null
+          low_income_units: number | null
+          units_studio: number | null
+          units_1br: number | null
+          units_2br: number | null
+          units_3br: number | null
+          units_4br: number | null
         }
         Insert: {
           id?: string
@@ -176,6 +183,13 @@ export type Database = {
           longitude?: number | null
           last_updated?: string
           created_at?: string
+          year_put_in_service?: number | null
+          low_income_units?: number | null
+          units_studio?: number | null
+          units_1br?: number | null
+          units_2br?: number | null
+          units_3br?: number | null
+          units_4br?: number | null
         }
         Update: {
           id?: string
@@ -204,6 +218,13 @@ export type Database = {
           longitude?: number | null
           last_updated?: string
           created_at?: string
+          year_put_in_service?: number | null
+          low_income_units?: number | null
+          units_studio?: number | null
+          units_1br?: number | null
+          units_2br?: number | null
+          units_3br?: number | null
+          units_4br?: number | null
         }
         Relationships: [
           {

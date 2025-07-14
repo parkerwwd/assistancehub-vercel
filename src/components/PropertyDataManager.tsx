@@ -41,8 +41,8 @@ const PropertyDataManager: React.FC = () => {
   };
   
   const downloadTemplate = () => {
-    const template = `name,address,city,state,zip,property_type,units_total,units_available,bedroom_types,rent_range_min,rent_range_max,waitlist_open,phone,email,website,latitude,longitude
-"Sample Property","123 Main St","New York","NY","10001","tax_credit",100,25,"studio;1br;2br",800,1500,true,"(555) 123-4567","info@property.com","https://property.com",40.7128,-74.0060`;
+    const template = `name,address,city,state,zip,property_type,units_total,units_available,bedroom_types,rent_range_min,rent_range_max,waitlist_open,phone,email,website,latitude,longitude,year_put_in_service,low_income_units,units_studio,units_1br,units_2br,units_3br,units_4br
+"Sample Property","123 Main St","New York","NY","10001","tax_credit",100,25,"studio;1br;2br",800,1500,true,"(555) 123-4567","info@property.com","https://property.com",40.7128,-74.0060,2020,80,10,30,40,15,5`;
     
     const blob = new Blob([template], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -104,6 +104,14 @@ const PropertyDataManager: React.FC = () => {
       website: getValue('website') || null,
       latitude: !isNaN(lat) ? lat : null,
       longitude: !isNaN(lng) ? lng : null,
+      // Add new LIHTC fields
+      year_put_in_service: parseInt(getValue('yr_pis')) || null,
+      low_income_units: parseInt(getValue('li_units')) || null,
+      units_studio: parseInt(getValue('n_0br')) || 0,
+      units_1br: parseInt(getValue('n_1br')) || 0,
+      units_2br: parseInt(getValue('n_2br')) || 0,
+      units_3br: parseInt(getValue('n_3br')) || 0,
+      units_4br: parseInt(getValue('n_4br')) || 0,
       // Store some LIHTC-specific data in a metadata field if needed
       pha_id: null // No PHA association in LIHTC data
     };
@@ -160,7 +168,10 @@ const PropertyDataManager: React.FC = () => {
               let value = values[index]?.trim().replace(/^"|"$/g, '') || '';
               
               // Parse specific fields
-              if (header === 'units_total' || header === 'units_available') {
+              if (header === 'units_total' || header === 'units_available' || 
+                  header === 'year_put_in_service' || header === 'low_income_units' ||
+                  header === 'units_studio' || header === 'units_1br' || 
+                  header === 'units_2br' || header === 'units_3br' || header === 'units_4br') {
                 property[header] = value ? parseInt(value) : null;
               } else if (header === 'rent_range_min' || header === 'rent_range_max') {
                 property[header] = value ? parseFloat(value) : null;
@@ -346,11 +357,12 @@ const PropertyDataManager: React.FC = () => {
         <CardContent>
           <div className="space-y-4 text-sm text-gray-600">
             <div>
-              <p className="font-semibold text-green-600 mb-2">✓ LIHTC Format (Auto-detected)</p>
-              <p>We automatically detect and parse LIHTC data with fields like:</p>
-              <ul className="list-disc list-inside space-y-1 ml-4 mt-1">
+              <p className="font-semibold mb-2">LIHTC Format (Auto-detected)</p>
+              <p>If your data has these columns, we'll automatically map them:</p>
+              <ul className="list-disc list-inside space-y-1 ml-4">
                 <li><code>hud_id</code>, <code>project</code>, <code>proj_add</code>, <code>proj_cty</code>, <code>proj_st</code>, <code>proj_zip</code></li>
                 <li><code>n_units</code>, <code>n_0br</code>, <code>n_1br</code>, <code>n_2br</code>, <code>n_3br</code>, <code>n_4br</code></li>
+                <li><code>yr_pis</code> (Year Put in Service), <code>li_units</code> (Low Income Units)</li>
                 <li><code>latitude</code>, <code>longitude</code>, <code>phone</code>, <code>website</code></li>
               </ul>
             </div>
@@ -367,6 +379,8 @@ const PropertyDataManager: React.FC = () => {
                 <li><code>waitlist_open</code> - true/false</li>
                 <li><code>phone</code>, <code>email</code>, <code>website</code></li>
                 <li><code>latitude</code>, <code>longitude</code></li>
+                <li><code>year_put_in_service</code>, <code>low_income_units</code></li>
+                <li><code>units_studio</code>, <code>units_1br</code>, <code>units_2br</code>, <code>units_3br</code>, <code>units_4br</code></li>
               </ul>
             </div>
           </div>
