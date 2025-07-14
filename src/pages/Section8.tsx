@@ -10,6 +10,7 @@ import { useMap } from "@/hooks/useMap";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Database } from "@/integrations/supabase/types";
 import { Property } from "@/types/property";
+import { toast } from "@/components/ui/use-toast";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -24,7 +25,12 @@ const Section8 = () => {
   
   // Create stable callback for token errors
   const handleTokenError = useCallback((error: string) => {
-    console.error('Mapbox token error:', error);
+    console.error('❌ Mapbox token error:', error);
+    toast({
+      title: "Map Error",
+      description: error,
+      variant: "destructive"
+    });
   }, []);
   
   // Handle navigation from home page search (only runs once when location changes)
@@ -139,7 +145,7 @@ const Section8 = () => {
                 <MapContainer
                   ref={mapRef}
                   mapboxToken={mapboxToken}
-                  phaAgencies={state.searchLocation ? state.filteredAgencies : state.allPHAAgencies}
+                  phaAgencies={state.searchLocation ? state.filteredAgencies : []}
                   onOfficeSelect={handleOfficeClick}
                   onTokenError={handleTokenError}
                   selectedOffice={state.selectedOffice}
@@ -162,7 +168,6 @@ const Section8 = () => {
                 totalPages={state.totalPages}
                 totalCount={state.totalCount}
                 onPageChange={handlePageChange}
-                onShowAll={handleClearSearch}
                 hasFilter={!!state.searchLocation}
                 filteredLocation={state.searchLocation}
               />

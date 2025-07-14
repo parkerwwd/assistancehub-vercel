@@ -23,7 +23,6 @@ interface OfficeDetailsPanelProps {
   totalPages: number;
   totalCount: number;
   onPageChange: (page: number) => void;
-  onShowAll?: () => void;
   hasFilter?: boolean;
   filteredLocation?: USLocation | null;
   onShowMap?: (office?: PHAAgency) => void;
@@ -38,7 +37,6 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
   totalPages,
   totalCount,
   onPageChange,
-  onShowAll,
   hasFilter,
   filteredLocation,
   onShowMap
@@ -103,7 +101,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
       <div className="p-6 bg-white">
                   <EmptyOfficeState 
             loading={false}
-            onShowAll={onShowAll}
+            onShowAll={() => {}}
             hasFilter={hasFilter}
             filteredLocation={filteredLocation}
           />
@@ -118,32 +116,26 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
           <h2 className="text-xl font-semibold text-gray-900">
             {hasFilter && filteredLocation?.name 
               ? `Locations in ${filteredLocation.name}`
-              : 'All Locations'}
+              : 'Search for a location'}
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            {showPHAs && showProperties
-              ? `Showing ${phaAgencies.length} PHAs and ${paginatedProperties.length} properties`
-              : showPHAs
-              ? `${totalCount} Public Housing Agencies`
-              : `${paginatedProperties.length} Properties`}
+            {hasFilter
+              ? showPHAs && showProperties
+                ? `Showing ${phaAgencies.length} PHAs and ${paginatedProperties.length} properties`
+                : showPHAs
+                ? `${totalCount} Public Housing Agencies`
+                : `${paginatedProperties.length} Properties`
+              : 'Enter a city, county, or state to find housing assistance'}
           </p>
         </div>
-        {hasFilter && onShowAll && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onShowAll}
-            className="text-blue-600 hover:text-blue-700"
-          >
-            Show all
-          </Button>
-        )}
       </div>
 
-      {/* Filter toggles */}
-      <div className="mb-4">
-        <MapToggles />
-      </div>
+      {/* Filter toggles - only show when there's data */}
+      {hasFilter && (
+        <div className="mb-4">
+          <MapToggles />
+        </div>
+      )}
 
       {/* List of offices and properties */}
       <div className="space-y-3 mb-4">

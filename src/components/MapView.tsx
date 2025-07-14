@@ -76,10 +76,10 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
   const handleBackToOverview = () => {
     setViewState('overview');
     setDetailOffice(null);
-    // Clear selected office and location when going back to show all PHA data
+    // Clear selected office when going back to overview
     setSelectedOffice(null);
     setSelectedLocation(null);
-    // Don't reset to US view - keep current map position to show all PHA data
+    // Keep current map position
   };
 
   const handleBackToPHADetail = () => {
@@ -125,7 +125,6 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
             totalPages={totalPages}
             totalCount={totalCount}
             onPageChange={handlePageChange}
-            onShowAll={clearLocationFilter}
             hasFilter={!!filteredLocation}
             filteredLocation={filteredLocation}
           />
@@ -174,7 +173,7 @@ const MapView: React.FC<MapViewProps> = ({ hideSearch = false }) => {
               <MapContainer
                 ref={mapRef}
                 mapboxToken={mapboxToken}
-                phaAgencies={filteredLocation ? filteredAgencies : allPHAAgencies}
+                phaAgencies={filteredLocation ? filteredAgencies : []}
                 onOfficeSelect={setSelectedOffice}
                 onTokenError={setTokenError}
                 selectedOffice={selectedOffice}

@@ -2,15 +2,15 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { USLocation } from "@/data/usLocations";
 
 interface EmptyOfficeStateProps {
   loading: boolean;
-  onShowAll?: () => void;
   hasFilter?: boolean;
-  filteredLocation?: any;
+  filteredLocation?: USLocation | null;
 }
 
-const EmptyOfficeState = ({ loading, onShowAll, hasFilter, filteredLocation }: EmptyOfficeStateProps) => {
+const EmptyOfficeState = ({ loading, hasFilter, filteredLocation }: EmptyOfficeStateProps) => {
   const getSearchDescription = () => {
     if (!filteredLocation) return "";
     
@@ -32,17 +32,17 @@ const EmptyOfficeState = ({ loading, onShowAll, hasFilter, filteredLocation }: E
     if (hasFilter && filteredLocation) {
       switch (filteredLocation.type) {
         case 'state':
-          return `No PHA offices found in ${filteredLocation.name}. Try a different state or view all offices.`;
+          return `No PHA offices found in ${filteredLocation.name}. Try searching for a different state.`;
         case 'city':
-          return `No PHA offices found within 25 miles of ${filteredLocation.name}. Try a different city or view all offices.`;
+          return `No PHA offices found within 25 miles of ${filteredLocation.name}. Try searching for a different city.`;
         case 'county':
-          return `No PHA offices found in ${filteredLocation.name}. Try a different county or view all offices.`;
+          return `No PHA offices found in ${filteredLocation.name}. Try searching for a different county.`;
         default:
-          return "No PHA offices found for the selected location. Try a different search or view all offices.";
+          return "No PHA offices found for the selected location. Try a different search.";
       }
     }
     
-    return "Click on a map marker or search above to view PHA office details and available housing options.";
+    return "Search for a city, county, or state above to find PHA offices and available housing options in your area.";
   };
 
   return (
@@ -60,19 +60,6 @@ const EmptyOfficeState = ({ loading, onShowAll, hasFilter, filteredLocation }: E
               <p className="text-sm text-blue-800 font-medium">
                 {getSearchDescription()}
               </p>
-            </div>
-          )}
-
-          {/* Show All button when there's a filter but no results */}
-          {!loading && hasFilter && onShowAll && (
-            <div className="mt-4">
-              <Button
-                onClick={onShowAll}
-                variant="outline"
-                className="w-full"
-              >
-                Show All PHA Offices
-              </Button>
             </div>
           )}
         </CardHeader>

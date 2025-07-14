@@ -208,11 +208,9 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         dispatch({ type: 'SET_LOADING', payload: true });
         dispatch({ type: 'SET_ERROR', payload: null });
         
-        // Initially only fetch PHAs (they're fewer in number)
-        const phaResult = await fetchAllPHAData();
-        
-        dispatch({ type: 'SET_ALL_AGENCIES', payload: phaResult.data });
-        dispatch({ type: 'SET_ALL_PROPERTIES', payload: [] }); // Start with no properties
+        // Don't fetch any PHAs on mount - only when a location is searched
+        dispatch({ type: 'SET_ALL_AGENCIES', payload: [] });
+        dispatch({ type: 'SET_ALL_PROPERTIES', payload: [] });
         
         // Apply initial filters
         dispatch({ type: 'APPLY_FILTERS' });
@@ -309,24 +307,52 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   
   // Memoized actions
   const actions = useMemo(() => ({
-    setSearchLocation: (location: USLocation | null) => {
-      console.log('🎯 SearchMapContext.setSearchLocation called with:', location);
-      
+    setSearchLocation: async (location: USLocation | null) => {
       dispatch({ type: 'SET_SEARCH_LOCATION', payload: location });
       
-      // Set map location if provided
       if (location) {
+        // Set map location
         const mapLocation = {
           lat: location.latitude,
           lng: location.longitude,
           name: location.type === 'state' ? location.name : `${location.name}, ${location.stateCode}`
         };
-        console.log('📍 Setting selected location for map:', mapLocation);
-        dispatch({ 
-          type: 'SET_SELECTED_LOCATION', 
-          payload: mapLocation
-        });
+        dispatch({ type: 'SET_SELECTED_LOCATION', payload: mapLocation });
+        
+        // Fetch PHAs for this location
+        try {
+          dispatch({ type: 'SET_LOADING', payload: true });
+          
+          // Fetch all PHAs and filter client-side
+          const phaResult = await fetchAllPHAData();
+          const filteredPHAs = filterPHAAgenciesByLocation(phaResult.data, location);
+          
+          dispatch({ type: 'SET_ALL_AGENCIES', payload: filteredPHAs });
+          
+          // Also fetch properties for the location
+          const radiusInDegrees = 0.7; // Roughly 50 miles
+          const bounds = {
+            north: location.latitude + radiusInDegrees,
+            south: location.latitude - radiusInDegrees,
+            east: location.longitude + radiusInDegrees,
+            west: location.longitude - radiusInDegrees
+          };
+          
+          const propertiesResult = await fetchPropertiesByLocation({ 
+            location: location,
+            bounds 
+          });
+          dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
+        } catch (error) {
+          console.error('❌ Error fetching data for location:', error);
+          dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch data' });
+        } finally {
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
       } else {
+        // Clear data when location is cleared
+        dispatch({ type: 'SET_ALL_AGENCIES', payload: [] });
+        dispatch({ type: 'SET_ALL_PROPERTIES', payload: [] });
         dispatch({ type: 'SET_SELECTED_LOCATION', payload: null });
       }
     },
@@ -364,12 +390,13 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         dispatch({ type: 'SET_LOADING', payload: true });
         dispatch({ type: 'SET_ERROR', payload: null });
         
-        // Always fetch PHAs
-        const phaResult = await fetchAllPHAData();
-        dispatch({ type: 'SET_ALL_AGENCIES', payload: phaResult.data });
-        
-        // Only fetch properties if there's a search location
+        // Only fetch PHAs if there's a search location
         if (state.searchLocation) {
+          const phaResult = await fetchAllPHAData();
+          const filteredPHAs = filterPHAAgenciesByLocation(phaResult.data, state.searchLocation);
+          dispatch({ type: 'SET_ALL_AGENCIES', payload: filteredPHAs });
+          
+          // Also fetch properties for the location
           const radiusInDegrees = 0.7; // Roughly 50 miles
           const bounds = {
             north: state.searchLocation.latitude + radiusInDegrees,
@@ -384,6 +411,8 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           });
           dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
         } else {
+          // Clear data if no search location
+          dispatch({ type: 'SET_ALL_AGENCIES', payload: [] });
           dispatch({ type: 'SET_ALL_PROPERTIES', payload: [] });
         }
         
