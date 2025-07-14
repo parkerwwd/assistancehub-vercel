@@ -93,11 +93,6 @@ export class PropertyMarkerManager extends BaseMarkerManager {
         <p style="font-size: 14px; color: #666; margin-bottom: 4px;">
           ${property.address}${property.city ? `, ${property.city}` : ''}${property.state ? `, ${property.state}` : ''}
         </p>
-        ${property.rent_range_min || property.rent_range_max ? `
-          <p style="font-size: 14px; color: #059669; font-weight: 500;">
-            💵 ${this.formatRentRange(property)}
-          </p>
-        ` : ''}
         ${property.units_available ? `
           <p style="font-size: 14px; color: #2563EB;">
             🏠 ${property.units_available} units available
@@ -126,15 +121,6 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     }
     
     return marker;
-  }
-  
-  private formatRentRange(property: Property): string {
-    if (property.rent_range_min && property.rent_range_max) {
-      return `$${property.rent_range_min} - $${property.rent_range_max}/mo`;
-    }
-    if (property.rent_range_min) return `From $${property.rent_range_min}/mo`;
-    if (property.rent_range_max) return `Up to $${property.rent_range_max}/mo`;
-    return 'Contact for pricing';
   }
   
   highlightProperty(propertyId: string): void {

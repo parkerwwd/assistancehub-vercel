@@ -47,7 +47,7 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ property, onBac
             {/* Basic Information */}
             <PropertyBasicInfo property={property} />
 
-            {/* Availability & Pricing */}
+            {/* Availability */}
             <PropertyAvailability property={property} />
 
             {/* Map Section */}
