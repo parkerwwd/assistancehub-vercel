@@ -5,6 +5,7 @@ import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import MapContainer from "@/components/MapContainer";
 import Header from "@/components/Header";
 import MobileSection8Layout from "@/components/MobileSection8Layout";
+import { MapToggles } from "@/components/MapToggles";
 import { useSearchMap } from "@/contexts/SearchMapContext";
 import { useMap } from "@/hooks/useMap";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -128,15 +129,21 @@ const Section8 = () => {
                 });
                 return null;
               })()}
-              <MapContainer
-                ref={mapRef}
-                mapboxToken={mapboxToken}
-                phaAgencies={state.searchLocation ? state.filteredAgencies : state.allPHAAgencies}
-                onOfficeSelect={handleOfficeClick}
-                onTokenError={handleTokenError}
-                selectedOffice={state.selectedOffice}
-                selectedLocation={state.selectedLocation}
-              />
+              <div className="relative h-full">
+                {/* Map Toggles - positioned over the map */}
+                <div className="absolute top-4 left-4 z-10">
+                  <MapToggles />
+                </div>
+                <MapContainer
+                  ref={mapRef}
+                  mapboxToken={mapboxToken}
+                  phaAgencies={state.searchLocation ? state.filteredAgencies : state.allPHAAgencies}
+                  onOfficeSelect={handleOfficeClick}
+                  onTokenError={handleTokenError}
+                  selectedOffice={state.selectedOffice}
+                  selectedLocation={state.selectedLocation}
+                />
+              </div>
             </div>
             
             {/* Fixed Divider Line */}

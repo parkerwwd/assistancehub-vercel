@@ -4,17 +4,20 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Database } from "@/integrations/supabase/types";
 import { MapInitializer } from "./map/MapInitializer";
 import { MapMarkerManager } from "./map/MapMarkerManager";
+import { PropertyMarkerManager } from "./map/managers/PropertyMarkerManager";
 import { Map3DControls } from "./map/Map3DControls";
+import { Property } from "@/types/property";
+import { useSearchMap } from "@/contexts/SearchMapContext";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 interface MapContainerProps {
   mapboxToken: string;
   phaAgencies: PHAAgency[];
-  onOfficeSelect: (office: PHAAgency) => void;
+  onOfficeSelect: (office: PHAAgency | Property) => void;
   onTokenError: (error: string) => void;
   onBoundsChange?: (bounds: mapboxgl.LngLatBounds) => void;
-  selectedOffice?: PHAAgency | null;
+  selectedOffice?: PHAAgency | Property | null;
   selectedLocation?: { lat: number; lng: number; name: string } | null;
 }
 
@@ -36,8 +39,13 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markerManager = useRef<MapMarkerManager>(new MapMarkerManager());
+  const propertyMarkerManager = useRef<PropertyMarkerManager>(new PropertyMarkerManager());
   const hasLocationRestrictions = useRef<boolean>(false);
   const [isMapReady, setIsMapReady] = useState(false);
+  
+  // Get properties and toggle states from context
+  const { state } = useSearchMap();
+  const { filteredProperties, showPHAs, showProperties } = state;
 
   useImperativeHandle(ref, () => ({
     flyTo: (center: [number, number], zoom: number, options?: any) => {
@@ -146,6 +154,44 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     }
   }, [selectedOffice]);
 
+  // Update markers when agencies or properties change
+  useEffect(() => {
+    if (!map.current || !isMapReady) return;
+    
+    console.log('🔄 Updating markers with toggle states:', {
+      showPHAs,
+      showProperties,
+      phaCount: phaAgencies.length,
+      propertyCount: filteredProperties.length
+    });
+    
+    // Clear all markers first
+    markerManager.current.clearAllAgencyMarkers();
+    propertyMarkerManager.current.clearMarkers();
+    
+    // Add PHA markers if enabled
+    if (showPHAs && phaAgencies.length > 0) {
+      markerManager.current.displayAllPHAsAsIndividualPins(
+        map.current, 
+        phaAgencies, 
+        onOfficeSelect as (office: PHAAgency) => void
+      );
+    }
+    
+    // Add property markers if enabled  
+    if (showProperties && filteredProperties.length > 0) {
+      // Create property marker manager with click handler
+      propertyMarkerManager.current = new PropertyMarkerManager({
+        onClick: onOfficeSelect as (property: Property) => void,
+        color: '#EF4444'
+      });
+      propertyMarkerManager.current.addPropertyMarkers(
+        map.current,
+        filteredProperties
+      );
+    }
+  }, [phaAgencies, filteredProperties, onOfficeSelect, isMapReady, showPHAs, showProperties]);
+
   // Track the last rendered PHAs to prevent unnecessary updates
   const lastPhaAgenciesRef = useRef<PHAAgency[]>([]);
   const displayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -227,6 +273,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     }
     
     if (isMapReady && map.current?.loaded()) {
+      // Skip this old logic - markers now handled by toggle-based rendering
+      return;
+      
       // Check if PHAs have actually changed to prevent unnecessary re-renders
       const phasChanged = phaAgencies.length !== lastPhaAgenciesRef.current.length ||
         phaAgencies.some((pha, index) => pha.id !== lastPhaAgenciesRef.current[index]?.id);
@@ -257,17 +306,6 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
             // Location search active - show as individual pins with location marker
             console.log('📍 Location search - displaying', phaAgencies.length, 'PHAs near', selectedLocation.name);
             
-            // Check if map is idle and ready
-            if (!map.current.isMoving()) {
-              console.log('✅ Map is idle, displaying markers immediately');
-              
-              console.log('🎯 CALLING displayAllPHAsAsIndividualPins NOW');
-            markerManager.current.displayAllPHAsAsIndividualPins(
-                map.current!, 
-              phaAgencies,
-              onOfficeSelect
-            );
-            
             // Add location marker
             markerManager.current.setLocationMarker(
                 map.current!,
@@ -276,6 +314,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
               selectedLocation.name,
               mapboxToken
             );
+            
+            // Note: PHA markers now handled by toggle-based rendering
             
               // Apply restrictions
               applyLocationRestrictions(selectedLocation.lat, selectedLocation.lng);
