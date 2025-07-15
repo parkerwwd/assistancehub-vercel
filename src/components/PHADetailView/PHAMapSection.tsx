@@ -96,7 +96,15 @@ const PHAMapSection: React.FC<PHAMapSectionProps> = ({ office }) => {
       </CardHeader>
       <CardContent className="p-0">
         <div className="h-96 w-full relative">
-          {office.address ? (
+          {tokenError ? (
+            <div className="h-full flex items-center justify-center bg-red-50">
+              <div className="text-center p-4">
+                <MapPin className="w-12 h-12 text-red-400 mx-auto mb-2" />
+                <p className="text-red-600 font-medium">Map Error</p>
+                <p className="text-sm text-gray-600 mt-1">{tokenError}</p>
+              </div>
+            </div>
+          ) : office.address ? (
             <MapContainer
               ref={mapRef}
               mapboxToken={mapboxToken}

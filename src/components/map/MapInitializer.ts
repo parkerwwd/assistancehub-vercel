@@ -13,9 +13,9 @@ interface MapInitializerOptions {
 export class MapInitializer {
   static createMap({ container, mapboxToken, onTokenError, onBoundsChange }: MapInitializerOptions): mapboxgl.Map | null {
     // Validate token
-    if (!mapboxToken || !mapboxToken.trim() || !mapboxToken.startsWith('pk.')) {
-      console.error('❌ Invalid or missing Mapbox token:', mapboxToken);
-      onTokenError("Invalid Mapbox token. Please check your token configuration.");
+    if (!mapboxToken || !mapboxToken.trim()) {
+      console.error('❌ Missing Mapbox token');
+      onTokenError("Mapbox token is missing. Please check your configuration.");
       return null;
     }
 
