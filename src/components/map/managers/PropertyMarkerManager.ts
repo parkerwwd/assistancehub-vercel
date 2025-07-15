@@ -2,37 +2,37 @@ import mapboxgl from 'mapbox-gl';
 import { Property } from '@/types/property';
 import { BaseMarkerManager } from './BaseMarkerManager';
 
-interface PropertyMarkerOptions {
+interface PropertyMarkerManagerOptions {
   onClick?: (property: Property) => void;
   color?: string;
 }
 
 export class PropertyMarkerManager extends BaseMarkerManager {
+  private propertiesMap: Map<string, { property: Property; marker: mapboxgl.Marker }> = new Map();
   private onClick?: (property: Property) => void;
   private color: string;
-  private propertiesMap = new Map<string, { marker: mapboxgl.Marker; property: Property }>();
+  private selectedPropertyId: string | null = null;
+  private selectedMarker: mapboxgl.Marker | null = null;
   
-  constructor(options: PropertyMarkerOptions = {}) {
+  constructor(options: PropertyMarkerManagerOptions = {}) {
     super();
     this.onClick = options.onClick;
-    this.color = options.color || '#EF4444'; // Red color for properties
+    this.color = options.color || '#EF4444';
   }
   
   addPropertyMarkers(map: mapboxgl.Map, properties: Property[]): void {
-    // Clear existing markers first
     this.clearMarkers();
-    this.propertiesMap.clear();
     
     properties.forEach(property => {
       const marker = this.createPropertyMarker(property);
       if (marker) {
         marker.addTo(map);
         this.addMarker(marker);
-        this.propertiesMap.set(property.id, { marker, property });
+        this.propertiesMap.set(property.id, { property, marker });
       }
     });
     
-    console.log(`✅ Added ${this.markers.length} property markers to map`);
+    console.log(`✅ Added ${this.markers.length} property markers`);
   }
   
   private createPropertyMarker(property: Property): mapboxgl.Marker | null {
@@ -78,11 +78,28 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     
     marker.setPopup(popup);
     
-    // Click handler
+    // Click handler with visual selection
     if (this.onClick) {
       marker.getElement().addEventListener('click', (e) => {
         e.stopPropagation();
         console.log('🏠 Property marker clicked:', property.name, property.id);
+        
+        // Reset previous selected marker
+        if (this.selectedMarker && this.selectedMarker !== marker) {
+          const prevElement = this.selectedMarker.getElement();
+          prevElement.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
+          prevElement.style.zIndex = 'auto';
+        }
+        
+        // Mark this pin as selected with visual feedback
+        this.selectedPropertyId = property.id;
+        this.selectedMarker = marker;
+        const element = marker.getElement();
+        
+        // Use filter effects for selection
+        element.style.filter = 'brightness(1.3) saturate(1.5) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4))';
+        element.style.zIndex = '2000';
+        
         this.onClick!(property);
       });
     }
@@ -93,11 +110,17 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     element.style.transition = 'filter 0.2s ease';
     
     element.addEventListener('mouseenter', () => {
-      element.style.filter = 'brightness(1.2) saturate(1.3)';
+      if (marker !== this.selectedMarker) {
+        element.style.filter = 'brightness(1.2) saturate(1.3) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))';
+        element.style.zIndex = '1000';
+      }
     });
     
     element.addEventListener('mouseleave', () => {
-      element.style.filter = 'brightness(1) saturate(1)';
+      if (marker !== this.selectedMarker) {
+        element.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
+        element.style.zIndex = 'auto';
+      }
     });
     
     return marker;
@@ -116,16 +139,27 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     const entry = this.propertiesMap.get(propertyId);
     if (entry) {
       const element = entry.marker.getElement();
-      element.style.filter = 'brightness(1.3) saturate(1.5)';
-      element.style.zIndex = '1000';
+      element.style.filter = 'brightness(1.3) saturate(1.5) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4))';
+      element.style.zIndex = '2000';
+      this.selectedPropertyId = propertyId;
+      this.selectedMarker = entry.marker;
     }
   }
   
-  unhighlightAll(): void {
-    this.propertiesMap.forEach(({ marker }) => {
-      const element = marker.getElement();
-      element.style.filter = 'brightness(1) saturate(1)';
-      element.style.zIndex = '1';
-    });
+  clearSelection(): void {
+    if (this.selectedMarker) {
+      const element = this.selectedMarker.getElement();
+      element.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
+      element.style.zIndex = 'auto';
+      this.selectedMarker = null;
+      this.selectedPropertyId = null;
+    }
+  }
+  
+  clearMarkers(): void {
+    super.clearMarkers();
+    this.propertiesMap.clear();
+    this.selectedPropertyId = null;
+    this.selectedMarker = null;
   }
 }

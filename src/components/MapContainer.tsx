@@ -153,6 +153,7 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         console.log('📌 Office deselected - clearing visual selection');
         // Clear visual selection when no office is selected
         markerManager.current.clearSelection();
+        propertyMarkerManager.current.clearSelection();
       }
     }
   }, [selectedOffice]);
@@ -167,33 +168,64 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       console.log('🔄 updateVisibleMarkers called', { showPHAs, showProperties });
       
       const bounds = map.current.getBounds();
+      const zoom = map.current.getZoom();
       
-      // Filter to only visible markers
+      // Don't render markers when zoomed out too far (performance optimization)
+      if (zoom < 8) {
+        console.log('🔍 Zoom level too low, clearing all markers for performance');
+        markerManager.current.clearAllAgencyMarkers();
+        propertyMarkerManager.current.clearMarkers();
+        return;
+      }
+      
+      // Filter to only visible markers with some padding
+      const padding = 0.1; // Add padding to bounds for smoother experience
+      const expandedBounds = bounds.extend(
+        new mapboxgl.LngLatBounds(
+          [bounds.getWest() - padding, bounds.getSouth() - padding],
+          [bounds.getEast() + padding, bounds.getNorth() + padding]
+        )
+      );
+      
       const visiblePHAs = showPHAs ? phaAgencies.filter(pha => {
-        if (!pha.latitude || !pha.longitude || !bounds) return false;
-        return bounds.contains([pha.longitude, pha.latitude]);
+        if (!pha.latitude || !pha.longitude || !expandedBounds) return false;
+        return expandedBounds.contains([pha.longitude, pha.latitude]);
       }) : [];
       
       const visibleProperties = showProperties ? filteredProperties.filter(prop => {
-        if (!prop.latitude || !prop.longitude || !bounds) return false;
-        return bounds.contains([prop.longitude, prop.latitude]);
+        if (!prop.latitude || !prop.longitude || !expandedBounds) return false;
+        return expandedBounds.contains([prop.longitude, prop.latitude]);
       }) : [];
       
-      console.log('📊 Visible counts:', { visiblePHAs: visiblePHAs.length, visibleProperties: visibleProperties.length });
+      // Limit markers on mobile for performance
+      const isMobile = window.innerWidth < 768;
+      const maxMarkersPerType = isMobile ? 50 : 200;
+      
+      const limitedPHAs = visiblePHAs.slice(0, maxMarkersPerType);
+      const limitedProperties = visibleProperties.slice(0, maxMarkersPerType);
+      
+      console.log('📊 Visible counts:', { 
+        visiblePHAs: visiblePHAs.length, 
+        visibleProperties: visibleProperties.length,
+        limitedPHAs: limitedPHAs.length,
+        limitedProperties: limitedProperties.length,
+        isMobile,
+        zoom: zoom.toFixed(1)
+      });
       
       // Always update PHAs when toggle changes
       if (!showPHAs) {
         console.log('🔄 Clearing all PHA markers (toggle off)');
         markerManager.current.clearAllAgencyMarkers();
-      } else if (visiblePHAs.length > 0) {
-        console.log(`🔄 Displaying ${visiblePHAs.length} PHA markers`);
+      } else if (limitedPHAs.length > 0) {
+        console.log(`🔄 Displaying ${limitedPHAs.length} PHA markers`);
         markerManager.current.clearAllAgencyMarkers();
         markerManager.current.displayAllPHAsAsIndividualPins(
           map.current, 
-          visiblePHAs, 
+          limitedPHAs, 
           onOfficeSelect as (office: PHAAgency) => void
         );
-      } else if (showPHAs && visiblePHAs.length === 0) {
+      } else if (showPHAs && limitedPHAs.length === 0) {
         console.log('🔄 No visible PHAs in current viewport');
         markerManager.current.clearAllAgencyMarkers();
       }
@@ -202,16 +234,21 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       if (!showProperties) {
         console.log('🔄 Clearing all property markers (toggle off)');
         propertyMarkerManager.current.clearMarkers();
-      } else if (visibleProperties.length > 0) {
-        console.log(`🔄 Displaying ${visibleProperties.length} property markers`);
+      } else if (limitedProperties.length > 0) {
+        console.log(`🔄 Displaying ${limitedProperties.length} property markers`);
         propertyMarkerManager.current.clearMarkers();
         propertyMarkerManager.current.addPropertyMarkers(
           map.current,
-          visibleProperties
+          limitedProperties
         );
-      } else if (showProperties && visibleProperties.length === 0) {
+      } else if (showProperties && limitedProperties.length === 0) {
         console.log('🔄 No visible properties in current viewport');
         propertyMarkerManager.current.clearMarkers();
+      }
+      
+      // Show warning if markers were limited
+      if (isMobile && (visiblePHAs.length > maxMarkersPerType || visibleProperties.length > maxMarkersPerType)) {
+        console.log('⚠️ Markers limited for mobile performance');
       }
     };
     
@@ -219,7 +256,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     let moveTimeout: NodeJS.Timeout;
     const debouncedUpdate = () => {
       clearTimeout(moveTimeout);
-      moveTimeout = setTimeout(updateVisibleMarkers, 300);
+      // Shorter debounce on mobile for more responsive feel
+      const debounceDelay = window.innerWidth < 768 ? 150 : 300;
+      moveTimeout = setTimeout(updateVisibleMarkers, debounceDelay);
     };
     
     // Add event listeners

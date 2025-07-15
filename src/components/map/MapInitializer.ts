@@ -3,7 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapControls } from './MapControls';
 
-interface MapInitializerOptions {
+export interface MapInitOptions {
   container: HTMLDivElement;
   mapboxToken: string;
   onTokenError: (error: string) => void;
@@ -11,53 +11,85 @@ interface MapInitializerOptions {
 }
 
 export class MapInitializer {
-  static createMap({ container, mapboxToken, onTokenError, onBoundsChange }: MapInitializerOptions): mapboxgl.Map | null {
-    // Validate token
-    if (!mapboxToken || !mapboxToken.trim()) {
-      console.error('❌ Missing Mapbox token');
-      onTokenError("Mapbox token is missing. Please check your configuration.");
+  static createMap(options: MapInitOptions): mapboxgl.Map | null {
+    const { container, mapboxToken, onTokenError, onBoundsChange } = options;
+    
+    if (!mapboxToken) {
+      onTokenError("Mapbox token is required");
       return null;
     }
 
-    // Clear any previous error
-    onTokenError("");
-
     try {
-      mapboxgl.accessToken = mapboxToken.trim();
+      mapboxgl.accessToken = mapboxToken;
       
-      // Create the map with 2D configuration
+      // Check if mobile
+      const isMobile = window.innerWidth < 768;
+      
       const map = new mapboxgl.Map({
-        container: container,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [-95.7129, 37.0902],
+        container,
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [-95.7129, 37.0902], // Center of US
         zoom: 4,
-        pitch: 0,
-        bearing: 0,
-        antialias: true,
-        maxPitch: 0
+        attributionControl: false,
+        // Mobile-specific optimizations
+        ...(isMobile && {
+          maxZoom: 16, // Limit max zoom on mobile
+          pitchWithRotate: false, // Disable 3D rotation on mobile
+          touchPitch: false, // Disable pitch with touch
+          dragRotate: false, // Disable rotation on mobile
+          preserveDrawingBuffer: false, // Better performance
+          refreshExpiredTiles: false, // Reduce network requests
+          fadeDuration: 100, // Faster tile fading
+        })
       });
-      
-      // Add error handling for the map
+
+      // Add attribution control in a better position
+      map.addControl(new mapboxgl.AttributionControl({
+        compact: true,
+        customAttribution: ''
+      }), 'bottom-right');
+
+      // Add navigation controls
+      map.addControl(new mapboxgl.NavigationControl({
+        showCompass: !isMobile, // Hide compass on mobile
+        visualizePitch: !isMobile // Hide pitch indicator on mobile
+      }), 'top-right');
+
+      // Add full screen control (desktop only)
+      if (!isMobile) {
+        map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+      }
+
+      // Set bounds change handler if provided
+      if (onBoundsChange) {
+        let boundsTimeout: NodeJS.Timeout;
+        
+        const debouncedBoundsChange = () => {
+          clearTimeout(boundsTimeout);
+          // Shorter debounce on mobile
+          const delay = isMobile ? 100 : 200;
+          boundsTimeout = setTimeout(() => {
+            const bounds = map.getBounds();
+            onBoundsChange(bounds);
+          }, delay);
+        };
+        
+        map.on('moveend', debouncedBoundsChange);
+      }
+
+      // Error handling
       map.on('error', (e) => {
-        console.error('❌ Map error:', e);
-        if (e.error && 'status' in e.error) {
-          if (e.error.status === 401) {
-            onTokenError("Invalid Mapbox token. Please check your token and try again.");
-          } else {
-            onTokenError(`Map error (${e.error.status}): ${e.error.message || 'Unknown error'}`);
-          }
+        if (e.error?.message?.includes('Unauthorized')) {
+          onTokenError("Invalid Mapbox token. Please check your token.");
         } else {
-          onTokenError("Error loading map. Please check your token and try again.");
+          console.error('Map error:', e);
         }
       });
-      
-      // Setup map events
-      MapControls.setupMapEvents(map, onTokenError, onBoundsChange);
-      
+
       return map;
     } catch (error) {
-      console.error('❌ Error initializing map:', error);
-      onTokenError(`Error initializing map: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Error initializing map:', error);
+      onTokenError("Failed to initialize map. Please check your Mapbox token.");
       return null;
     }
   }

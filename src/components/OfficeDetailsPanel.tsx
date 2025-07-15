@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -42,46 +42,66 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
   filteredLocation,
   onShowMap
 }) => {
-  // Get property data and toggle states from context
-  const { state } = useSearchMap();
-  const { showPHAs, showProperties, filteredProperties } = state;
+  // State
+  const [expandedOfficeId, setExpandedOfficeId] = useState<string | null>(null);
+  const { state, actions } = useSearchMap();
+  const { filteredProperties, showPHAs, showProperties } = state;
+  const [visibleItemCount, setVisibleItemCount] = useState(20);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   
-  // Include selected property in the list if it's not already there
-  const visibleProperties = React.useMemo(() => {
-    const baseProperties = filteredProperties.slice(0, 10);
-    
-    // If there's a selected property that's not in the visible list, add it at the beginning
-    if (selectedOffice && 'property_type' in selectedOffice) {
-      const isAlreadyVisible = baseProperties.some(p => p.id === selectedOffice.id);
-      if (!isAlreadyVisible) {
-        console.log('📌 Adding selected property to visible list:', selectedOffice.name);
-        return [selectedOffice as Property, ...baseProperties.slice(0, 9)];
-      }
-    }
-        
-    return baseProperties;
-  }, [filteredProperties, selectedOffice]);
+  // Check if mobile
+  const isMobile = window.innerWidth < 768;
+  const itemsPerPage = isMobile ? 10 : 20;
   
-  // Include selected PHA in the list if it's not already there
+  // Visible items based on pagination and lazy loading
   const visiblePHAs = React.useMemo(() => {
-    // Start with paginated PHAs
-    const itemsPerPage = 20;
+    if (!showPHAs) return [];
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedPHAs = phaAgencies.slice(startIndex, endIndex);
+    const endIndex = Math.min(startIndex + itemsPerPage, phaAgencies.length);
+    return phaAgencies.slice(startIndex, endIndex);
+  }, [phaAgencies, currentPage, itemsPerPage, showPHAs]);
+  
+  const visibleProperties = React.useMemo(() => {
+    if (!showProperties) return [];
+    // On mobile, use lazy loading; on desktop, show all
+    return isMobile ? filteredProperties.slice(0, visibleItemCount) : filteredProperties;
+  }, [filteredProperties, visibleItemCount, isMobile, showProperties]);
+  
+  // Setup intersection observer for lazy loading on mobile
+  useEffect(() => {
+    if (!isMobile) return;
     
-    // If there's a selected PHA that's not in the current page, add it at the beginning
-    if (selectedOffice && 'supports_hcv' in selectedOffice) {
-      const isAlreadyVisible = paginatedPHAs.some(p => p.id === selectedOffice.id);
-      if (!isAlreadyVisible) {
-        console.log('📌 Adding selected PHA to visible list:', selectedOffice.name);
-        // Remove one item from the end to maintain page size
-        return [selectedOffice as PHAAgency, ...paginatedPHAs.slice(0, itemsPerPage - 1)];
-      }
+    if (observerRef.current) {
+      observerRef.current.disconnect();
     }
     
-    return paginatedPHAs;
-  }, [phaAgencies, selectedOffice, currentPage]);
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && visibleItemCount < filteredProperties.length) {
+          // Load more items
+          setVisibleItemCount(prev => Math.min(prev + 10, filteredProperties.length));
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+    
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+    
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [isMobile, visibleItemCount, filteredProperties.length]);
+  
+  // Reset visible items when filters change
+  useEffect(() => {
+    setVisibleItemCount(20);
+  }, [filteredProperties, showProperties]);
   
   console.log('📊 OfficeDetailsPanel render:', {
     selectedOfficeId: selectedOffice?.id,
@@ -362,6 +382,19 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
       {!showPHAs && !showProperties && (
         <div className="text-center py-6 sm:py-8 text-gray-500">
           <p className="text-sm sm:text-base">Please enable at least one layer type (Properties or PHAs) to see results.</p>
+        </div>
+      )}
+
+      {/* Lazy loading indicator for mobile */}
+      {isMobile && showProperties && visibleItemCount < filteredProperties.length && (
+        <div ref={loadMoreRef} className="text-center py-4">
+          <div className="inline-flex items-center gap-2 text-sm text-gray-500">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            <span>Loading more properties...</span>
+          </div>
+          <p className="text-xs text-gray-400 mt-1">
+            Showing {visibleItemCount} of {filteredProperties.length} properties
+          </p>
         </div>
       )}
 

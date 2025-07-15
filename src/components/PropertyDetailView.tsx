@@ -10,6 +10,7 @@ import PropertyAvailability from "./PropertyDetailView/PropertyAvailability";
 import PropertyPolicies from "./PropertyDetailView/PropertyPolicies";
 import PropertyMapSection from "./PropertyDetailView/PropertyMapSection";
 import PropertyOtherInfo from "./PropertyDetailView/PropertyOtherInfo";
+import PropertyDescription from "./PropertyDetailView/PropertyDescription";
 
 interface PropertyDetailViewProps {
   property: Property;
@@ -48,6 +49,9 @@ const PropertyDetailView: React.FC<PropertyDetailViewProps> = ({ property, onBac
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Basic Information */}
             <PropertyBasicInfo property={property} />
+
+            {/* Property Description - New Section */}
+            <PropertyDescription property={property} />
 
             {/* Contact Information - Moved up for mobile */}
             <div className="lg:hidden">
