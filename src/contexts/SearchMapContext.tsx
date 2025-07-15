@@ -233,7 +233,7 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         try {
           const propertiesResult = await fetchPropertiesByLocation({ 
             bounds: defaultBounds,
-            limit: 500 // Reasonable initial load
+            limit: 1000 // Increased limit to get more properties
           });
           
           console.log(`✅ Loaded ${propertiesResult.data.length} initial properties`);
@@ -304,7 +304,7 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           location: state.searchLocation,
           bounds,
           page: 1,
-          limit: 200 // Increased limit for initial load
+          limit: 1000 // Increased limit to get more properties
         });
         
         console.log(`✅ Fetched ${propertiesResult.data.length} properties for ${state.searchLocation.name}`);
@@ -371,7 +371,8 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           
           const propertiesResult = await fetchPropertiesByLocation({ 
             location: location,
-            bounds 
+            bounds,
+            limit: 1000 // Increase limit to get more properties
           });
           dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
           
@@ -441,7 +442,8 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           
           const propertiesResult = await fetchPropertiesByLocation({ 
             location: state.searchLocation,
-            bounds 
+            bounds,
+            limit: 1000 // Increase limit to get more properties
           });
           dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
         } else {

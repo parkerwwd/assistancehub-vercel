@@ -298,10 +298,10 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
           <p className="text-sm text-gray-600 mt-1">
             {hasFilter
               ? showPHAs && showProperties
-                ? `Showing ${visiblePHAs.length} PHAs and ${visibleProperties.length} properties`
+                ? `Showing ${visiblePHAs.length} PHAs and ${visibleProperties.length} of ${filteredProperties.length} properties`
                 : showPHAs
                 ? `${totalCount} Public Housing Agencies`
-                : `${visibleProperties.length} Properties`
+                : `Showing ${visibleProperties.length} of ${filteredProperties.length} Properties`
               : 'Enter a city, county, or state to find housing assistance'}
           </p>
         </div>
