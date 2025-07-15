@@ -11,7 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Database } from "@/integrations/supabase/types";
 import { Property } from "@/types/property";
 import { toast } from "@/components/ui/use-toast";
-import { USLocation } from "@/data/usLocations";
+import { USLocation, allUSLocations } from "@/data/usLocations";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -43,15 +43,28 @@ const Section8 = () => {
       const stateCode = searchParams.get('state');
       
       if (searchName && searchType) {
-        const restoredLocation: USLocation = {
-          name: searchName,
-          type: searchType,
-          stateCode: stateCode || '',
-          latitude: 0, // These will be set by handleLocationSearch
-          longitude: 0
-        };
-        console.log('🔄 Restoring search from URL params:', restoredLocation);
-        handleLocationSearch(restoredLocation);
+        // Find the actual location data with coordinates
+        const foundLocation = allUSLocations.find(loc => 
+          loc.name === searchName && 
+          loc.type === searchType &&
+          (!stateCode || loc.stateCode === stateCode)
+        );
+        
+        if (foundLocation) {
+          console.log('🔄 Restoring search from URL params with full location data:', foundLocation);
+          handleLocationSearch(foundLocation);
+        } else {
+          // Fallback: create location without coordinates (will trigger geocoding)
+          const restoredLocation: USLocation = {
+            name: searchName,
+            type: searchType,
+            stateCode: stateCode || '',
+            latitude: 0,
+            longitude: 0
+          };
+          console.log('🔄 Restoring search from URL params (without coordinates):', restoredLocation);
+          handleLocationSearch(restoredLocation);
+        }
       }
     } else {
       // If no search location, reset to US view after a delay
@@ -62,6 +75,23 @@ const Section8 = () => {
       // return () => clearTimeout(timer);
     }
   }, [searchLocation, searchParams, handleLocationSearch, resetToUSView]);
+  
+  // Update URL when search location changes
+  useEffect(() => {
+    if (state.searchLocation) {
+      const params = new URLSearchParams();
+      params.set('search', state.searchLocation.name);
+      params.set('type', state.searchLocation.type);
+      if (state.searchLocation.stateCode) {
+        params.set('state', state.searchLocation.stateCode);
+      }
+      
+      // Update URL without triggering navigation
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({}, '', newUrl);
+      console.log('📝 Updated URL with search params:', newUrl);
+    }
+  }, [state.searchLocation]);
   
   // Handle office clicks from map pins (no flyTo to prevent bouncing)
   const handleOfficeClick = useCallback((office: PHAAgency | Property | null) => {
