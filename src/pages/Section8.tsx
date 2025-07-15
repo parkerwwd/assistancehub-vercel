@@ -27,12 +27,8 @@ const Section8 = () => {
   
   // Create stable callback for token errors
   const handleTokenError = useCallback((error: string) => {
+    // Just log to console, don't show toast
     console.error('❌ Mapbox token error:', error);
-    toast({
-      title: "Map Error",
-      description: error,
-      variant: "destructive"
-    });
   }, []);
   
   // Handle navigation from home page search or URL params (only runs once when location changes)
