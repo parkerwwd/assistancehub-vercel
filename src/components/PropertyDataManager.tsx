@@ -152,7 +152,7 @@ const PropertyDataManager: React.FC = () => {
       return;
     }
     
-    setUploadProgress({ total: 0, processed: 0, errors: 0, status: 'uploading', startTime: Date.now() });
+    setUploadProgress({ total: 1, processed: 0, errors: 0, status: 'uploading', startTime: Date.now() }); // Set total to 1 initially to show progress bar
     
     try {
       const text = await selectedFile.text();
@@ -172,7 +172,7 @@ const PropertyDataManager: React.FC = () => {
       let allProcessed = 0;
       let allErrors = 0;
       
-      setUploadProgress(prev => ({ ...prev, total: totalRecords }));
+      setUploadProgress(prev => ({ ...prev, total: totalRecords, status: 'processing' }));
       
       // Process file in chunks
       for (let chunkStart = 1; chunkStart < lines.length; chunkStart += chunkSize) {
