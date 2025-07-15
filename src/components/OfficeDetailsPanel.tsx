@@ -170,7 +170,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
     // If a PHA is selected, add it first (unless a property is already selected)
     if (selectedOffice && 'supports_hcv' in selectedOffice) {
       const pha = selectedOffice as PHAAgency;
-      if (!('property_type' in selectedOffice) && showPHAs) {
+      if (!(selectedOffice && 'property_type' in selectedOffice) && showPHAs) {
         const phaIndex = visiblePHAs.findIndex(p => p.id === pha.id);
         if (phaIndex !== -1) {
           items.push({ type: 'pha', item: visiblePHAs[phaIndex] });
@@ -201,8 +201,8 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
       total: items.length,
       firstItem: items[0]?.item.name,
       firstItemType: items[0]?.type,
-      hasSelectedProperty: !!('property_type' in selectedOffice),
-      hasSelectedPHA: !!('supports_hcv' in selectedOffice)
+      hasSelectedProperty: !!(selectedOffice && 'property_type' in selectedOffice),
+      hasSelectedPHA: !!(selectedOffice && 'supports_hcv' in selectedOffice)
     });
     
     return items;
