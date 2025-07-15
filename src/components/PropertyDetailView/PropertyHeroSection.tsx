@@ -62,42 +62,41 @@ const PropertyHeroSection: React.FC<PropertyHeroSectionProps> = ({ property }) =
           </div>
           
           {/* Contact Actions */}
-          <div className="space-y-4">
-            {property.phone && (
-              <div className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-red-600" />
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Phone className="w-4 h-4" />
+              <span className="text-sm font-medium">Contact Info</span>
+            </div>
+            <div className="space-y-2">
+              {property.phone && (
                 <a 
                   href={`tel:${property.phone}`} 
-                  className="text-gray-900 hover:text-red-600 transition-colors"
+                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
                 >
+                  <Phone className="w-4 h-4" />
                   {property.phone}
                 </a>
-              </div>
-            )}
-            {property.email && (
-              <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-red-600" />
+              )}
+              {property.email && (
                 <a 
                   href={`mailto:${property.email}`} 
-                  className="text-gray-900 hover:text-red-600 transition-colors"
+                  className="text-white hover:text-white/80 transition-colors text-sm break-all"
                 >
                   {property.email}
                 </a>
-              </div>
-            )}
-            {property.website && (
-              <div className="flex items-center gap-3">
-                <Globe className="w-5 h-5 text-red-600" />
+              )}
+              {property.website && (
                 <a 
                   href={property.website.startsWith('http') ? property.website : `https://${property.website}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-gray-900 hover:text-red-600 transition-colors"
+                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
                 >
+                  <Globe className="w-4 h-4" />
                   Visit Website
                 </a>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
