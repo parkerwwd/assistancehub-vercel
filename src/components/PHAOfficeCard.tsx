@@ -8,6 +8,7 @@ import { Database } from "@/integrations/supabase/types";
 import { useSearchMap } from "@/contexts/SearchMapContext";
 import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import type { PHAAgencyWithDistance } from "@/utils/mapUtils";
+import { Button } from "@/components/ui/button";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -30,20 +31,8 @@ const PHAOfficeCard: React.FC<PHAOfficeCardProps> = ({ agency, onOfficeClick, is
   const isExactMatch = (agency as PHAAgencyWithDistance)._isExactMatch;
 
   const handleClick = () => {
-    // Call the selection handler
+    // Just call the selection handler - let parent component decide what to do
     onOfficeClick(agency);
-    
-    // Also navigate to details with preserved search state
-    const searchParams = new URLSearchParams();
-    if (state.searchLocation) {
-      searchParams.set('search', state.searchLocation.name);
-      searchParams.set('type', state.searchLocation.type);
-      if (state.searchLocation.stateCode) {
-        searchParams.set('state', state.searchLocation.stateCode);
-      }
-    }
-    const queryString = searchParams.toString();
-    navigate(`/pha/${agency.id}${queryString ? `?${queryString}` : ''}`);
   };
 
   return (
@@ -129,11 +118,29 @@ const PHAOfficeCard: React.FC<PHAOfficeCardProps> = ({ agency, onOfficeClick, is
           </button>
         </div>
         
-        {/* Tap indicator for mobile */}
-        <div className="mt-3 pt-3 border-t border-gray-100 sm:hidden">
-          <div className="text-xs text-gray-500 text-center">
-            Tap for details
-          </div>
+        {/* View Details Button */}
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <Button
+            size="sm"
+            variant={isSelected ? "default" : "outline"}
+            className="w-full"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Preserve search state in URL
+              const searchParams = new URLSearchParams();
+              if (state.searchLocation) {
+                searchParams.set('search', state.searchLocation.name);
+                searchParams.set('type', state.searchLocation.type);
+                if (state.searchLocation.stateCode) {
+                  searchParams.set('state', state.searchLocation.stateCode);
+                }
+              }
+              const queryString = searchParams.toString();
+              navigate(`/pha/${agency.id}${queryString ? `?${queryString}` : ''}`);
+            }}
+          >
+            View Details
+          </Button>
         </div>
       </div>
     </Card>
