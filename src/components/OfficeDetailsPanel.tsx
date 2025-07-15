@@ -11,6 +11,7 @@ import { USLocation } from "@/data/usLocations";
 import { Property } from "@/types/property";
 import { useSearchMap } from "@/contexts/SearchMapContext";
 import { MapToggles } from "./MapToggles";
+import { Badge } from "@/components/ui/badge";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -55,6 +56,60 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
     propertiesCount: paginatedProperties.length,
     phasCount: phaAgencies.length
   });
+  
+  // Sort PHAs to put selected one first
+  const sortedPHAAgencies = React.useMemo(() => {
+    if (!selectedOffice || !('supports_hcv' in selectedOffice)) {
+      return phaAgencies;
+    }
+    
+    const selectedIndex = phaAgencies.findIndex(pha => pha.id === selectedOffice.id);
+    if (selectedIndex === -1) {
+      return phaAgencies;
+    }
+    
+    // Move selected to front
+    return [
+      phaAgencies[selectedIndex],
+      ...phaAgencies.slice(0, selectedIndex),
+      ...phaAgencies.slice(selectedIndex + 1)
+    ];
+  }, [phaAgencies, selectedOffice]);
+  
+  // Sort properties to put selected one first
+  const sortedProperties = React.useMemo(() => {
+    if (!selectedOffice || 'supports_hcv' in selectedOffice) {
+      return paginatedProperties;
+    }
+    
+    const selectedIndex = paginatedProperties.findIndex(prop => prop.id === selectedOffice.id);
+    if (selectedIndex === -1) {
+      return paginatedProperties;
+    }
+    
+    // Move selected to front
+    return [
+      paginatedProperties[selectedIndex],
+      ...paginatedProperties.slice(0, selectedIndex),
+      ...paginatedProperties.slice(selectedIndex + 1)
+    ];
+  }, [paginatedProperties, selectedOffice]);
+  
+  // Scroll to top when selection changes
+  React.useEffect(() => {
+    if (selectedOffice) {
+      // Small delay to ensure DOM has updated
+      setTimeout(() => {
+        // Find the scrollable container - it's the parent of the OfficeDetailsPanel
+        const panel = document.querySelector('.office-details-panel-scroll');
+        const scrollContainer = panel?.parentElement || panel;
+        if (scrollContainer) {
+          scrollContainer.scrollTop = 0;
+          console.log('📜 Scrolled to top for selected item:', selectedOffice.name);
+        }
+      }, 100);
+    }
+  }, [selectedOffice]);
   
   // Determine if selected office is a property
   const selectedProperty = selectedOffice && 'property_type' in selectedOffice ? selectedOffice as Property : null;
@@ -117,7 +172,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
   }
 
   return (
-    <div className="p-6 bg-white">
+    <div className="p-6 bg-white office-details-panel-scroll">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-gray-900">
@@ -147,17 +202,23 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
       {/* List of offices and properties */}
       <div className="space-y-3 mb-4">
         {/* Show PHAs if enabled */}
-        {showPHAs && phaAgencies.map((office) => (
-          <PHAOfficeCard
-            key={office.id}
-            agency={office}
-            onOfficeClick={() => onOfficeClick(office)}
-            isSelected={selectedOffice?.id === office.id}
-          />
+        {showPHAs && sortedPHAAgencies.map((office, index) => (
+          <div key={office.id} className="relative">
+            {index === 0 && selectedOffice?.id === office.id && (
+              <div className="absolute -top-2 right-2 z-10">
+                <Badge className="bg-blue-600 text-white text-xs">Selected</Badge>
+              </div>
+            )}
+            <PHAOfficeCard
+              agency={office}
+              onOfficeClick={() => onOfficeClick(office)}
+              isSelected={selectedOffice?.id === office.id}
+            />
+          </div>
         ))}
         
         {/* Show properties if enabled */}
-        {showProperties && paginatedProperties.map((property) => {
+        {showProperties && sortedProperties.map((property, index) => {
           const isPropertySelected = selectedOffice?.id === property.id;
           console.log('🔍 Property selection check:', {
             propertyId: property.id,
@@ -167,12 +228,18 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
             selectedIdType: typeof selectedOffice?.id
           });
           return (
-            <PropertyCard
-              key={property.id}
-              property={property}
-              onPropertyClick={() => onOfficeClick(property)}
-              isSelected={isPropertySelected}
-            />
+            <div key={property.id} className="relative">
+              {index === 0 && isPropertySelected && (
+                <div className="absolute -top-2 right-2 z-10">
+                  <Badge className="bg-red-600 text-white text-xs">Selected</Badge>
+                </div>
+              )}
+              <PropertyCard
+                property={property}
+                onPropertyClick={() => onOfficeClick(property)}
+                isSelected={isPropertySelected}
+              />
+            </div>
           );
         })}
       </div>
