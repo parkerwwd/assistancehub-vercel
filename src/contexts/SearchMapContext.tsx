@@ -111,9 +111,11 @@ function searchMapReducer(state: SearchMapState, action: SearchMapAction): Searc
       return { ...state, currentPage: action.payload };
     
     case 'SET_SHOW_PHAS':
+      console.log('🔄 SET_SHOW_PHAS:', action.payload);
       return { ...state, showPHAs: action.payload };
     
     case 'SET_SHOW_PROPERTIES':
+      console.log('🔄 SET_SHOW_PROPERTIES:', action.payload);
       return { ...state, showProperties: action.payload };
     
     case 'CLEAR_SEARCH':

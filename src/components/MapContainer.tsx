@@ -170,6 +170,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     const updateVisibleMarkers = () => {
       if (!map.current) return;
       
+      console.log('🔄 updateVisibleMarkers called', { showPHAs, showProperties });
+      
       const bounds = map.current.getBounds();
       
       // Filter to only visible markers
@@ -182,6 +184,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
         if (!prop.latitude || !prop.longitude || !bounds) return false;
         return bounds.contains([prop.longitude, prop.latitude]);
       }) : [];
+      
+      console.log('📊 Visible counts:', { visiblePHAs: visiblePHAs.length, visibleProperties: visibleProperties.length });
       
       // Only update if there's a significant change
       const shouldUpdatePHAs = showPHAs !== lastShowPHAs || 
