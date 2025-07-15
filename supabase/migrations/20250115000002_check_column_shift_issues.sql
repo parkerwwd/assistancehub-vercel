@@ -3,6 +3,8 @@
 
 -- Log properties with suspiciously high bedroom counts (might be years)
 DO $$
+DECLARE
+  r RECORD;
 BEGIN
   -- Check for properties where bedroom counts look like years (1900-2030)
   IF EXISTS (

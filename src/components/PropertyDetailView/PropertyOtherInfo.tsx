@@ -24,11 +24,13 @@ const PropertyOtherInfo: React.FC<PropertyOtherInfoProps> = ({ property }) => {
 
   const hasUnitDistribution = totalUnitsFromDistribution > 0;
   
-  // Validate bedroom counts aren't years (common data error)
+  // Validate bedroom counts aren't years or other invalid values (common data error)
   const validateBedroomCount = (count: number | null | undefined): number => {
     if (!count) return 0;
     // If the count looks like a year, return 0
     if (count >= 1900 && count <= currentYear + 5) return 0;
+    // If the count is unreasonably high (like 9999), return 0
+    if (count > 500) return 0;  // No property realistically has 500+ units of one bedroom type
     return count;
   };
 
