@@ -14,6 +14,12 @@ interface PropertyCardProps {
 
 export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropertyClick, isSelected = false }) => {
   const navigate = useNavigate();
+  
+  console.log('🏠 PropertyCard render:', {
+    propertyId: property.id,
+    propertyName: property.name,
+    isSelected
+  });
 
   const handleClick = () => {
     if (onPropertyClick) {

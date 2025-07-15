@@ -157,14 +157,24 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
         ))}
         
         {/* Show properties if enabled */}
-        {showProperties && paginatedProperties.map((property) => (
-          <PropertyCard
-            key={property.id}
-            property={property}
-            onPropertyClick={() => onOfficeClick(property)}
-            isSelected={selectedOffice?.id === property.id}
-          />
-        ))}
+        {showProperties && paginatedProperties.map((property) => {
+          const isPropertySelected = selectedOffice?.id === property.id;
+          console.log('🔍 Property selection check:', {
+            propertyId: property.id,
+            selectedOfficeId: selectedOffice?.id,
+            isMatch: isPropertySelected,
+            propertyIdType: typeof property.id,
+            selectedIdType: typeof selectedOffice?.id
+          });
+          return (
+            <PropertyCard
+              key={property.id}
+              property={property}
+              onPropertyClick={() => onOfficeClick(property)}
+              isSelected={isPropertySelected}
+            />
+          );
+        })}
       </div>
 
       {/* Show message if nothing is visible due to toggles */}
