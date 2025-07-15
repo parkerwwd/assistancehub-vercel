@@ -27,6 +27,17 @@ const PropertyDataManager: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLIHTCFormat, setIsLIHTCFormat] = useState(false);
   
+  // Valid columns in the properties table
+  const VALID_PROPERTY_COLUMNS = [
+    'id', 'pha_id', 'name', 'address', 'city', 'state', 'zip',
+    'property_type', 'units_total', 'units_available', 'bedroom_types',
+    'rent_range_min', 'rent_range_max', 'waitlist_open', 'waitlist_status',
+    'phone', 'email', 'website', 'accessibility_features', 'amenities',
+    'pet_policy', 'smoking_policy', 'latitude', 'longitude',
+    'year_put_in_service', 'low_income_units',
+    'units_studio', 'units_1br', 'units_2br', 'units_3br', 'units_4br'
+  ];
+  
 
   
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -190,12 +201,83 @@ const PropertyDataManager: React.FC = () => {
     
     try {
       const text = await selectedFile.text();
-      // Handle different line endings (Windows \r\n, Mac \r, Unix \n)
-      const lines = text.split(/\r?\n|\r/).filter(line => line.trim());
-      const headers = parseCSVLine(lines[0]).map(h => h.trim().replace(/"/g, ''));
+      
+      // First, let's properly parse the CSV with a more robust approach
+      // This handles fields with embedded newlines
+      const parseCSVWithNewlines = (csvText: string) => {
+        const rows = [];
+        let currentRow = [];
+        let currentField = '';
+        let inQuotes = false;
+        let i = 0;
+        
+        while (i < csvText.length) {
+          const char = csvText[i];
+          const nextChar = csvText[i + 1];
+          
+          if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+              // Escaped quote
+              currentField += '"';
+              i += 2;
+              continue;
+            } else {
+              // Toggle quote state
+              inQuotes = !inQuotes;
+              i++;
+              continue;
+            }
+          }
+          
+          if (char === ',' && !inQuotes) {
+            // End of field
+            currentRow.push(currentField);
+            currentField = '';
+            i++;
+            continue;
+          }
+          
+          if ((char === '\n' || char === '\r') && !inQuotes) {
+            // End of row
+            if (char === '\r' && nextChar === '\n') {
+              i++; // Skip \n in \r\n
+            }
+            
+            if (currentField || currentRow.length > 0) {
+              currentRow.push(currentField);
+              rows.push(currentRow);
+              currentRow = [];
+              currentField = '';
+            }
+            i++;
+            continue;
+          }
+          
+          // Regular character
+          currentField += char;
+          i++;
+        }
+        
+        // Don't forget the last field and row
+        if (currentField || currentRow.length > 0) {
+          currentRow.push(currentField);
+          rows.push(currentRow);
+        }
+        
+        return rows;
+      };
+      
+      const parsedRows = parseCSVWithNewlines(text);
+      if (parsedRows.length === 0) {
+        throw new Error('No data found in CSV file');
+      }
+      
+      // Extract headers from first row
+      const headers = parsedRows[0].map(h => h.trim().replace(/^"|"$/g, ''));
+      const dataRows = parsedRows.slice(1).filter(row => row.length > 0);
       
       // For large files, show total count
-      const totalRecords = lines.length - 1; // Minus header
+      const totalRecords = dataRows.length; // Minus header
       console.log(`📊 Processing ${totalRecords.toLocaleString()} property records...`);
       
       // Detect if this is LIHTC format
@@ -207,7 +289,10 @@ const PropertyDataManager: React.FC = () => {
       console.log('📄 File format detection:', {
         isLIHTC,
         isCleanedLIHTC,
-        sampleHeaders: headers.slice(0, 10)
+        sampleHeaders: headers.slice(0, 10),
+        totalHeaders: headers.length,
+        problematicHeaders: headers.filter(h => h.includes(' ') || h.includes('\n') || h.includes('\r')),
+        invalidHeaders: headers.filter(h => !VALID_PROPERTY_COLUMNS.includes(h) && h !== 'hud_id')
       });
       
       // Process in chunks to avoid memory issues
@@ -219,13 +304,13 @@ const PropertyDataManager: React.FC = () => {
       setUploadProgress(prev => ({ ...prev, total: totalRecords, status: 'processing' }));
       
       // Process file in chunks
-      for (let chunkStart = 1; chunkStart < lines.length; chunkStart += chunkSize) {
-        const chunkEnd = Math.min(chunkStart + chunkSize, lines.length);
+      for (let chunkStart = 0; chunkStart < dataRows.length; chunkStart += chunkSize) {
+        const chunkEnd = Math.min(chunkStart + chunkSize, dataRows.length);
         const properties: any[] = [];
         
         // Parse chunk
         for (let i = chunkStart; i < chunkEnd; i++) {
-          const values = parseCSVLine(lines[i]);
+          const values = dataRows[i];
           let property: any = {};
           
           if (isLIHTC && !isCleanedLIHTC) {
@@ -269,11 +354,20 @@ const PropertyDataManager: React.FC = () => {
           
           // Only add properties with valid data
           if (property.name && property.address) {
+            // Filter out columns that don't exist in the database
+            const filteredProperty: any = {};
+            Object.keys(property).forEach(key => {
+              if (VALID_PROPERTY_COLUMNS.includes(key)) {
+                filteredProperty[key] = property[key];
+              }
+            });
+            
             // Debug log first few properties
             if (properties.length < 3) {
-              console.log(`📋 Property ${properties.length + 1}:`, property);
+              console.log(`📋 Property ${properties.length + 1}:`, filteredProperty);
+              console.log('Excluded columns:', Object.keys(property).filter(k => !VALID_PROPERTY_COLUMNS.includes(k)));
             }
-            properties.push(property);
+            properties.push(filteredProperty);
           } else {
             // Log why property was skipped
             if (properties.length < 10 && (!property.name || !property.address)) {
