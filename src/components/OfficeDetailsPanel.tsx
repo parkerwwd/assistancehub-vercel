@@ -48,6 +48,14 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
   // Paginate properties (simple approach - just take first 10 for now)
   const paginatedProperties = filteredProperties.slice(0, 10);
   
+  console.log('📊 OfficeDetailsPanel render:', {
+    selectedOfficeId: selectedOffice?.id,
+    selectedOfficeName: selectedOffice?.name,
+    isProperty: selectedOffice && !('supports_hcv' in selectedOffice),
+    propertiesCount: paginatedProperties.length,
+    phasCount: phaAgencies.length
+  });
+  
   // Determine if selected office is a property
   const selectedProperty = selectedOffice && 'property_type' in selectedOffice ? selectedOffice as Property : null;
   const selectedPHA = selectedOffice && 'supports_hcv' in selectedOffice ? selectedOffice as PHAAgency : null;

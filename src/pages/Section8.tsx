@@ -49,7 +49,8 @@ const Section8 = () => {
   
   // Handle office clicks from map pins (no flyTo to prevent bouncing)
   const handleOfficeClick = useCallback((office: PHAAgency | Property | null) => {
-    console.log('🎯 Map pin clicked:', office?.name);
+    console.log('🎯 Map pin clicked:', office?.name, 'ID:', office?.id);
+    console.log('🔍 Is property?', office && !('supports_hcv' in office));
     // Set the selected office in context (works for both PHAs and properties)
     actions.setSelectedOffice(office);
   }, [actions]);

@@ -82,6 +82,7 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     if (this.onClick) {
       marker.getElement().addEventListener('click', (e) => {
         e.stopPropagation();
+        console.log('🏠 Property marker clicked:', property.name, property.id);
         this.onClick!(property);
       });
     }
