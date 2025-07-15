@@ -27,19 +27,7 @@ const PropertyDataManager: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLIHTCFormat, setIsLIHTCFormat] = useState(false);
   
-  // Debug: Log when component renders
-  console.log('PropertyDataManager rendered, uploadProgress:', uploadProgress);
-  
-  // TEMPORARY: Test progress bar - Remove this after testing
-  const testProgressBar = () => {
-    setUploadProgress({
-      total: 1000,
-      processed: 450,
-      errors: 23,
-      status: 'processing',
-      startTime: Date.now()
-    });
-  };
+
   
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -366,15 +354,6 @@ const PropertyDataManager: React.FC = () => {
               >
                 <Download className="mr-2 h-4 w-4" />
                 Download Template
-              </Button>
-              
-              {/* TEMPORARY TEST BUTTON - REMOVE AFTER TESTING */}
-              <Button
-                onClick={testProgressBar}
-                variant="outline"
-                className="border-purple-500 text-purple-500"
-              >
-                Test Progress Bar
               </Button>
             </div>
           </div>
