@@ -161,12 +161,6 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
   useEffect(() => {
     if (!map.current || !isMapReady) return;
     
-    // Keep track of last rendered state to avoid unnecessary updates
-    let lastRenderedPHACount = 0;
-    let lastRenderedPropertyCount = 0;
-    let lastShowPHAs = showPHAs;
-    let lastShowProperties = showProperties;
-    
     const updateVisibleMarkers = () => {
       if (!map.current) return;
       
@@ -187,46 +181,37 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       
       console.log('📊 Visible counts:', { visiblePHAs: visiblePHAs.length, visibleProperties: visibleProperties.length });
       
-      // Only update if there's a significant change
-      const shouldUpdatePHAs = showPHAs !== lastShowPHAs || 
-                              Math.abs(visiblePHAs.length - lastRenderedPHACount) > 5 ||
-                              (showPHAs && lastRenderedPHACount === 0 && visiblePHAs.length > 0);
-      
-      const shouldUpdateProperties = showProperties !== lastShowProperties || 
-                                   Math.abs(visibleProperties.length - lastRenderedPropertyCount) > 5 ||
-                                   (showProperties && lastRenderedPropertyCount === 0 && visibleProperties.length > 0);
-      
-      // Update PHAs if needed
-      if (shouldUpdatePHAs || !showPHAs) {
-        console.log(`🔄 Updating PHA markers: ${visiblePHAs.length} visible, showPHAs: ${showPHAs}`);
+      // Always update PHAs when toggle changes
+      if (!showPHAs) {
+        console.log('🔄 Clearing all PHA markers (toggle off)');
         markerManager.current.clearAllAgencyMarkers();
-        
-        if (showPHAs && visiblePHAs.length > 0) {
-          markerManager.current.displayAllPHAsAsIndividualPins(
-            map.current, 
-            visiblePHAs, 
-            onOfficeSelect as (office: PHAAgency) => void
-          );
-        }
-        
-        lastRenderedPHACount = visiblePHAs.length;
-        lastShowPHAs = showPHAs;
+      } else if (visiblePHAs.length > 0) {
+        console.log(`🔄 Displaying ${visiblePHAs.length} PHA markers`);
+        markerManager.current.clearAllAgencyMarkers();
+        markerManager.current.displayAllPHAsAsIndividualPins(
+          map.current, 
+          visiblePHAs, 
+          onOfficeSelect as (office: PHAAgency) => void
+        );
+      } else if (showPHAs && visiblePHAs.length === 0) {
+        console.log('🔄 No visible PHAs in current viewport');
+        markerManager.current.clearAllAgencyMarkers();
       }
       
-      // Update Properties if needed
-      if (shouldUpdateProperties || !showProperties) {
-        console.log(`🔄 Updating property markers: ${visibleProperties.length} visible, showProperties: ${showProperties}`);
+      // Always update Properties when toggle changes
+      if (!showProperties) {
+        console.log('🔄 Clearing all property markers (toggle off)');
         propertyMarkerManager.current.clearMarkers();
-        
-        if (showProperties && visibleProperties.length > 0) {
-          propertyMarkerManager.current.addPropertyMarkers(
-            map.current,
-            visibleProperties
-          );
-        }
-        
-        lastRenderedPropertyCount = visibleProperties.length;
-        lastShowProperties = showProperties;
+      } else if (visibleProperties.length > 0) {
+        console.log(`🔄 Displaying ${visibleProperties.length} property markers`);
+        propertyMarkerManager.current.clearMarkers();
+        propertyMarkerManager.current.addPropertyMarkers(
+          map.current,
+          visibleProperties
+        );
+      } else if (showProperties && visibleProperties.length === 0) {
+        console.log('🔄 No visible properties in current viewport');
+        propertyMarkerManager.current.clearMarkers();
       }
     };
     
@@ -234,16 +219,14 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     let moveTimeout: NodeJS.Timeout;
     const debouncedUpdate = () => {
       clearTimeout(moveTimeout);
-      moveTimeout = setTimeout(updateVisibleMarkers, 300); // Increased debounce time
+      moveTimeout = setTimeout(updateVisibleMarkers, 300);
     };
     
+    // Add event listeners
     map.current.on('moveend', debouncedUpdate);
     map.current.on('zoomend', debouncedUpdate);
     
-    // Initial render with a slight delay to ensure map is fully ready
-    setTimeout(updateVisibleMarkers, 500);
-    
-    // Also update immediately when toggle states change
+    // Update immediately when effect runs (toggle changes)
     updateVisibleMarkers();
     
     return () => {

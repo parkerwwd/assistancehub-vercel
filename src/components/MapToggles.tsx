@@ -10,6 +10,25 @@ export const MapToggles: React.FC = () => {
   const phaCount = state.showPHAs ? state.filteredAgencies.length : 0;
   const propertyCount = state.showProperties ? state.filteredProperties.length : 0;
   
+  console.log('🎚️ MapToggles render:', {
+    showPHAs: state.showPHAs,
+    showProperties: state.showProperties,
+    phaCount,
+    propertyCount,
+    filteredAgencies: state.filteredAgencies.length,
+    filteredProperties: state.filteredProperties.length
+  });
+  
+  const handlePropertiesToggle = (checked: boolean) => {
+    console.log('🔄 Properties toggle clicked:', checked);
+    actions.setShowProperties(checked);
+  };
+  
+  const handlePHAsToggle = (checked: boolean) => {
+    console.log('🔄 PHAs toggle clicked:', checked);
+    actions.setShowPHAs(checked);
+  };
+  
   return (
     <div className="bg-white rounded-lg shadow-md p-4 space-y-3">
       <h3 className="text-sm font-semibold text-gray-700 mb-2">Show on Map</h3>
@@ -18,7 +37,7 @@ export const MapToggles: React.FC = () => {
         <Checkbox
           id="show-properties"
           checked={state.showProperties}
-          onCheckedChange={(checked) => actions.setShowProperties(!!checked)}
+          onCheckedChange={handlePropertiesToggle}
           className="data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
         />
         <Label 
@@ -35,7 +54,7 @@ export const MapToggles: React.FC = () => {
         <Checkbox
           id="show-phas"
           checked={state.showPHAs}
-          onCheckedChange={(checked) => actions.setShowPHAs(!!checked)}
+          onCheckedChange={handlePHAsToggle}
           className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
         />
         <Label 

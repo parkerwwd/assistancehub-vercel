@@ -151,6 +151,13 @@ function searchMapReducer(state: SearchMapState, action: SearchMapAction): Searc
       const visiblePHAs = state.showPHAs ? filteredPHAs : [];
       const visibleProperties = state.showProperties ? filteredProps : [];
       
+      console.log('🔄 APPLY_FILTERS - Visibility:', {
+        showPHAs: state.showPHAs,
+        showProperties: state.showProperties,
+        visiblePHAs: visiblePHAs.length,
+        visibleProperties: visibleProperties.length
+      });
+      
       // Apply pagination to PHAs (properties handled separately)
       const totalCount = visiblePHAs.length;
       const totalPages = Math.ceil(totalCount / state.itemsPerPage);
