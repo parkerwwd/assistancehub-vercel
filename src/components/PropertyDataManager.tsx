@@ -31,7 +31,7 @@ const PropertyDataManager: React.FC = () => {
   const VALID_PROPERTY_COLUMNS = [
     'id', 'pha_id', 'name', 'address', 'city', 'state', 'zip',
     'property_type', 'units_total', 'units_available', 'bedroom_types',
-    'rent_range_min', 'rent_range_max', 'waitlist_open', 'waitlist_status',
+    'rent_range_min', 'rent_range_max',
     'phone', 'email', 'website', 'accessibility_features', 'amenities',
     'pet_policy', 'smoking_policy', 'latitude', 'longitude',
     'year_put_in_service', 'low_income_units',
@@ -57,8 +57,8 @@ const PropertyDataManager: React.FC = () => {
   };
   
   const downloadTemplate = () => {
-    const template = `name,address,city,state,zip,property_type,units_total,units_available,bedroom_types,rent_range_min,rent_range_max,waitlist_open,phone,email,website,latitude,longitude,year_put_in_service,low_income_units,units_studio,units_1br,units_2br,units_3br,units_4br
-"Sample Property","123 Main St","New York","NY","10001","tax_credit",100,25,"studio;1br;2br",800,1500,true,"(555) 123-4567","info@property.com","https://property.com",40.7128,-74.0060,2020,80,10,30,40,15,5`;
+    const template = `name,address,city,state,zip,property_type,units_total,units_available,bedroom_types,rent_range_min,rent_range_max,phone,email,website,latitude,longitude,year_put_in_service,low_income_units,units_studio,units_1br,units_2br,units_3br,units_4br
+"Sample Property","123 Main St","New York","NY","10001","tax_credit",100,25,"studio;1br;2br",800,1500,"(555) 123-4567","info@property.com","https://property.com",40.7128,-74.0060,2020,80,10,30,40,15,5`;
     
     const blob = new Blob([template], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -134,7 +134,6 @@ const PropertyDataManager: React.FC = () => {
       bedroom_types: bedroomTypes,
       rent_range_min: null, // Would need to calculate based on area
       rent_range_max: null,
-      waitlist_open: null,
       phone: getValue('phone') || null,
       email: null, // Not in LIHTC data
       website: getValue('website') || null,
@@ -340,8 +339,6 @@ const PropertyDataManager: React.FC = () => {
                 property[header] = yearValue && yearValue >= 1900 && yearValue <= currentYear + 5 ? yearValue : null;
               } else if (header === 'rent_range_min' || header === 'rent_range_max') {
                 property[header] = parseFloat(value) || null;
-              } else if (header === 'waitlist_open') {
-                property[header] = value.toLowerCase() === 'true';
               } else if (header === 'bedroom_types') {
                 property[header] = value.split(';').map(t => t.trim());
               } else if (header === 'latitude' || header === 'longitude') {
@@ -619,7 +616,6 @@ const PropertyDataManager: React.FC = () => {
                 <li><code>units_total</code>, <code>units_available</code></li>
                 <li><code>bedroom_types</code> - Semicolon-separated: studio;1br;2br</li>
                 <li><code>rent_range_min</code>, <code>rent_range_max</code></li>
-                <li><code>waitlist_open</code> - true/false</li>
                 <li><code>phone</code>, <code>email</code>, <code>website</code></li>
                 <li><code>latitude</code>, <code>longitude</code></li>
                 <li><code>year_put_in_service</code>, <code>low_income_units</code></li>

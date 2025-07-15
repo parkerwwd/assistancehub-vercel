@@ -238,7 +238,6 @@ export class ClusterManager {
             ${agency.phone ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280;">📞 ${agency.phone}</p>` : ''}
             ${agency.email ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #6b7280;">📧 ${agency.email}</p>` : ''}
             ${agency.program_type ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: ${markerColor}; font-weight: 500; padding: 2px 8px; background: ${markerColor}15; border-radius: 4px; display: inline-block;">🏢 ${agency.program_type}</p>` : ''}
-            ${agency.waitlist_status ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">📋 Waitlist: ${agency.waitlist_status}</p>` : ''}
             <button 
               onclick="window.postMessage({ type: 'selectOffice', officeId: '${agency.id}' }, '*')"
               style="margin-top: 8px; padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; width: 100%; transition: background 0.2s;"

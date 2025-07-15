@@ -62,30 +62,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
             </div>
           )}
           
-          {showFilters && (
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
-                <span className="font-medium text-gray-700 flex-shrink-0">Filter by waitlist status:</span>
-                <div className="flex flex-wrap items-center gap-3">
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded border-gray-300 w-3 h-3" />
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span className="text-gray-700">Open</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded border-gray-300 w-3 h-3" />
-                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                    <span className="text-gray-700">Limited</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded border-gray-300 w-3 h-3" />
-                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                    <span className="text-gray-700">Closed</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

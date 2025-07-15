@@ -373,9 +373,18 @@ const DataAdmin = () => {
                     <div className="p-3 sm:p-4 bg-purple-100 rounded-xl sm:rounded-2xl w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
                       <Users className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-purple-600" />
                     </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Waitlist Management</h3>
-                    <p className="text-sm text-gray-600 mb-2">Real-time waitlist status updates</p>
-                    <p className="text-xs text-gray-500">Automated notifications</p>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Real-time Updates</h3>
+                    <p className="text-sm text-gray-600 mb-2">Keep information current and accurate</p>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+                        <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-600" />
+                        <span>Database sync: Real-time</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+                        <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
+                        <span>Data validation: Automatic</span>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -435,10 +444,6 @@ const DataAdmin = () => {
                     <li className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
                       SNAP offices: Quarterly
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                      Waitlist status: Weekly
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>

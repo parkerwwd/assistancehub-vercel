@@ -1,6 +1,6 @@
 import React from 'react';
 import { Property } from "@/types/property";
-import { MapPin, Home, Calendar } from "lucide-react";
+import { MapPin, Home, Calendar, Phone, Mail, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface PropertyHeroSectionProps {
@@ -61,14 +61,43 @@ const PropertyHeroSection: React.FC<PropertyHeroSectionProps> = ({ property }) =
             </p>
           </div>
           
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm font-medium">Waitlist Status</span>
-            </div>
-            <p className="text-2xl font-bold">
-              {property.waitlist_open ? 'Open' : property.waitlist_status || 'Closed'}
-            </p>
+          {/* Contact Actions */}
+          <div className="space-y-4">
+            {property.phone && (
+              <div className="flex items-center gap-3">
+                <Phone className="w-5 h-5 text-red-600" />
+                <a 
+                  href={`tel:${property.phone}`} 
+                  className="text-gray-900 hover:text-red-600 transition-colors"
+                >
+                  {property.phone}
+                </a>
+              </div>
+            )}
+            {property.email && (
+              <div className="flex items-center gap-3">
+                <Mail className="w-5 h-5 text-red-600" />
+                <a 
+                  href={`mailto:${property.email}`} 
+                  className="text-gray-900 hover:text-red-600 transition-colors"
+                >
+                  {property.email}
+                </a>
+              </div>
+            )}
+            {property.website && (
+              <div className="flex items-center gap-3">
+                <Globe className="w-5 h-5 text-red-600" />
+                <a 
+                  href={property.website.startsWith('http') ? property.website : `https://${property.website}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-900 hover:text-red-600 transition-colors"
+                >
+                  Visit Website
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </div>

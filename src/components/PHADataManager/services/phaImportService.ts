@@ -48,8 +48,8 @@ const STATE_ABBREVIATIONS: Record<string, string> = {
 const VALID_DB_COLUMNS = [
   'pha_code', 'name', 'address', 'city', 'state', 'zip', 
   'phone', 'email', 'exec_dir_email', 'website', 'program_type',
-  'latitude', 'longitude', 'supports_hcv', 'waitlist_open', 
-  'waitlist_status', 'jurisdictions'
+  'latitude', 'longitude', 'supports_hcv', 
+  'jurisdictions'
 ];
 
 // Simple sanitization - only trim whitespace and limit length

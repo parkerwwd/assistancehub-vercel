@@ -12,42 +12,33 @@ interface HousingListingsProps {
 }
 
 // Mock housing data - this will eventually come from affordablehousing.com API
-const mockHousingListings = [
+const mockListings = [
   {
     id: 1,
-    name: "Sunset Gardens Apartments",
-    address: "123 Sunset Ave, Los Angeles, CA 90028",
-    rent: "$850",
-    bedrooms: 2,
-    bathrooms: 1,
-    type: "Apartment",
-    availability: "Available Now",
-    waitlist: false,
-    image: "/placeholder.svg"
+    name: "Sunrise Apartments",
+    address: "123 Main St, Anytown, USA",
+    type: "Section 8",
+    availability: "Now",
+    image: "/placeholder.svg",
+    distance: 2.5
   },
   {
     id: 2,
-    name: "Oak Tree Residences",
-    address: "456 Oak Street, Los Angeles, CA 90015",
-    rent: "$950",
-    bedrooms: 1,
-    bathrooms: 1,
-    type: "Studio/1BR",
-    availability: "Waitlist",
-    waitlist: true,
-    image: "/placeholder.svg"
+    name: "Oak Grove Housing",
+    address: "456 Oak Ave, Somewhere, USA",
+    type: "Public Housing",
+    availability: "Contact for info",
+    image: "/placeholder.svg",
+    distance: 4.2
   },
   {
     id: 3,
-    name: "Community Heights",
-    address: "789 Community Blvd, Los Angeles, CA 90012",
-    rent: "$1,200",
-    bedrooms: 3,
-    bathrooms: 2,
-    type: "Townhouse",
-    availability: "Available Soon",
-    waitlist: false,
-    image: "/placeholder.svg"
+    name: "Downtown Plaza",
+    address: "789 Center St, Metro City, USA",
+    type: "Section 8",
+    availability: "Limited",
+    image: "/placeholder.svg",
+    distance: 1.8
   }
 ];
 
@@ -72,7 +63,7 @@ const HousingListings: React.FC<HousingListingsProps> = ({ office, onBack }) => 
       </div>
 
       <div className="space-y-4">
-        {mockHousingListings.map((listing) => (
+        {mockListings.map((listing) => (
           <Card key={listing.id} className="shadow-sm border hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
@@ -86,7 +77,7 @@ const HousingListings: React.FC<HousingListingsProps> = ({ office, onBack }) => 
                   </CardDescription>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-green-600">{listing.rent}</div>
+                  <div className="text-lg font-bold text-green-600">{listing.availability}</div>
                   <div className="text-xs text-gray-500">per month</div>
                 </div>
               </div>
@@ -97,15 +88,11 @@ const HousingListings: React.FC<HousingListingsProps> = ({ office, onBack }) => 
               <div className="flex items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <Bed className="w-4 h-4" />
-                  <span>{listing.bedrooms} bed</span>
+                  <span>{listing.type}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Home className="w-4 h-4" />
-                  <span>{listing.bathrooms} bath</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  <span>{listing.type}</span>
+                  <span>{listing.distance} miles away</span>
                 </div>
               </div>
 
@@ -116,11 +103,9 @@ const HousingListings: React.FC<HousingListingsProps> = ({ office, onBack }) => 
                 </span>
                 <span 
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    listing.waitlist 
+                    listing.availability === 'Contact for info'
                       ? 'bg-yellow-100 text-yellow-800' 
-                      : listing.availability === 'Available Now'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-blue-100 text-blue-800'
+                      : 'bg-green-100 text-green-800'
                   }`}
                 >
                   {listing.availability}
@@ -133,7 +118,7 @@ const HousingListings: React.FC<HousingListingsProps> = ({ office, onBack }) => 
                   View Details
                 </Button>
                 <Button variant="outline" className="flex-1" size="sm">
-                  {listing.waitlist ? 'Join Waitlist' : 'Apply Now'}
+                  Apply Now
                 </Button>
               </div>
 

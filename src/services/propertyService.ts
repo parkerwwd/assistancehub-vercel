@@ -103,10 +103,6 @@ export const fetchPropertiesByLocation = async ({
         query = query.gt('units_available', 0);
       }
       
-      if (filters.waitlistOpen !== undefined) {
-        query = query.eq('waitlist_open', filters.waitlistOpen);
-      }
-      
       if (filters.minRent !== undefined) {
         query = query.gte('rent_range_min', filters.minRent);
       }

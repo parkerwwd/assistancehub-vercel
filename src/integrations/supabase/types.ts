@@ -135,8 +135,6 @@ export type Database = {
           bedroom_types: string[] | null
           rent_range_min: number | null
           rent_range_max: number | null
-          waitlist_open: boolean
-          waitlist_status: string | null
           phone: string | null
           email: string | null
           website: string | null
@@ -170,8 +168,6 @@ export type Database = {
           bedroom_types?: string[] | null
           rent_range_min?: number | null
           rent_range_max?: number | null
-          waitlist_open?: boolean
-          waitlist_status?: string | null
           phone?: string | null
           email?: string | null
           website?: string | null
@@ -205,8 +201,6 @@ export type Database = {
           bedroom_types?: string[] | null
           rent_range_min?: number | null
           rent_range_max?: number | null
-          waitlist_open?: boolean
-          waitlist_status?: string | null
           phone?: string | null
           email?: string | null
           website?: string | null

@@ -32,23 +32,6 @@ const PropertyAvailability: React.FC<PropertyAvailabilityProps> = ({ property })
             )}
           </div>
           
-          {/* Waitlist Status */}
-          <div>
-            <p className="text-sm text-gray-600 font-medium">Waitlist Status</p>
-            <div className="mt-2">
-              {property.waitlist_open ? (
-                <Badge className="bg-green-100 text-green-800 flex items-center gap-1 w-fit">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Waitlist Open
-                </Badge>
-              ) : (
-                <Badge className="bg-red-100 text-red-800 flex items-center gap-1 w-fit">
-                  <XCircle className="w-4 h-4" />
-                  Waitlist Closed
-                </Badge>
-              )}
-            </div>
-          </div>
         </div>
         
         {/* Bedroom Types */}

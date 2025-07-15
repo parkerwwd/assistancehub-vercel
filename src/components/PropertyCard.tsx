@@ -81,10 +81,15 @@ export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropert
           </div>
         )}
         
-        <div className="flex flex-wrap gap-2 mb-3">
-          {property.waitlist_open && (
-            <Badge variant="outline" className="text-green-600 border-green-600">
-              Waitlist Open
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
+            {property.property_type === 'tax_credit' ? 'Tax Credit' : 
+             property.property_type === 'section_8' ? 'Section 8' : 'Public Housing'}
+          </Badge>
+          {property.units_available && property.units_available > 0 && (
+            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+              {property.units_available} Available
             </Badge>
           )}
           

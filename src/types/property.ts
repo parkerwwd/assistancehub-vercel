@@ -27,7 +27,6 @@ export interface PropertyFilters {
   minRent?: number;
   maxRent?: number;
   onlyAvailable?: boolean;
-  waitlistOpen?: boolean;
   accessibilityFeatures?: string[];
   amenities?: string[];
   petFriendly?: boolean;

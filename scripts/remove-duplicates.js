@@ -91,7 +91,7 @@ parser.on('end', () => {
       'hud_id', 'name', 'address', 'city', 'state', 'zip',
       'property_type', 'units_total', 'units_available', 'low_income_units',
       'units_studio', 'units_1br', 'units_2br', 'units_3br', 'units_4br',
-      'rent_range_min', 'rent_range_max', 'waitlist_open',
+      'rent_range_min', 'rent_range_max',
       'phone', 'website', 'latitude', 'longitude',
       'year_put_in_service'
     ]

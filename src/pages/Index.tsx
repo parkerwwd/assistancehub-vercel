@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Search, Home, Users, FileText, CheckCircle, ArrowRight, Target, ChevronDown } from "lucide-react";
+import { MapPin, Search, Home, Users, FileText, CheckCircle, ArrowRight, Target, ChevronDown, Phone, ExternalLink } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { USLocation } from "@/data/locations";
 import USMap from "@/components/USMap";
@@ -222,20 +222,19 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow touch-manipulation">
-              <CardHeader className="pb-3 sm:pb-4">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-xl flex items-center justify-center mb-3 sm:mb-4">
-                  <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
-                </div>
-                <CardTitle className="text-lg sm:text-xl">Check Waitlist Status</CardTitle>
+            <Card className="bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer h-full">
+              <CardHeader className="pb-4">
+                <Phone className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-600 mb-3" />
+                <CardTitle className="text-lg sm:text-xl">Contact Resources</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
-                  Track your application and stay informed about your status.
+                <p className="text-sm sm:text-base text-gray-600">
+                  Get direct contact information for housing authorities and support services.
                 </p>
-                <a href="https://jetword.com/how-to-check-your-section-8-application-or-waitlist-status/" target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" className="w-full text-sm sm:text-base">
-                    Read More <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                <a href="https://www.hud.gov/program_offices/public_indian_housing/pha/contacts" target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" className="w-full mt-4" size="sm">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Resources
                   </Button>
                 </a>
               </CardContent>

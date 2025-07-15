@@ -38,7 +38,6 @@ const ServicesSection = () => {
             <div className="space-y-3">
               {[
                 "Locate nearby housing authorities",
-                "Check waitlist status",
                 "Get contact information",
                 "Learn about application processes"
               ].map((item, index) => (

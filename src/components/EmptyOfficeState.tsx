@@ -75,28 +75,32 @@ const EmptyOfficeState = ({ loading, hasFilter, filteredLocation }: EmptyOfficeS
               </div>
             </div>
             
-            {/* Legend */}
-            <div className="pt-4 border-t border-gray-100">
-              <h4 className="font-medium text-gray-900 mb-3">Waitlist Status</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
-                  <span className="text-gray-700">Open - Accepting applications</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500 mr-3"></div>
-                  <span className="text-gray-700">Limited - Partial openings</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-red-500 mr-3"></div>
-                  <span className="text-gray-700">Closed - No current openings</span>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 className="font-medium text-gray-900 mb-3">Emergency Housing</h4>
+                <p className="text-sm text-gray-600">
+                  For immediate housing assistance, contact your local emergency services or shelter hotline.
+                </p>
+              </div>
+              
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 className="font-medium text-gray-900 mb-3">Housing Resources</h4>
+                <p className="text-sm text-gray-600">
+                  Visit <a href="https://www.hud.gov" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">HUD.gov</a> for comprehensive housing assistance programs.
+                </p>
+              </div>
+              
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h4 className="font-medium text-gray-900 mb-3">Local Assistance</h4>
+                <p className="text-sm text-gray-600">
+                  Contact your city or county housing department for region-specific programs and resources.
+                </p>
               </div>
             </div>
             
-            <div className="pt-4 border-t border-gray-100">
-              <p className="text-sm text-gray-600 leading-relaxed">
-                <strong>Tip:</strong> Contact PHAs directly for the most current waitlist information and housing availability.
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <p className="text-sm text-gray-700">
+                <strong>Tip:</strong> Contact PHAs directly for the most current housing availability information.
               </p>
             </div>
           </div>

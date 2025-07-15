@@ -31,7 +31,7 @@ export class MarkerUtils {
     }
 
     const marker = new mapboxgl.Marker({
-      color: getWaitlistColor('Unknown'), // Use default since waitlist_status doesn't exist
+      color: '#ef4444', // Red color for properties
       scale: 1.0
     }).setLngLat([lng, lat]);
 
