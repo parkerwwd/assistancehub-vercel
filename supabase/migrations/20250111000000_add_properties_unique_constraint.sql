@@ -7,10 +7,18 @@ WHERE a.id > b.id
   AND a.name = b.name 
   AND a.address = b.address;
 
--- Now add the unique constraint
-ALTER TABLE properties 
-ADD CONSTRAINT properties_name_address_unique 
-UNIQUE (name, address);
+-- Now add the unique constraint if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'properties_name_address_unique'
+    ) THEN
+        ALTER TABLE properties 
+        ADD CONSTRAINT properties_name_address_unique 
+        UNIQUE (name, address);
+    END IF;
+END $$;
 
 -- Add index for better performance on lookups
 CREATE INDEX IF NOT EXISTS idx_properties_name ON properties(name);

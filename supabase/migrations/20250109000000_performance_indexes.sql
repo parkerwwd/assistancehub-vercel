@@ -30,9 +30,10 @@ ON pha_agencies(phone)
 WHERE phone IS NOT NULL;
 
 -- 6. Index for office types/categories
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_pha_agencies_office_type 
-ON pha_agencies(office_type) 
-WHERE office_type IS NOT NULL;
+-- Commented out: office_type column doesn't exist
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_pha_agencies_office_type 
+-- ON pha_agencies(office_type) 
+-- WHERE office_type IS NOT NULL;
 
 -- 7. Partial index for active/valid offices only
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_pha_agencies_active 
@@ -44,9 +45,10 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_pha_agencies_name_id
 ON pha_agencies(name, id);
 
 -- 9. Index for region-based searches
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_pha_agencies_region 
-ON pha_agencies(state, city, county)
-WHERE county IS NOT NULL;
+-- Commented out: county column doesn't exist
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_pha_agencies_region 
+-- ON pha_agencies(state, city, county)
+-- WHERE county IS NOT NULL;
 
 -- 10. Performance monitoring - enable pg_stat_statements
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
