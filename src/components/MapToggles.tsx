@@ -18,7 +18,7 @@ export const MapToggles: React.FC = () => {
         <Checkbox
           id="show-properties"
           checked={state.showProperties}
-          onCheckedChange={(checked) => actions.toggleProperties(!!checked)}
+          onCheckedChange={(checked) => actions.setShowProperties(!!checked)}
           className="data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
         />
         <Label 
@@ -35,7 +35,7 @@ export const MapToggles: React.FC = () => {
         <Checkbox
           id="show-phas"
           checked={state.showPHAs}
-          onCheckedChange={(checked) => actions.togglePHAs(!!checked)}
+          onCheckedChange={(checked) => actions.setShowPHAs(!!checked)}
           className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
         />
         <Label 
