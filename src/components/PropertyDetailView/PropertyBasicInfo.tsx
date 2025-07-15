@@ -1,7 +1,7 @@
 import React from 'react';
 import { Property } from "@/types/property";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Home, MapPin, Building, Hash } from "lucide-react";
+import { Home, MapPin, Building } from "lucide-react";
 
 interface PropertyBasicInfoProps {
   property: Property;
@@ -64,16 +64,7 @@ const PropertyBasicInfo: React.FC<PropertyBasicInfoProps> = ({ property }) => {
           </div>
         </div>
 
-        {/* Property ID */}
-        {property.id && (
-          <div className="flex items-start gap-3">
-            <Hash className="w-5 h-5 text-gray-400 mt-1" />
-            <div>
-              <p className="text-sm text-gray-600 font-medium">Property ID</p>
-              <p className="text-gray-900 font-mono text-xs">{property.id}</p>
-            </div>
-          </div>
-        )}
+
       </CardContent>
     </Card>
   );
