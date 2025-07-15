@@ -131,7 +131,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
     }
     
     const selectedIndex = visibleProperties.findIndex(prop => prop.id === selectedOffice.id); // Use visibleProperties here
-    console.log('�� Sorting properties:', {
+    console.log('🔄 Sorting properties:', {
       selectedId: selectedOffice.id,
       selectedName: selectedOffice.name,
       foundIndex: selectedIndex,
@@ -152,6 +152,61 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
     console.log('✅ Moved property to top:', sorted[0].name);
     return sorted;
   }, [visibleProperties, selectedOffice]);
+  
+  // Create a combined list with selected item at the top
+  const combinedItems = React.useMemo(() => {
+    const items: Array<{ type: 'pha' | 'property', item: PHAAgency | Property }> = [];
+    
+    // If a property is selected, add it first
+    if (selectedOffice && 'property_type' in selectedOffice) {
+      const property = selectedOffice as Property;
+      const propertyIndex = visibleProperties.findIndex(p => p.id === property.id);
+      if (propertyIndex !== -1) {
+        items.push({ type: 'property', item: visibleProperties[propertyIndex] });
+        console.log('🔝 Selected property at top:', property.name);
+      }
+    }
+    
+    // If a PHA is selected, add it first (unless a property is already selected)
+    if (selectedOffice && 'supports_hcv' in selectedOffice) {
+      const pha = selectedOffice as PHAAgency;
+      if (!('property_type' in selectedOffice) && showPHAs) {
+        const phaIndex = visiblePHAs.findIndex(p => p.id === pha.id);
+        if (phaIndex !== -1) {
+          items.push({ type: 'pha', item: visiblePHAs[phaIndex] });
+          console.log('🔝 Selected PHA at top:', pha.name);
+        }
+      }
+    }
+    
+    // Add remaining PHAs
+    if (showPHAs) {
+      visiblePHAs.forEach(pha => {
+        if (pha.id !== selectedOffice?.id) {
+          items.push({ type: 'pha', item: pha });
+        }
+      });
+    }
+    
+    // Add remaining properties
+    if (showProperties) {
+      visibleProperties.forEach(property => {
+        if (property.id !== selectedOffice?.id) {
+          items.push({ type: 'property', item: property });
+        }
+      });
+    }
+    
+    console.log('📋 Combined items:', {
+      total: items.length,
+      firstItem: items[0]?.item.name,
+      firstItemType: items[0]?.type,
+      hasSelectedProperty: !!('property_type' in selectedOffice),
+      hasSelectedPHA: !!('supports_hcv' in selectedOffice)
+    });
+    
+    return items;
+  }, [visiblePHAs, visibleProperties, selectedOffice, showPHAs, showProperties]);
   
   // Scroll to top when selection changes
   React.useEffect(() => {
@@ -261,46 +316,43 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
 
       {/* List of offices and properties */}
       <div className="space-y-3 mb-4">
-        {/* Show PHAs if enabled */}
-        {showPHAs && sortedPHAAgencies.map((office, index) => (
-          <div key={office.id} className="relative">
-            {index === 0 && selectedOffice?.id === office.id && (
-              <div className="absolute -top-2 right-2 z-10">
-                <Badge className="bg-blue-600 text-white text-xs">Selected</Badge>
+        {/* Render combined list */}
+        {combinedItems.map((item, index) => {
+          const isSelected = selectedOffice?.id === item.item.id;
+          
+          if (item.type === 'pha') {
+            const office = item.item as PHAAgency;
+            return (
+              <div key={`pha-${office.id}`} className="relative">
+                {index === 0 && isSelected && (
+                  <div className="absolute -top-2 right-2 z-10">
+                    <Badge className="bg-blue-600 text-white text-xs">Selected</Badge>
+                  </div>
+                )}
+                <PHAOfficeCard
+                  agency={office}
+                  onOfficeClick={() => onOfficeClick(office)}
+                  isSelected={isSelected}
+                />
               </div>
-            )}
-            <PHAOfficeCard
-              agency={office}
-              onOfficeClick={() => onOfficeClick(office)}
-              isSelected={selectedOffice?.id === office.id}
-            />
-          </div>
-        ))}
-        
-        {/* Show properties if enabled */}
-        {showProperties && sortedProperties.map((property, index) => {
-          const isPropertySelected = selectedOffice?.id === property.id;
-          console.log('🔍 Property selection check:', {
-            propertyId: property.id,
-            selectedOfficeId: selectedOffice?.id,
-            isMatch: isPropertySelected,
-            propertyIdType: typeof property.id,
-            selectedIdType: typeof selectedOffice?.id
-          });
-          return (
-            <div key={property.id} className="relative">
-              {index === 0 && isPropertySelected && (
-                <div className="absolute -top-2 right-2 z-10">
-                  <Badge className="bg-red-600 text-white text-xs">Selected</Badge>
-                </div>
-              )}
-              <PropertyCard
-                property={property}
-                onPropertyClick={() => onOfficeClick(property)}
-                isSelected={isPropertySelected}
-              />
-            </div>
-          );
+            );
+          } else {
+            const property = item.item as Property;
+            return (
+              <div key={`property-${property.id}`} className="relative">
+                {index === 0 && isSelected && (
+                  <div className="absolute -top-2 right-2 z-10">
+                    <Badge className="bg-red-600 text-white text-xs">Selected</Badge>
+                  </div>
+                )}
+                <PropertyCard
+                  property={property}
+                  onPropertyClick={() => onOfficeClick(property)}
+                  isSelected={isSelected}
+                />
+              </div>
+            );
+          }
         })}
       </div>
 
