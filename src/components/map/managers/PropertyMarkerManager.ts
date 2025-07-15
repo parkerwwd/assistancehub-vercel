@@ -67,14 +67,14 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     `;
     el.appendChild(icon);
     
-    // Hover effect
+    // Hover effect - use filter instead of transform to avoid movement
     el.addEventListener('mouseenter', () => {
-      el.style.transform = 'scale(1.1)';
+      el.style.filter = 'brightness(1.2) saturate(1.3) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))';
       el.style.zIndex = '1000';
     });
     
     el.addEventListener('mouseleave', () => {
-      el.style.transform = 'scale(1)';
+      el.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
       el.style.zIndex = '1';
     });
     
@@ -136,7 +136,7 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     const entry = this.propertiesMap.get(propertyId);
     if (entry) {
       const element = entry.marker.getElement();
-      element.style.transform = 'scale(1.2)';
+      element.style.filter = 'brightness(1.3) saturate(1.5) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4))';
       element.style.zIndex = '1000';
       element.style.backgroundColor = '#DC2626'; // Darker red when selected
     }
@@ -145,7 +145,7 @@ export class PropertyMarkerManager extends BaseMarkerManager {
   unhighlightAll(): void {
     this.propertiesMap.forEach(({ marker }) => {
       const element = marker.getElement();
-      element.style.transform = 'scale(1)';
+      element.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
       element.style.zIndex = '1';
       element.style.backgroundColor = this.color;
     });
