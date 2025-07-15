@@ -160,9 +160,9 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
 
   // Base input classes
   const inputClasses = {
-    default: "w-full px-4 py-3 pl-12 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
-    compact: "w-full px-3 py-2 pl-10 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm",
-    header: "w-full px-4 py-2 pl-10 pr-8 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500"
+    default: "w-full px-4 py-3 pl-12 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base",
+    compact: "w-full px-3 py-2.5 pl-10 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm",
+    header: "w-full px-4 py-2.5 pl-10 pr-8 bg-transparent border-0 focus:outline-none focus:ring-0 text-gray-700 placeholder:text-gray-500 text-sm sm:text-base"
   };
 
   const containerClasses = {
@@ -177,9 +177,9 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
         {/* Search Icon */}
         <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
           {searchState.loading ? (
-            <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+            <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 animate-spin" />
           ) : (
-            <Search className="w-5 h-5 text-gray-400" />
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
           )}
         </div>
 
@@ -207,7 +207,7 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 touch-manipulation"
             aria-label="Clear search"
           >
             <X className="w-4 h-4" />
@@ -219,13 +219,13 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
       {searchState.showSuggestions && (searchState.results.length > 0 || searchState.error) && (
         <div
           ref={suggestionsRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-[60vh] sm:max-h-80 overflow-y-auto"
           role="listbox"
           aria-label="Search suggestions"
         >
           {/* Error State */}
           {searchState.error && (
-            <div className="px-4 py-3 text-red-600 text-sm border-b">
+            <div className="px-3 sm:px-4 py-2 sm:py-3 text-red-600 text-sm border-b">
               {searchState.error}
             </div>
           )}
@@ -235,25 +235,25 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
             <button
               key={`${result.name}-${result.stateCode}-${index}`}
               onClick={() => handleSuggestionClick(result)}
-              className={`w-full px-4 py-3 text-left hover:bg-gray-50 border-b last:border-b-0 transition-colors ${
+              className={`w-full px-3 sm:px-4 py-3 sm:py-3 text-left hover:bg-gray-50 active:bg-gray-100 border-b last:border-b-0 transition-colors touch-manipulation ${
                 index === searchState.selectedIndex ? 'bg-blue-50 border-blue-100' : ''
               }`}
               role="option"
               aria-selected={index === searchState.selectedIndex}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {getResultIcon(result)}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900 truncate">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-gray-900 truncate text-sm sm:text-base">
                       {result.name}
                     </span>
                     {/* Result type badge */}
-                    <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                    <span className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gray-100 text-gray-600 rounded-full">
                       {getResultTypeBadge(result)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500 truncate">
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">
                     {getResultDescription(result)}
                   </p>
                 </div>
@@ -263,8 +263,8 @@ const UnifiedSearchInput: React.FC<UnifiedSearchInputProps> = ({
 
           {/* No Results State */}
           {searchState.results.length === 0 && !searchState.error && searchState.hasSearched && (
-            <div className="px-4 py-6 text-center text-gray-500">
-              <MapPin className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+            <div className="px-4 py-4 sm:py-6 text-center text-gray-500">
+              <MapPin className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-gray-300" />
               <p className="text-sm">No locations found</p>
               <p className="text-xs text-gray-400 mt-1">
                 Try searching for a different city, state, or ZIP code

@@ -287,15 +287,15 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
   }
 
   return (
-    <div className="p-6 bg-white office-details-panel-scroll">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="p-4 sm:p-6 bg-white office-details-panel-scroll">
+      <div className="mb-3 sm:mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
             {hasFilter && filteredLocation?.name 
               ? `Locations in ${filteredLocation.name}`
               : 'Search for a location'}
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-xs sm:text-sm text-gray-600 mt-1">
             {hasFilter
               ? showPHAs && showProperties
                 ? `Showing ${visiblePHAs.length} PHAs and ${visibleProperties.length} of ${filteredProperties.length} properties`
@@ -309,13 +309,13 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
 
       {/* Filter toggles - only show when there's data */}
       {hasFilter && (
-        <div className="mb-4">
+        <div className="mb-3 sm:mb-4">
           <MapToggles />
         </div>
       )}
 
       {/* List of offices and properties */}
-      <div className="space-y-3 mb-4">
+      <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
         {/* Render combined list */}
         {combinedItems.map((item, index) => {
           const isSelected = selectedOffice?.id === item.item.id;
@@ -326,7 +326,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
               <div key={`pha-${office.id}`} className="relative">
                 {index === 0 && isSelected && (
                   <div className="absolute -top-2 right-2 z-10">
-                    <Badge className="bg-blue-600 text-white text-xs">Selected</Badge>
+                    <Badge className="bg-blue-600 text-white text-xs px-2 py-0.5">Selected</Badge>
                   </div>
                 )}
                 <PHAOfficeCard
@@ -342,7 +342,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
               <div key={`property-${property.id}`} className="relative">
                 {index === 0 && isSelected && (
                   <div className="absolute -top-2 right-2 z-10">
-                    <Badge className="bg-red-600 text-white text-xs">Selected</Badge>
+                    <Badge className="bg-red-600 text-white text-xs px-2 py-0.5">Selected</Badge>
                   </div>
                 )}
                 <PropertyCard
@@ -358,26 +358,27 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
 
       {/* Show message if nothing is visible due to toggles */}
       {!showPHAs && !showProperties && (
-        <div className="text-center py-8 text-gray-500">
-          <p>Please enable at least one layer type (Properties or PHAs) to see results.</p>
+        <div className="text-center py-6 sm:py-8 text-gray-500">
+          <p className="text-sm sm:text-base">Please enable at least one layer type (Properties or PHAs) to see results.</p>
         </div>
       )}
 
-      {/* Pagination controls */}
+      {/* Pagination controls - Mobile Optimized */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t">
+        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t">
           <Button
             variant="outline"
             size="sm"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
           >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
+            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Previous</span>
+            <span className="sm:hidden">Prev</span>
           </Button>
           
-          <span className="text-sm text-gray-600">
+          <span className="text-xs sm:text-sm text-gray-600">
             Page {currentPage} of {totalPages}
           </span>
           
@@ -386,10 +387,11 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
             size="sm"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
           >
-            Next
-            <ChevronRight className="h-4 w-4" />
+            <span className="hidden sm:inline">Next</span>
+            <span className="sm:hidden">Next</span>
+            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       )}

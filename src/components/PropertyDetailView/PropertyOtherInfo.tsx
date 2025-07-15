@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Property } from '@/types/property';
-import { Info } from 'lucide-react';
+import { Info, Building } from 'lucide-react';
 
 interface PropertyOtherInfoProps {
   property: Property;
@@ -35,73 +35,77 @@ const PropertyOtherInfo: React.FC<PropertyOtherInfoProps> = ({ property }) => {
   };
 
   return (
-    <Card className="shadow-lg border-0">
-      <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-t-lg">
+    <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+      <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100">
         <CardTitle className="flex items-center gap-2 text-gray-800">
-          <Info className="w-5 h-5 text-amber-600" />
-          Other Information
+          <Building className="w-5 h-5 text-amber-600" />
+          Additional Property Information
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        {/* Two columns for Year and Low Income Units */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        {/* Year and Units Grid - Mobile Responsive */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {/* Year Put into Service */}
-          <div className="bg-amber-50 rounded-lg p-6 text-center">
-            <h3 className="text-lg font-medium text-gray-700 mb-3">Year Put into Service</h3>
-            <p className="text-4xl font-bold text-gray-900">
-              {yearIsValid ? property.year_put_in_service : 'N/A'}
-            </p>
-          </div>
+          {property.year_put_in_service && yearIsValid && (
+            <div className="bg-amber-50 rounded-lg p-4">
+              <h3 className="text-base sm:text-lg font-medium text-gray-700 mb-2 sm:mb-3">Year Put into Service</h3>
+              <p className="text-3xl sm:text-4xl font-bold text-gray-900">
+                {property.year_put_in_service}
+              </p>
+            </div>
+          )}
           
           {/* Low Income Units */}
-          <div className="bg-amber-50 rounded-lg p-6 text-center">
-            <h3 className="text-lg font-medium text-gray-700 mb-3">Low Income Units</h3>
-            <p className="text-4xl font-bold text-gray-900">
-              {property.low_income_units ?? 'N/A'}
-            </p>
-            <p className="text-sm text-gray-600 mt-2">Availability Not Guaranteed</p>
-          </div>
+          {property.low_income_units !== null && (
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h3 className="text-base sm:text-lg font-medium text-gray-700 mb-2 sm:mb-3">Low Income Units</h3>
+              <p className="text-3xl sm:text-4xl font-bold text-gray-900">
+                {property.low_income_units}
+              </p>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">Availability Not Guaranteed</p>
+            </div>
+          )}
         </div>
-
-        {/* Unit Distribution */}
+        
+        {/* Unit Distribution - Mobile Responsive */}
         {hasUnitDistribution && (
-          <div className="bg-amber-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-700 mb-4 text-center">Unit Distribution</h3>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="text-base sm:text-lg font-medium text-gray-700 mb-4 text-center">Unit Distribution</h3>
             
-            <div className="grid grid-cols-5 gap-4 text-center">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-2">Studio</p>
-                <p className="text-2xl font-bold text-gray-900">
+            {/* Mobile: 2x3 grid, Desktop: 5 columns */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 text-center">
+              <div className="bg-white rounded p-3">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Studio</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {validateBedroomCount(property.units_studio)}
                 </p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-2">1 Bed</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="bg-white rounded p-3">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">1 Bed</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {validateBedroomCount(property.units_1br)}
                 </p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-2">2 Bed</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="bg-white rounded p-3">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">2 Bed</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {validateBedroomCount(property.units_2br)}
                 </p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-2">3 Bed</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="bg-white rounded p-3">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">3 Bed</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {validateBedroomCount(property.units_3br)}
                 </p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-2">4 Bed</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="bg-white rounded p-3 col-span-2 sm:col-span-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">4 Bed</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {validateBedroomCount(property.units_4br)}
                 </p>
               </div>
             </div>
-            
-            <p className="text-sm text-gray-600 text-center mt-4">Availability Not Guaranteed</p>
+            <p className="text-xs sm:text-sm text-gray-600 text-center mt-3 sm:mt-4">Availability Not Guaranteed</p>
           </div>
         )}
       </CardContent>

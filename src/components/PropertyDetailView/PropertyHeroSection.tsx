@@ -22,18 +22,18 @@ const PropertyHeroSection: React.FC<PropertyHeroSectionProps> = ({ property }) =
   };
 
   return (
-    <div className="bg-gradient-to-br from-red-600 to-rose-700 text-white rounded-2xl shadow-xl p-8">
-      <div className="space-y-4">
+    <div className="bg-gradient-to-br from-red-600 to-rose-700 text-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 md:p-8">
+      <div className="space-y-3 sm:space-y-4">
         {/* Property Type Badge */}
         <div>{getPropertyTypeBadge(property.property_type)}</div>
         
-        {/* Property Name */}
-        <h1 className="text-3xl md:text-4xl font-bold">{property.name}</h1>
+        {/* Property Name - Mobile Responsive */}
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">{property.name}</h1>
         
-        {/* Location */}
-        <div className="flex items-center gap-2 text-white/90">
-          <MapPin className="w-5 h-5" />
-          <span className="text-lg">
+        {/* Location - Mobile Responsive */}
+        <div className="flex items-start sm:items-center gap-2 text-white/90">
+          <MapPin className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5 sm:mt-0" />
+          <span className="text-sm sm:text-base md:text-lg break-words">
             {property.address}
             {property.city && `, ${property.city}`}
             {property.state && `, ${property.state}`}
@@ -41,46 +41,48 @@ const PropertyHeroSection: React.FC<PropertyHeroSectionProps> = ({ property }) =
           </span>
         </div>
         
-        {/* Key Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+        {/* Key Stats - Mobile Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mt-4 sm:mt-6">
+          {/* Total Units */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
             <div className="flex items-center gap-2 mb-1">
               <Home className="w-4 h-4" />
-              <span className="text-sm font-medium">Total Units</span>
+              <span className="text-xs sm:text-sm font-medium">Total Units</span>
             </div>
-            <p className="text-2xl font-bold">{property.units_total || 'N/A'}</p>
+            <p className="text-xl sm:text-2xl font-bold">{property.units_total || 'N/A'}</p>
           </div>
           
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+          {/* Available Units */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4">
             <div className="flex items-center gap-2 mb-1">
               <Home className="w-4 h-4" />
-              <span className="text-sm font-medium">Available Units</span>
+              <span className="text-xs sm:text-sm font-medium">Available Units</span>
             </div>
-            <p className="text-2xl font-bold">
+            <p className="text-xl sm:text-2xl font-bold">
               {property.units_available ?? 'Contact for availability'}
             </p>
           </div>
           
-          {/* Contact Actions */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-1">
+          {/* Contact Actions - Mobile Optimized */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 sm:p-4 sm:col-span-2 md:col-span-1">
+            <div className="flex items-center gap-2 mb-2">
               <Phone className="w-4 h-4" />
-              <span className="text-sm font-medium">Contact Info</span>
+              <span className="text-xs sm:text-sm font-medium">Contact Info</span>
             </div>
             <div className="space-y-2">
               {property.phone && (
                 <a 
                   href={`tel:${property.phone}`} 
-                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
+                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors touch-manipulation"
                 >
-                  <Phone className="w-4 h-4" />
-                  {property.phone}
+                  <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="text-sm sm:text-base">{property.phone}</span>
                 </a>
               )}
               {property.email && (
                 <a 
                   href={`mailto:${property.email}`} 
-                  className="text-white hover:text-white/80 transition-colors text-sm break-all"
+                  className="text-white hover:text-white/80 transition-colors text-xs sm:text-sm break-all block"
                 >
                   {property.email}
                 </a>
@@ -90,10 +92,10 @@ const PropertyHeroSection: React.FC<PropertyHeroSectionProps> = ({ property }) =
                   href={property.website.startsWith('http') ? property.website : `https://${property.website}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
+                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors touch-manipulation"
                 >
-                  <Globe className="w-4 h-4" />
-                  Visit Website
+                  <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="text-sm sm:text-base">Visit Website</span>
                 </a>
               )}
             </div>
