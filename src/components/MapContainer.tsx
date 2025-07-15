@@ -197,8 +197,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
                                    (showProperties && lastRenderedPropertyCount === 0 && visibleProperties.length > 0);
       
       // Update PHAs if needed
-      if (shouldUpdatePHAs) {
-        console.log(`🔄 Updating PHA markers: ${visiblePHAs.length} visible`);
+      if (shouldUpdatePHAs || !showPHAs) {
+        console.log(`🔄 Updating PHA markers: ${visiblePHAs.length} visible, showPHAs: ${showPHAs}`);
         markerManager.current.clearAllAgencyMarkers();
         
         if (showPHAs && visiblePHAs.length > 0) {
@@ -214,8 +214,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
       }
       
       // Update Properties if needed
-      if (shouldUpdateProperties) {
-        console.log(`🔄 Updating property markers: ${visibleProperties.length} visible`);
+      if (shouldUpdateProperties || !showProperties) {
+        console.log(`🔄 Updating property markers: ${visibleProperties.length} visible, showProperties: ${showProperties}`);
         propertyMarkerManager.current.clearMarkers();
         
         if (showProperties && visibleProperties.length > 0) {
