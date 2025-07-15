@@ -163,10 +163,22 @@ const Section8 = () => {
             
             {/* Right Panel - PHA List (Fixed 40% width) */}
             <div className="w-2/5 h-full overflow-y-auto bg-white">
+              {(() => {
+                console.log('🔍 OfficeDetailsPanel data:', {
+                  selectedOfficeId: state.selectedOffice?.id,
+                  selectedOfficeName: state.selectedOffice?.name,
+                  isPHA: state.selectedOffice && 'supports_hcv' in state.selectedOffice,
+                  paginatedAgenciesCount: state.paginatedAgencies.length,
+                  filteredAgenciesCount: state.filteredAgencies.length,
+                  currentPage: state.currentPage,
+                  isSelectedInCurrentPage: state.paginatedAgencies.some(a => a.id === state.selectedOffice?.id)
+                });
+                return null;
+              })()}
               <OfficeDetailsPanel
                 selectedOffice={state.selectedOffice}
                 onOfficeClick={handleOfficeListClick}
-                phaAgencies={state.paginatedAgencies}
+                phaAgencies={state.filteredAgencies}
                 loading={state.loading}
                 currentPage={state.currentPage}
                 totalPages={state.totalPages}

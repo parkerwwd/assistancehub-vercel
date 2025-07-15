@@ -58,31 +58,40 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
         return [selectedOffice as Property, ...baseProperties.slice(0, 9)];
       }
     }
-    
+        
     return baseProperties;
   }, [filteredProperties, selectedOffice]);
+  
+  // Include selected PHA in the list if it's not already there
+  const visiblePHAs = React.useMemo(() => {
+    // Start with paginated PHAs
+    const itemsPerPage = 20;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedPHAs = phaAgencies.slice(startIndex, endIndex);
+    
+    // If there's a selected PHA that's not in the current page, add it at the beginning
+    if (selectedOffice && 'supports_hcv' in selectedOffice) {
+      const isAlreadyVisible = paginatedPHAs.some(p => p.id === selectedOffice.id);
+      if (!isAlreadyVisible) {
+        console.log('📌 Adding selected PHA to visible list:', selectedOffice.name);
+        // Remove one item from the end to maintain page size
+        return [selectedOffice as PHAAgency, ...paginatedPHAs.slice(0, itemsPerPage - 1)];
+      }
+    }
+    
+    return paginatedPHAs;
+  }, [phaAgencies, selectedOffice, currentPage]);
   
   console.log('📊 OfficeDetailsPanel render:', {
     selectedOfficeId: selectedOffice?.id,
     selectedOfficeName: selectedOffice?.name,
     isProperty: selectedOffice && !('supports_hcv' in selectedOffice),
     propertiesCount: visibleProperties.length,
-    phasCount: phaAgencies.length
+    totalPHAsCount: phaAgencies.length,
+    visiblePHAsCount: visiblePHAs.length,
+    currentPage
   });
-  
-  // Include selected PHA in the list if it's not already there
-  const visiblePHAs = React.useMemo(() => {
-    // If there's a selected PHA that's not in the visible list, add it at the beginning
-    if (selectedOffice && 'supports_hcv' in selectedOffice) {
-      const isAlreadyVisible = phaAgencies.some(p => p.id === selectedOffice.id);
-      if (!isAlreadyVisible) {
-        console.log('📌 Adding selected PHA to visible list:', selectedOffice.name);
-        return [selectedOffice as PHAAgency, ...phaAgencies];
-      }
-    }
-    
-    return phaAgencies;
-  }, [phaAgencies, selectedOffice]);
   
   // Sort PHAs to put selected one first
   const sortedPHAAgencies = React.useMemo(() => {
@@ -234,7 +243,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
           <p className="text-sm text-gray-600 mt-1">
             {hasFilter
               ? showPHAs && showProperties
-                ? `Showing ${phaAgencies.length} PHAs and ${visibleProperties.length} properties`
+                ? `Showing ${visiblePHAs.length} PHAs and ${visibleProperties.length} properties`
                 : showPHAs
                 ? `${totalCount} Public Housing Agencies`
                 : `${visibleProperties.length} Properties`
