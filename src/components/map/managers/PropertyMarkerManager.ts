@@ -41,46 +41,12 @@ export class PropertyMarkerManager extends BaseMarkerManager {
       return null;
     }
     
-    // Create marker element
-    const el = document.createElement('div');
-    el.className = 'property-marker';
-    el.style.cssText = `
-      width: 8px;
-      height: 8px;
-      background-color: ${this.color};
-      border: 1px solid white;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    `;
-    
-    // Add icon
-    const icon = document.createElement('div');
-    icon.innerHTML = '🏠';
-    icon.style.cssText = `
-      font-size: 5px;
-      filter: brightness(0) invert(1);
-    `;
-    el.appendChild(icon);
-    
-    // Hover effect - use filter instead of transform to avoid movement
-    el.addEventListener('mouseenter', () => {
-      el.style.filter = 'brightness(1.2) saturate(1.3) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))';
-      el.style.zIndex = '1000';
-    });
-    
-    el.addEventListener('mouseleave', () => {
-      el.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
-      el.style.zIndex = '1';
-    });
-    
-    // Create marker
-    const marker = new mapboxgl.Marker(el)
-      .setLngLat([property.longitude, property.latitude]);
+    // Create marker using Mapbox default style (same as PHA markers but red)
+    const marker = new mapboxgl.Marker({
+      color: this.color, // Red color
+      scale: 0.8 // Same scale as PHA markers
+    })
+    .setLngLat([property.longitude, property.latitude]);
     
     // Add popup
     const popupContent = `
@@ -114,11 +80,26 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     
     // Click handler
     if (this.onClick) {
-      el.addEventListener('click', (e) => {
+      marker.getElement().addEventListener('click', (e) => {
         e.stopPropagation();
         this.onClick!(property);
       });
     }
+    
+    // Add hover effects
+    const element = marker.getElement();
+    element.style.cursor = 'pointer';
+    element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease';
+    
+    element.addEventListener('mouseenter', () => {
+      element.style.filter = 'brightness(1.2) saturate(1.3)';
+      element.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    });
+    
+    element.addEventListener('mouseleave', () => {
+      element.style.filter = 'brightness(1) saturate(1)';
+      element.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+    });
     
     return marker;
   }
@@ -138,7 +119,6 @@ export class PropertyMarkerManager extends BaseMarkerManager {
       const element = entry.marker.getElement();
       element.style.filter = 'brightness(1.3) saturate(1.5) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4))';
       element.style.zIndex = '1000';
-      element.style.backgroundColor = '#DC2626'; // Darker red when selected
     }
   }
   
