@@ -89,11 +89,8 @@ const PropertyContactInfo: React.FC<PropertyContactInfoProps> = ({ property }) =
           </>
         ) : (
           <div className="text-center py-4">
-            <p className="text-gray-500 mb-2">
-              Contact information not available
-            </p>
-            <p className="text-sm text-gray-400">
-              Please contact the managing PHA for more information
+            <p className="text-gray-600 font-medium">
+              Contact PHA for More Information
             </p>
           </div>
         )}

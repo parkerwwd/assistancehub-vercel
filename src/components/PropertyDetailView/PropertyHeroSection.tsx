@@ -8,6 +8,8 @@ interface PropertyHeroSectionProps {
 }
 
 const PropertyHeroSection: React.FC<PropertyHeroSectionProps> = ({ property }) => {
+  const hasContactInfo = property.phone || property.email || property.website;
+  
   const getPropertyTypeBadge = (type: string | null) => {
     switch (type) {
       case 'section_8':
@@ -70,33 +72,41 @@ const PropertyHeroSection: React.FC<PropertyHeroSectionProps> = ({ property }) =
               <span className="text-xs sm:text-sm font-medium">Contact Info</span>
             </div>
             <div className="space-y-2">
-              {property.phone && (
-                <a 
-                  href={`tel:${property.phone}`} 
-                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors touch-manipulation"
-                >
-                  <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="text-sm sm:text-base">{property.phone}</span>
-                </a>
-              )}
-              {property.email && (
-                <a 
-                  href={`mailto:${property.email}`} 
-                  className="text-white hover:text-white/80 transition-colors text-xs sm:text-sm break-all block"
-                >
-                  {property.email}
-                </a>
-              )}
-              {property.website && (
-                <a 
-                  href={property.website.startsWith('http') ? property.website : `https://${property.website}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-white hover:text-white/80 transition-colors touch-manipulation"
-                >
-                  <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="text-sm sm:text-base">Visit Website</span>
-                </a>
+              {hasContactInfo ? (
+                <>
+                  {property.phone && (
+                    <a 
+                      href={`tel:${property.phone}`} 
+                      className="flex items-center gap-2 text-white hover:text-white/80 transition-colors touch-manipulation"
+                    >
+                      <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="text-sm sm:text-base">{property.phone}</span>
+                    </a>
+                  )}
+                  {property.email && (
+                    <a 
+                      href={`mailto:${property.email}`} 
+                      className="text-white hover:text-white/80 transition-colors text-xs sm:text-sm break-all block"
+                    >
+                      {property.email}
+                    </a>
+                  )}
+                  {property.website && (
+                    <a 
+                      href={property.website.startsWith('http') ? property.website : `https://${property.website}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-white hover:text-white/80 transition-colors touch-manipulation"
+                    >
+                      <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="text-sm sm:text-base">Visit Website</span>
+                    </a>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm sm:text-base text-white/90">
+                  Contact PHA for More Information
+                </p>
               )}
             </div>
           </div>

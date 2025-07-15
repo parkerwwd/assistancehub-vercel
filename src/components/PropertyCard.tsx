@@ -123,6 +123,11 @@ export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropert
               Website
             </Button>
           )}
+          {!property.phone && !property.website && (
+            <span className="text-xs text-gray-500 flex-1 text-center py-2">
+              Contact PHA for More Information
+            </span>
+          )}
           <Button 
             size="sm" 
             variant={isSelected ? "default" : "outline"} 
