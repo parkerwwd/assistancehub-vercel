@@ -1,6 +1,6 @@
 
 import React, { useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import OfficeDetailsPanel from "@/components/OfficeDetailsPanel";
 import MapContainer from "@/components/MapContainer";
 import Header from "@/components/Header";
@@ -11,11 +11,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Database } from "@/integrations/supabase/types";
 import { Property } from "@/types/property";
 import { toast } from "@/components/ui/use-toast";
+import { USLocation } from "@/data/usLocations";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 const Section8 = () => {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const searchLocation = location.state?.searchLocation;
   const { state, actions } = useSearchMap();
   const { mapRef, handleLocationSearch, handleOfficeSelection, resetToUSView } = useMap();
@@ -33,10 +35,28 @@ const Section8 = () => {
     });
   }, []);
   
-  // Handle navigation from home page search (only runs once when location changes)
+  // Handle navigation from home page search or URL params (only runs once when location changes)
   useEffect(() => {
     if (searchLocation) {
+      // Priority 1: Direct navigation from home page
       handleLocationSearch(searchLocation);
+    } else if (searchParams.get('search')) {
+      // Priority 2: Restore from URL params (browser back button)
+      const searchName = searchParams.get('search');
+      const searchType = searchParams.get('type') as 'city' | 'county' | 'state';
+      const stateCode = searchParams.get('state');
+      
+      if (searchName && searchType) {
+        const restoredLocation: USLocation = {
+          name: searchName,
+          type: searchType,
+          stateCode: stateCode || '',
+          latitude: 0, // These will be set by handleLocationSearch
+          longitude: 0
+        };
+        console.log('🔄 Restoring search from URL params:', restoredLocation);
+        handleLocationSearch(restoredLocation);
+      }
     } else {
       // If no search location, reset to US view after a delay
       // COMMENTED OUT: This might interfere with header searches
@@ -45,7 +65,7 @@ const Section8 = () => {
       // }, 1000);
       // return () => clearTimeout(timer);
     }
-  }, [searchLocation, handleLocationSearch, resetToUSView]);
+  }, [searchLocation, searchParams, handleLocationSearch, resetToUSView]);
   
   // Handle office clicks from map pins (no flyTo to prevent bouncing)
   const handleOfficeClick = useCallback((office: PHAAgency | Property | null) => {

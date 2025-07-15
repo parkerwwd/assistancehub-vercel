@@ -1,22 +1,25 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from "@/components/ui/card";
-import { MapPin, Heart, Phone, Building2, Navigation } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Building, MapPin, Phone, Mail, Globe, Calendar, Heart, ChevronRight, Star } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
+import { useSearchMap } from "@/contexts/SearchMapContext";
 import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import type { PHAAgencyWithDistance } from "@/utils/mapUtils";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
 interface PHAOfficeCardProps {
-  agency: PHAAgency | PHAAgencyWithDistance;
-  onOfficeClick?: (office: PHAAgency) => void;
+  agency: PHAAgency;
+  onOfficeClick: (agency: PHAAgency) => void;
   isSelected?: boolean;
 }
 
-const PHAOfficeCard = ({ agency, onOfficeClick, isSelected = false }: PHAOfficeCardProps) => {
+const PHAOfficeCard: React.FC<PHAOfficeCardProps> = ({ agency, onOfficeClick, isSelected = false }) => {
   const navigate = useNavigate();
+  const { state } = useSearchMap();
   
   // Build full address using only the address field since city, state, zip don't exist in current schema
   const fullAddress = agency.address || 'Address not available';
@@ -27,13 +30,20 @@ const PHAOfficeCard = ({ agency, onOfficeClick, isSelected = false }: PHAOfficeC
   const isExactMatch = (agency as PHAAgencyWithDistance)._isExactMatch;
 
   const handleClick = () => {
-    if (onOfficeClick) {
-      // If there's an onOfficeClick handler, use it (for selection)
-      onOfficeClick(agency);
-    } else {
-      // Otherwise navigate to detail page
-      navigate(`/pha/${agency.id}`);
+    // Call the selection handler
+    onOfficeClick(agency);
+    
+    // Also navigate to details with preserved search state
+    const searchParams = new URLSearchParams();
+    if (state.searchLocation) {
+      searchParams.set('search', state.searchLocation.name);
+      searchParams.set('type', state.searchLocation.type);
+      if (state.searchLocation.stateCode) {
+        searchParams.set('state', state.searchLocation.stateCode);
+      }
     }
+    const queryString = searchParams.toString();
+    navigate(`/pha/${agency.id}${queryString ? `?${queryString}` : ''}`);
   };
 
   return (
@@ -68,7 +78,7 @@ const PHAOfficeCard = ({ agency, onOfficeClick, isSelected = false }: PHAOfficeC
                   </p>
                   {distance !== undefined && (
                     <div className="flex items-center gap-1 mt-1">
-                      <Navigation className="w-3 h-3 text-gray-400" />
+                      {/* Navigation icon removed as per new_code */}
                       <span className="text-xs font-medium text-gray-500">
                         {distance.toFixed(1)} miles away
                       </span>
@@ -92,7 +102,7 @@ const PHAOfficeCard = ({ agency, onOfficeClick, isSelected = false }: PHAOfficeC
             <div className="flex items-center justify-between gap-3">
               {/* PHA Type badge */}
               <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-gray-400" />
+                <Building className="w-4 h-4 text-gray-400" />
                 <span 
                   className="px-2.5 py-1 rounded-full text-xs font-semibold border"
                   style={{ 

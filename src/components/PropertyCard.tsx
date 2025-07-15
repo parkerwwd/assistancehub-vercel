@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Home, MapPin, Phone, Globe, Bed } from 'lucide-react';
 import { Property, PropertyType } from '@/types/property';
+import { useSearchMap } from "@/contexts/SearchMapContext";
 
 interface PropertyCardProps {
   property: Property;
@@ -14,6 +15,7 @@ interface PropertyCardProps {
 
 export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropertyClick, isSelected = false }) => {
   const navigate = useNavigate();
+  const { state } = useSearchMap();
   
   console.log('🏠 PropertyCard render:', {
     propertyId: property.id,
@@ -30,7 +32,17 @@ export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropert
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/property/${property.id}`);
+    // Preserve search state in URL
+    const searchParams = new URLSearchParams();
+    if (state.searchLocation) {
+      searchParams.set('search', state.searchLocation.name);
+      searchParams.set('type', state.searchLocation.type);
+      if (state.searchLocation.stateCode) {
+        searchParams.set('state', state.searchLocation.stateCode);
+      }
+    }
+    const queryString = searchParams.toString();
+    navigate(`/property/${property.id}${queryString ? `?${queryString}` : ''}`);
   };
 
   const getPropertyTypeBadge = (type: string | null) => {
