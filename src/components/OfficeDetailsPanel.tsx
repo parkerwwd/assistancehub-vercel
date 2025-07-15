@@ -294,14 +294,19 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
     );
   }
 
-  if (totalItems === 0) {
+  if (totalItems === 0 && (!hasFilter || (showPHAs || showProperties))) {
     return (
       <div className="p-6 bg-white">
-                  <EmptyOfficeState 
-            loading={false}
-            hasFilter={hasFilter}
-            filteredLocation={filteredLocation}
-          />
+        {hasFilter && (
+          <div className="mb-4">
+            <MapToggles />
+          </div>
+        )}
+        <EmptyOfficeState 
+          loading={false}
+          hasFilter={hasFilter}
+          filteredLocation={filteredLocation}
+        />
       </div>
     );
   }
@@ -379,7 +384,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
       </div>
 
       {/* Show message if nothing is visible due to toggles */}
-      {!showPHAs && !showProperties && (
+      {!showPHAs && !showProperties && hasFilter && (
         <div className="text-center py-6 sm:py-8 text-gray-500">
           <p className="text-sm sm:text-base">Please enable at least one layer type (Properties or PHAs) to see results.</p>
         </div>

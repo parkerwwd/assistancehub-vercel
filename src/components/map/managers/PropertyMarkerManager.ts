@@ -109,6 +109,12 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     element.style.cursor = 'pointer';
     element.style.transition = 'filter 0.2s ease';
     
+    // Disable mobile touch highlights
+    (element.style as any).webkitTapHighlightColor = 'transparent';
+    (element.style as any).webkitTouchCallout = 'none';
+    element.style.userSelect = 'none';
+    element.style.outline = 'none';
+    
     element.addEventListener('mouseenter', () => {
       if (marker !== this.selectedMarker) {
         element.style.filter = 'brightness(1.2) saturate(1.3) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))';
