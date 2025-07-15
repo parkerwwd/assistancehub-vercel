@@ -239,6 +239,9 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     // Initial render with a slight delay to ensure map is fully ready
     setTimeout(updateVisibleMarkers, 500);
     
+    // Also update immediately when toggle states change
+    updateVisibleMarkers();
+    
     return () => {
       if (map.current) {
         map.current.off('moveend', debouncedUpdate);
