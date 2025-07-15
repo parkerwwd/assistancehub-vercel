@@ -23,3 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Large data files
+*.csv
+*.xlsx
+LIHTCPUB_*
+locationsample*
