@@ -46,67 +46,118 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
   const { state } = useSearchMap();
   const { showPHAs, showProperties, filteredProperties } = state;
   
-  // Paginate properties (simple approach - just take first 10 for now)
-  const paginatedProperties = filteredProperties.slice(0, 10);
+  // Include selected property in the list if it's not already there
+  const visibleProperties = React.useMemo(() => {
+    const baseProperties = filteredProperties.slice(0, 10);
+    
+    // If there's a selected property that's not in the visible list, add it at the beginning
+    if (selectedOffice && 'property_type' in selectedOffice) {
+      const isAlreadyVisible = baseProperties.some(p => p.id === selectedOffice.id);
+      if (!isAlreadyVisible) {
+        console.log('📌 Adding selected property to visible list:', selectedOffice.name);
+        return [selectedOffice as Property, ...baseProperties.slice(0, 9)];
+      }
+    }
+    
+    return baseProperties;
+  }, [filteredProperties, selectedOffice]);
   
   console.log('📊 OfficeDetailsPanel render:', {
     selectedOfficeId: selectedOffice?.id,
     selectedOfficeName: selectedOffice?.name,
     isProperty: selectedOffice && !('supports_hcv' in selectedOffice),
-    propertiesCount: paginatedProperties.length,
+    propertiesCount: visibleProperties.length,
     phasCount: phaAgencies.length
   });
+  
+  // Include selected PHA in the list if it's not already there
+  const visiblePHAs = React.useMemo(() => {
+    // If there's a selected PHA that's not in the visible list, add it at the beginning
+    if (selectedOffice && 'supports_hcv' in selectedOffice) {
+      const isAlreadyVisible = phaAgencies.some(p => p.id === selectedOffice.id);
+      if (!isAlreadyVisible) {
+        console.log('📌 Adding selected PHA to visible list:', selectedOffice.name);
+        return [selectedOffice as PHAAgency, ...phaAgencies];
+      }
+    }
+    
+    return phaAgencies;
+  }, [phaAgencies, selectedOffice]);
   
   // Sort PHAs to put selected one first
   const sortedPHAAgencies = React.useMemo(() => {
     if (!selectedOffice || !('supports_hcv' in selectedOffice)) {
-      return phaAgencies;
+      console.log('🔄 Not sorting PHAs - no PHA selected');
+      return visiblePHAs;
     }
     
-    const selectedIndex = phaAgencies.findIndex(pha => pha.id === selectedOffice.id);
+    const selectedIndex = visiblePHAs.findIndex(pha => pha.id === selectedOffice.id);
+    console.log('🔄 Sorting PHAs:', {
+      selectedId: selectedOffice.id,
+      selectedName: selectedOffice.name,
+      foundIndex: selectedIndex,
+      totalPHAs: visiblePHAs.length
+    });
+    
     if (selectedIndex === -1) {
-      return phaAgencies;
+      console.log('❌ Selected PHA not found in list!');
+      return visiblePHAs;
     }
     
     // Move selected to front
-    return [
-      phaAgencies[selectedIndex],
-      ...phaAgencies.slice(0, selectedIndex),
-      ...phaAgencies.slice(selectedIndex + 1)
+    const sorted = [
+      visiblePHAs[selectedIndex],
+      ...visiblePHAs.slice(0, selectedIndex),
+      ...visiblePHAs.slice(selectedIndex + 1)
     ];
-  }, [phaAgencies, selectedOffice]);
+    console.log('✅ Moved PHA to top:', sorted[0].name);
+    return sorted;
+  }, [visiblePHAs, selectedOffice]);
   
   // Sort properties to put selected one first
   const sortedProperties = React.useMemo(() => {
     if (!selectedOffice || 'supports_hcv' in selectedOffice) {
-      return paginatedProperties;
+      console.log('🔄 Not sorting properties - no property selected');
+      return visibleProperties; // Use visibleProperties here
     }
     
-    const selectedIndex = paginatedProperties.findIndex(prop => prop.id === selectedOffice.id);
+    const selectedIndex = visibleProperties.findIndex(prop => prop.id === selectedOffice.id); // Use visibleProperties here
+    console.log('�� Sorting properties:', {
+      selectedId: selectedOffice.id,
+      selectedName: selectedOffice.name,
+      foundIndex: selectedIndex,
+      totalProperties: visibleProperties.length
+    });
+    
     if (selectedIndex === -1) {
-      return paginatedProperties;
+      console.log('❌ Selected property not found in list!');
+      return visibleProperties; // Use visibleProperties here
     }
     
     // Move selected to front
-    return [
-      paginatedProperties[selectedIndex],
-      ...paginatedProperties.slice(0, selectedIndex),
-      ...paginatedProperties.slice(selectedIndex + 1)
+    const sorted = [
+      visibleProperties[selectedIndex], // Use visibleProperties here
+      ...visibleProperties.slice(0, selectedIndex), // Use visibleProperties here
+      ...visibleProperties.slice(selectedIndex + 1) // Use visibleProperties here
     ];
-  }, [paginatedProperties, selectedOffice]);
+    console.log('✅ Moved property to top:', sorted[0].name);
+    return sorted;
+  }, [visibleProperties, selectedOffice]);
   
   // Scroll to top when selection changes
   React.useEffect(() => {
     if (selectedOffice) {
       // Small delay to ensure DOM has updated
       setTimeout(() => {
-        // Find the scrollable container - it's the parent of the OfficeDetailsPanel
-        const panel = document.querySelector('.office-details-panel-scroll');
-        const scrollContainer = panel?.parentElement || panel;
-        if (scrollContainer) {
-          scrollContainer.scrollTop = 0;
-          console.log('📜 Scrolled to top for selected item:', selectedOffice.name);
-        }
+        // Find the scrollable container - it's the div with overflow-y-auto
+        const scrollContainers = document.querySelectorAll('.overflow-y-auto');
+        scrollContainers.forEach(container => {
+          // Check if this container has our panel
+          if (container.querySelector('.office-details-panel-scroll')) {
+            container.scrollTop = 0;
+            console.log('📜 Scrolled to top for selected item:', selectedOffice.name);
+          }
+        });
       }, 100);
     }
   }, [selectedOffice]);
@@ -121,17 +172,17 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
       timestamp: new Date().toISOString(),
       filteredLocationName: filteredLocation?.name || 'null',
       phaAgenciesCount: phaAgencies.length,
-      propertiesCount: paginatedProperties.length,
+      propertiesCount: visibleProperties.length,
       hasFilter: hasFilter,
       selectedOffice: selectedOffice?.name || null,
       selectedProperty: selectedProperty?.name || null,
       showPHAs,
       showProperties
     });
-  }, [filteredLocation, phaAgencies.length, paginatedProperties.length, hasFilter, selectedOffice, selectedProperty, showPHAs, showProperties]);
+  }, [filteredLocation, phaAgencies.length, visibleProperties.length, hasFilter, selectedOffice, selectedProperty, showPHAs, showProperties]);
 
   // Calculate total items
-  const totalItems = (showPHAs ? phaAgencies.length : 0) + (showProperties ? paginatedProperties.length : 0);
+  const totalItems = (showPHAs ? phaAgencies.length : 0) + (showProperties ? visibleProperties.length : 0);
 
   // Handle property click
   const handlePropertyClick = (property: Property) => {
@@ -183,10 +234,10 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
           <p className="text-sm text-gray-600 mt-1">
             {hasFilter
               ? showPHAs && showProperties
-                ? `Showing ${phaAgencies.length} PHAs and ${paginatedProperties.length} properties`
+                ? `Showing ${phaAgencies.length} PHAs and ${visibleProperties.length} properties`
                 : showPHAs
                 ? `${totalCount} Public Housing Agencies`
-                : `${paginatedProperties.length} Properties`
+                : `${visibleProperties.length} Properties`
               : 'Enter a city, county, or state to find housing assistance'}
           </p>
         </div>
