@@ -26,6 +26,11 @@ export const fetchAllProperties = async (): Promise<PropertyServiceResult> => {
   try {
     console.log('📡 Fetching all properties from Supabase...');
     
+    // First, get a count of all properties (with and without coordinates)
+    const { count: totalCount } = await supabase
+      .from('properties')
+      .select('*', { count: 'exact', head: true });
+    
     const { data, error, count } = await supabase
       .from('properties')
       .select('*', { count: 'exact' })
@@ -38,7 +43,13 @@ export const fetchAllProperties = async (): Promise<PropertyServiceResult> => {
       return { data: [], error, count: 0 };
     }
 
-    console.log(`✅ Fetched ${data?.length || 0} properties`);
+    console.log(`✅ Property fetch results:`, {
+      totalProperties: totalCount || 0,
+      withCoordinates: data?.length || 0,
+      withoutCoordinates: (totalCount || 0) - (data?.length || 0),
+      percentage: totalCount ? ((data?.length || 0) / totalCount * 100).toFixed(1) + '%' : '0%'
+    });
+    
     return { data: data || [], error: null, count: count || 0 };
   } catch (error) {
     console.error('❌ Unexpected error fetching properties:', error);

@@ -19,9 +19,14 @@ export class PropertyMarkerManager extends BaseMarkerManager {
   }
   
   addPropertyMarkers(map: mapboxgl.Map, properties: Property[]): void {
+    console.log(`🏠 PropertyMarkerManager.addPropertyMarkers called with ${properties.length} properties`);
+    
     // Clear existing markers first
     this.clearMarkers();
     this.propertiesMap.clear();
+    
+    let successCount = 0;
+    let skipCount = 0;
     
     properties.forEach(property => {
       const marker = this.createPropertyMarker(property);
@@ -29,15 +34,24 @@ export class PropertyMarkerManager extends BaseMarkerManager {
         marker.addTo(map);
         this.addMarker(marker);
         this.propertiesMap.set(property.id, { marker, property });
+        successCount++;
+      } else {
+        skipCount++;
       }
     });
     
-    console.log(`✅ Added ${this.markers.length} property markers to map`);
+    console.log(`✅ Added ${successCount} property markers to map, skipped ${skipCount} (no coordinates)`);
   }
   
   private createPropertyMarker(property: Property): mapboxgl.Marker | null {
     if (!property.latitude || !property.longitude) {
-      console.warn(`Property ${property.name} has no coordinates`);
+      console.warn(`⚠️ Property ${property.name} (${property.id}) has no coordinates`);
+      return null;
+    }
+    
+    // Validate coordinates
+    if (Math.abs(property.latitude) > 90 || Math.abs(property.longitude) > 180) {
+      console.error(`❌ Invalid coordinates for property ${property.name}: lat=${property.latitude}, lng=${property.longitude}`);
       return null;
     }
     

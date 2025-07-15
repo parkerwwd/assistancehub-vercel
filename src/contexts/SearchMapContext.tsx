@@ -4,7 +4,7 @@ import { USLocation } from "@/data/usLocations";
 import { fetchAllPHAData } from "@/services/phaService";
 import { filterPHAAgenciesByLocation } from "@/utils/mapUtils";
 import { Property } from "@/types/property";
-import { fetchPropertiesByLocation } from "@/services/propertyService";
+import { fetchPropertiesByLocation, fetchAllProperties } from "@/services/propertyService";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -208,9 +208,31 @@ export const SearchMapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         dispatch({ type: 'SET_LOADING', payload: true });
         dispatch({ type: 'SET_ERROR', payload: null });
         
-        // Don't fetch any PHAs on mount - only when a location is searched
-        dispatch({ type: 'SET_ALL_AGENCIES', payload: [] });
-        dispatch({ type: 'SET_ALL_PROPERTIES', payload: [] });
+        // Fetch initial PHAs 
+        const phaResult = await fetchAllPHAData();
+        dispatch({ type: 'SET_ALL_AGENCIES', payload: phaResult.data });
+        
+        // Also fetch some initial properties for a better user experience
+        // We'll fetch properties for a default area (e.g., center of US)
+        const defaultBounds = {
+          north: 49.0,  // Northern US border
+          south: 25.0,  // Southern US border  
+          east: -66.0,  // Eastern US border
+          west: -125.0  // Western US border
+        };
+        
+        try {
+          const propertiesResult = await fetchPropertiesByLocation({ 
+            bounds: defaultBounds,
+            limit: 500 // Reasonable initial load
+          });
+          
+          console.log(`✅ Loaded ${propertiesResult.data.length} initial properties`);
+          dispatch({ type: 'SET_ALL_PROPERTIES', payload: propertiesResult.data });
+        } catch (propError) {
+          console.warn('⚠️ Could not load initial properties:', propError);
+          // Don't fail the whole init if properties fail
+        }
         
         // Apply initial filters
         dispatch({ type: 'APPLY_FILTERS' });
