@@ -69,7 +69,7 @@ const PropertyDataManager: React.FC = () => {
   const parseLIHTCData = (headers: string[], values: string[]): any => {
     const getValue = (fieldName: string) => {
       const index = headers.indexOf(fieldName);
-      return index >= 0 ? values[index]?.trim().replace(/^"|"$/g, '') || '' : '';
+      return index >= 0 ? (values[index] || '').trim().replace(/^"|"$/g, '') : '';
     };
     
     // Debug logging for problematic fields
@@ -142,6 +142,40 @@ const PropertyDataManager: React.FC = () => {
     };
   };
   
+  // Parse CSV line properly handling quoted values
+  const parseCSVLine = (line: string): string[] => {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+      
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          // Escaped quote
+          current += '"';
+          i++; // Skip next quote
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        // End of field
+        result.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    // Don't forget the last field
+    result.push(current);
+    
+    return result;
+  };
+  
   const handleUpload = async () => {
     if (!selectedFile) {
       toast({
@@ -156,8 +190,9 @@ const PropertyDataManager: React.FC = () => {
     
     try {
       const text = await selectedFile.text();
-      const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      // Handle different line endings (Windows \r\n, Mac \r, Unix \n)
+      const lines = text.split(/\r?\n|\r/).filter(line => line.trim());
+      const headers = parseCSVLine(lines[0]).map(h => h.trim().replace(/"/g, ''));
       
       // For large files, show total count
       const totalRecords = lines.length - 1; // Minus header
@@ -165,6 +200,15 @@ const PropertyDataManager: React.FC = () => {
       
       // Detect if this is LIHTC format
       const isLIHTC = headers.includes('hud_id') || headers.includes('project');
+      
+      // Check if this is already cleaned LIHTC data (has the mapped columns)
+      const isCleanedLIHTC = headers.includes('hud_id') && headers.includes('name') && headers.includes('units_studio');
+      
+      console.log('📄 File format detection:', {
+        isLIHTC,
+        isCleanedLIHTC,
+        sampleHeaders: headers.slice(0, 10)
+      });
       
       // Process in chunks to avoid memory issues
       const chunkSize = 5000; // Process 5k records at a time
@@ -181,45 +225,64 @@ const PropertyDataManager: React.FC = () => {
         
         // Parse chunk
         for (let i = chunkStart; i < chunkEnd; i++) {
-          const values = lines[i].match(/(".*?"|[^,]+)/g) || [];
+          const values = parseCSVLine(lines[i]);
           let property: any = {};
           
-          if (isLIHTC) {
-            // Use LIHTC parser
-            property = parseLIHTCData(headers, values.map(v => v.trim()));
+          if (isLIHTC && !isCleanedLIHTC) {
+            // Use LIHTC parser for original LIHTC format
+            property = parseLIHTCData(headers, values);
           } else {
-            // Use standard parser
+            // Use standard parser for cleaned LIHTC or standard format
             headers.forEach((header, index) => {
-              let value = values[index]?.trim().replace(/^"|"$/g, '') || '';
+              let value = (values[index] || '').trim().replace(/^"|"$/g, '');
+              
+              // Skip empty values
+              if (!value) {
+                property[header] = null;
+                return;
+              }
               
               // Parse specific fields
               if (header === 'units_total' || header === 'units_available' || 
                   header === 'low_income_units' ||
                   header === 'units_studio' || header === 'units_1br' || 
                   header === 'units_2br' || header === 'units_3br' || header === 'units_4br') {
-                property[header] = value ? parseInt(value) : null;
+                property[header] = parseInt(value) || null;
               } else if (header === 'year_put_in_service') {
                 // Validate year
-                const yearValue = value ? parseInt(value) : null;
+                const yearValue = parseInt(value);
                 const currentYear = new Date().getFullYear();
                 property[header] = yearValue && yearValue >= 1900 && yearValue <= currentYear + 5 ? yearValue : null;
               } else if (header === 'rent_range_min' || header === 'rent_range_max') {
-                property[header] = value ? parseFloat(value) : null;
+                property[header] = parseFloat(value) || null;
               } else if (header === 'waitlist_open') {
                 property[header] = value.toLowerCase() === 'true';
               } else if (header === 'bedroom_types') {
-                property[header] = value ? value.split(';').map(t => t.trim()) : [];
+                property[header] = value.split(';').map(t => t.trim());
               } else if (header === 'latitude' || header === 'longitude') {
-                property[header] = value ? parseFloat(value) : null;
+                property[header] = parseFloat(value) || null;
               } else {
-                property[header] = value || null;
+                property[header] = value;
               }
             });
           }
           
           // Only add properties with valid data
           if (property.name && property.address) {
+            // Debug log first few properties
+            if (properties.length < 3) {
+              console.log(`📋 Property ${properties.length + 1}:`, property);
+            }
             properties.push(property);
+          } else {
+            // Log why property was skipped
+            if (properties.length < 10 && (!property.name || !property.address)) {
+              console.warn(`⚠️ Skipping property - missing name or address:`, {
+                name: property.name || 'MISSING',
+                address: property.address || 'MISSING',
+                raw: property
+              });
+            }
           }
         }
         
@@ -230,19 +293,19 @@ const PropertyDataManager: React.FC = () => {
           try {
             const { error } = await supabase
               .from('properties')
-              .upsert(batch, { 
-                onConflict: 'name,address',
-                ignoreDuplicates: false 
-              });
+              .insert(batch);
             
             if (error) {
               console.error('Batch upload error:', error);
+              console.error('Failed batch sample:', batch.slice(0, 2)); // Log first 2 records
               allErrors += batch.length;
             } else {
               allProcessed += batch.length;
+              console.log(`✅ Successfully uploaded batch of ${batch.length} properties`);
             }
           } catch (err) {
             console.error('Batch failed:', err);
+            console.error('Failed batch sample:', batch.slice(0, 2)); // Log first 2 records
             allErrors += batch.length;
           }
           
