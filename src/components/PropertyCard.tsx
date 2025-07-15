@@ -5,26 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Home, MapPin, Phone, Globe, Bed } from 'lucide-react';
 import { Property, PropertyType } from '@/types/property';
-import { useSearchMap } from "@/contexts/SearchMapContext";
+import { USLocation } from "@/data/usLocations";
 
 interface PropertyCardProps {
   property: Property;
   onPropertyClick: (property: Property) => void;
   isSelected?: boolean;
+  searchLocation?: USLocation | null;
 }
 
-export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropertyClick, isSelected = false }) => {
+export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropertyClick, isSelected = false, searchLocation }) => {
   const navigate = useNavigate();
-  
-  // Try to get search state, but make it optional
-  let searchLocation = null;
-  try {
-    const { state } = useSearchMap();
-    searchLocation = state.searchLocation;
-  } catch (error) {
-    // Context not available, that's okay
-    console.log('SearchMapContext not available in PropertyCard');
-  }
   
   console.log('🏠 PropertyCard render:', {
     propertyId: property.id,

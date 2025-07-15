@@ -5,10 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building, MapPin, Phone, Mail, Globe, Calendar, Heart, ChevronRight, Star } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
-import { useSearchMap } from "@/contexts/SearchMapContext";
 import { getPHATypeFromData, getPHATypeColor } from "@/utils/mapUtils";
 import type { PHAAgencyWithDistance } from "@/utils/mapUtils";
 import { Button } from "@/components/ui/button";
+import { USLocation } from "@/data/usLocations";
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 
@@ -16,20 +16,11 @@ interface PHAOfficeCardProps {
   agency: PHAAgency;
   onOfficeClick: (agency: PHAAgency) => void;
   isSelected?: boolean;
+  searchLocation?: USLocation | null;
 }
 
-const PHAOfficeCard: React.FC<PHAOfficeCardProps> = ({ agency, onOfficeClick, isSelected = false }) => {
+const PHAOfficeCard: React.FC<PHAOfficeCardProps> = ({ agency, onOfficeClick, isSelected = false, searchLocation }) => {
   const navigate = useNavigate();
-  
-  // Try to get search state, but make it optional
-  let searchLocation = null;
-  try {
-    const { state } = useSearchMap();
-    searchLocation = state.searchLocation;
-  } catch (error) {
-    // Context not available, that's okay
-    console.log('SearchMapContext not available in PHAOfficeCard');
-  }
   
   // Build full address using only the address field since city, state, zip don't exist in current schema
   const fullAddress = agency.address || 'Address not available';

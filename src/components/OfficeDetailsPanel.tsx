@@ -333,6 +333,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
                   agency={office}
                   onOfficeClick={() => onOfficeClick(office)}
                   isSelected={isSelected}
+                  searchLocation={state.searchLocation}
                 />
               </div>
             );
@@ -349,6 +350,7 @@ const OfficeDetailsPanel: React.FC<OfficeDetailsPanelProps> = ({
                   property={property}
                   onPropertyClick={() => onOfficeClick(property)}
                   isSelected={isSelected}
+                  searchLocation={state.searchLocation}
                 />
               </div>
             );
