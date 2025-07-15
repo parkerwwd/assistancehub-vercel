@@ -45,8 +45,8 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     const el = document.createElement('div');
     el.className = 'property-marker';
     el.style.cssText = `
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       background-color: ${this.color};
       border: 2px solid white;
       border-radius: 50%;
@@ -62,7 +62,7 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     const icon = document.createElement('div');
     icon.innerHTML = '🏠';
     icon.style.cssText = `
-      font-size: 10px;
+      font-size: 8px;
       filter: brightness(0) invert(1);
     `;
     el.appendChild(icon);
