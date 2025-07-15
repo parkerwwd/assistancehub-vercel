@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Home, MapPin, Phone, Globe, Bed } from 'lucide-react';
+import { Home, MapPin, Bed } from 'lucide-react';
 import { Property, PropertyType } from '@/types/property';
 import { USLocation } from "@/data/usLocations";
 
@@ -125,27 +125,10 @@ export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropert
         </div>
         
         <div className="flex gap-2">
-          {property.phone && (
-            <Button size="sm" variant="outline" className="flex-1">
-              <Phone className="h-4 w-4 mr-1" />
-              Call
-            </Button>
-          )}
-          {property.website && (
-            <Button size="sm" variant="outline" className="flex-1">
-              <Globe className="h-4 w-4 mr-1" />
-              Website
-            </Button>
-          )}
-          {!property.phone && !property.website && (
-            <span className="text-xs text-gray-500 flex-1 text-center py-2">
-              Contact PHA for More Information
-            </span>
-          )}
           <Button 
             size="sm" 
             variant={isSelected ? "default" : "outline"} 
-            className="flex-1"
+            className="w-full"
             onClick={handleViewDetails}
           >
             View Details
