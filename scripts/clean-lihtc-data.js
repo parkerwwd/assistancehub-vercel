@@ -115,7 +115,7 @@ parser.on('end', () => {
       'units_studio', 'units_1br', 'units_2br', 'units_3br', 'units_4br',
       'rent_range_min', 'rent_range_max', 'waitlist_open',
       'phone', 'website', 'latitude', 'longitude',
-      'year_put_in_service', 'year_alloc', 'google_name', 'google_address'
+      'year_put_in_service'
     ]
   });
 
