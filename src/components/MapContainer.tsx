@@ -330,8 +330,8 @@ const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(({
     
     if (isMapReady && map.current?.loaded()) {
       // Skip this old logic - markers now handled by toggle-based rendering
-      return;
-    }
+                  return;
+                }
   }, [phaAgencies, selectedLocation, selectedOffice, mapboxToken, onOfficeSelect, isMapReady]);
 
 
