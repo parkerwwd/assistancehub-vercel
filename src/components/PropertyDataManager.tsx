@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, FileText, Download, AlertCircle, CheckCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 
 interface UploadProgress {
@@ -11,6 +12,7 @@ interface UploadProgress {
   processed: number;
   errors: number;
   status: 'idle' | 'uploading' | 'processing' | 'complete' | 'error';
+  startTime?: number;
 }
 
 const PropertyDataManager: React.FC = () => {
@@ -19,7 +21,8 @@ const PropertyDataManager: React.FC = () => {
     total: 0,
     processed: 0,
     errors: 0,
-    status: 'idle'
+    status: 'idle',
+    startTime: undefined
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLIHTCFormat, setIsLIHTCFormat] = useState(false);
@@ -147,7 +150,7 @@ const PropertyDataManager: React.FC = () => {
       return;
     }
     
-    setUploadProgress({ total: 0, processed: 0, errors: 0, status: 'uploading' });
+    setUploadProgress({ total: 0, processed: 0, errors: 0, status: 'uploading', startTime: Date.now() });
     
     try {
       const text = await selectedFile.text();
@@ -324,10 +327,23 @@ const PropertyDataManager: React.FC = () => {
               <Button
                 onClick={handleUpload}
                 disabled={!selectedFile || uploadProgress.status === 'uploading' || uploadProgress.status === 'processing'}
-                className="bg-red-600 hover:bg-red-700"
+                className={`bg-red-600 hover:bg-red-700 ${
+                  uploadProgress.status === 'uploading' || uploadProgress.status === 'processing' 
+                    ? 'opacity-75 cursor-not-allowed' 
+                    : ''
+                }`}
               >
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Properties
+                {uploadProgress.status === 'uploading' || uploadProgress.status === 'processing' ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    {uploadProgress.status === 'uploading' ? 'Reading...' : 'Uploading...'}
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload Properties
+                  </>
+                )}
               </Button>
               
               <Button
@@ -342,18 +358,61 @@ const PropertyDataManager: React.FC = () => {
           
           {/* Progress Display */}
           {uploadProgress.status !== 'idle' && (
-            <Alert className={uploadProgress.status === 'error' ? 'border-red-500' : ''}>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {uploadProgress.status === 'uploading' && 'Reading file...'}
-                {uploadProgress.status === 'processing' && 
-                  `Processing: ${uploadProgress.processed} / ${uploadProgress.total} properties`}
-                {uploadProgress.status === 'complete' && 
-                  `Complete! ${uploadProgress.processed - uploadProgress.errors} properties uploaded successfully.`}
-                {uploadProgress.status === 'error' && 'Upload failed. Please try again.'}
-                {uploadProgress.errors > 0 && ` (${uploadProgress.errors} errors)`}
-              </AlertDescription>
-            </Alert>
+            <div className="space-y-2">
+              <Alert className={uploadProgress.status === 'error' ? 'border-red-500' : uploadProgress.status === 'complete' ? 'border-green-500' : ''}>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {uploadProgress.status === 'uploading' && 'Reading and preparing file...'}
+                  {uploadProgress.status === 'processing' && 
+                    `Processing: ${uploadProgress.processed.toLocaleString()} / ${uploadProgress.total.toLocaleString()} properties`}
+                  {uploadProgress.status === 'complete' && 
+                    `Complete! ${(uploadProgress.processed - uploadProgress.errors).toLocaleString()} properties uploaded successfully.`}
+                  {uploadProgress.status === 'error' && 'Upload failed. Please try again.'}
+                  {uploadProgress.errors > 0 && ` (${uploadProgress.errors.toLocaleString()} errors)`}
+                </AlertDescription>
+              </Alert>
+              
+              {/* Visual Progress Bar */}
+              {(uploadProgress.status === 'processing' || uploadProgress.status === 'uploading') && uploadProgress.total > 0 && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Upload Progress</span>
+                    <span>{Math.round((uploadProgress.processed / uploadProgress.total) * 100)}%</span>
+                  </div>
+                  <Progress 
+                    value={(uploadProgress.processed / uploadProgress.total) * 100} 
+                    className={`h-3 ${uploadProgress.status === 'processing' ? 'animate-pulse' : ''}`}
+                  />
+                  {uploadProgress.status === 'processing' && (
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>
+                        Processing batch {Math.floor(uploadProgress.processed / 50) + 1} of {Math.ceil(uploadProgress.total / 50)}
+                      </span>
+                      {uploadProgress.startTime && uploadProgress.processed > 0 && (
+                        <span>
+                          {(() => {
+                            const elapsed = Date.now() - uploadProgress.startTime;
+                            const rate = uploadProgress.processed / (elapsed / 1000);
+                            const remaining = (uploadProgress.total - uploadProgress.processed) / rate;
+                            const minutes = Math.floor(remaining / 60);
+                            const seconds = Math.floor(remaining % 60);
+                            return remaining > 0 ? `Est. time remaining: ${minutes}m ${seconds}s` : '';
+                          })()}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Success checkmark */}
+              {uploadProgress.status === 'complete' && (
+                <div className="flex items-center gap-2 text-green-600">
+                  <CheckCircle className="h-5 w-5" />
+                  <span className="text-sm font-medium">Upload completed successfully!</span>
+                </div>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
