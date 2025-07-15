@@ -89,16 +89,14 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     // Add hover effects
     const element = marker.getElement();
     element.style.cursor = 'pointer';
-    element.style.transition = 'filter 0.2s ease, box-shadow 0.2s ease';
+    element.style.transition = 'filter 0.2s ease';
     
     element.addEventListener('mouseenter', () => {
       element.style.filter = 'brightness(1.2) saturate(1.3)';
-      element.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
     });
     
     element.addEventListener('mouseleave', () => {
       element.style.filter = 'brightness(1) saturate(1)';
-      element.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
     });
     
     return marker;
@@ -117,7 +115,7 @@ export class PropertyMarkerManager extends BaseMarkerManager {
     const entry = this.propertiesMap.get(propertyId);
     if (entry) {
       const element = entry.marker.getElement();
-      element.style.filter = 'brightness(1.3) saturate(1.5) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4))';
+      element.style.filter = 'brightness(1.3) saturate(1.5)';
       element.style.zIndex = '1000';
     }
   }
@@ -125,9 +123,8 @@ export class PropertyMarkerManager extends BaseMarkerManager {
   unhighlightAll(): void {
     this.propertiesMap.forEach(({ marker }) => {
       const element = marker.getElement();
-      element.style.filter = 'brightness(1) saturate(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))';
+      element.style.filter = 'brightness(1) saturate(1)';
       element.style.zIndex = '1';
-      element.style.backgroundColor = this.color;
     });
   }
 }
