@@ -16,69 +16,80 @@ const PropertyMapSection: React.FC<PropertyMapSectionProps> = ({ property }) => 
   useEffect(() => {
     if (!mapContainer.current || !property.latitude || !property.longitude) return;
 
-    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-    if (!mapboxToken) return;
-
-    mapboxgl.accessToken = mapboxToken;
-
-    // Initialize map
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [property.longitude, property.latitude],
-      zoom: 14,
-      attributionControl: false
-    });
-
-    // Add attribution control in a better position
-    map.current.addControl(new mapboxgl.AttributionControl({
-      compact: true
-    }), 'bottom-right');
-
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    // Add marker
-    const el = document.createElement('div');
-    el.className = 'property-detail-marker';
-    el.style.cssText = `
-      width: 40px;
-      height: 40px;
-      background-color: #EF4444;
-      border: 3px solid white;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    `;
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || "pk.eyJ1Ijoib2RoLTEiLCJhIjoiY21jbDNxZThoMDZwbzJtb3FxeXJjenhndSJ9.lHDryqr2gOUMzjrHRP-MLA";
     
-    const icon = document.createElement('div');
-    icon.innerHTML = '🏠';
-    icon.style.cssText = `
-      font-size: 18px;
-      filter: brightness(0) invert(1);
-    `;
-    el.appendChild(icon);
+    try {
+      mapboxgl.accessToken = mapboxToken;
 
-    marker.current = new mapboxgl.Marker(el)
-      .setLngLat([property.longitude, property.latitude])
-      .addTo(map.current);
+      // Initialize map
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [property.longitude, property.latitude],
+        zoom: 14,
+        attributionControl: false
+      });
 
-    // Add popup
-    const popup = new mapboxgl.Popup({ offset: 25 })
-      .setHTML(`
-        <div style="padding: 8px;">
-          <h3 style="font-weight: bold; margin-bottom: 4px;">${property.name}</h3>
-          <p style="font-size: 14px; color: #666;">
-            ${property.address}<br/>
-            ${property.city}, ${property.state} ${property.zip}
-          </p>
-        </div>
-      `);
-    
-    marker.current.setPopup(popup);
+      // Add attribution control in a better position
+      map.current.addControl(new mapboxgl.AttributionControl({
+        compact: true
+      }), 'bottom-right');
+
+      // Add navigation controls
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      // Add marker
+      const el = document.createElement('div');
+      el.className = 'property-detail-marker';
+      el.style.cssText = `
+        width: 40px;
+        height: 40px;
+        background-color: #EF4444;
+        border: 3px solid white;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+      
+      const icon = document.createElement('div');
+      icon.innerHTML = '🏠';
+      icon.style.cssText = `
+        font-size: 18px;
+        filter: brightness(0) invert(1);
+      `;
+      el.appendChild(icon);
+
+      marker.current = new mapboxgl.Marker(el)
+        .setLngLat([property.longitude, property.latitude])
+        .addTo(map.current);
+
+      // Add popup
+      const popup = new mapboxgl.Popup({ offset: 25 })
+        .setHTML(`
+          <div style="padding: 8px;">
+            <h3 style="font-weight: bold; margin-bottom: 4px;">${property.name}</h3>
+            <p style="font-size: 14px; color: #666;">
+              ${property.address}<br/>
+              ${property.city}, ${property.state} ${property.zip}
+            </p>
+          </div>
+        `);
+      
+      marker.current.setPopup(popup);
+      
+      // Add error handling for the map
+      map.current.on('error', (e) => {
+        console.error('❌ Property map error:', e);
+        // The error is already logged, no need to show toast here
+      });
+
+    } catch (error) {
+      console.error("Error initializing property map:", error);
+      // The error is already logged, no need to show toast here
+    }
 
     // Cleanup
     return () => {
