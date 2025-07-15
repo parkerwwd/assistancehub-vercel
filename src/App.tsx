@@ -31,8 +31,16 @@ const App = () => (
               <Section8 />
             </SearchMapProvider>
           } />
-          <Route path="/pha/:id" element={<PHADetail />} />
-          <Route path="/property/:id" element={<PropertyDetail />} />
+          <Route path="/pha/:id" element={
+            <SearchMapProvider>
+              <PHADetail />
+            </SearchMapProvider>
+          } />
+          <Route path="/property/:id" element={
+            <SearchMapProvider>
+              <PropertyDetail />
+            </SearchMapProvider>
+          } />
           <Route path="/snap" element={<SNAP />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/data-admin" element={
