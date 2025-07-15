@@ -12,7 +12,7 @@ export const usePHAData = () => {
   const [filteredAgencies, setFilteredAgencies] = useState<PHAAgency[]>([]);
   const [phaAgencies, setPHAAgencies] = useState<PHAAgency[]>([]);
   const [filteredLocation, setFilteredLocation] = useState<USLocation | null>(null);
-  const [loading, setLoading] = useState(false); // Changed from true to false
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -75,25 +75,12 @@ export const usePHAData = () => {
     }
   };
 
-  const applyLocationFilter = async (location: USLocation | null) => {
+  const applyLocationFilter = (location: USLocation | null) => {
     setFilteredLocation(location);
     setCurrentPage(1); // Reset to first page when filtering
 
-    if (location) {
-      // Fetch PHAs for this location
-      if (allPHAAgencies.length === 0) {
-        // Need to fetch PHAs first
-        await handleFetchAllPHAData();
-      }
-      // Update displayed agencies with new filter
-      updateDisplayedAgencies(allPHAAgencies, location, 1);
-    } else {
-      // Clear all data when no location
-      setAllPHAAgencies([]);
-      setFilteredAgencies([]);
-      setPHAAgencies([]);
-      setTotalCount(0);
-    }
+    // Update displayed agencies with new filter
+    updateDisplayedAgencies(allPHAAgencies, location, 1);
   };
 
   const clearLocationFilter = () => {
@@ -107,9 +94,8 @@ export const usePHAData = () => {
     updateDisplayedAgencies(allPHAAgencies, filteredLocation, page);
   };
 
-  // Don't fetch on mount - only when a location is selected
   useEffect(() => {
-    // Remove the automatic fetch
+    handleFetchAllPHAData();
   }, []);
 
   // Calculate pagination based on filtered results, not total database count

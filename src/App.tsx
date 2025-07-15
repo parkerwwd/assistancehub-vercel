@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Section8 from "./pages/Section8";
 import PHADetail from "./pages/PHADetail";
-import PropertyDetail from "./pages/PropertyDetail";
 import SNAP from "./pages/SNAP";
 import DataAdmin from "./pages/DataAdmin";
 import Auth from "./pages/Auth";
@@ -32,7 +31,6 @@ const App = () => (
             </SearchMapProvider>
           } />
           <Route path="/pha/:id" element={<PHADetail />} />
-          <Route path="/property/:id" element={<PropertyDetail />} />
           <Route path="/snap" element={<SNAP />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/data-admin" element={

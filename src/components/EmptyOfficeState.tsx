@@ -2,15 +2,15 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { USLocation } from "@/data/usLocations";
 
 interface EmptyOfficeStateProps {
   loading: boolean;
+  onShowAll?: () => void;
   hasFilter?: boolean;
-  filteredLocation?: USLocation | null;
+  filteredLocation?: any;
 }
 
-const EmptyOfficeState = ({ loading, hasFilter, filteredLocation }: EmptyOfficeStateProps) => {
+const EmptyOfficeState = ({ loading, onShowAll, hasFilter, filteredLocation }: EmptyOfficeStateProps) => {
   const getSearchDescription = () => {
     if (!filteredLocation) return "";
     
@@ -32,17 +32,17 @@ const EmptyOfficeState = ({ loading, hasFilter, filteredLocation }: EmptyOfficeS
     if (hasFilter && filteredLocation) {
       switch (filteredLocation.type) {
         case 'state':
-          return `No PHA offices found in ${filteredLocation.name}. Try searching for a different state.`;
+          return `No PHA offices found in ${filteredLocation.name}. Try a different state or view all offices.`;
         case 'city':
-          return `No PHA offices found within 25 miles of ${filteredLocation.name}. Try searching for a different city.`;
+          return `No PHA offices found within 25 miles of ${filteredLocation.name}. Try a different city or view all offices.`;
         case 'county':
-          return `No PHA offices found in ${filteredLocation.name}. Try searching for a different county.`;
+          return `No PHA offices found in ${filteredLocation.name}. Try a different county or view all offices.`;
         default:
-          return "No PHA offices found for the selected location. Try a different search.";
+          return "No PHA offices found for the selected location. Try a different search or view all offices.";
       }
     }
     
-    return "Search for a city, county, or state above to find PHA offices and available housing options in your area.";
+    return "Click on a map marker or search above to view PHA office details and available housing options.";
   };
 
   return (
@@ -62,6 +62,19 @@ const EmptyOfficeState = ({ loading, hasFilter, filteredLocation }: EmptyOfficeS
               </p>
             </div>
           )}
+
+          {/* Show All button when there's a filter but no results */}
+          {!loading && hasFilter && onShowAll && (
+            <div className="mt-4">
+              <Button
+                onClick={onShowAll}
+                variant="outline"
+                className="w-full"
+              >
+                Show All PHA Offices
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -75,32 +88,28 @@ const EmptyOfficeState = ({ loading, hasFilter, filteredLocation }: EmptyOfficeS
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <h4 className="font-medium text-gray-900 mb-3">Emergency Housing</h4>
-                <p className="text-sm text-gray-600">
-                  For immediate housing assistance, contact your local emergency services or shelter hotline.
-                </p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <h4 className="font-medium text-gray-900 mb-3">Housing Resources</h4>
-                <p className="text-sm text-gray-600">
-                  Visit <a href="https://www.hud.gov" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">HUD.gov</a> for comprehensive housing assistance programs.
-                </p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <h4 className="font-medium text-gray-900 mb-3">Local Assistance</h4>
-                <p className="text-sm text-gray-600">
-                  Contact your city or county housing department for region-specific programs and resources.
-                </p>
+            {/* Legend */}
+            <div className="pt-4 border-t border-gray-100">
+              <h4 className="font-medium text-gray-900 mb-3">Waitlist Status</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
+                  <span className="text-gray-700">Open - Accepting applications</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-yellow-500 mr-3"></div>
+                  <span className="text-gray-700">Limited - Partial openings</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-red-500 mr-3"></div>
+                  <span className="text-gray-700">Closed - No current openings</span>
+                </div>
               </div>
             </div>
             
-            <div className="bg-blue-50 p-6 rounded-lg">
-              <p className="text-sm text-gray-700">
-                <strong>Tip:</strong> Contact PHAs directly for the most current housing availability information.
+            <div className="pt-4 border-t border-gray-100">
+              <p className="text-sm text-gray-600 leading-relaxed">
+                <strong>Tip:</strong> Contact PHAs directly for the most current waitlist information and housing availability.
               </p>
             </div>
           </div>

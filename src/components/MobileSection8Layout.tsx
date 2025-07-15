@@ -8,8 +8,6 @@ import HousingListings from "@/components/HousingListings";
 import MapContainer from "@/components/MapContainer";
 import { Database } from "@/integrations/supabase/types";
 import { ChevronUp, ChevronDown, MapPin, List } from "lucide-react";
-import { USLocation } from "@/data/usLocations";
-import { Property } from '@/types/property';
 
 type PHAAgency = Database['public']['Tables']['pha_agencies']['Row'];
 type ViewState = 'overview' | 'pha-detail' | 'housing-listings';
@@ -29,7 +27,7 @@ interface MobileSection8LayoutProps {
   viewState: ViewState;
   detailOffice: PHAAgency | null;
   setSelectedOffice: (office: PHAAgency | null) => void;
-  handleOfficeClick: (office: PHAAgency | Property) => void;
+  handleOfficeClick: (office: PHAAgency) => void;
   handleViewHousing: (office: PHAAgency) => void;
   handleBackToOverview: () => void;
   handleBackToPHADetail: () => void;
@@ -151,6 +149,7 @@ const MobileSection8Layout: React.FC<MobileSection8LayoutProps> = ({
               totalPages={totalPages}
               totalCount={totalCount}
               onPageChange={handlePageChange}
+              onShowAll={clearLocationFilter}
               hasFilter={!!filteredLocation}
               filteredLocation={filteredLocation}
             />
