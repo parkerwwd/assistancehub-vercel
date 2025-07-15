@@ -20,7 +20,16 @@ interface PHAOfficeCardProps {
 
 const PHAOfficeCard: React.FC<PHAOfficeCardProps> = ({ agency, onOfficeClick, isSelected = false }) => {
   const navigate = useNavigate();
-  const { state } = useSearchMap();
+  
+  // Try to get search state, but make it optional
+  let searchLocation = null;
+  try {
+    const { state } = useSearchMap();
+    searchLocation = state.searchLocation;
+  } catch (error) {
+    // Context not available, that's okay
+    console.log('SearchMapContext not available in PHAOfficeCard');
+  }
   
   // Build full address using only the address field since city, state, zip don't exist in current schema
   const fullAddress = agency.address || 'Address not available';
@@ -128,11 +137,11 @@ const PHAOfficeCard: React.FC<PHAOfficeCardProps> = ({ agency, onOfficeClick, is
               e.stopPropagation();
               // Preserve search state in URL
               const searchParams = new URLSearchParams();
-              if (state.searchLocation) {
-                searchParams.set('search', state.searchLocation.name);
-                searchParams.set('type', state.searchLocation.type);
-                if (state.searchLocation.stateCode) {
-                  searchParams.set('state', state.searchLocation.stateCode);
+              if (searchLocation) {
+                searchParams.set('search', searchLocation.name);
+                searchParams.set('type', searchLocation.type);
+                if (searchLocation.stateCode) {
+                  searchParams.set('state', searchLocation.stateCode);
                 }
               }
               const queryString = searchParams.toString();

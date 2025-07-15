@@ -15,12 +15,23 @@ interface PropertyCardProps {
 
 export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropertyClick, isSelected = false }) => {
   const navigate = useNavigate();
-  const { state } = useSearchMap();
+  
+  // Try to get search state, but make it optional
+  let searchLocation = null;
+  try {
+    const { state } = useSearchMap();
+    searchLocation = state.searchLocation;
+  } catch (error) {
+    // Context not available, that's okay
+    console.log('SearchMapContext not available in PropertyCard');
+  }
   
   console.log('🏠 PropertyCard render:', {
     propertyId: property.id,
     propertyName: property.name,
-    isSelected
+    isSelected,
+    hasPhone: !!property.phone,
+    hasWebsite: !!property.website
   });
 
   const handleClick = () => {
@@ -34,19 +45,19 @@ export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropert
     e.stopPropagation();
     // Preserve search state in URL
     const searchParams = new URLSearchParams();
-    if (state.searchLocation) {
-      searchParams.set('search', state.searchLocation.name);
-      searchParams.set('type', state.searchLocation.type);
-      if (state.searchLocation.stateCode) {
-        searchParams.set('state', state.searchLocation.stateCode);
+    if (searchLocation) {
+      searchParams.set('search', searchLocation.name);
+      searchParams.set('type', searchLocation.type);
+      if (searchLocation.stateCode) {
+        searchParams.set('state', searchLocation.stateCode);
       }
     }
     const queryString = searchParams.toString();
     navigate(`/property/${property.id}${queryString ? `?${queryString}` : ''}`);
   };
 
-  const getPropertyTypeBadge = (type: string | null) => {
-    switch (type) {
+  const getPropertyTypeBadge = () => {
+    switch (property.property_type) {
       case PropertyType.TAX_CREDIT:
         return <Badge className="bg-green-500 text-white">Tax Credit</Badge>;
       case PropertyType.SECTION_8:
@@ -82,7 +93,7 @@ export const PropertyCard = React.memo<PropertyCardProps>(({ property, onPropert
             <Home className="h-5 w-5 text-red-600" />
             {property.name}
           </h3>
-          {getPropertyTypeBadge(property.property_type)}
+          {getPropertyTypeBadge()}
         </div>
         
         {/* Address */}
