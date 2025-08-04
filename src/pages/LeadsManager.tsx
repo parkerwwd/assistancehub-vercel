@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Filter, Mail, Phone, Calendar, MapPin, ExternalLink, Search, Database, Megaphone } from 'lucide-react';
+import { Download, Filter, Mail, Phone, Calendar, MapPin, ExternalLink, Search, Database, Megaphone, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
