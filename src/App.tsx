@@ -15,6 +15,8 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SearchMapProvider } from "./contexts/SearchMapContext";
+import LeadFlowPage from "./pages/LeadFlow";
+import FlowBuilder from "./pages/FlowBuilder";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +51,12 @@ const App = () => (
             </ProtectedRoute>
           } />
           <Route path="/about" element={<About />} />
+          <Route path="/flow/:slug" element={<LeadFlowPage />} />
+          <Route path="/admin/flows" element={
+            <ProtectedRoute>
+              <FlowBuilder />
+            </ProtectedRoute>
+          } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
