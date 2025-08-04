@@ -149,6 +149,19 @@ export default function FlowSettings({ flow, onUpdate }: FlowSettingsProps) {
                 placeholder="https://example.com/logo.png"
               />
             </div>
+            
+            <div>
+              <Label htmlFor="heroImageUrl">Hero Image URL</Label>
+              <Input
+                id="heroImageUrl"
+                value={flow.style_config?.heroImageUrl || ''}
+                onChange={(e) => updateStyleConfig('heroImageUrl', e.target.value)}
+                placeholder="https://example.com/hero-image.jpg"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                Displayed prominently at the top of your flow
+              </p>
+            </div>
 
             <div>
               <Label htmlFor="backgroundImageUrl">Background Image URL</Label>

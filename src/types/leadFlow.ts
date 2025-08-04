@@ -85,6 +85,7 @@ export interface StyleConfig {
   buttonStyle?: 'rounded' | 'square' | 'pill';
   layout?: 'centered' | 'split' | 'full';
   logoUrl?: string;
+  heroImageUrl?: string;
   backgroundImageUrl?: string;
 }
 

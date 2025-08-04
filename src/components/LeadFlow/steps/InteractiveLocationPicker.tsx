@@ -77,24 +77,26 @@ export default function InteractiveLocationPicker({
 
   return (
     <div className="space-y-6">
-      {/* Enhanced title */}
-      <div className="text-center space-y-4">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", duration: 0.5 }}
-          className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4"
-        >
-          <MapPin className="w-8 h-8 text-primary" />
-        </motion.div>
-        
-        <h1 className="text-4xl font-bold text-gray-900">
-          Where are you looking for housing?
-        </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          We'll instantly show you available Section 8 properties and housing authorities in your area
-        </p>
-      </div>
+      {/* Enhanced title - only show if step doesn't have its own title */}
+      {!step.title && (
+        <div className="text-center space-y-4">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", duration: 0.5 }}
+            className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4"
+          >
+            <MapPin className="w-8 h-8 text-primary" />
+          </motion.div>
+          
+          <h1 className="text-4xl font-bold text-gray-900">
+            Where are you looking for housing?
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            We'll instantly show you available Section 8 properties and housing authorities in your area
+          </p>
+        </div>
+      )}
 
       {/* ZIP code input with visual feedback */}
       <div className="max-w-md mx-auto">

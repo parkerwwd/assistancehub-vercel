@@ -36,7 +36,12 @@ export default function FlowRenderer() {
       setSession(newSession);
       
       // Track flow view
-      trackFlowView(flow.id);
+      trackFlowView(flow.id, flow.status);
+      
+      // Show preview banner for non-active flows
+      if (flow.status !== 'active') {
+        console.log('🔍 Previewing', flow.status, 'flow:', flow.name);
+      }
     }
   }, [flow, searchParams]);
 
@@ -60,7 +65,6 @@ export default function FlowRenderer() {
           )
         `)
         .eq('slug', slug)
-        .eq('status', 'active')
         .single();
 
       if (flowError) throw flowError;
@@ -85,9 +89,12 @@ export default function FlowRenderer() {
     }
   };
 
-  const trackFlowView = async (flowId: string) => {
+  const trackFlowView = async (flowId: string, status: string) => {
     try {
-      await supabase.rpc('increment_flow_views', { flow_slug: slug });
+      // Only track views for active flows
+      if (status === 'active') {
+        await supabase.rpc('increment_flow_views', { flow_slug: slug });
+      }
     } catch (error) {
       console.error('Error tracking flow view:', error);
     }
@@ -269,6 +276,13 @@ export default function FlowRenderer() {
         fontFamily: styleConfig.fontFamily || 'inherit',
       }}
     >
+      {/* Preview Banner for non-active flows */}
+      {flow.status !== 'active' && (
+        <div className="bg-yellow-500 text-yellow-900 py-2 px-4 text-center text-sm font-medium">
+          🔍 Preview Mode - This flow is {flow.status} and not visible to the public
+        </div>
+      )}
+      
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header with logo */}
         {styleConfig.logoUrl && (
@@ -277,6 +291,17 @@ export default function FlowRenderer() {
               src={styleConfig.logoUrl} 
               alt="Logo" 
               className="h-12 mx-auto"
+            />
+          </div>
+        )}
+        
+        {/* Hero Image */}
+        {styleConfig.heroImageUrl && (
+          <div className="mb-8">
+            <img 
+              src={styleConfig.heroImageUrl} 
+              alt="" 
+              className="w-full max-w-2xl mx-auto rounded-lg shadow-lg"
             />
           </div>
         )}
