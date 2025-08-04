@@ -229,6 +229,374 @@ export type Database = {
           }
         ]
       }
+      flows: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          description: string | null
+          status: 'draft' | 'active' | 'paused' | 'archived'
+          style_config: Json | null
+          google_ads_config: Json | null
+          metadata: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          description?: string | null
+          status?: 'draft' | 'active' | 'paused' | 'archived'
+          style_config?: Json | null
+          google_ads_config?: Json | null
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          description?: string | null
+          status?: 'draft' | 'active' | 'paused' | 'archived'
+          style_config?: Json | null
+          google_ads_config?: Json | null
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      flow_steps: {
+        Row: {
+          id: string
+          flow_id: string
+          step_order: number
+          step_type: 'form' | 'content' | 'quiz' | 'survey' | 'conditional' | 'thank_you'
+          title: string
+          subtitle: string | null
+          content: string | null
+          button_text: string | null
+          button_back_text: string | null
+          is_required: boolean
+          navigation_logic: Json | null
+          redirect_url: string | null
+          redirect_delay: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          flow_id: string
+          step_order: number
+          step_type: 'form' | 'content' | 'quiz' | 'survey' | 'conditional' | 'thank_you'
+          title: string
+          subtitle?: string | null
+          content?: string | null
+          button_text?: string | null
+          button_back_text?: string | null
+          is_required?: boolean
+          navigation_logic?: Json | null
+          redirect_url?: string | null
+          redirect_delay?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          flow_id?: string
+          step_order?: number
+          step_type?: 'form' | 'content' | 'quiz' | 'survey' | 'conditional' | 'thank_you'
+          title?: string
+          subtitle?: string | null
+          content?: string | null
+          button_text?: string | null
+          button_back_text?: string | null
+          is_required?: boolean
+          navigation_logic?: Json | null
+          redirect_url?: string | null
+          redirect_delay?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flow_steps_flow_id_fkey"
+            columns: ["flow_id"]
+            referencedRelation: "flows"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      flow_fields: {
+        Row: {
+          id: string
+          step_id: string
+          field_order: number
+          field_type: 'text' | 'email' | 'phone' | 'select' | 'radio' | 'checkbox' | 'textarea' | 'date' | 'number' | 'zip' | 'hidden'
+          field_name: string
+          label: string
+          placeholder: string | null
+          help_text: string | null
+          is_required: boolean
+          validation_rules: Json | null
+          options: Json | null
+          conditional_logic: Json | null
+          default_value: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          step_id: string
+          field_order: number
+          field_type: 'text' | 'email' | 'phone' | 'select' | 'radio' | 'checkbox' | 'textarea' | 'date' | 'number' | 'zip' | 'hidden'
+          field_name: string
+          label: string
+          placeholder?: string | null
+          help_text?: string | null
+          is_required?: boolean
+          validation_rules?: Json | null
+          options?: Json | null
+          conditional_logic?: Json | null
+          default_value?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          step_id?: string
+          field_order?: number
+          field_type?: 'text' | 'email' | 'phone' | 'select' | 'radio' | 'checkbox' | 'textarea' | 'date' | 'number' | 'zip' | 'hidden'
+          field_name?: string
+          label?: string
+          placeholder?: string | null
+          help_text?: string | null
+          is_required?: boolean
+          validation_rules?: Json | null
+          options?: Json | null
+          conditional_logic?: Json | null
+          default_value?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flow_fields_step_id_fkey"
+            columns: ["step_id"]
+            referencedRelation: "flow_steps"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      leads: {
+        Row: {
+          id: string
+          flow_id: string
+          email: string | null
+          phone: string | null
+          status: string
+          source: string | null
+          utm_source: string | null
+          utm_medium: string | null
+          utm_campaign: string | null
+          utm_term: string | null
+          utm_content: string | null
+          gclid: string | null
+          ip_address: unknown | null
+          user_agent: string | null
+          referrer: string | null
+          metadata: Json | null
+          score: number | null
+          tags: string[] | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          flow_id: string
+          email?: string | null
+          phone?: string | null
+          status?: string
+          source?: string | null
+          utm_source?: string | null
+          utm_medium?: string | null
+          utm_campaign?: string | null
+          utm_term?: string | null
+          utm_content?: string | null
+          gclid?: string | null
+          ip_address?: unknown | null
+          user_agent?: string | null
+          referrer?: string | null
+          metadata?: Json | null
+          score?: number | null
+          tags?: string[] | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          flow_id?: string
+          email?: string | null
+          phone?: string | null
+          status?: string
+          source?: string | null
+          utm_source?: string | null
+          utm_medium?: string | null
+          utm_campaign?: string | null
+          utm_term?: string | null
+          utm_content?: string | null
+          gclid?: string | null
+          ip_address?: unknown | null
+          user_agent?: string | null
+          referrer?: string | null
+          metadata?: Json | null
+          score?: number | null
+          tags?: string[] | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_flow_id_fkey"
+            columns: ["flow_id"]
+            referencedRelation: "flows"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      lead_responses: {
+        Row: {
+          id: string
+          lead_id: string
+          step_id: string
+          field_name: string
+          field_value: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          step_id: string
+          field_name: string
+          field_value?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          step_id?: string
+          field_name?: string
+          field_value?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_responses_lead_id_fkey"
+            columns: ["lead_id"]
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_responses_step_id_fkey"
+            columns: ["step_id"]
+            referencedRelation: "flow_steps"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      flow_analytics: {
+        Row: {
+          id: string
+          flow_id: string
+          date: string
+          views: number
+          starts: number
+          completions: number
+          unique_visitors: number
+          avg_time_seconds: number | null
+          bounce_rate: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          flow_id: string
+          date: string
+          views?: number
+          starts?: number
+          completions?: number
+          unique_visitors?: number
+          avg_time_seconds?: number | null
+          bounce_rate?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          flow_id?: string
+          date?: string
+          views?: number
+          starts?: number
+          completions?: number
+          unique_visitors?: number
+          avg_time_seconds?: number | null
+          bounce_rate?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flow_analytics_flow_id_fkey"
+            columns: ["flow_id"]
+            referencedRelation: "flows"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      flow_templates: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          description: string | null
+          category: string | null
+          thumbnail_url: string | null
+          template_data: Json
+          is_active: boolean
+          usage_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          description?: string | null
+          category?: string | null
+          thumbnail_url?: string | null
+          template_data: Json
+          is_active?: boolean
+          usage_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          description?: string | null
+          category?: string | null
+          thumbnail_url?: string | null
+          template_data?: Json
+          is_active?: boolean
+          usage_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

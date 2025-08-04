@@ -191,6 +191,39 @@ export default function StepEditor({
               </div>
             )}
 
+            {/* Redirect configuration for thank you steps */}
+            {step.step_type === StepType.THANK_YOU && (
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-sm">Redirect Configuration (Optional)</h4>
+                <div>
+                  <Label htmlFor={`redirect-url-${index}`}>Redirect URL</Label>
+                  <Input
+                    id={`redirect-url-${index}`}
+                    value={step.redirect_url || ''}
+                    onChange={(e) => onUpdate({ redirect_url: e.target.value })}
+                    placeholder="e.g., /section8 or https://example.com/guide"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty to show default action buttons. Use internal paths (e.g., /section8) or full URLs.
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor={`redirect-delay-${index}`}>Redirect Delay (seconds)</Label>
+                  <Input
+                    id={`redirect-delay-${index}`}
+                    type="number"
+                    min="0"
+                    max="30"
+                    value={step.redirect_delay || 3}
+                    onChange={(e) => onUpdate({ redirect_delay: parseInt(e.target.value) || 3 })}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    How long to wait before redirecting (default: 3 seconds)
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Required toggle */}
             <div className="flex items-center justify-between">
               <Label htmlFor={`required-${index}`}>Required Step</Label>

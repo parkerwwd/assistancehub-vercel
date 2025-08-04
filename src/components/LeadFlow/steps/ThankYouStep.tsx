@@ -16,6 +16,7 @@ interface ThankYouStepProps {
 export default function ThankYouStep({ step, responses, styleConfig }: ThankYouStepProps) {
   const navigate = useNavigate();
   const [showResults, setShowResults] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
 
   useEffect(() => {
     // Trigger confetti animation
@@ -27,7 +28,34 @@ export default function ThankYouStep({ step, responses, styleConfig }: ThankYouS
 
     // Show results after a delay
     setTimeout(() => setShowResults(true), 1000);
-  }, []);
+
+    // Handle redirect if configured
+    if (step.redirect_url) {
+      const delay = step.redirect_delay || 3;
+      setRedirectCountdown(delay);
+      
+      const countdownInterval = setInterval(() => {
+        setRedirectCountdown((prev) => {
+          if (prev === null || prev <= 1) {
+            clearInterval(countdownInterval);
+            // Check if it's an internal or external URL
+            if (step.redirect_url!.startsWith('/')) {
+              navigate(step.redirect_url!);
+            } else if (step.redirect_url!.startsWith('http')) {
+              window.location.href = step.redirect_url!;
+            } else {
+              // Assume it's an internal route without leading slash
+              navigate(`/${step.redirect_url}`);
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(countdownInterval);
+    }
+  }, [step.redirect_url, step.redirect_delay, navigate]);
 
   const handleViewListings = () => {
     // Navigate to search with pre-filled location
@@ -151,6 +179,21 @@ export default function ThankYouStep({ step, responses, styleConfig }: ThankYouS
               </div>
             )}
           </div>
+        </motion.div>
+      )}
+
+      {/* Redirect countdown */}
+      {redirectCountdown !== null && redirectCountdown > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <p className="text-lg text-gray-600">
+            Redirecting to your free guide in{' '}
+            <span className="font-bold text-primary">{redirectCountdown}</span>{' '}
+            seconds...
+          </p>
         </motion.div>
       )}
 
