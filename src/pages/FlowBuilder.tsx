@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Eye, Copy, BarChart, Settings, Database, Users, Megaphone } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Copy, BarChart, Settings, Database, Users, Megaphone, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -178,6 +178,24 @@ export default function FlowBuilder() {
     }
   };
 
+  const handleCopyUrl = async (slug: string) => {
+    const url = `${window.location.origin}/flow/${slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Success",
+        description: "Flow URL copied to clipboard!",
+      });
+    } catch (error) {
+      console.error('Error copying URL:', error);
+      toast({
+        title: "Error",
+        description: "Could not copy URL. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStatusColor = (status: FlowStatus) => {
     switch (status) {
       case FlowStatus.ACTIVE:
@@ -343,6 +361,10 @@ export default function FlowBuilder() {
                             <DropdownMenuItem onClick={() => window.open(`/flow/${flow.slug}`, '_blank')}>
                               <Eye className="w-4 h-4 mr-2" />
                               Preview
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleCopyUrl(flow.slug)}>
+                              <Link className="w-4 h-4 mr-2" />
+                              Copy URL
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEditFlow(flow.id)}>
                               <Edit className="w-4 h-4 mr-2" />

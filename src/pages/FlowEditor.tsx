@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Plus, Trash2, GripVertical, Save, Eye, ArrowLeft, Settings, Copy } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Save, Eye, ArrowLeft, Settings, Copy, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -93,6 +93,24 @@ export default function FlowEditor() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyUrl = async () => {
+    const url = `${window.location.origin}/flow/${flow.slug}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Success",
+        description: "Flow URL copied to clipboard!",
+      });
+    } catch (error) {
+      console.error('Error copying URL:', error);
+      toast({
+        title: "Error",
+        description: "Could not copy URL. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -336,14 +354,25 @@ export default function FlowEditor() {
           
           <div className="flex items-center gap-2">
             {!isNew && (
-              <Button
-                variant="outline"
-                onClick={() => window.open(`/flow/${flow.slug}`, '_blank')}
-                className="flex items-center gap-2"
-              >
-                <Eye className="w-4 h-4" />
-                Preview
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  onClick={handleCopyUrl}
+                  className="flex items-center gap-2"
+                  disabled={!flow.slug}
+                >
+                  <Link className="w-4 h-4" />
+                  Copy URL
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => window.open(`/flow/${flow.slug}`, '_blank')}
+                  className="flex items-center gap-2"
+                >
+                  <Eye className="w-4 h-4" />
+                  Preview
+                </Button>
+              </>
             )}
             <Button
               onClick={handleSave}
