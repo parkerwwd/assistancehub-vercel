@@ -5,7 +5,7 @@ import PHADataManager from "@/components/PHADataManager";
 import PropertyDataManager from "@/components/PropertyDataManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Database, FileText, Users, Activity, LogOut, TrendingUp, Shield, Zap, MapPin, Home } from "lucide-react";
+import { Database, FileText, Users, Activity, LogOut, TrendingUp, Shield, Zap, MapPin, Home, Megaphone } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useDataAdminStats } from "@/hooks/useDataAdminStats";
@@ -133,6 +133,34 @@ const DataAdmin = () => {
             Comprehensive data management platform for all assistance programs. 
             Monitor data quality, track import statistics, and maintain database integrity with enterprise-grade tools.
           </p>
+        </div>
+
+        {/* Admin Navigation Tabs */}
+        <div className="flex flex-wrap gap-2 mb-8 justify-center">
+          <Button
+            variant="default"
+            className="flex items-center gap-2"
+            disabled
+          >
+            <Database className="w-4 h-4" />
+            Data Import
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/admin/flows')}
+            className="flex items-center gap-2"
+          >
+            <Megaphone className="w-4 h-4" />
+            Lead Flows
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/admin/leads')}
+            className="flex items-center gap-2"
+          >
+            <Users className="w-4 h-4" />
+            Leads
+          </Button>
         </div>
 
         {/* Mobile-optimized Overview Cards */}

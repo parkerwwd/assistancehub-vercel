@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Eye, Copy, BarChart, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Copy, BarChart, Settings, Database, Users, Megaphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -54,7 +54,7 @@ export default function FlowBuilder() {
   };
 
   const handleCreateFlow = () => {
-    navigate('/admin/flows/new');
+    navigate('/admin/flows/new/edit');
   };
 
   const handleEditFlow = (flowId: string) => {
@@ -209,6 +209,34 @@ export default function FlowBuilder() {
           </Button>
         </div>
 
+        {/* Admin Navigation Tabs */}
+        <div className="flex flex-wrap gap-2 mb-8 justify-center">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/data-admin')}
+            className="flex items-center gap-2"
+          >
+            <Database className="w-4 h-4" />
+            Data Import
+          </Button>
+          <Button
+            variant="default"
+            className="flex items-center gap-2"
+            disabled
+          >
+            <Megaphone className="w-4 h-4" />
+            Lead Flows
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/admin/leads')}
+            className="flex items-center gap-2"
+          >
+            <Users className="w-4 h-4" />
+            Leads
+          </Button>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
@@ -320,10 +348,10 @@ export default function FlowBuilder() {
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => navigate(`/admin/flows/${flow.id}/analytics`)}>
-                              <BarChart className="w-4 h-4 mr-2" />
-                              Analytics
-                            </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => navigate(`/admin/leads?flow=${flow.id}`)}>
+              <BarChart className="w-4 h-4 mr-2" />
+              View Leads
+            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDuplicateFlow(flow)}>
                               <Copy className="w-4 h-4 mr-2" />
                               Duplicate
