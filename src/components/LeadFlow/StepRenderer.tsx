@@ -137,8 +137,10 @@ export default function StepRenderer({
 
       {/* Navigation buttons */}
       {showNavigationButtons && (
-        <div className="flex justify-between items-center mt-8">
-          {onBack ? (
+        <div className={`mt-8 max-w-md mx-auto ${
+          onBack ? 'flex justify-between items-center' : 'text-center'
+        }`}>
+          {onBack && (
             <Button
               type="button"
               variant="outline"
@@ -148,14 +150,16 @@ export default function StepRenderer({
               <ChevronLeft className="w-4 h-4" />
               Back
             </Button>
-          ) : (
-            <div />
           )}
 
           <Button
             onClick={handleSubmit}
             disabled={!isFormValid() || isSubmitting}
-            className="flex items-center gap-2"
+            className={`flex items-center gap-2 font-bold text-lg py-6 px-8 ${
+              onBack ? 'min-w-[150px]' : 'min-w-[250px] mx-auto'
+            } ${
+              styleConfig?.primaryColor === '#FFD700' ? 'text-black border-2 border-black hover:shadow-lg' : ''
+            }`}
             style={{
               backgroundColor: styleConfig?.primaryColor || undefined,
             }}

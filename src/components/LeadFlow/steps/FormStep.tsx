@@ -228,14 +228,13 @@ export default function FormStep({ step, onChange, values, existingValues }: For
     <div className="space-y-6">
       {step.content && (
         <div 
-          className="prose prose-gray max-w-none"
+          className="prose prose-gray max-w-none text-center mx-auto"
           dangerouslySetInnerHTML={{ __html: step.content }}
         />
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-4 max-w-md mx-auto">
         {step.fields?.map((field, index) => renderField(field, index))}
-      </div>
 
       {/* Progressive disclosure hint */}
       {step.fields?.length === 1 && (

@@ -1,0 +1,68 @@
+/* Custom styles for lead flows */
+
+/* Centered form layout */
+.lead-flow-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Make submit button larger and more prominent */
+.lead-flow-submit {
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding: 1rem 2rem;
+  min-height: 60px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.lead-flow-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Yellow button style (competitor style) */
+.lead-flow-submit.yellow {
+  background-color: #FFD700 !important;
+  color: #000000 !important;
+  border: 2px solid #000000;
+}
+
+.lead-flow-submit.yellow:hover {
+  background-color: #FFC700 !important;
+}
+
+/* Form field styling */
+.lead-flow-field {
+  border: 3px solid #000000;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1.1rem;
+  background-color: #FFFEF5;
+}
+
+.lead-flow-field:focus {
+  outline: none;
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+}
+
+/* Center all form elements */
+.lead-flow-container {
+  text-align: center;
+}
+
+.lead-flow-container .form-group {
+  margin: 0 auto;
+  max-width: 500px;
+}
+
+/* Hero image styling */
+.lead-flow-hero {
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

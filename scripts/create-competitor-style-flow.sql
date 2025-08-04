@@ -16,6 +16,7 @@ INSERT INTO public.flows (
   'active', -- Change to 'draft' if you want to preview first
   '{
     "primaryColor": "#FFD700",
+    "secondaryColor": "#FFA500",
     "backgroundColor": "#FFFFFF",
     "buttonStyle": "rounded",
     "layout": "centered",

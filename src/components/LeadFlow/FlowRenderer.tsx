@@ -314,7 +314,7 @@ export default function FlowRenderer() {
         />
 
         {/* Main content */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mt-8">
+        <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 mt-8 max-w-3xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={session.currentStep}
