@@ -235,6 +235,7 @@ export default function FormStep({ step, onChange, values, existingValues }: For
 
       <div className="space-y-4 max-w-md mx-auto">
         {step.fields?.map((field, index) => renderField(field, index))}
+      </div>
 
       {/* Progressive disclosure hint */}
       {step.fields?.length === 1 && (
