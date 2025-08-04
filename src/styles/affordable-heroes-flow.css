@@ -1,0 +1,191 @@
+/* Affordable Housing Heroes Flow Styling */
+
+/* Hero section with background image */
+.flow-renderer[data-slug="housing-application-guide"] {
+  position: relative;
+}
+
+/* Hero background image overlay */
+.flow-renderer[data-slug="housing-application-guide"] > div:first-child {
+  position: relative;
+}
+
+.flow-renderer[data-slug="housing-application-guide"] > div:first-child::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 600px;
+  background-image: url('https://example.com/aerial-housing-view.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1;
+}
+
+/* Hero overlay gradient */
+.flow-renderer[data-slug="housing-application-guide"] > div:first-child::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 600px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+  z-index: -1;
+}
+
+/* Form container styling */
+.flow-renderer[data-slug="housing-application-guide"] .max-w-md {
+  max-width: 600px !important;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2.5rem !important;
+  border-radius: 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
+  margin-top: 2rem;
+}
+
+/* Title styling */
+.flow-renderer[data-slug="housing-application-guide"] h1 {
+  color: #1F2937 !important;
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Subtitle styling */
+.flow-renderer[data-slug="housing-application-guide"] .text-xl {
+  color: #4B5563 !important;
+  font-size: 1.25rem !important;
+  text-align: center !important;
+  line-height: 1.5 !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Hero tagline */
+.flow-renderer[data-slug="housing-application-guide"] .hero-tagline {
+  text-align: center;
+  color: #6B7280;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+/* Form fields container - 2x2 grid */
+.flow-renderer[data-slug="housing-application-guide"] form > div:first-child {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 1rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Hide labels */
+.flow-renderer[data-slug="housing-application-guide"] label {
+  display: none !important;
+}
+
+/* Input field styling */
+.flow-renderer[data-slug="housing-application-guide"] input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  background-color: #FFFFFF;
+  transition: all 0.2s ease;
+}
+
+.flow-renderer[data-slug="housing-application-guide"] input:focus {
+  outline: none;
+  border-color: #00B8A9;
+  box-shadow: 0 0 0 3px rgba(0, 184, 169, 0.1);
+}
+
+/* Button styling */
+.flow-renderer[data-slug="housing-application-guide"] button[type="submit"] {
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  background-color: #00B8A9 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 15px rgba(0, 184, 169, 0.3);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  margin-top: 1rem;
+}
+
+.flow-renderer[data-slug="housing-application-guide"] button[type="submit"]:hover {
+  background-color: #00A99D !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 184, 169, 0.4);
+}
+
+/* Security badge styling */
+.flow-renderer[data-slug="housing-application-guide"] form::after {
+  content: '🔒 100% Secure and SPAM Free';
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
+  color: #00B8A9;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+/* Legal text styling */
+.flow-renderer[data-slug="housing-application-guide"] .content-sections {
+  margin-top: 2rem;
+}
+
+/* Steps section styling */
+.flow-renderer[data-slug="housing-application-guide"] .steps-section {
+  margin-top: -50px;
+}
+
+/* Step card hover effect */
+.flow-renderer[data-slug="housing-application-guide"] .step-card:not(.highlighted) {
+  transition: all 0.3s ease;
+}
+
+.flow-renderer[data-slug="housing-application-guide"] .step-card:not(.highlighted):hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Benefits section */
+.flow-renderer[data-slug="housing-application-guide"] .benefits-section {
+  margin-top: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .flow-renderer[data-slug="housing-application-guide"] form > div:first-child {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .flow-renderer[data-slug="housing-application-guide"] .steps-container {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .flow-renderer[data-slug="housing-application-guide"] .benefits-section > div > div {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Legal disclaimer styling */
+.flow-renderer[data-slug="housing-application-guide"] .legal-text {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  text-align: center;
+  margin-top: 1.5rem;
+  line-height: 1.4;
+  padding: 0 1rem;
+}

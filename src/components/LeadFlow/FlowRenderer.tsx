@@ -9,6 +9,7 @@ import FlowProgress from './FlowProgress';
 import { Shield, Lock } from 'lucide-react';
 import '@/styles/lead-flow-custom.css';
 import '@/styles/section8-form.css';
+import '@/styles/affordable-heroes-flow.css';
 
 export default function FlowRenderer() {
   const { slug } = useParams<{ slug: string }>();
