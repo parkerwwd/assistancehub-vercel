@@ -15,8 +15,8 @@ INSERT INTO public.flows (
   'Single-page lead capture form similar to competitor style',
   'active', -- Change to 'draft' if you want to preview first
   '{
-    "primaryColor": "#FFD700",
-    "secondaryColor": "#FFA500",
+    "primaryColor": "#60A5FA",
+    "secondaryColor": "#3B82F6",
     "backgroundColor": "#FFFFFF",
     "buttonStyle": "rounded",
     "layout": "centered",
@@ -53,10 +53,10 @@ BEGIN
     'form',
     'Get Into Section 8 Housing Fast With Our Easy & FREE Tool',
     'Just Enter Your E-Mail To Search Listings And to Receive Daily Waiting List Updates and Announcements*',
-    '<div style="margin-top: 2rem; padding: 1.5rem; background-color: #FFD700; border-radius: 0.5rem;">
-      <p style="font-weight: 600; margin-bottom: 1rem;">Discover FREE Section 8 housing listings and information near you today!</p>
-      <p>Whether you''re looking to join a public housing waiting list or explore affordable housing options, we''ve got you covered. Our comprehensive resources make it easy to find the best Section 8 opportunities in your area, helping you secure the housing you need without the hassle.</p>
-      <p style="margin-top: 1rem; font-weight: 600;">Start your search now and take the first step toward finding your new home.</p>
+    '<div style="margin-top: 2rem; padding: 1.5rem; background-color: #DBEAFE; border-radius: 0.5rem;">
+      <p style="font-weight: 600; margin-bottom: 1rem; color: #1E40AF;">Discover FREE Section 8 housing listings and information near you today!</p>
+      <p style="color: #1E40AF;">Whether you''re looking to join a public housing waiting list or explore affordable housing options, we''ve got you covered. Our comprehensive resources make it easy to find the best Section 8 opportunities in your area, helping you secure the housing you need without the hassle.</p>
+      <p style="margin-top: 1rem; font-weight: 600; color: #1E40AF;">Start your search now and take the first step toward finding your new home.</p>
     </div>',
     'START NOW →',
     true
@@ -176,6 +176,12 @@ END $$;
 -- 2. Replace the logoUrl with your actual logo URL
 -- 3. Update the Google Ads configuration with your actual IDs
 -- 4. Access the flow at: /flow/section8-housing-search
+
+-- Color Scheme:
+-- Primary: #60A5FA (Light Blue 400)
+-- Secondary: #3B82F6 (Blue 500) 
+-- Background: #DBEAFE (Blue 100)
+-- Text: #1E40AF (Blue 800)
 
 -- Tips for hero images:
 -- - Recommended size: 1200x600px

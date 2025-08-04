@@ -157,9 +157,7 @@ export default function StepRenderer({
             disabled={!isFormValid() || isSubmitting}
             className={`flex items-center gap-2 font-bold text-lg py-6 px-8 ${
               onBack ? 'min-w-[150px]' : 'min-w-[250px] mx-auto'
-            } ${
-              styleConfig?.primaryColor === '#FFD700' ? 'text-black border-2 border-black hover:shadow-lg' : ''
-            }`}
+            } hover:shadow-lg transition-all`}
             style={{
               backgroundColor: styleConfig?.primaryColor || undefined,
             }}
