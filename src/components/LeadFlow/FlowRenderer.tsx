@@ -7,6 +7,8 @@ import { toast } from '@/components/ui/use-toast';
 import StepRenderer from './StepRenderer';
 import FlowProgress from './FlowProgress';
 import { Shield, Lock } from 'lucide-react';
+import '@/styles/lead-flow-custom.css';
+import '@/styles/section8-form.css';
 
 export default function FlowRenderer() {
   const { slug } = useParams<{ slug: string }>();
@@ -270,7 +272,8 @@ export default function FlowRenderer() {
 
   return (
     <div 
-      className="min-h-screen"
+      className="min-h-screen flow-renderer"
+      data-slug={flow.slug}
       style={{
         backgroundColor: styleConfig.backgroundColor || '#f8fafc',
         fontFamily: styleConfig.fontFamily || 'inherit',

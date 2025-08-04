@@ -1,0 +1,105 @@
+/* Section 8 Form Styling - Matches Screenshot Design */
+
+/* Container styling for Section 8 forms */
+.flow-renderer[data-slug="section8-search-tool"] .max-w-md,
+.flow-renderer[data-slug="section8-housing-search"] .max-w-md {
+  max-width: 600px !important;
+}
+
+/* Input field styling to match screenshot */
+.flow-renderer[data-slug="section8-search-tool"] input,
+.flow-renderer[data-slug="section8-housing-search"] input,
+.flow-renderer[data-slug="section8-search-tool"] textarea,
+.flow-renderer[data-slug="section8-housing-search"] textarea {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  font-size: 1.125rem;
+  border: 3px solid #000000;
+  border-radius: 0.5rem;
+  background-color: #FFFFFF;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
+}
+
+/* Remove labels - using placeholders instead */
+.flow-renderer[data-slug="section8-search-tool"] label,
+.flow-renderer[data-slug="section8-housing-search"] label {
+  display: none;
+}
+
+/* Focus state with light blue */
+.flow-renderer[data-slug="section8-search-tool"] input:focus,
+.flow-renderer[data-slug="section8-housing-search"] input:focus,
+.flow-renderer[data-slug="section8-search-tool"] textarea:focus,
+.flow-renderer[data-slug="section8-housing-search"] textarea:focus {
+  outline: none;
+  border-color: #60A5FA;
+  box-shadow: 4px 4px 0 #3B82F6;
+}
+
+/* Button styling - Light Blue theme */
+.flow-renderer[data-slug="section8-search-tool"] button[type="submit"],
+.flow-renderer[data-slug="section8-housing-search"] button[type="submit"] {
+  width: 100%;
+  padding: 1.25rem 2rem;
+  font-size: 1.375rem;
+  font-weight: 700;
+  background-color: #60A5FA !important;
+  color: #000000 !important;
+  border: 3px solid #000000 !important;
+  border-radius: 0.5rem;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 1rem;
+}
+
+/* Button hover effect */
+.flow-renderer[data-slug="section8-search-tool"] button[type="submit"]:hover,
+.flow-renderer[data-slug="section8-housing-search"] button[type="submit"]:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+  background-color: #3B82F6 !important;
+}
+
+/* Info box styling */
+.flow-renderer[data-slug="section8-search-tool"] .info-box,
+.flow-renderer[data-slug="section8-housing-search"] .info-box {
+  background-color: #DBEAFE;
+  border: 2px solid #3B82F6;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  color: #1E40AF;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Dashed separator line */
+.dashed-separator {
+  border-top: 3px dashed #000000;
+  margin: 2rem 0;
+  width: 100%;
+}
+
+/* Logo styling if needed */
+.flow-logo {
+  max-width: 250px;
+  height: auto;
+  margin: 0 auto 2rem;
+  display: block;
+}
+
+/* Hero image styling */
+.flow-hero-image {
+  max-width: 500px;
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 0 auto 2rem;
+  display: block;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
