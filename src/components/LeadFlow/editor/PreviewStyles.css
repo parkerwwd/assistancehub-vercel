@@ -159,3 +159,73 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Fullscreen mode improvements */
+.preview-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: white;
+  overflow: hidden;
+}
+
+.preview-fullscreen .preview-content {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure fullscreen content is properly contained */
+.preview-fullscreen-content {
+  height: calc(100vh - 140px); /* Account for header */
+  overflow: auto;
+}
+
+/* Better scrollbars in fullscreen */
+.preview-fullscreen .preview-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.preview-fullscreen .preview-scroll-container::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.preview-fullscreen .preview-scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.preview-fullscreen .preview-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Prevent text selection in fullscreen controls */
+.preview-fullscreen .card-header {
+  user-select: none;
+}
+
+/* Smooth transitions for fullscreen toggle */
+.preview-fullscreen-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.preview-fullscreen-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+
+.preview-fullscreen-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.preview-fullscreen-exit-active {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}

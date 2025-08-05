@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Monitor, Tablet, Smartphone, RefreshCw, Maximize2, X } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, RefreshCw, Maximize2, Minimize2, X } from 'lucide-react';
 import './PreviewStyles.css';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,23 +62,192 @@ export default function FlowPreview({ flow, isVisible, onClose, className = '' }
     resetPreview();
   }, [flow.steps, flow.settings, flow.style_config]);
 
+  // Handle escape key to exit fullscreen
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    if (isFullscreen) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when in fullscreen
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isFullscreen]);
+
   if (!isVisible) return null;
 
   const currentStepData = flow.steps?.[currentStep];
 
+  // Render fullscreen mode differently to avoid animation conflicts
+  if (isFullscreen) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-white">
+        <Card className="h-full flex flex-col rounded-none border-0">
+          <CardHeader className="flex-shrink-0 pb-4 border-b">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-green-50 text-green-700">
+                  Live Preview - Fullscreen
+                </Badge>
+                {flow.name || 'Untitled Flow'}
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsFullscreen(false)}
+                  className="h-8 w-8 p-0"
+                  title="Exit Fullscreen (ESC)"
+                >
+                  <Minimize2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-8 w-8 p-0"
+                  title="Close Preview"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Device Selection - Fullscreen */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <Button
+                  variant={device === 'desktop' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setDevice('desktop')}
+                  className="h-8 px-2"
+                >
+                  <Monitor className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={device === 'tablet' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setDevice('tablet')}
+                  className="h-8 px-2"
+                >
+                  <Tablet className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={device === 'mobile' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setDevice('mobile')}
+                  className="h-8 px-2"
+                >
+                  <Smartphone className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  Step {currentStep + 1} of {flow.steps?.length || 1}
+                </Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetPreview}
+                  className="h-8 px-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="flex-1 overflow-hidden p-6">
+            <div className="h-full flex items-center justify-center">
+              <div className="w-full h-full max-w-6xl mx-auto">
+                <div className="w-full h-full bg-white rounded-lg shadow-lg overflow-auto">
+                  <div className="preview-scroll-container">
+                    {currentStepData ? (
+                      <div key={refreshKey} data-slug={flow.slug}>
+                        <StepRenderer
+                          step={currentStepData}
+                          onComplete={handleStepComplete}
+                          onBack={currentStep > 0 ? handleStepBack : undefined}
+                          values={responses}
+                          styleConfig={flow.style_config}
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-gray-500">
+                        <div className="text-center">
+                          <p className="text-lg font-medium mb-2">No steps defined</p>
+                          <p className="text-sm">Add a step to see the preview</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step Navigation - Fullscreen */}
+            {flow.steps && flow.steps.length > 1 && (
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleStepBack}
+                  disabled={currentStep === 0}
+                >
+                  Previous
+                </Button>
+                <div className="flex gap-1">
+                  {flow.steps.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentStep(index)}
+                      className={`
+                        w-3 h-3 rounded-full transition-colors
+                        ${index === currentStep 
+                          ? 'bg-blue-600' 
+                          : index < currentStep 
+                            ? 'bg-green-500' 
+                            : 'bg-gray-300'
+                        }
+                      `}
+                    />
+                  ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentStep(Math.min(currentStep + 1, (flow.steps?.length || 1) - 1))}
+                  disabled={currentStep >= (flow.steps?.length || 1) - 1}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Normal preview mode
   return (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0, x: 300 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 300 }}
-        className={`
-          ${isFullscreen 
-            ? 'fixed inset-0 z-50 bg-white' 
-            : 'relative h-full'
-          }
-          ${className}
-        `}
+        className={`relative h-full ${className}`}
       >
         <Card className="h-full flex flex-col">
           <CardHeader className="flex-shrink-0 pb-4">
@@ -93,8 +262,9 @@ export default function FlowPreview({ flow, isVisible, onClose, className = '' }
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsFullscreen(!isFullscreen)}
+                  onClick={() => setIsFullscreen(true)}
                   className="h-8 w-8 p-0"
+                  title="Fullscreen Preview"
                 >
                   <Maximize2 className="w-4 h-4" />
                 </Button>
@@ -103,6 +273,7 @@ export default function FlowPreview({ flow, isVisible, onClose, className = '' }
                   size="sm"
                   onClick={onClose}
                   className="h-8 w-8 p-0"
+                  title="Close Preview"
                 >
                   <X className="w-4 h-4" />
                 </Button>

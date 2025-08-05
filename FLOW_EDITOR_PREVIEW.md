@@ -21,9 +21,12 @@ The Flow Editor now includes a powerful live preview feature that allows you to 
 - **Responsive Testing** - Switch devices to test mobile experience
 
 ### 🚀 **Advanced Features**
-- **Fullscreen Mode** - Expand preview for detailed testing
+- **Fullscreen Mode** - Expand preview for detailed testing with dedicated exit controls
 - **Refresh Control** - Reset form data and restart flow
 - **Progress Tracking** - Visual step indicators and completion status
+- **Escape Key Support** - Press ESC to exit fullscreen mode
+- **Body Scroll Lock** - Prevents background scrolling in fullscreen
+- **Improved Navigation** - Clear distinction between fullscreen exit and preview close
 
 ## How to Use
 
@@ -83,9 +86,32 @@ The preview includes intelligent auto-save:
 ## Keyboard Shortcuts
 
 - **Toggle Preview**: Click "Show/Hide Preview" button
-- **Fullscreen**: Click maximize icon in preview header
+- **Enter Fullscreen**: Click maximize icon (⛶) in preview header
+- **Exit Fullscreen**: Click minimize icon (⧉) or press ESC key
+- **Close Preview**: Click X icon (closes entire preview panel)
 - **Refresh**: Click refresh icon to reset form state
 - **Device Switch**: Click device icons in preview toolbar
+
+## Fullscreen Mode Improvements
+
+### 🔧 **Fixed Issues**
+- **Button Confusion** - Separate buttons for fullscreen exit vs. preview close
+- **Escape Key** - Press ESC to quickly exit fullscreen mode
+- **Animation Conflicts** - Removed motion animations that caused positioning issues
+- **Z-Index Problems** - Uses z-index 9999 to ensure fullscreen appears above all elements
+- **Body Scroll** - Automatically prevents background page scrolling
+
+### 🎯 **Clear Visual Indicators**
+- **Maximize Icon** (⛶) - Enter fullscreen mode
+- **Minimize Icon** (⧉) - Exit fullscreen mode  
+- **Close Icon** (✕) - Close entire preview panel
+- **Tooltips** - Hover for button explanations
+
+### 📱 **Enhanced Experience**
+- **Full Width Content** - Maximum space for testing
+- **Better Scrollbars** - Improved styling in fullscreen mode
+- **Header Border** - Clear separation between controls and content
+- **Responsive Layout** - Works perfectly on all screen sizes
 
 ## Technical Details
 
