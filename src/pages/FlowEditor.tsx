@@ -194,6 +194,9 @@ export default function FlowEditor() {
             skip_logic: step.skip_logic,
             navigation_logic: step.navigation_logic,
             validation_rules: step.validation_rules,
+            settings: step.settings || {},
+            redirect_url: step.redirect_url,
+            redirect_delay: step.redirect_delay,
           })
           .select()
           .single();
@@ -233,11 +236,21 @@ export default function FlowEditor() {
       if (isNew) {
         navigate(`/admin/flows/${flowId}/edit`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving flow:', error);
+      
+      let errorMessage = "Could not save flow. Please try again.";
+      
+      // Check for duplicate slug error
+      if (error?.code === '23505' || error?.message?.includes('duplicate') || error?.message?.includes('unique')) {
+        errorMessage = "A flow with this slug already exists. Please choose a different slug.";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: "Could not save flow. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -323,10 +336,18 @@ export default function FlowEditor() {
   };
 
   const generateSlug = (name: string) => {
-    return name
+    const baseSlug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
+    
+    // For new flows, append a timestamp to avoid conflicts
+    if (isNew && baseSlug) {
+      const timestamp = Date.now().toString().slice(-6);
+      return `${baseSlug}-${timestamp}`;
+    }
+    
+    return baseSlug;
   };
 
   // Auto-save functionality for preview
@@ -468,6 +489,9 @@ export default function FlowEditor() {
                       />
                       <p className="text-sm text-gray-600 mt-1">
                         URL: /flow/{flow.slug || 'your-slug'}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Must be unique. Letters, numbers and hyphens only.
                       </p>
                     </div>
                     

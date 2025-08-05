@@ -273,16 +273,19 @@ export type Database = {
           id: string
           flow_id: string
           step_order: number
-          step_type: 'form' | 'content' | 'quiz' | 'survey' | 'conditional' | 'thank_you'
+          step_type: 'form' | 'content' | 'quiz' | 'survey' | 'conditional' | 'thank_you' | 'single_page_landing'
           title: string
           subtitle: string | null
           content: string | null
           button_text: string | null
           button_back_text: string | null
           is_required: boolean
+          skip_logic: Json | null
           navigation_logic: Json | null
+          validation_rules: Json | null
           redirect_url: string | null
           redirect_delay: number | null
+          settings: Json | null
           created_at: string
           updated_at: string
         }
@@ -290,16 +293,19 @@ export type Database = {
           id?: string
           flow_id: string
           step_order: number
-          step_type: 'form' | 'content' | 'quiz' | 'survey' | 'conditional' | 'thank_you'
+          step_type: 'form' | 'content' | 'quiz' | 'survey' | 'conditional' | 'thank_you' | 'single_page_landing'
           title: string
           subtitle?: string | null
           content?: string | null
           button_text?: string | null
           button_back_text?: string | null
           is_required?: boolean
+          skip_logic?: Json | null
           navigation_logic?: Json | null
+          validation_rules?: Json | null
           redirect_url?: string | null
           redirect_delay?: number | null
+          settings?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -314,9 +320,12 @@ export type Database = {
           button_text?: string | null
           button_back_text?: string | null
           is_required?: boolean
+          skip_logic?: Json | null
           navigation_logic?: Json | null
+          validation_rules?: Json | null
           redirect_url?: string | null
           redirect_delay?: number | null
+          settings?: Json | null
           created_at?: string
           updated_at?: string
         }
