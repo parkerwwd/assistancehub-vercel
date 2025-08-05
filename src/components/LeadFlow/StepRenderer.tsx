@@ -28,6 +28,15 @@ export default function StepRenderer({
 }: StepRendererProps) {
   const [stepValues, setStepValues] = useState<FieldValues>({});
 
+  // Handle case where step is undefined
+  if (!step) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-gray-600">No step data available.</p>
+      </div>
+    );
+  }
+
   const handleFieldChange = (fieldName: string, value: any) => {
     setStepValues(prev => ({
       ...prev,

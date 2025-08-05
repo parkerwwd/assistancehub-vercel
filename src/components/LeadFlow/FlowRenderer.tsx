@@ -117,7 +117,7 @@ export default function FlowRenderer() {
     const currentStep = flow.steps[session.currentStep];
     const isLastStep = session.currentStep >= flow.steps.length - 1;
 
-    if (isLastStep || currentStep.step_type === 'thank_you') {
+    if (isLastStep || currentStep?.step_type === 'thank_you') {
       // Submit lead
       await submitLead(updatedSession);
     } else {
@@ -132,7 +132,7 @@ export default function FlowRenderer() {
 
   const determineNextStep = (currentStep: any, responses: FieldValues): number => {
     // Check navigation logic
-    if (currentStep.navigation_logic?.conditions) {
+    if (currentStep?.navigation_logic?.conditions) {
       for (const logic of currentStep.navigation_logic.conditions) {
         if (evaluateCondition(logic, responses)) {
           return logic.targetStep || session!.currentStep + 1;
@@ -218,7 +218,7 @@ export default function FlowRenderer() {
 
       // Show thank you step or redirect
       if (flow && session) {
-        const thankYouStep = flow.steps.find(s => s.step_type === 'thank_you');
+        const thankYouStep = flow.steps?.find(s => s.step_type === 'thank_you');
         if (thankYouStep) {
           setSession({
             ...finalSession,
@@ -262,6 +262,18 @@ export default function FlowRenderer() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Form Not Found</h1>
           <p className="text-gray-600">This form may have been moved or is no longer available.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if flow has steps
+  if (!flow.steps || flow.steps.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">No Steps Configured</h1>
+          <p className="text-gray-600">This form doesn't have any steps configured yet.</p>
         </div>
       </div>
     );
