@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Plus, Trash2, GripVertical, Save, Eye, ArrowLeft, Settings, Copy, Link } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Save, Eye, ArrowLeft, Settings, Copy, Link, Monitor, PanelRightClose, PanelRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,7 @@ import { Flow, FlowStep, FlowField, StepType, FieldType, FlowStatus } from '@/ty
 import Header from '@/components/Header';
 import StepEditor from '@/components/LeadFlow/editor/StepEditor';
 import FlowSettings from '@/components/LeadFlow/editor/FlowSettings';
+import FlowPreview from '@/components/LeadFlow/editor/FlowPreview';
 
 interface FlowData extends Omit<Flow, 'id' | 'created_at' | 'updated_at'> {
   id?: string;
@@ -52,6 +53,8 @@ export default function FlowEditor() {
   
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!isNew && id) {
@@ -271,6 +274,9 @@ export default function FlowEditor() {
         i === index ? { ...step, ...updates } : step
       )
     }));
+    if (showPreview) {
+      triggerAutoSave();
+    }
   };
 
   const deleteStep = (index: number) => {
@@ -323,6 +329,30 @@ export default function FlowEditor() {
       .replace(/(^-|-$)+/g, '');
   };
 
+  // Auto-save functionality for preview
+  const triggerAutoSave = () => {
+    if (autoSaveTimeout) {
+      clearTimeout(autoSaveTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      if (!isNew && flow.name && flow.slug && showPreview) {
+        handleSave();
+      }
+    }, 2000); // Auto-save after 2 seconds of inactivity
+    
+    setAutoSaveTimeout(timeout);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+      }
+    };
+  }, [autoSaveTimeout]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -353,6 +383,14 @@ export default function FlowEditor() {
           </div>
           
           <div className="flex items-center gap-2">
+            <Button
+              variant={showPreview ? "default" : "outline"}
+              onClick={() => setShowPreview(!showPreview)}
+              className="flex items-center gap-2"
+            >
+              {showPreview ? <PanelRightClose className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
+              {showPreview ? 'Hide Preview' : 'Show Preview'}
+            </Button>
             {!isNew && (
               <>
                 <Button
@@ -370,7 +408,7 @@ export default function FlowEditor() {
                   className="flex items-center gap-2"
                 >
                   <Eye className="w-4 h-4" />
-                  Preview
+                  External Preview
                 </Button>
               </>
             )}
@@ -385,9 +423,9 @@ export default function FlowEditor() {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-8">
+        <div className={`grid gap-6 ${showPreview ? 'grid-cols-12' : 'grid-cols-12'}`}>
           {/* Main Content */}
-          <div className="col-span-8">
+          <div className={showPreview ? "col-span-5" : "col-span-8"}>
             <Tabs defaultValue="steps" className="space-y-4">
               <TabsList>
                 <TabsTrigger value="steps">Steps</TabsTrigger>
@@ -412,6 +450,9 @@ export default function FlowEditor() {
                             name: e.target.value,
                             slug: isNew ? generateSlug(e.target.value) : prev.slug
                           }));
+                          if (showPreview) {
+                            triggerAutoSave();
+                          }
                         }}
                         placeholder="e.g., Quick Housing Search"
                       />
@@ -524,14 +565,31 @@ export default function FlowEditor() {
               <TabsContent value="settings">
                 <FlowSettings
                   flow={flow}
-                  onUpdate={(updates) => setFlow(prev => ({ ...prev, ...updates }))}
+                  onUpdate={(updates) => {
+                    setFlow(prev => ({ ...prev, ...updates }));
+                    if (showPreview) {
+                      triggerAutoSave();
+                    }
+                  }}
                 />
               </TabsContent>
             </Tabs>
           </div>
 
+          {/* Preview Panel */}
+          {showPreview && (
+            <div className="col-span-4 h-[calc(100vh-200px)]">
+              <FlowPreview
+                flow={flow as any}
+                isVisible={showPreview}
+                onClose={() => setShowPreview(false)}
+                className="h-full"
+              />
+            </div>
+          )}
+
           {/* Sidebar */}
-          <div className="col-span-4 space-y-4">
+          <div className={`${showPreview ? "col-span-3" : "col-span-4"} space-y-4`}>
             <Card>
               <CardHeader>
                 <CardTitle>Add Step</CardTitle>
@@ -585,13 +643,25 @@ export default function FlowEditor() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Tips</CardTitle>
+                <CardTitle>{showPreview ? 'Preview Tips' : 'Tips'}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm text-gray-600">
-                <p>• Keep forms short - ask only what you need</p>
-                <p>• Use quiz steps to personalize the experience</p>
-                <p>• Add a compelling thank you page</p>
-                <p>• Test your flow before making it active</p>
+                {showPreview ? (
+                  <>
+                    <p>• Use the device icons to test responsive design</p>
+                    <p>• Click the step dots to navigate between steps</p>
+                    <p>• Changes update the preview automatically</p>
+                    <p>• Click refresh to reset form data</p>
+                    <p>• Use fullscreen mode for detailed testing</p>
+                  </>
+                ) : (
+                  <>
+                    <p>• Keep forms short - ask only what you need</p>
+                    <p>• Use quiz steps to personalize the experience</p>
+                    <p>• Add a compelling thank you page</p>
+                    <p>• Test your flow before making it active</p>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>

@@ -1,0 +1,161 @@
+/* Preview Panel Specific Styles */
+
+.preview-panel {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.preview-device-frame {
+  position: relative;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.preview-device-frame.mobile {
+  background: #1f2937;
+  padding: 24px 12px;
+  border-radius: 24px;
+}
+
+.preview-device-frame.mobile::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 4px;
+  background: #374151;
+  border-radius: 2px;
+}
+
+.preview-device-frame.tablet {
+  background: #374151;
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.preview-content {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 100%;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.preview-device-frame.mobile .preview-content {
+  border-radius: 12px;
+}
+
+.preview-device-frame.tablet .preview-content {
+  border-radius: 12px;
+}
+
+/* Live update indicator */
+.preview-live-indicator {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Device size adjustments */
+.preview-device-desktop {
+  width: 100%;
+  height: 100%;
+}
+
+.preview-device-tablet {
+  width: 768px;
+  height: 1024px;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.preview-device-mobile {
+  width: 375px;
+  height: 667px;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Scroll improvements */
+.preview-scroll-container {
+  overflow: auto;
+  height: 100%;
+}
+
+.preview-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.preview-scroll-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.preview-scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.preview-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .preview-device-tablet {
+    width: 100%;
+    height: 600px;
+  }
+  
+  .preview-device-mobile {
+    width: 100%;
+    height: 500px;
+  }
+}
+
+/* Preview loading state */
+.preview-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #64748b;
+}
+
+.preview-loading::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
