@@ -21,7 +21,8 @@ export default function FlowRenderer() {
 
   // Initialize session with UTM parameters
   useEffect(() => {
-    if (flow) {
+    if (flow && flow.steps && flow.steps.length > 0) {
+      console.log('Initializing session for flow:', flow.name, 'with', flow.steps.length, 'steps');
       const newSession: LeadSession = {
         flowId: flow.id,
         currentStep: 0,
@@ -74,6 +75,13 @@ export default function FlowRenderer() {
 
       // Sort steps and fields by order
       if (flowData) {
+        console.log('Flow loaded:', flowData.name, 'Steps:', flowData.steps?.length || 0);
+        
+        // Ensure steps is an array
+        if (!flowData.steps) {
+          flowData.steps = [];
+        }
+        
         flowData.steps.sort((a, b) => a.step_order - b.step_order);
         flowData.steps.forEach(step => {
           step.fields?.sort((a, b) => a.field_order - b.field_order);
@@ -269,11 +277,16 @@ export default function FlowRenderer() {
 
   // Check if flow has steps
   if (!flow.steps || flow.steps.length === 0) {
+    console.log('No steps found - flow:', flow?.name, 'steps:', flow?.steps);
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">No Steps Configured</h1>
           <p className="text-gray-600">This form doesn't have any steps configured yet.</p>
+          {/* Debug info - remove in production */}
+          <p className="text-xs text-gray-400 mt-4">
+            Debug: {flow?.name || 'No flow'} | Steps: {flow?.steps?.length || 'undefined'}
+          </p>
         </div>
       </div>
     );
