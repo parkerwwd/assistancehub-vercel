@@ -9,8 +9,8 @@ interface HeroSplitLayoutProps {
   onSubmit?: () => void;
   heroImage?: string;
   logo?: string;
-  trustBadges?: string[];
-  benefits?: string[];
+  trustBadges?: Array<string | { text: string; [key: string]: any }>;
+  benefits?: Array<string | { text: string; [key: string]: any }>;
   stepDescriptions?: Array<{
     number: number;
     color: string;
@@ -64,7 +64,9 @@ export default function HeroSplitLayout({
               <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-600">
                 <Shield className="w-4 h-4" />
                 {trustBadges.map((badge, index) => (
-                  <span key={index}>{badge}</span>
+                  <span key={index}>
+                    {typeof badge === 'string' ? badge : badge.text}
+                  </span>
                 ))}
               </div>
             )}
@@ -131,7 +133,9 @@ export default function HeroSplitLayout({
                   <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Check className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-gray-700">{benefit}</span>
+                  <span className="text-gray-700">
+                    {typeof benefit === 'string' ? benefit : benefit.text}
+                  </span>
                 </motion.div>
               ))}
             </div>
