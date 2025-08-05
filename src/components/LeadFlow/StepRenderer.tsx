@@ -130,22 +130,24 @@ export default function StepRenderer({
 
   return (
     <div className="space-y-6">
-      {/* Step header */}
-      <div className="text-center space-y-2">
-        {step.title && (
-          <h2 className="text-3xl font-bold text-gray-900">
-            {step.title}
-          </h2>
-        )}
-        {step.subtitle && (
-          <p className="text-lg text-gray-600">
-            {step.subtitle}
-          </p>
-        )}
-      </div>
+      {/* Step header - skip for single page landing as it handles its own layout */}
+      {step.step_type !== StepType.SINGLE_PAGE_LANDING && (
+        <div className="text-center space-y-2">
+          {step.title && (
+            <h2 className="text-3xl font-bold text-gray-900">
+              {step.title}
+            </h2>
+          )}
+          {step.subtitle && (
+            <p className="text-lg text-gray-600">
+              {step.subtitle}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Step content */}
-      <div className="mt-8">
+      <div className={step.step_type === StepType.SINGLE_PAGE_LANDING ? "" : "mt-8"}>
         {renderStepContent()}
       </div>
 
