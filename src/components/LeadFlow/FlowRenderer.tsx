@@ -54,10 +54,14 @@ export default function FlowRenderer() {
     loadFlow();
   }, [slug]);
 
-  const loadFlow = async () => {
+  const loadFlow = async (retryCount = 0) => {
     if (!slug) return;
 
+    let hasError = false;
+    
     try {
+      console.log(`Loading flow: ${slug} (attempt ${retryCount + 1})`);
+      
       // Fetch flow with steps and fields
       const { data: flowData, error: flowError } = await supabase
         .from('flows')
@@ -71,32 +75,72 @@ export default function FlowRenderer() {
         .eq('slug', slug)
         .single();
 
-      if (flowError) throw flowError;
+      if (flowError) {
+        hasError = true;
+        throw flowError;
+      }
 
       // Sort steps and fields by order
       if (flowData) {
         console.log('Flow loaded:', flowData.name, 'Steps:', flowData.steps?.length || 0);
+        console.log('Flow data structure:', {
+          hasSteps: 'steps' in flowData,
+          stepsType: typeof flowData.steps,
+          stepsIsArray: Array.isArray(flowData.steps),
+          rawData: JSON.stringify(flowData).substring(0, 200) + '...'
+        });
         
-        // Ensure steps is an array
-        if (!flowData.steps) {
+        // Ensure steps is an array - handle various edge cases
+        if (!flowData.steps || !Array.isArray(flowData.steps)) {
+          console.warn('Steps not found or not an array, initializing empty array');
           flowData.steps = [];
         }
         
-        flowData.steps.sort((a, b) => a.step_order - b.step_order);
-        flowData.steps.forEach(step => {
-          step.fields?.sort((a, b) => a.field_order - b.field_order);
-        });
+        // Sort if we have steps
+        if (flowData.steps.length > 0) {
+          flowData.steps.sort((a, b) => a.step_order - b.step_order);
+          flowData.steps.forEach(step => {
+            if (step.fields && Array.isArray(step.fields)) {
+              step.fields.sort((a, b) => a.field_order - b.field_order);
+            }
+          });
+        }
+        
         setFlow(flowData as FlowWithSteps);
       }
-    } catch (error) {
+    } catch (error: any) {
+      hasError = true;
       console.error('Error loading flow:', error);
+      console.error('Error details:', {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint,
+        userAgent: navigator.userAgent
+      });
+      
+      // Retry on mobile if network error
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const isNetworkError = error?.message?.includes('network') || 
+                            error?.message?.includes('fetch') || 
+                            error?.code === 'PGRST301'; // Supabase timeout
+      
+      if (isMobile && isNetworkError && retryCount < 2) {
+        console.log(`Retrying flow load on mobile (attempt ${retryCount + 2})...`);
+        setTimeout(() => loadFlow(retryCount + 1), 1000);
+        return;
+      }
+      
       toast({
         title: "Error",
-        description: "Could not load the form. Please try again.",
+        description: error?.message || "Could not load the form. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      // Set loading false if we're done with retries or succeeded
+      if (!hasError || retryCount >= 2) {
+        setLoading(false);
+      }
     }
   };
 
