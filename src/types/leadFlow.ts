@@ -21,7 +21,8 @@ export enum StepType {
   QUIZ = 'quiz',
   SURVEY = 'survey',
   CONDITIONAL = 'conditional',
-  THANK_YOU = 'thank_you'
+  THANK_YOU = 'thank_you',
+  SINGLE_PAGE_LANDING = 'single_page_landing'
 }
 
 export enum FieldType {

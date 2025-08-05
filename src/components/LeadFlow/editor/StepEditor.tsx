@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { StepType, FieldType } from '@/types/leadFlow';
 import FieldEditor from './FieldEditor';
+import SinglePageLandingEditor from './SinglePageLandingEditor';
 
 interface StepEditorProps {
   step: any;
@@ -40,6 +41,8 @@ export default function StepEditor({
         return 'Content Step';
       case StepType.THANK_YOU:
         return 'Thank You Step';
+      case StepType.SINGLE_PAGE_LANDING:
+        return 'Single Page Landing';
       default:
         return 'Step';
     }
@@ -224,6 +227,16 @@ export default function StepEditor({
               </div>
             )}
 
+            {/* Single Page Landing Configuration */}
+            {step.step_type === StepType.SINGLE_PAGE_LANDING && (
+              <div className="space-y-4">
+                <SinglePageLandingEditor 
+                  step={step} 
+                  onUpdate={onUpdate} 
+                />
+              </div>
+            )}
+
             {/* Required toggle */}
             <div className="flex items-center justify-between">
               <Label htmlFor={`required-${index}`}>Required Step</Label>
@@ -234,8 +247,8 @@ export default function StepEditor({
               />
             </div>
 
-            {/* Fields for form/quiz steps */}
-            {(step.step_type === StepType.FORM || step.step_type === StepType.QUIZ) && (
+            {/* Fields for form/quiz/landing steps */}
+            {(step.step_type === StepType.FORM || step.step_type === StepType.QUIZ || step.step_type === StepType.SINGLE_PAGE_LANDING) && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label>Fields</Label>

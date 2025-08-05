@@ -572,6 +572,14 @@ export default function FlowEditor() {
                   <Plus className="w-4 h-4 mr-2" />
                   Thank You
                 </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => addStep(StepType.SINGLE_PAGE_LANDING)}
+                  className="justify-start col-span-2"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Single Page Landing
+                </Button>
               </CardContent>
             </Card>
 

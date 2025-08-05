@@ -7,6 +7,7 @@ import ContentStep from './steps/ContentStep';
 import QuizStep from './steps/QuizStep';
 import ThankYouStep from './steps/ThankYouStep';
 import InteractiveLocationPicker from './steps/InteractiveLocationPicker';
+import SinglePageLandingStep from './steps/SinglePageLandingStep';
 
 interface StepRendererProps {
   step: FlowStepWithFields;
@@ -95,6 +96,17 @@ export default function StepRenderer({
           />
         );
       
+      case StepType.SINGLE_PAGE_LANDING:
+        return (
+          <SinglePageLandingStep
+            step={step}
+            onChange={handleFieldChange}
+            values={stepValues}
+            onComplete={handleSubmit}
+            styleConfig={styleConfig}
+          />
+        );
+      
       default:
         return null;
     }
@@ -112,7 +124,9 @@ export default function StepRenderer({
     return true;
   };
 
-  const showNavigationButtons = step.step_type !== StepType.QUIZ && step.step_type !== StepType.THANK_YOU;
+  const showNavigationButtons = step.step_type !== StepType.QUIZ && 
+    step.step_type !== StepType.THANK_YOU && 
+    step.step_type !== StepType.SINGLE_PAGE_LANDING;
 
   return (
     <div className="space-y-6">
