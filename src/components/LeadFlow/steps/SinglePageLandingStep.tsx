@@ -139,20 +139,29 @@ export default function SinglePageLandingStep({
           ? 'grid grid-cols-2 gap-4' 
           : 'space-y-4'
       }>
-        {step.fields?.map(renderField)}
+        {step.fields && step.fields.length > 0 ? (
+          step.fields.map(renderField)
+        ) : (
+          <div className="text-center text-gray-500 py-4">
+            <p>No form fields configured yet.</p>
+            <p className="text-sm">Add fields in the flow editor to collect user information.</p>
+          </div>
+        )}
       </div>
 
-      {/* Submit Button */}
-      <Button
-        type="submit"
-        className="w-full py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
-        style={{
-          backgroundColor: buttonColor,
-          color: '#FFFFFF'
-        }}
-      >
-        {buttonText}
-      </Button>
+      {/* Submit Button - Only show if there are fields */}
+      {step.fields && step.fields.length > 0 && (
+        <Button
+          type="submit"
+          className="w-full py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+          style={{
+            backgroundColor: buttonColor,
+            color: '#FFFFFF'
+          }}
+        >
+          {buttonText}
+        </Button>
+      )}
 
       {/* Trust Badges */}
       {trustBadges.length > 0 && (
