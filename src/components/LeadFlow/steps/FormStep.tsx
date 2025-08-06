@@ -51,13 +51,32 @@ export default function FormStep({ step, onChange, values, existingValues }: For
         transition={{ delay: index * 0.1 }}
         className="space-y-2"
       >
-        <div className="flex items-center justify-between">
-          <Label htmlFor={field.field_name} className="flex items-center gap-2">
-            {icon}
-            {field.label}
-            {field.is_required && <span className="text-red-500">*</span>}
-          </Label>
-          {field.help_text && (
+        {/* Only show label for non-phone fields */}
+        {field.field_type !== FieldType.PHONE && (
+          <div className="flex items-center justify-between">
+            <Label htmlFor={field.field_name} className="flex items-center gap-2">
+              {icon}
+              {field.label}
+              {field.is_required && <span className="text-red-500">*</span>}
+            </Label>
+            {field.help_text && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="w-4 h-4 text-gray-400" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">{field.help_text}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        )}
+
+        {/* For phone fields, show help text without label */}
+        {field.field_type === FieldType.PHONE && field.help_text && (
+          <div className="flex justify-end">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
@@ -68,8 +87,8 @@ export default function FormStep({ step, onChange, values, existingValues }: For
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Text input */}
         {[FieldType.TEXT, FieldType.EMAIL, FieldType.NUMBER].includes(field.field_type) && (
