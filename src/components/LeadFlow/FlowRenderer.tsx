@@ -16,6 +16,7 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   const [showDebug, setShowDebug] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [queryResult, setQueryResult] = useState<any>(null);
   
   const handleRetry = async () => {
     setIsRetrying(true);
@@ -23,6 +24,34 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
       await onRetry();
     }
     setIsRetrying(false);
+  };
+  
+  const testStepsQuery = async () => {
+    if (!flow?.id) return;
+    
+    console.log('Testing manual steps query...');
+    try {
+      const { data, error } = await supabase
+        .from('flow_steps')
+        .select('*')
+        .eq('flow_id', flow.id);
+      
+      setQueryResult({
+        timestamp: new Date().toISOString(),
+        flowId: flow.id,
+        data: data,
+        error: error,
+        count: data?.length || 0
+      });
+    } catch (err) {
+      setQueryResult({
+        timestamp: new Date().toISOString(),
+        flowId: flow.id,
+        data: null,
+        error: err,
+        count: 0
+      });
+    }
   };
   
   return (
@@ -62,6 +91,12 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
               >
                 {showDebug ? 'Hide' : 'Show'} Debug Info
               </button>
+              <button 
+                onClick={testStepsQuery} 
+                className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 w-full text-sm"
+              >
+                Test Steps Query
+              </button>
             </>
           )}
         </div>
@@ -77,6 +112,12 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
               slug: slug,
               userAgent: navigator.userAgent
             }, null, 2)}</pre>
+          </div>
+        )}
+        {queryResult && (
+          <div className="mt-4 p-4 bg-purple-100 rounded text-left text-xs overflow-auto max-h-60">
+            <p className="font-bold mb-2">Manual Query Result:</p>
+            <pre>{JSON.stringify(queryResult, null, 2)}</pre>
           </div>
         )}
       </div>
@@ -197,6 +238,7 @@ export default function FlowRenderer() {
           console.warn(`Steps not found on ${isMobile ? 'MOBILE' : 'DESKTOP'}, fetching separately...`);
           
           // Fetch steps separately
+          console.log(`Attempting to fetch steps for flow_id: ${flowData.id}`);
           const { data: stepsData, error: stepsError } = await supabase
             .from('flow_steps')
             .select(`
@@ -206,8 +248,35 @@ export default function FlowRenderer() {
             .eq('flow_id', flowData.id)
             .order('step_order', { ascending: true });
           
+          console.log('Separate steps query result:', {
+            hasData: !!stepsData,
+            stepsCount: stepsData?.length || 0,
+            error: stepsError,
+            firstStep: stepsData?.[0],
+            flowIdUsed: flowData.id
+          });
+          
           if (stepsError) {
             console.error('Error fetching steps separately:', stepsError);
+            
+            // Try even simpler query without fields
+            console.log('Trying simpler query without fields...');
+            const { data: simpleStepsData, error: simpleError } = await supabase
+              .from('flow_steps')
+              .select('*')
+              .eq('flow_id', flowData.id)
+              .order('step_order', { ascending: true });
+            
+            console.log('Simple steps query result:', {
+              hasData: !!simpleStepsData,
+              stepsCount: simpleStepsData?.length || 0,
+              error: simpleError,
+              firstStep: simpleStepsData?.[0]
+            });
+            
+            if (!simpleError && simpleStepsData) {
+              flowData.steps = simpleStepsData;
+            }
           } else {
             console.log(`Fetched ${stepsData?.length || 0} steps separately`);
             flowData.steps = stepsData || [];
