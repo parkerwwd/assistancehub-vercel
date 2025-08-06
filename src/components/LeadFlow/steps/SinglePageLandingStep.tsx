@@ -106,7 +106,7 @@ export default function SinglePageLandingStep({
             ${error ? 'border-red-500' : 'border-gray-300'}
             focus:border-blue-500 focus:outline-none
             transition-colors
-            ${config.layoutType === 'formLeft' ? 'px-8 py-6 text-xl' : 'px-4 py-3 text-base'}
+            ${config.layoutType === 'formLeft' ? 'px-5 py-4 text-lg' : 'px-4 py-3 text-base'}
           `}
           style={{
             borderColor: error ? undefined : styleConfig?.primaryColor
@@ -120,7 +120,7 @@ export default function SinglePageLandingStep({
   };
 
   const formContent = (
-    <form onSubmit={handleSubmit} className={config.layoutType === 'formLeft' ? 'space-y-8' : 'space-y-6'}>
+    <form onSubmit={handleSubmit} className={config.layoutType === 'formLeft' ? 'space-y-6' : 'space-y-6'}>
       {/* Form Title - for other layouts */}
       {config.layoutType !== 'formLeft' && step.title && (
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
@@ -156,7 +156,7 @@ export default function SinglePageLandingStep({
         <Button
           type="submit"
           className={`w-full font-bold shadow-lg hover:shadow-xl transition-all ${
-            config.layoutType === 'formLeft' ? 'py-8 text-2xl' : 'py-4 text-lg'
+            config.layoutType === 'formLeft' ? 'py-5 text-xl' : 'py-4 text-lg'
           }`}
           style={{
             backgroundColor: buttonColor,
@@ -169,11 +169,11 @@ export default function SinglePageLandingStep({
 
       {/* Trust Badges */}
       {trustBadges.length > 0 && (
-        <div className="mt-6">
+        <div className="mt-4">
           <TrustBadges 
             badges={trustBadges} 
             layout="horizontal"
-            size={config.layoutType === 'formLeft' ? 'md' : 'sm'}
+            size="sm"
           />
         </div>
       )}
@@ -214,89 +214,94 @@ export default function SinglePageLandingStep({
       <div className="min-h-screen bg-white">
         {/* Header with Logo */}
         {logo && (
-          <div className="bg-white py-6 lg:py-8 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 border-b">
-            <img src={logo} alt="Logo" className="h-20 lg:h-24" />
+          <div className="bg-white py-4 lg:py-6 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 border-b">
+            <div className="max-w-7xl mx-auto">
+              <img src={logo} alt="Logo" className="h-16 lg:h-20" />
+            </div>
           </div>
         )}
         
-        {/* Hero Section - Full Width Form */}
+        {/* Hero Section - Full Width Background */}
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-12 lg:py-20">
-          <div className="w-full">
-            {/* Form - Full Screen Width */}
-            <div className="w-full">
-              <div className="flex items-start justify-between mb-10">
-                <div className="flex-1">
-                  <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#003D7A] mb-4">
-                    {step.title || 'APPLY HERE FOR:'}
-                  </h1>
-                  <h2 className="text-xl lg:text-2xl xl:text-3xl text-gray-700 leading-relaxed">
-                    {step.subtitle || 'SECTION 8 VOUCHERS GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE'}
-                  </h2>
+          <div className="max-w-7xl mx-auto">
+            {/* Content Container */}
+            <div className="grid lg:grid-cols-[2fr,1fr] gap-12 items-start">
+              <div>
+                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#003D7A] mb-4 max-w-4xl">
+                  {step.title || 'APPLY HERE FOR:'}
+                </h1>
+                <h2 className="text-xl lg:text-2xl xl:text-3xl text-gray-700 mb-10 leading-relaxed max-w-4xl">
+                  {step.subtitle || 'SECTION 8 VOUCHERS GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE'}
+                </h2>
+                
+                {step.content && (
+                  <p className="text-gray-600 mb-8 italic text-base lg:text-lg max-w-3xl">
+                    {step.content}
+                  </p>
+                )}
+                
+                {/* Form Container */}
+                <div className="bg-white shadow-xl rounded-xl p-8 lg:p-10 xl:p-12 border border-gray-100">
+                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
+                    Apply Here For:
+                  </h3>
+                  <p className="text-lg lg:text-xl text-gray-700 mb-8 leading-relaxed">
+                    SECTION 8 VOUCHERS<br />
+                    GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE
+                  </p>
+                  {formContent}
                 </div>
+              </div>
+              
+              {/* Right Column - Image */}
+              <div className="hidden lg:block">
                 {heroImage && (
                   <img 
                     src={heroImage} 
                     alt="Happy family" 
-                    className="rounded-xl shadow-xl ml-8 w-48 lg:w-64 xl:w-80 hidden lg:block"
+                    className="rounded-xl shadow-xl w-full sticky top-24"
                   />
                 )}
               </div>
-              
-              {step.content && (
-                <p className="text-gray-600 mb-8 italic text-base lg:text-lg">
-                  {step.content}
-                </p>
-              )}
-              
-              {/* Form - Full Width */}
-              <div className="bg-gray-50 shadow-2xl rounded-2xl p-10 lg:p-16 xl:p-24 2xl:p-32 border border-gray-200 w-full">
-                <h3 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-10">
-                  Apply Here For:
-                </h3>
-                <p className="text-xl lg:text-2xl xl:text-3xl text-gray-700 mb-12 leading-relaxed">
-                  SECTION 8 VOUCHERS<br />
-                  GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE
-                </p>
-                {formContent}
-              </div>
             </div>
-            
           </div>
         </div>
         
         {/* Steps Section - Below Hero */}
         {showProgressSteps && stepDescriptions.length > 0 && (
           <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-16 lg:py-20 bg-gray-50">
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-10 xl:gap-12">
+            <div className="max-w-7xl mx-auto">
+              <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
               {stepDescriptions.map((step, index) => (
-                <div 
-                  key={index}
-                  className="flex items-start gap-6 bg-white rounded-xl p-8 lg:p-10 shadow-lg hover:shadow-xl transition-shadow"
-                >
                   <div 
-                    className="w-20 h-20 lg:w-24 lg:h-24 flex items-center justify-center text-white text-4xl lg:text-5xl font-bold rounded-lg flex-shrink-0"
-                    style={{ backgroundColor: step.color }}
+                    key={index}
+                    className="flex items-start gap-4 bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow"
                   >
-                    {step.number}
+                    <div 
+                      className="w-16 h-16 flex items-center justify-center text-white text-2xl font-bold rounded flex-shrink-0"
+                      style={{ backgroundColor: step.color }}
+                    >
+                      {step.number}
+                    </div>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {step.description}
+                    </p>
                   </div>
-                  <p className="text-gray-700 text-base lg:text-lg leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
               ))}
+              </div>
             </div>
           </div>
         )}
         
         {/* Benefits Section */}
         {showBenefits && benefits.length > 0 && (
-          <div className="bg-gray-50 py-16 lg:py-20 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-            <div className="w-full">
-              <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-blue-900 mb-12 text-center">
+          <div className="bg-white py-16 lg:py-20 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+            <div className="max-w-7xl mx-auto">
+              <h2 className="text-3xl lg:text-4xl font-bold text-blue-900 mb-12 text-center">
                 {benefitsTitle}
               </h2>
               
-              <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
                 {/* Benefits Image - Left */}
                 {benefitsImageUrl && (
                   <div>
@@ -310,13 +315,13 @@ export default function SinglePageLandingStep({
                 
                 {/* Benefits List - Right */}
                 <div className={benefitsImageUrl ? '' : 'lg:col-span-2 max-w-3xl mx-auto'}>
-                  <div className="space-y-6 mb-10">
+                  <div className="space-y-4 mb-8">
                     {benefits.map((benefit, index) => (
-                      <div key={index} className="flex items-start gap-4">
-                        <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Check className="w-5 h-5 text-white" />
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="w-4 h-4 text-white" />
                         </div>
-                        <span className="text-gray-700 text-lg leading-relaxed">
+                        <span className="text-gray-700 text-base leading-relaxed">
                           {typeof benefit === 'string' ? benefit : benefit.text}
                         </span>
                       </div>
@@ -327,14 +332,14 @@ export default function SinglePageLandingStep({
                   <div className="text-center lg:text-left">
                     <Button
                       size="lg"
-                      className="px-10 py-6 text-xl font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg"
+                      className="px-8 py-4 text-lg font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg"
                     >
                       {buttonText}
                     </Button>
-                    <div className="mt-6 flex items-center gap-4 text-base text-gray-600">
-                      <span className="text-2xl">🔒</span>
+                    <div className="mt-4 flex items-center gap-3 text-sm text-gray-600">
+                      <span className="text-lg">🔒</span>
                       <span>100% Secure</span>
-                      <span className="text-2xl">✓</span>
+                      <span className="text-lg">✓</span>
                       <span>SPAM Free</span>
                     </div>
                   </div>
@@ -346,9 +351,11 @@ export default function SinglePageLandingStep({
         
         {/* Footer */}
         <div className="bg-gray-100 py-8 lg:py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 text-center">
-          <p className="text-xs lg:text-sm text-gray-500 leading-relaxed">
+          <div className="max-w-4xl mx-auto">
+            <p className="text-xs lg:text-sm text-gray-500 leading-relaxed">
             Finding Low Income Housing can be an overwhelming task for many. With so many options to choose from its difficult to decide which option is best for you and your family. Is it Section 8 Housing, Choice Housing Vouchers, Low Income Housing, Public Housing or Subsidized Housing programs? Each of these HUD Section 811 or Section 202 Housing options is catered specifically for the Affordable Housing Program applicants and different options and have the best program for you and your financial needs and provides you with a road map on how to qualify for these programs and what eligibility requirements are going to be necessary in order to get approved for one of these programs.
-          </p>
+            </p>
+          </div>
         </div>
       </div>
     );
