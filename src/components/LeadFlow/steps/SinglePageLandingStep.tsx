@@ -242,13 +242,6 @@ export default function SinglePageLandingStep({
                 
                 {/* Form Container */}
                 <div className="bg-white shadow-xl rounded-xl p-8 lg:p-10 xl:p-12 border border-gray-100">
-                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
-                    Apply Here For:
-                  </h3>
-                  <p className="text-lg lg:text-xl text-gray-700 mb-8 leading-relaxed">
-                    SECTION 8 VOUCHERS<br />
-                    GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE
-                  </p>
                   {formContent}
                 </div>
               </div>
