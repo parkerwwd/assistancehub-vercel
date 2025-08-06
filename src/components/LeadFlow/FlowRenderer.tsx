@@ -18,6 +18,12 @@ export default function FlowRenderer() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<LeadSession | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Log initial mount
+  useEffect(() => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    console.log(`FlowRenderer mounted on ${isMobile ? 'MOBILE' : 'DESKTOP'} for slug: ${slug}`);
+  }, []);
 
   // Initialize session with UTM parameters
   useEffect(() => {
@@ -82,17 +88,20 @@ export default function FlowRenderer() {
 
       // Sort steps and fields by order
       if (flowData) {
-        console.log('Flow loaded:', flowData.name, 'Steps:', flowData.steps?.length || 0);
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        console.log(`Flow loaded on ${isMobile ? 'MOBILE' : 'DESKTOP'}:`, flowData.name, 'Steps:', flowData.steps?.length || 0);
         console.log('Flow data structure:', {
           hasSteps: 'steps' in flowData,
           stepsType: typeof flowData.steps,
           stepsIsArray: Array.isArray(flowData.steps),
+          stepsCount: flowData.steps?.length,
+          firstStep: flowData.steps?.[0]?.step_type,
           rawData: JSON.stringify(flowData).substring(0, 200) + '...'
         });
         
         // Ensure steps is an array - handle various edge cases
         if (!flowData.steps || !Array.isArray(flowData.steps)) {
-          console.warn('Steps not found or not an array, initializing empty array');
+          console.warn(`Steps not found or not an array on ${isMobile ? 'MOBILE' : 'DESKTOP'}, initializing empty array`);
           flowData.steps = [];
         }
         
@@ -104,6 +113,7 @@ export default function FlowRenderer() {
               step.fields.sort((a, b) => a.field_order - b.field_order);
             }
           });
+          console.log(`Steps sorted successfully on ${isMobile ? 'MOBILE' : 'DESKTOP'}`);
         }
         
         setFlow(flowData as FlowWithSteps);
@@ -308,7 +318,7 @@ export default function FlowRenderer() {
     );
   }
 
-  if (!flow || !session) {
+  if (!flow) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -319,19 +329,63 @@ export default function FlowRenderer() {
     );
   }
 
-  // Check if flow has steps
+  // Check if flow has steps before checking session
   if (!flow.steps || flow.steps.length === 0) {
-    console.log('No steps found - flow:', flow?.name, 'steps:', flow?.steps);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    console.log('No steps found - flow:', flow?.name, 'steps:', flow?.steps, 'mobile:', isMobile);
+    
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4">
+            {isMobile ? 'Loading Form...' : 'No Steps Configured'}
+          </h1>
+          <p className="text-gray-600">
+            {isMobile 
+              ? 'Please wait while we load the form. If this persists, try refreshing the page.'
+              : 'This form doesn\'t have any steps configured yet.'}
+          </p>
+          {/* Debug info */}
+          <p className="text-xs text-gray-400 mt-4">
+            Flow: {flow?.name || 'Unknown'} | Status: {flow?.status || 'Unknown'} | Device: {isMobile ? 'Mobile' : 'Desktop'}
+          </p>
+          {isMobile && (
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Refresh Page
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // If we have a flow with steps but no session, create one
+  if (!session) {
+    console.log('Creating session for loaded flow');
+    const newSession: LeadSession = {
+      flowId: flow.id,
+      currentStep: 0,
+      responses: {},
+      startedAt: new Date(),
+      utmParams: {
+        source: searchParams.get('utm_source') || undefined,
+        medium: searchParams.get('utm_medium') || undefined,
+        campaign: searchParams.get('utm_campaign') || undefined,
+        term: searchParams.get('utm_term') || undefined,
+        content: searchParams.get('utm_content') || undefined,
+      },
+      gclid: searchParams.get('gclid') || undefined,
+    };
+    setSession(newSession);
+    trackFlowView(flow.id, flow.status);
+    
+    // Return loading state while session is being created
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">No Steps Configured</h1>
-          <p className="text-gray-600">This form doesn't have any steps configured yet.</p>
-          {/* Debug info - remove in production */}
-          <p className="text-xs text-gray-400 mt-4">
-            Debug: {flow?.name || 'No flow'} | Steps: {flow?.steps?.length || 'undefined'}
-          </p>
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
