@@ -31,17 +31,41 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
     
     console.log('Testing manual steps query...');
     try {
+      // First, let's verify the flow exists
+      const { data: flowCheck, error: flowError } = await supabase
+        .from('flows')
+        .select('id, name, slug')
+        .eq('id', flow.id)
+        .single();
+      
+      console.log('Flow check:', flowCheck, flowError);
+      
+      // Then query steps
       const { data, error } = await supabase
         .from('flow_steps')
         .select('*')
         .eq('flow_id', flow.id);
       
+      // Also try with the slug
+      const { data: slugSteps, error: slugError } = await supabase
+        .from('flow_steps')
+        .select('*, flow:flows!inner(slug)')
+        .eq('flow.slug', slug);
+      
       setQueryResult({
         timestamp: new Date().toISOString(),
         flowId: flow.id,
+        flowCheck: flowCheck,
+        flowError: flowError,
         data: data,
         error: error,
-        count: data?.length || 0
+        count: data?.length || 0,
+        slugQuery: {
+          data: slugSteps,
+          error: slugError,
+          count: slugSteps?.length || 0
+        },
+        slug: slug
       });
     } catch (err) {
       setQueryResult({
@@ -212,8 +236,12 @@ export default function FlowRenderer() {
         hasError: !!flowError,
         flowId: flowData?.id,
         flowName: flowData?.name,
+        flowSlug: flowData?.slug,
         stepsInResponse: flowData?.steps,
-        errorDetails: flowError
+        stepsCount: flowData?.steps?.length,
+        errorDetails: flowError,
+        device: isMobile ? 'MOBILE' : 'DESKTOP',
+        requestedSlug: slug
       });
 
       if (flowError) {
