@@ -273,6 +273,7 @@ export default function SinglePageLandingStep({
               )}
             </div>
           </div>
+          </div>
         </div>
         
         {/* Benefits Section */}
