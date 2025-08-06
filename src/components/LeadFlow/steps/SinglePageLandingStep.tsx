@@ -91,7 +91,7 @@ export default function SinglePageLandingStep({
         animate={{ opacity: 1, y: 0 }}
         className={formLayout === 'grid' ? 'col-span-1' : ''}
       >
-        {field.label && field.label !== field.placeholder && (
+        {field.label && field.label !== field.placeholder && field.field_type !== 'phone' && (
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {field.label}
             {field.is_required && <span className="text-red-500 ml-1">*</span>}
