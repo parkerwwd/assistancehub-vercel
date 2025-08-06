@@ -44,7 +44,7 @@ export default function SinglePageLandingStep({
     showBenefits = true,
     benefitsTitle = 'What Do I Get When Signing Up?',
     benefitsImageUrl,
-    layoutType = 'centered', // 'centered' or 'heroSplit'
+    layoutType = 'centered', // 'centered', 'heroSplit', or 'formLeft'
     primaryColor = '#1E40AF',
     accentColor = '#10B981'
   } = config;
@@ -202,6 +202,127 @@ export default function SinglePageLandingStep({
       >
         {formContent}
       </HeroSplitLayout>
+    );
+  }
+
+  // Form-left layout (new competitor style)
+  if (config.layoutType === 'formLeft') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Header with Logo */}
+        {logo && (
+          <div className="bg-white py-4 px-4 shadow-sm">
+            <div className="max-w-6xl mx-auto">
+              <img src={logo} alt="Logo" className="h-16" />
+            </div>
+          </div>
+        )}
+        
+        {/* Hero Section - Form Left, Image Right */}
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Form */}
+            <div>
+              <h1 className="text-4xl font-bold text-blue-900 mb-2 uppercase">
+                {step.title || 'APPLY HERE FOR:'}
+              </h1>
+              <h2 className="text-2xl text-gray-700 mb-4">
+                {step.subtitle || 'SECTION 8 VOUCHERS GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE'}
+              </h2>
+              {step.content && (
+                <p className="text-gray-600 mb-6">{step.content}</p>
+              )}
+              
+              {/* Form */}
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                {formContent}
+              </div>
+            </div>
+            
+            {/* Right Column - Image with Steps Overlay */}
+            <div className="relative">
+              {heroImage && (
+                <img 
+                  src={heroImage} 
+                  alt="Happy family" 
+                  className="rounded-lg w-full"
+                />
+              )}
+              
+              {/* Steps Overlay */}
+              {showProgressSteps && stepDescriptions.length > 0 && (
+                <div className="lg:absolute lg:bottom-0 lg:right-0 lg:-mr-8 lg:mb-8 space-y-4 mt-8 lg:mt-0">
+                  {stepDescriptions.map((step, index) => (
+                    <div 
+                      key={index}
+                      className="flex items-start gap-4 bg-white/95 backdrop-blur rounded-lg p-4 shadow-lg max-w-md"
+                    >
+                      <div 
+                        className="w-16 h-16 flex items-center justify-center text-white text-3xl font-bold rounded flex-shrink-0"
+                        style={{ backgroundColor: step.color }}
+                      >
+                        {step.number}
+                      </div>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Benefits Section */}
+        {showBenefits && benefits.length > 0 && (
+          <div className="bg-white py-16 px-4">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-3xl font-bold text-blue-900 mb-8 text-center">
+                {benefitsTitle}
+              </h2>
+              
+              {/* Benefits List */}
+              <div className="space-y-3 mb-12">
+                {benefits.map((benefit, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-gray-700 text-lg">
+                      {typeof benefit === 'string' ? benefit : benefit.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* CTA Button */}
+              <div className="text-center">
+                <Button
+                  size="lg"
+                  className="px-8 py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+                  style={{
+                    backgroundColor: '#3B82F6',
+                    color: '#FFFFFF'
+                  }}
+                >
+                  {buttonText}
+                </Button>
+                <p className="mt-4 text-sm text-gray-600">
+                  🔒100% Secure and SPAM Free
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Footer */}
+        <div className="bg-gray-100 py-8 px-4 text-center">
+          <p className="text-xs text-gray-500 max-w-4xl mx-auto">
+            Finding Low Income Housing can be an overwhelming task for many. With so many options to choose from its difficult to decide which option is best for you and your family. Is it Section 8 Housing, Choice Housing Vouchers, Low Income Housing, Public Housing or Subsidized Housing programs? Each of these HUD Section 811 or Section 202 Housing options is catered specifically for the Affordable Housing Program applicants and different options and have the best program for you and your financial needs and provides you with a road map on how to qualify for these programs and what eligibility requirements are going to be necessary in order to get approved for one of these programs.
+          </p>
+        </div>
+      </div>
     );
   }
 

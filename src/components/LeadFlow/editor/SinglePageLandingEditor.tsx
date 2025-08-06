@@ -50,6 +50,26 @@ export default function SinglePageLandingEditor({ step, onUpdate }: SinglePageLa
     });
   };
 
+  const applyFormLeftPreset = () => {
+    onUpdate({
+      settings: {
+        ...settings,
+        layoutType: 'formLeft',
+        formLayout: 'stacked',
+        showProgressSteps: true,
+        showBenefits: true,
+        stepsPreset: 'section8Housing',
+        benefitPreset: 'section8',
+        benefitsTitle: 'What Do I Get When Signing Up?',
+        buttonText: 'Download Application Guide',
+        buttonColor: '#3B82F6',
+        primaryColor: '#003D7A',
+        accentColor: '#10B981',
+        trustBadgePreset: 'standard'
+      }
+    });
+  };
+
   return (
     <Tabs defaultValue="layout" className="space-y-4">
       <TabsList className="grid w-full grid-cols-4">
@@ -78,7 +98,7 @@ export default function SinglePageLandingEditor({ step, onUpdate }: SinglePageLa
             <CardDescription>
               Configure the overall layout and structure
             </CardDescription>
-            <div className="mt-4">
+            <div className="mt-4 flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -86,7 +106,16 @@ export default function SinglePageLandingEditor({ step, onUpdate }: SinglePageLa
                 className="flex items-center gap-2"
               >
                 <Sparkles className="w-4 h-4" />
-                Apply Competitor Style Preset
+                Competitor Style 1
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={applyFormLeftPreset}
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Competitor Style 2
               </Button>
             </div>
           </CardHeader>
@@ -101,13 +130,14 @@ export default function SinglePageLandingEditor({ step, onUpdate }: SinglePageLa
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="centered">Centered (Competitor Style)</SelectItem>
-                  <SelectItem value="heroSplit">Hero Split (Image + Form)</SelectItem>
+                  <SelectItem value="centered">Centered (Competitor Style 1)</SelectItem>
+                  <SelectItem value="formLeft">Form Left (Competitor Style 2)</SelectItem>
+                  <SelectItem value="heroSplit">Hero Split (Original)</SelectItem>
                   <SelectItem value="minimal">Minimal (Form Only)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-gray-500 mt-1">
-                Centered layout matches competitor design with hero background
+                Style 1: Hero background with overlay | Style 2: Split with form on left
               </p>
             </div>
 
