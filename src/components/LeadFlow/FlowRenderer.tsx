@@ -11,6 +11,79 @@ import '@/styles/lead-flow-custom.css';
 import '@/styles/section8-form.css';
 import '@/styles/affordable-heroes-flow.css';
 
+// Error component for no steps
+function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRetry?: () => void }) {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const [showDebug, setShowDebug] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
+  
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    if (onRetry) {
+      await onRetry();
+    }
+    setIsRetrying(false);
+  };
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="text-center max-w-md">
+        <h1 className="text-2xl font-bold mb-4">
+          {isMobile ? 'Loading Form...' : 'No Steps Configured'}
+        </h1>
+        <p className="text-gray-600">
+          {isMobile 
+            ? 'The form is taking longer than expected to load. Please try the options below.'
+            : 'This form doesn\'t have any steps configured yet.'}
+        </p>
+        {/* Debug info */}
+        <p className="text-xs text-gray-400 mt-4">
+          Flow: {flow?.name || 'Unknown'} | Status: {flow?.status || 'Unknown'} | Device: {isMobile ? 'Mobile' : 'Desktop'}
+        </p>
+        <div className="mt-4 space-y-2">
+          {isMobile && (
+            <>
+              <button 
+                onClick={handleRetry}
+                disabled={isRetrying}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 w-full disabled:opacity-50"
+              >
+                {isRetrying ? 'Retrying...' : 'Try Loading Again'}
+              </button>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
+              >
+                Refresh Page
+              </button>
+              <button 
+                onClick={() => setShowDebug(!showDebug)} 
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 w-full text-sm"
+              >
+                {showDebug ? 'Hide' : 'Show'} Debug Info
+              </button>
+            </>
+          )}
+        </div>
+        {showDebug && (
+          <div className="mt-4 p-4 bg-gray-100 rounded text-left text-xs overflow-auto max-h-60">
+            <pre>{JSON.stringify({
+              flowId: flow?.id,
+              flowName: flow?.name,
+              flowStatus: flow?.status,
+              stepsArray: flow?.steps,
+              stepsLength: flow?.steps?.length,
+              hasSteps: !!flow?.steps,
+              slug: slug,
+              userAgent: navigator.userAgent
+            }, null, 2)}</pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function FlowRenderer() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
@@ -18,11 +91,21 @@ export default function FlowRenderer() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<LeadSession | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mobileLoadDelay, setMobileLoadDelay] = useState(true);
   
-  // Log initial mount
+  // Log initial mount and add mobile delay
   useEffect(() => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     console.log(`FlowRenderer mounted on ${isMobile ? 'MOBILE' : 'DESKTOP'} for slug: ${slug}`);
+    
+    // Add a small delay on mobile to ensure data is fully loaded
+    if (isMobile) {
+      setTimeout(() => {
+        setMobileLoadDelay(false);
+      }, 1000);
+    } else {
+      setMobileLoadDelay(false);
+    }
   }, []);
 
   // Initialize session with UTM parameters
@@ -64,9 +147,10 @@ export default function FlowRenderer() {
     if (!slug) return;
 
     let hasError = false;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
     try {
-      console.log(`Loading flow: ${slug} (attempt ${retryCount + 1})`);
+      console.log(`Loading flow: ${slug} on ${isMobile ? 'MOBILE' : 'DESKTOP'} (attempt ${retryCount + 1})`);
       
       // Fetch flow with steps and fields
       const { data: flowData, error: flowError } = await supabase
@@ -80,6 +164,16 @@ export default function FlowRenderer() {
         `)
         .eq('slug', slug)
         .single();
+      
+      // Log the raw response
+      console.log('Raw Supabase response:', {
+        hasData: !!flowData,
+        hasError: !!flowError,
+        flowId: flowData?.id,
+        flowName: flowData?.name,
+        stepsInResponse: flowData?.steps,
+        errorDetails: flowError
+      });
 
       if (flowError) {
         hasError = true;
@@ -88,7 +182,6 @@ export default function FlowRenderer() {
 
       // Sort steps and fields by order
       if (flowData) {
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         console.log(`Flow loaded on ${isMobile ? 'MOBILE' : 'DESKTOP'}:`, flowData.name, 'Steps:', flowData.steps?.length || 0);
         console.log('Flow data structure:', {
           hasSteps: 'steps' in flowData,
@@ -99,14 +192,30 @@ export default function FlowRenderer() {
           rawData: JSON.stringify(flowData).substring(0, 200) + '...'
         });
         
-        // Ensure steps is an array - handle various edge cases
-        if (!flowData.steps || !Array.isArray(flowData.steps)) {
-          console.warn(`Steps not found or not an array on ${isMobile ? 'MOBILE' : 'DESKTOP'}, initializing empty array`);
-          flowData.steps = [];
+        // If steps are missing, try fetching them separately (mobile fallback)
+        if (!flowData.steps || !Array.isArray(flowData.steps) || flowData.steps.length === 0) {
+          console.warn(`Steps not found on ${isMobile ? 'MOBILE' : 'DESKTOP'}, fetching separately...`);
+          
+          // Fetch steps separately
+          const { data: stepsData, error: stepsError } = await supabase
+            .from('flow_steps')
+            .select(`
+              *,
+              fields:flow_fields(*)
+            `)
+            .eq('flow_id', flowData.id)
+            .order('step_order', { ascending: true });
+          
+          if (stepsError) {
+            console.error('Error fetching steps separately:', stepsError);
+          } else {
+            console.log(`Fetched ${stepsData?.length || 0} steps separately`);
+            flowData.steps = stepsData || [];
+          }
         }
         
         // Sort if we have steps
-        if (flowData.steps.length > 0) {
+        if (flowData.steps && flowData.steps.length > 0) {
           flowData.steps.sort((a, b) => a.step_order - b.step_order);
           flowData.steps.forEach(step => {
             if (step.fields && Array.isArray(step.fields)) {
@@ -310,7 +419,7 @@ export default function FlowRenderer() {
     }
   };
 
-  if (loading) {
+  if (loading || mobileLoadDelay) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -334,32 +443,7 @@ export default function FlowRenderer() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     console.log('No steps found - flow:', flow?.name, 'steps:', flow?.steps, 'mobile:', isMobile);
     
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4">
-            {isMobile ? 'Loading Form...' : 'No Steps Configured'}
-          </h1>
-          <p className="text-gray-600">
-            {isMobile 
-              ? 'Please wait while we load the form. If this persists, try refreshing the page.'
-              : 'This form doesn\'t have any steps configured yet.'}
-          </p>
-          {/* Debug info */}
-          <p className="text-xs text-gray-400 mt-4">
-            Flow: {flow?.name || 'Unknown'} | Status: {flow?.status || 'Unknown'} | Device: {isMobile ? 'Mobile' : 'Desktop'}
-          </p>
-          {isMobile && (
-            <button 
-              onClick={() => window.location.reload()} 
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Refresh Page
-            </button>
-          )}
-        </div>
-      </div>
-    );
+    return <NoStepsError flow={flow} slug={slug} onRetry={() => loadFlow(0)} />;
   }
 
   // If we have a flow with steps but no session, create one
