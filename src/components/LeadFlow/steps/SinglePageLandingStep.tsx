@@ -102,10 +102,11 @@ export default function SinglePageLandingStep({
             }
           }}
           className={`
-            w-full px-4 py-3 text-base border-2 rounded-lg
+            w-full border-2 rounded-lg
             ${error ? 'border-red-500' : 'border-gray-300'}
             focus:border-blue-500 focus:outline-none
             transition-colors
+            ${config.layoutType === 'formLeft' ? 'px-6 py-5 text-lg' : 'px-4 py-3 text-base'}
           `}
           style={{
             borderColor: error ? undefined : styleConfig?.primaryColor
@@ -119,7 +120,7 @@ export default function SinglePageLandingStep({
   };
 
   const formContent = (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Form Title - for other layouts */}
       {config.layoutType !== 'formLeft' && step.title && (
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
@@ -154,7 +155,9 @@ export default function SinglePageLandingStep({
       {step.fields && step.fields.length > 0 && (
         <Button
           type="submit"
-          className="w-full py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+          className={`w-full font-bold shadow-lg hover:shadow-xl transition-all ${
+            config.layoutType === 'formLeft' ? 'py-6 text-xl' : 'py-4 text-lg'
+          }`}
           style={{
             backgroundColor: buttonColor,
             color: '#FFFFFF'
@@ -166,11 +169,11 @@ export default function SinglePageLandingStep({
 
       {/* Trust Badges */}
       {trustBadges.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-6">
           <TrustBadges 
             badges={trustBadges} 
             layout="horizontal"
-            size="sm"
+            size={config.layoutType === 'formLeft' ? 'md' : 'sm'}
           />
         </div>
       )}
@@ -211,35 +214,35 @@ export default function SinglePageLandingStep({
       <div className="min-h-screen bg-white">
         {/* Header with Logo */}
         {logo && (
-          <div className="bg-white py-4 px-4 sm:px-6 lg:px-12 xl:px-20 border-b">
-            <img src={logo} alt="Logo" className="h-16" />
+          <div className="bg-white py-6 lg:py-8 px-4 sm:px-6 lg:px-12 xl:px-20 border-b">
+            <img src={logo} alt="Logo" className="h-20 lg:h-24" />
           </div>
         )}
         
         {/* Hero Section - Form Left, Image Right */}
-        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-12 lg:py-20">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-24 items-start">
             {/* Left Column - Form */}
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-[#003D7A] mb-2">
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#003D7A] mb-4">
                 {step.title || 'APPLY HERE FOR:'}
               </h1>
-              <h2 className="text-lg lg:text-xl text-gray-700 mb-8 leading-relaxed">
+              <h2 className="text-xl lg:text-2xl xl:text-3xl text-gray-700 mb-10 leading-relaxed">
                 {step.subtitle || 'SECTION 8 VOUCHERS GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE'}
               </h2>
               
               {step.content && (
-                <p className="text-gray-600 mb-6 italic text-sm">
+                <p className="text-gray-600 mb-8 italic text-base lg:text-lg">
                   {step.content}
                 </p>
               )}
               
-              {/* Form */}
-              <div className="bg-gray-50 rounded-lg p-6 lg:p-8">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              {/* Form - Much Bigger */}
+              <div className="bg-white shadow-xl rounded-xl p-8 lg:p-10 xl:p-12 border border-gray-100">
+                <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">
                   Apply Here For:
                 </h3>
-                <p className="text-gray-700 mb-6">
+                <p className="text-lg lg:text-xl text-gray-700 mb-10 leading-relaxed">
                   SECTION 8 VOUCHERS<br />
                   GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE
                 </p>
@@ -248,12 +251,12 @@ export default function SinglePageLandingStep({
             </div>
             
             {/* Right Column - Image with Steps */}
-            <div className="relative">
+            <div className="relative lg:sticky lg:top-20">
               {heroImage && (
                 <img 
                   src={heroImage} 
                   alt="Happy family" 
-                  className="rounded-lg w-full"
+                  className="rounded-xl w-full shadow-2xl"
                 />
               )}
             </div>
@@ -262,20 +265,20 @@ export default function SinglePageLandingStep({
         
         {/* Steps Section - Below Hero */}
         {showProgressSteps && stepDescriptions.length > 0 && (
-          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-12 bg-gray-50">
-            <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-16 lg:py-20 bg-gray-50">
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-10 max-w-7xl mx-auto">
               {stepDescriptions.map((step, index) => (
                 <div 
                   key={index}
-                  className="flex items-start gap-4 bg-white rounded-lg p-6 shadow-sm"
+                  className="flex items-start gap-6 bg-white rounded-xl p-8 lg:p-10 shadow-lg hover:shadow-xl transition-shadow"
                 >
                   <div 
-                    className="w-16 h-16 flex items-center justify-center text-white text-3xl font-bold rounded flex-shrink-0"
+                    className="w-20 h-20 lg:w-24 lg:h-24 flex items-center justify-center text-white text-4xl lg:text-5xl font-bold rounded-lg flex-shrink-0"
                     style={{ backgroundColor: step.color }}
                   >
                     {step.number}
                   </div>
-                  <p className="text-gray-700 text-sm leading-relaxed">
+                  <p className="text-gray-700 text-base lg:text-lg leading-relaxed">
                     {step.description}
                   </p>
                 </div>
@@ -286,9 +289,9 @@ export default function SinglePageLandingStep({
         
         {/* Benefits Section */}
         {showBenefits && benefits.length > 0 && (
-          <div className="bg-gray-50 py-12 lg:py-16 px-4 sm:px-6 lg:px-12 xl:px-20">
-            <div className="max-w-6xl mx-auto">
-              <h2 className="text-2xl lg:text-3xl font-bold text-blue-900 mb-8 text-center">
+          <div className="bg-gray-50 py-16 lg:py-20 px-4 sm:px-6 lg:px-12 xl:px-20">
+            <div className="max-w-7xl mx-auto">
+              <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-blue-900 mb-12 text-center">
                 {benefitsTitle}
               </h2>
               
@@ -299,20 +302,20 @@ export default function SinglePageLandingStep({
                     <img 
                       src={benefitsImageUrl} 
                       alt="Benefits" 
-                      className="rounded-lg w-full"
+                      className="rounded-xl w-full shadow-xl"
                     />
                   </div>
                 )}
                 
                 {/* Benefits List - Right */}
                 <div className={benefitsImageUrl ? '' : 'lg:col-span-2 max-w-3xl mx-auto'}>
-                  <div className="space-y-4 mb-8">
+                  <div className="space-y-6 mb-10">
                     {benefits.map((benefit, index) => (
-                      <div key={index} className="flex items-start gap-3">
-                        <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Check className="w-4 h-4 text-white" />
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-gray-700 text-base">
+                        <span className="text-gray-700 text-lg leading-relaxed">
                           {typeof benefit === 'string' ? benefit : benefit.text}
                         </span>
                       </div>
@@ -323,13 +326,16 @@ export default function SinglePageLandingStep({
                   <div className="text-center lg:text-left">
                     <Button
                       size="lg"
-                      className="px-8 py-4 text-lg font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg"
+                      className="px-10 py-6 text-xl font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg"
                     >
                       {buttonText}
                     </Button>
-                    <p className="mt-4 text-sm text-gray-600">
-                      🔒 100% Secure and SPAM Free
-                    </p>
+                    <div className="mt-6 flex items-center gap-4 text-base text-gray-600">
+                      <span className="text-2xl">🔒</span>
+                      <span>100% Secure</span>
+                      <span className="text-2xl">✓</span>
+                      <span>SPAM Free</span>
+                    </div>
                   </div>
                 </div>
               </div>
