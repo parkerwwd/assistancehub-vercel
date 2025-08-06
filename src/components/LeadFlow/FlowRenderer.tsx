@@ -31,6 +31,10 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
     
     console.log('Testing manual steps query...');
     try {
+      // Test RLS by checking auth status
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      console.log('Auth session:', authSession ? 'Authenticated' : 'Anonymous');
+      
       // First, let's verify the flow exists
       const { data: flowCheck, error: flowError } = await supabase
         .from('flows')
@@ -61,6 +65,13 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
       // Check if any steps reference this flow
       const matchingSteps = allSteps?.filter(s => s.flow_id === flow.id) || [];
       
+      // Try direct RPC call to bypass any RLS issues
+      const { data: rpcSteps, error: rpcError } = await supabase
+        .rpc('get_flow_steps_count', { flow_id_param: flow.id })
+        .maybeSingle();
+      
+      console.log('RPC steps count:', rpcSteps, rpcError);
+      
       setQueryResult({
         timestamp: new Date().toISOString(),
         flowId: flow.id,
@@ -80,6 +91,7 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
           firstFewSteps: allSteps?.slice(0, 3),
           error: allError
         },
+        authStatus: authSession ? 'Authenticated' : 'Anonymous',
         slug: slug
       });
     } catch (err) {
@@ -196,6 +208,7 @@ export default function FlowRenderer() {
   const [session, setSession] = useState<LeadSession | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mobileLoadDelay, setMobileLoadDelay] = useState(true);
+  const [forceRefresh, setForceRefresh] = useState(0);
   
   // Log initial mount and add mobile delay
   useEffect(() => {
@@ -276,6 +289,8 @@ export default function FlowRenderer() {
       console.log(`Loading flow: ${slug} on ${isMobile ? 'MOBILE' : 'DESKTOP'} (attempt ${retryCount + 1})`);
       
       // Fetch flow with steps and fields
+      // Add timestamp to bypass any caching
+      const timestamp = new Date().getTime();
       const { data: flowData, error: flowError } = await supabase
         .from('flows')
         .select(`
@@ -286,7 +301,8 @@ export default function FlowRenderer() {
           )
         `)
         .eq('slug', slug)
-        .single();
+        .single()
+        .throwOnError();
       
       // Log the raw response
       console.log('Raw Supabase response:', {
@@ -323,7 +339,13 @@ export default function FlowRenderer() {
         if (!flowData.steps || !Array.isArray(flowData.steps) || flowData.steps.length === 0) {
           console.warn(`Steps not found on ${isMobile ? 'MOBILE' : 'DESKTOP'}, fetching separately...`);
           
-          // Fetch steps separately
+          // Add delay for mobile to ensure data is committed
+          if (isMobile) {
+            console.log('Adding 2 second delay for mobile...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+          
+          // Fetch steps separately with cache bypass
           console.log(`Attempting to fetch steps for flow_id: ${flowData.id}`);
           const { data: stepsData, error: stepsError } = await supabase
             .from('flow_steps')
