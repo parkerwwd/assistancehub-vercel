@@ -34,15 +34,19 @@ WHERE nsp.nspname = 'public' AND cls.relname = 'flow_steps';
 -- ALTER TABLE public.flow_steps DISABLE ROW LEVEL SECURITY;
 
 -- Or create a policy that allows all reads (safer option)
+-- Drop existing policies first to avoid conflicts
+DROP POLICY IF EXISTS "Allow public read access to flow_steps" ON public.flow_steps;
+DROP POLICY IF EXISTS "Allow public read access to flow_fields" ON public.flow_fields;
+
 -- This creates a policy that allows anyone to read flow_steps
-CREATE POLICY IF NOT EXISTS "Allow public read access to flow_steps" 
+CREATE POLICY "Allow public read access to flow_steps" 
   ON public.flow_steps 
   FOR SELECT 
   TO anon, authenticated
   USING (true);
 
 -- Also check flow_fields
-CREATE POLICY IF NOT EXISTS "Allow public read access to flow_fields" 
+CREATE POLICY "Allow public read access to flow_fields" 
   ON public.flow_fields 
   FOR SELECT 
   TO anon, authenticated
