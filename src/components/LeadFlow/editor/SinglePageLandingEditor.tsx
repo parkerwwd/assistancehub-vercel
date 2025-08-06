@@ -61,6 +61,8 @@ export default function SinglePageLandingEditor({ step, onUpdate }: SinglePageLa
         stepsPreset: 'section8Housing',
         benefitPreset: 'section8',
         benefitsTitle: 'What Do I Get When Signing Up?',
+        benefitsImageUrl: '/lovable-uploads/6fec7525-51b9-405f-a872-6143d0c0924a.png',
+        heroImage: '/lovable-uploads/c30a91ac-2aa4-4263-a0e0-4be5156e797e.png',
         buttonText: 'Download Application Guide',
         buttonColor: '#3B82F6',
         primaryColor: '#003D7A',

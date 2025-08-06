@@ -120,15 +120,15 @@ export default function SinglePageLandingStep({
 
   const formContent = (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Form Title if different from main title */}
-      {step.title && (
+      {/* Form Title - for other layouts */}
+      {config.layoutType !== 'formLeft' && step.title && (
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           {step.title}
         </h2>
       )}
 
-      {/* Form Subtitle */}
-      {step.subtitle && (
+      {/* Form Subtitle - for other layouts */}
+      {config.layoutType !== 'formLeft' && step.subtitle && (
         <p className="text-gray-600 mb-6">
           {step.subtitle}
         </p>
@@ -208,109 +208,130 @@ export default function SinglePageLandingStep({
   // Form-left layout (new competitor style)
   if (config.layoutType === 'formLeft') {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
         {/* Header with Logo */}
         {logo && (
-          <div className="bg-white py-4 px-4 sm:px-6 lg:px-12 xl:px-20 shadow-sm">
+          <div className="bg-white py-4 px-4 sm:px-6 lg:px-12 xl:px-20 border-b">
             <img src={logo} alt="Logo" className="h-16" />
           </div>
         )}
         
         {/* Hero Section - Form Left, Image Right */}
-        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-8 lg:py-16">
-          <div className="w-full">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-20 items-start">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-12 lg:py-16">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             {/* Left Column - Form */}
             <div>
-              <h1 className="text-3xl lg:text-5xl font-bold text-blue-900 mb-3 uppercase">
+              <h1 className="text-3xl lg:text-4xl font-bold text-[#003D7A] mb-2">
                 {step.title || 'APPLY HERE FOR:'}
               </h1>
-              <h2 className="text-xl lg:text-2xl text-gray-700 mb-6">
+              <h2 className="text-lg lg:text-xl text-gray-700 mb-8 leading-relaxed">
                 {step.subtitle || 'SECTION 8 VOUCHERS GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE'}
               </h2>
+              
               {step.content && (
-                <p className="text-gray-600 mb-6">{step.content}</p>
+                <p className="text-gray-600 mb-6 italic text-sm">
+                  {step.content}
+                </p>
               )}
               
               {/* Form */}
-              <div className="bg-white rounded-lg shadow-lg p-6 lg:p-8">
+              <div className="bg-gray-50 rounded-lg p-6 lg:p-8">
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                  Apply Here For:
+                </h3>
+                <p className="text-gray-700 mb-6">
+                  SECTION 8 VOUCHERS<br />
+                  GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE
+                </p>
                 {formContent}
               </div>
             </div>
             
-            {/* Right Column - Image with Steps Overlay */}
-            <div className="relative min-h-[500px] lg:min-h-[600px]">
+            {/* Right Column - Image with Steps */}
+            <div className="relative">
               {heroImage && (
                 <img 
                   src={heroImage} 
                   alt="Happy family" 
-                  className="rounded-lg w-full h-full object-cover absolute inset-0"
+                  className="rounded-lg w-full"
                 />
-              )}
-              
-              {/* Steps Overlay */}
-              {showProgressSteps && stepDescriptions.length > 0 && (
-                <div className="lg:absolute lg:top-1/2 lg:-translate-y-1/2 lg:-right-20 xl:-right-32 space-y-4 mt-8 lg:mt-0">
-                  {stepDescriptions.map((step, index) => (
-                    <div 
-                      key={index}
-                      className="flex items-start gap-4 bg-white/95 backdrop-blur rounded-lg p-4 lg:p-6 shadow-xl w-full max-w-[500px]"
-                    >
-                      <div 
-                        className="w-20 h-20 flex items-center justify-center text-white text-4xl font-bold rounded-lg flex-shrink-0"
-                        style={{ backgroundColor: step.color }}
-                      >
-                        {step.number}
-                      </div>
-                      <p className="text-gray-700 text-base lg:text-lg leading-relaxed">
-                        {step.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
               )}
             </div>
           </div>
-          </div>
         </div>
+        
+        {/* Steps Section - Below Hero */}
+        {showProgressSteps && stepDescriptions.length > 0 && (
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-12 bg-gray-50">
+            <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              {stepDescriptions.map((step, index) => (
+                <div 
+                  key={index}
+                  className="flex items-start gap-4 bg-white rounded-lg p-6 shadow-sm"
+                >
+                  <div 
+                    className="w-16 h-16 flex items-center justify-center text-white text-3xl font-bold rounded flex-shrink-0"
+                    style={{ backgroundColor: step.color }}
+                  >
+                    {step.number}
+                  </div>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Benefits Section */}
         {showBenefits && benefits.length > 0 && (
-          <div className="bg-white py-12 lg:py-20 px-4 sm:px-6 lg:px-12 xl:px-20">
+          <div className="bg-gray-50 py-12 lg:py-16 px-4 sm:px-6 lg:px-12 xl:px-20">
             <div className="max-w-6xl mx-auto">
-              <h2 className="text-2xl lg:text-3xl font-bold text-blue-900 mb-8 lg:mb-12 text-center">
+              <h2 className="text-2xl lg:text-3xl font-bold text-blue-900 mb-8 text-center">
                 {benefitsTitle}
               </h2>
               
-              {/* Benefits List */}
-              <div className="space-y-4 mb-12 lg:mb-16">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="text-gray-700 text-base lg:text-lg">
-                      {typeof benefit === 'string' ? benefit : benefit.text}
-                    </span>
+              <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                {/* Benefits Image - Left */}
+                {benefitsImageUrl && (
+                  <div>
+                    <img 
+                      src={benefitsImageUrl} 
+                      alt="Benefits" 
+                      className="rounded-lg w-full"
+                    />
                   </div>
-                ))}
-              </div>
-              
-              {/* CTA Button */}
-              <div className="text-center">
-                <Button
-                  size="lg"
-                  className="px-10 py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                  style={{
-                    backgroundColor: '#3B82F6',
-                    color: '#FFFFFF'
-                  }}
-                >
-                  {buttonText}
-                </Button>
-                <p className="mt-4 text-sm text-gray-600">
-                  🔒100% Secure and SPAM Free
-                </p>
+                )}
+                
+                {/* Benefits List - Right */}
+                <div className={benefitsImageUrl ? '' : 'lg:col-span-2 max-w-3xl mx-auto'}>
+                  <div className="space-y-4 mb-8">
+                    {benefits.map((benefit, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="text-gray-700 text-base">
+                          {typeof benefit === 'string' ? benefit : benefit.text}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* CTA Button */}
+                  <div className="text-center lg:text-left">
+                    <Button
+                      size="lg"
+                      className="px-8 py-4 text-lg font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg"
+                    >
+                      {buttonText}
+                    </Button>
+                    <p className="mt-4 text-sm text-gray-600">
+                      🔒 100% Secure and SPAM Free
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

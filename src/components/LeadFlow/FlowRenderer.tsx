@@ -379,12 +379,15 @@ export default function FlowRenderer() {
           </div>
         )}
 
-        {/* Progress bar */}
-        <FlowProgress 
-          current={session.currentStep + 1} 
-          total={flow.steps.length}
-          percentage={progress}
-        />
+        {/* Progress bar - Hide for formLeft layout */}
+        {!(currentStep?.step_type === 'single_page_landing' && 
+          currentStep?.settings?.layoutType === 'formLeft') && (
+          <FlowProgress 
+            current={session.currentStep + 1} 
+            total={flow.steps.length}
+            percentage={progress}
+          />
+        )}
 
         {/* Main content */}
         <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 mt-8 max-w-3xl mx-auto">
