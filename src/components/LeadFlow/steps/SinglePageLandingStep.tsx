@@ -106,7 +106,7 @@ export default function SinglePageLandingStep({
             ${error ? 'border-red-500' : 'border-gray-300'}
             focus:border-blue-500 focus:outline-none
             transition-colors
-            ${config.layoutType === 'formLeft' ? 'px-6 py-5 text-lg' : 'px-4 py-3 text-base'}
+            ${config.layoutType === 'formLeft' ? 'px-8 py-6 text-xl' : 'px-4 py-3 text-base'}
           `}
           style={{
             borderColor: error ? undefined : styleConfig?.primaryColor
@@ -120,7 +120,7 @@ export default function SinglePageLandingStep({
   };
 
   const formContent = (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className={config.layoutType === 'formLeft' ? 'space-y-8' : 'space-y-6'}>
       {/* Form Title - for other layouts */}
       {config.layoutType !== 'formLeft' && step.title && (
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
@@ -156,7 +156,7 @@ export default function SinglePageLandingStep({
         <Button
           type="submit"
           className={`w-full font-bold shadow-lg hover:shadow-xl transition-all ${
-            config.layoutType === 'formLeft' ? 'py-6 text-xl' : 'py-4 text-lg'
+            config.layoutType === 'formLeft' ? 'py-8 text-2xl' : 'py-4 text-lg'
           }`}
           style={{
             backgroundColor: buttonColor,
@@ -214,16 +214,16 @@ export default function SinglePageLandingStep({
       <div className="min-h-screen bg-white">
         {/* Header with Logo */}
         {logo && (
-          <div className="bg-white py-6 lg:py-8 px-4 sm:px-6 lg:px-12 xl:px-20 border-b">
+          <div className="bg-white py-6 lg:py-8 px-4 sm:px-6 lg:px-8 2xl:px-0 border-b">
             <img src={logo} alt="Logo" className="h-20 lg:h-24" />
           </div>
         )}
         
         {/* Hero Section - Form Left, Image Right */}
-        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-12 lg:py-20">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-24 items-start">
-            {/* Left Column - Form */}
-            <div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 2xl:px-0 py-12 lg:py-20">
+          <div className="grid lg:grid-cols-[2fr,1fr] xl:grid-cols-[3fr,1fr] 2xl:grid-cols-[4fr,1fr] gap-8 lg:gap-12 items-start">
+            {/* Left Column - Form - Takes More Space */}
+            <div className="w-full">
               <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#003D7A] mb-4">
                 {step.title || 'APPLY HERE FOR:'}
               </h1>
@@ -237,12 +237,12 @@ export default function SinglePageLandingStep({
                 </p>
               )}
               
-              {/* Form - Much Bigger */}
-              <div className="bg-white shadow-xl rounded-xl p-8 lg:p-10 xl:p-12 border border-gray-100">
-                <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">
+              {/* Form - Full Width */}
+              <div className="bg-white shadow-2xl rounded-2xl p-10 lg:p-14 xl:p-20 border border-gray-100 w-full">
+                <h3 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-10">
                   Apply Here For:
                 </h3>
-                <p className="text-lg lg:text-xl text-gray-700 mb-10 leading-relaxed">
+                <p className="text-xl lg:text-2xl xl:text-3xl text-gray-700 mb-12 leading-relaxed">
                   SECTION 8 VOUCHERS<br />
                   GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE
                 </p>
@@ -250,13 +250,13 @@ export default function SinglePageLandingStep({
               </div>
             </div>
             
-            {/* Right Column - Image with Steps */}
-            <div className="relative lg:sticky lg:top-20">
+            {/* Right Column - Image - Smaller */}
+            <div className="relative lg:sticky lg:top-20 hidden lg:block">
               {heroImage && (
                 <img 
                   src={heroImage} 
                   alt="Happy family" 
-                  className="rounded-xl w-full shadow-2xl"
+                  className="rounded-xl w-full shadow-2xl max-w-md ml-auto"
                 />
               )}
             </div>
@@ -265,8 +265,8 @@ export default function SinglePageLandingStep({
         
         {/* Steps Section - Below Hero */}
         {showProgressSteps && stepDescriptions.length > 0 && (
-          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-16 lg:py-20 bg-gray-50">
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-10 max-w-7xl mx-auto">
+          <div className="w-full px-4 sm:px-6 lg:px-8 2xl:px-0 py-16 lg:py-20 bg-gray-50">
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-10 xl:gap-12">
               {stepDescriptions.map((step, index) => (
                 <div 
                   key={index}
@@ -289,8 +289,8 @@ export default function SinglePageLandingStep({
         
         {/* Benefits Section */}
         {showBenefits && benefits.length > 0 && (
-          <div className="bg-gray-50 py-16 lg:py-20 px-4 sm:px-6 lg:px-12 xl:px-20">
-            <div className="max-w-7xl mx-auto">
+          <div className="bg-gray-50 py-16 lg:py-20 px-4 sm:px-6 lg:px-8 2xl:px-0">
+            <div className="w-full">
               <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-blue-900 mb-12 text-center">
                 {benefitsTitle}
               </h2>
@@ -344,8 +344,8 @@ export default function SinglePageLandingStep({
         )}
         
         {/* Footer */}
-        <div className="bg-gray-100 py-8 lg:py-12 px-4 sm:px-6 lg:px-12 xl:px-20 text-center">
-          <p className="text-xs lg:text-sm text-gray-500 max-w-7xl mx-auto leading-relaxed">
+        <div className="bg-gray-100 py-8 lg:py-12 px-4 sm:px-6 lg:px-8 2xl:px-0 text-center">
+          <p className="text-xs lg:text-sm text-gray-500 leading-relaxed">
             Finding Low Income Housing can be an overwhelming task for many. With so many options to choose from its difficult to decide which option is best for you and your family. Is it Section 8 Housing, Choice Housing Vouchers, Low Income Housing, Public Housing or Subsidized Housing programs? Each of these HUD Section 811 or Section 202 Housing options is catered specifically for the Affordable Housing Program applicants and different options and have the best program for you and your financial needs and provides you with a road map on how to qualify for these programs and what eligibility requirements are going to be necessary in order to get approved for one of these programs.
           </p>
         </div>
