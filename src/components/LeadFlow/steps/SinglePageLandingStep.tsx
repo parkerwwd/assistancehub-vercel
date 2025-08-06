@@ -214,22 +214,33 @@ export default function SinglePageLandingStep({
       <div className="min-h-screen bg-white">
         {/* Header with Logo */}
         {logo && (
-          <div className="bg-white py-6 lg:py-8 px-4 sm:px-6 lg:px-8 2xl:px-0 border-b">
+          <div className="bg-white py-6 lg:py-8 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 border-b">
             <img src={logo} alt="Logo" className="h-20 lg:h-24" />
           </div>
         )}
         
-        {/* Hero Section - Form Left, Image Right */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 2xl:px-0 py-12 lg:py-20">
-          <div className="grid lg:grid-cols-[2fr,1fr] xl:grid-cols-[3fr,1fr] 2xl:grid-cols-[4fr,1fr] gap-8 lg:gap-12 items-start">
-            {/* Left Column - Form - Takes More Space */}
+        {/* Hero Section - Full Width Form */}
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-12 lg:py-20">
+          <div className="w-full">
+            {/* Form - Full Screen Width */}
             <div className="w-full">
-              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#003D7A] mb-4">
-                {step.title || 'APPLY HERE FOR:'}
-              </h1>
-              <h2 className="text-xl lg:text-2xl xl:text-3xl text-gray-700 mb-10 leading-relaxed">
-                {step.subtitle || 'SECTION 8 VOUCHERS GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE'}
-              </h2>
+              <div className="flex items-start justify-between mb-10">
+                <div className="flex-1">
+                  <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#003D7A] mb-4">
+                    {step.title || 'APPLY HERE FOR:'}
+                  </h1>
+                  <h2 className="text-xl lg:text-2xl xl:text-3xl text-gray-700 leading-relaxed">
+                    {step.subtitle || 'SECTION 8 VOUCHERS GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE'}
+                  </h2>
+                </div>
+                {heroImage && (
+                  <img 
+                    src={heroImage} 
+                    alt="Happy family" 
+                    className="rounded-xl shadow-xl ml-8 w-48 lg:w-64 xl:w-80 hidden lg:block"
+                  />
+                )}
+              </div>
               
               {step.content && (
                 <p className="text-gray-600 mb-8 italic text-base lg:text-lg">
@@ -238,7 +249,7 @@ export default function SinglePageLandingStep({
               )}
               
               {/* Form - Full Width */}
-              <div className="bg-white shadow-2xl rounded-2xl p-10 lg:p-14 xl:p-20 border border-gray-100 w-full">
+              <div className="bg-gray-50 shadow-2xl rounded-2xl p-10 lg:p-16 xl:p-24 2xl:p-32 border border-gray-200 w-full">
                 <h3 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-10">
                   Apply Here For:
                 </h3>
@@ -250,22 +261,12 @@ export default function SinglePageLandingStep({
               </div>
             </div>
             
-            {/* Right Column - Image - Smaller */}
-            <div className="relative lg:sticky lg:top-20 hidden lg:block">
-              {heroImage && (
-                <img 
-                  src={heroImage} 
-                  alt="Happy family" 
-                  className="rounded-xl w-full shadow-2xl max-w-md ml-auto"
-                />
-              )}
-            </div>
           </div>
         </div>
         
         {/* Steps Section - Below Hero */}
         {showProgressSteps && stepDescriptions.length > 0 && (
-          <div className="w-full px-4 sm:px-6 lg:px-8 2xl:px-0 py-16 lg:py-20 bg-gray-50">
+          <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-16 lg:py-20 bg-gray-50">
             <div className="grid md:grid-cols-3 gap-8 lg:gap-10 xl:gap-12">
               {stepDescriptions.map((step, index) => (
                 <div 
@@ -289,7 +290,7 @@ export default function SinglePageLandingStep({
         
         {/* Benefits Section */}
         {showBenefits && benefits.length > 0 && (
-          <div className="bg-gray-50 py-16 lg:py-20 px-4 sm:px-6 lg:px-8 2xl:px-0">
+          <div className="bg-gray-50 py-16 lg:py-20 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
             <div className="w-full">
               <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-blue-900 mb-12 text-center">
                 {benefitsTitle}
@@ -344,7 +345,7 @@ export default function SinglePageLandingStep({
         )}
         
         {/* Footer */}
-        <div className="bg-gray-100 py-8 lg:py-12 px-4 sm:px-6 lg:px-8 2xl:px-0 text-center">
+        <div className="bg-gray-100 py-8 lg:py-12 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 text-center">
           <p className="text-xs lg:text-sm text-gray-500 leading-relaxed">
             Finding Low Income Housing can be an overwhelming task for many. With so many options to choose from its difficult to decide which option is best for you and your family. Is it Section 8 Housing, Choice Housing Vouchers, Low Income Housing, Public Housing or Subsidized Housing programs? Each of these HUD Section 811 or Section 202 Housing options is catered specifically for the Affordable Housing Program applicants and different options and have the best program for you and your financial needs and provides you with a road map on how to qualify for these programs and what eligibility requirements are going to be necessary in order to get approved for one of these programs.
           </p>

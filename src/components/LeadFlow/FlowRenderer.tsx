@@ -356,73 +356,83 @@ export default function FlowRenderer() {
         </div>
       )}
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header with logo */}
-        {styleConfig.logoUrl && (
-          <div className="text-center mb-8">
-            <img 
-              src={styleConfig.logoUrl} 
-              alt="Logo" 
-              className="h-12 mx-auto"
-            />
-          </div>
-        )}
-        
-        {/* Hero Image */}
-        {styleConfig.heroImageUrl && (
-          <div className="mb-8">
-            <img 
-              src={styleConfig.heroImageUrl} 
-              alt="" 
-              className="w-full max-w-2xl mx-auto rounded-lg shadow-lg"
-            />
-          </div>
-        )}
+      {/* Special handling for single page landing layouts */}
+      {currentStep?.step_type === 'single_page_landing' && 
+       (currentStep?.settings?.layoutType === 'formLeft' || currentStep?.settings?.layoutType === 'centered') ? (
+        <StepRenderer
+          step={currentStep}
+          onComplete={handleStepComplete}
+          onBack={session.currentStep > 0 ? handleBack : undefined}
+          values={session.responses}
+          isSubmitting={isSubmitting}
+          styleConfig={styleConfig}
+        />
+      ) : (
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          {/* Header with logo */}
+          {styleConfig.logoUrl && (
+            <div className="text-center mb-8">
+              <img 
+                src={styleConfig.logoUrl} 
+                alt="Logo" 
+                className="h-12 mx-auto"
+              />
+            </div>
+          )}
+          
+          {/* Hero Image */}
+          {styleConfig.heroImageUrl && (
+            <div className="mb-8">
+              <img 
+                src={styleConfig.heroImageUrl} 
+                alt="" 
+                className="w-full max-w-2xl mx-auto rounded-lg shadow-lg"
+              />
+            </div>
+          )}
 
-        {/* Progress bar - Hide for formLeft layout */}
-        {!(currentStep?.step_type === 'single_page_landing' && 
-          currentStep?.settings?.layoutType === 'formLeft') && (
+          {/* Progress bar */}
           <FlowProgress 
             current={session.currentStep + 1} 
             total={flow.steps.length}
             percentage={progress}
           />
-        )}
 
-        {/* Main content */}
-        <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 mt-8 max-w-3xl mx-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={session.currentStep}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <StepRenderer
-                step={currentStep}
-                onComplete={handleStepComplete}
-                onBack={session.currentStep > 0 ? handleBack : undefined}
-                values={session.responses}
-                isSubmitting={isSubmitting}
-                styleConfig={styleConfig}
-              />
-            </motion.div>
-          </AnimatePresence>
-        </div>
+          {/* Main content */}
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 mt-8 max-w-3xl mx-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={session.currentStep}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <StepRenderer
+                  step={currentStep}
+                  onComplete={handleStepComplete}
+                  onBack={session.currentStep > 0 ? handleBack : undefined}
+                  values={session.responses}
+                  isSubmitting={isSubmitting}
+                  styleConfig={styleConfig}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-        {/* Trust indicators */}
-        <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            <span>Your information is secure</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4" />
-            <span>SSL Encrypted</span>
+          {/* Trust indicators */}
+          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              <span>Your information is secure</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4" />
+              <span>SSL Encrypted</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
