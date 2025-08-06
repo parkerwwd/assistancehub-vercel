@@ -52,6 +52,15 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
         .select('*, flow:flows!inner(slug)')
         .eq('flow.slug', slug);
       
+      // Query ALL steps to see what exists
+      const { data: allSteps, error: allError } = await supabase
+        .from('flow_steps')
+        .select('id, flow_id, step_type, step_order')
+        .limit(10);
+      
+      // Check if any steps reference this flow
+      const matchingSteps = allSteps?.filter(s => s.flow_id === flow.id) || [];
+      
       setQueryResult({
         timestamp: new Date().toISOString(),
         flowId: flow.id,
@@ -64,6 +73,12 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
           data: slugSteps,
           error: slugError,
           count: slugSteps?.length || 0
+        },
+        allStepsQuery: {
+          totalFound: allSteps?.length || 0,
+          matchingThisFlow: matchingSteps.length,
+          firstFewSteps: allSteps?.slice(0, 3),
+          error: allError
         },
         slug: slug
       });
@@ -120,6 +135,22 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
                 className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 w-full text-sm"
               >
                 Test Steps Query
+              </button>
+              <button 
+                onClick={() => {
+                  // Clear any potential browser storage
+                  try {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    console.log('Cleared browser storage');
+                  } catch (e) {
+                    console.error('Error clearing storage:', e);
+                  }
+                  window.location.reload();
+                }} 
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 w-full text-sm"
+              >
+                Clear Cache & Reload
               </button>
             </>
           )}
@@ -207,6 +238,16 @@ export default function FlowRenderer() {
   useEffect(() => {
     loadFlow();
   }, [slug]);
+  
+  // Force reload function for debugging
+  const forceReload = async () => {
+    setLoading(true);
+    setFlow(null);
+    setSession(null);
+    // Clear any potential cache
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await loadFlow();
+  };
 
   const loadFlow = async (retryCount = 0) => {
     if (!slug) return;
@@ -540,7 +581,7 @@ export default function FlowRenderer() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     console.log('No steps found - flow:', flow?.name, 'steps:', flow?.steps, 'mobile:', isMobile);
     
-    return <NoStepsError flow={flow} slug={slug} onRetry={() => loadFlow(0)} />;
+    return <NoStepsError flow={flow} slug={slug} onRetry={forceReload} />;
   }
 
   // If we have a flow with steps but no session, create one
