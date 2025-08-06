@@ -194,6 +194,15 @@ export default function FlowRenderer() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     console.log(`FlowRenderer mounted on ${isMobile ? 'MOBILE' : 'DESKTOP'} for slug: ${slug}`);
     
+    // Log Supabase connection details
+    console.log('Supabase connection:', {
+      url: supabase.supabaseUrl,
+      device: isMobile ? 'MOBILE' : 'DESKTOP',
+      host: window.location.host,
+      protocol: window.location.protocol,
+      href: window.location.href
+    });
+    
     // Add a small delay on mobile to ensure data is fully loaded
     if (isMobile) {
       setTimeout(() => {
