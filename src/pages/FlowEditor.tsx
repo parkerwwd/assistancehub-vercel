@@ -124,7 +124,11 @@ export default function FlowEditor() {
   };
 
   const handleSave = async () => {
+    console.log('handleSave function called!');
+    console.log('Current flow:', flow);
+    
     if (!flow.name || !flow.slug) {
+      console.log('Missing name or slug:', { name: flow.name, slug: flow.slug });
       toast({
         title: "Error",
         description: "Please provide a name and slug for the flow.",
@@ -396,12 +400,15 @@ export default function FlowEditor() {
 
   // Auto-save functionality for preview
   const triggerAutoSave = () => {
+    console.log('triggerAutoSave called');
     if (autoSaveTimeout) {
       clearTimeout(autoSaveTimeout);
     }
     
     const timeout = setTimeout(() => {
+      console.log('Auto-save timer fired', { isNew, showPreview, hasName: !!flow.name, hasSlug: !!flow.slug });
       if (!isNew && flow.name && flow.slug && showPreview) {
+        console.log('Auto-save calling handleSave');
         handleSave();
       }
     }, 2000); // Auto-save after 2 seconds of inactivity
@@ -478,7 +485,10 @@ export default function FlowEditor() {
               </>
             )}
             <Button
-              onClick={handleSave}
+              onClick={() => {
+                console.log('Save button clicked!');
+                handleSave();
+              }}
               disabled={saving}
               className="flex items-center gap-2"
             >
