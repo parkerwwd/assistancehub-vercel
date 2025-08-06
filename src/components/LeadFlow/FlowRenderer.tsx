@@ -152,6 +152,14 @@ function NoStepsError({ flow, slug, onRetry }: { flow: any; slug?: string; onRet
               >
                 Clear Cache & Reload
               </button>
+              <button 
+                onClick={() => {
+                  alert(`Database URL:\n${supabase.supabaseUrl}\n\nHost: ${window.location.host}`);
+                }} 
+                className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 w-full text-sm"
+              >
+                Show Database URL
+              </button>
             </>
           )}
         </div>
