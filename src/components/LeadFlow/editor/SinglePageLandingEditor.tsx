@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Palette, Layout, Gift, Shield, Sparkles, Settings } from 'lucide-react';
+import { presetSteps } from '../components/NumberedSteps';
+import { presetTrustBadges } from '../components/TrustBadges';
+import { presetBenefits } from '../components/BenefitsList';
 
 interface SinglePageLandingEditorProps {
   step: any;
@@ -23,6 +26,26 @@ export default function SinglePageLandingEditor({ step, onUpdate }: SinglePageLa
       settings: {
         ...settings,
         [key]: value
+      }
+    });
+  };
+
+  const applyCompetitorPreset = () => {
+    onUpdate({
+      settings: {
+        ...settings,
+        layoutType: 'centered',
+        formLayout: 'stacked',
+        showProgressSteps: true,
+        showBenefits: true,
+        stepsPreset: 'section8Housing',
+        benefitPreset: 'section8',
+        benefitsTitle: 'What Do I Get When Signing Up?',
+        buttonText: 'Download Application Guide',
+        buttonColor: '#AF1E3F',
+        primaryColor: '#0891B2',
+        accentColor: '#10B981',
+        trustBadgePreset: 'standard'
       }
     });
   };
@@ -55,6 +78,17 @@ export default function SinglePageLandingEditor({ step, onUpdate }: SinglePageLa
             <CardDescription>
               Configure the overall layout and structure
             </CardDescription>
+            <div className="mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={applyCompetitorPreset}
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Apply Competitor Style Preset
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -67,10 +101,14 @@ export default function SinglePageLandingEditor({ step, onUpdate }: SinglePageLa
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="centered">Centered (Form Only)</SelectItem>
+                  <SelectItem value="centered">Centered (Competitor Style)</SelectItem>
                   <SelectItem value="heroSplit">Hero Split (Image + Form)</SelectItem>
+                  <SelectItem value="minimal">Minimal (Form Only)</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                Centered layout matches competitor design with hero background
+              </p>
             </div>
 
             <div>

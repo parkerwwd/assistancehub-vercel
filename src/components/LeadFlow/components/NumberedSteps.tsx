@@ -32,11 +32,55 @@ export default function NumberedSteps({
   layout = 'vertical',
   animated = true 
 }: NumberedStepsProps) {
+  // For horizontal layout, use grid for better competitor-style presentation
+  if (layout === 'horizontal') {
+    return (
+      <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${className}`}>
+        {steps.map((step, index) => {
+          const Icon = step.icon ? iconMap[step.icon] : null;
+          
+          return (
+            <motion.div
+              key={index}
+              initial={animated ? { opacity: 0, y: 20 } : undefined}
+              animate={animated ? { opacity: 1, y: 0 } : undefined}
+              transition={animated ? { delay: index * 0.2 } : undefined}
+              className="text-center"
+            >
+              {/* Step Header */}
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  Step{step.number}
+                </h3>
+                
+                {/* Icon Circle */}
+                <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center relative"
+                     style={{ backgroundColor: '#E0F2FE' }}>
+                  {Icon ? (
+                    <Icon className="w-12 h-12 text-cyan-600" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold"
+                         style={{ backgroundColor: step.color }}>
+                      {step.number}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Content */}
+              <p className="text-gray-700 leading-relaxed max-w-xs mx-auto">
+                {step.description}
+              </p>
+            </motion.div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Vertical layout (original)
   return (
-    <div className={`
-      ${layout === 'horizontal' ? 'flex gap-6 overflow-x-auto' : 'space-y-4'}
-      ${className}
-    `}>
+    <div className={`space-y-4 ${className}`}>
       {steps.map((step, index) => {
         const Icon = step.icon ? iconMap[step.icon] : null;
         
@@ -46,10 +90,7 @@ export default function NumberedSteps({
             initial={animated ? { opacity: 0, y: 20 } : undefined}
             animate={animated ? { opacity: 1, y: 0 } : undefined}
             transition={animated ? { delay: index * 0.2 } : undefined}
-            className={`
-              flex gap-4 items-start
-              ${layout === 'horizontal' ? 'min-w-[300px] flex-shrink-0' : ''}
-            `}
+            className="flex gap-4 items-start"
           >
             {/* Number Circle */}
             <div 
@@ -68,7 +109,7 @@ export default function NumberedSteps({
             </div>
 
             {/* Content */}
-            <div className={`flex-1 ${layout === 'horizontal' ? 'pt-1' : 'pt-2'}`}>
+            <div className="flex-1 pt-2">
               {step.title && (
                 <h3 className="font-bold text-lg text-gray-900 mb-1">
                   {step.title}

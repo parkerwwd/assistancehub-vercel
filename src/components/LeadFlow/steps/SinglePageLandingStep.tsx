@@ -43,6 +43,7 @@ export default function SinglePageLandingStep({
     showProgressSteps = true,
     showBenefits = true,
     benefitsTitle = 'What Do I Get When Signing Up?',
+    benefitsImageUrl,
     layoutType = 'centered', // 'centered' or 'heroSplit'
     primaryColor = '#1E40AF',
     accentColor = '#10B981'
@@ -204,50 +205,99 @@ export default function SinglePageLandingStep({
     );
   }
 
-  // Default centered layout
+  // Default centered layout (competitor style)
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Main Form Card - Moved to top for better conversion */}
-      <div className="bg-white rounded-lg shadow-xl p-8 mb-8">
-        {formContent}
+    <div className="min-h-screen">
+      {/* Hero Section with Form Overlay */}
+      <div 
+        className="relative min-h-[600px] flex items-center justify-center py-12 px-4"
+        style={{
+          backgroundImage: heroImage ? `url(${heroImage})` : 'linear-gradient(135deg, #0891b2 0%, #065f46 100%)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40"></div>
+        
+        {/* Content Container */}
+        <div className="relative z-10 max-w-6xl mx-auto w-full">
+          {/* Logo at top */}
+          {logo && (
+            <div className="text-center mb-8">
+              <img src={logo} alt="Logo" className="h-20 mx-auto filter brightness-0 invert" />
+            </div>
+          )}
+          
+          {/* Hero Content */}
+          <div className="text-center text-white mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              {step.title || 'Apply Here For:'}
+            </h1>
+            <p className="text-xl md:text-2xl max-w-3xl mx-auto">
+              {step.subtitle || 'Section 8 Vouchers Government Housing Rental Assistance and more'}
+            </p>
+            {step.content && (
+              <p className="text-lg mt-4 max-w-2xl mx-auto">
+                {step.content}
+              </p>
+            )}
+          </div>
+          
+          {/* Form Card */}
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-lg shadow-2xl p-8">
+              {formContent}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Logo */}
-      {logo && (
-        <div className="text-center mb-8">
-          <img src={logo} alt="Logo" className="h-20 mx-auto" />
-        </div>
-      )}
-
-      {/* Hero Image */}
-      {heroImage && (
-        <div className="mb-8 rounded-lg overflow-hidden shadow-lg">
-          <img src={heroImage} alt="Hero" className="w-full h-auto" />
-        </div>
-      )}
-
-      {/* Progress Steps */}
+      {/* Progress Steps Section */}
       {showProgressSteps && stepDescriptions.length > 0 && (
-        <div className="mt-8">
-          <NumberedSteps 
-            steps={stepDescriptions}
-            layout="vertical"
-            animated={true}
-            className="bg-white rounded-lg shadow-lg p-6"
-          />
+        <div className="py-16 px-4 bg-gray-100">
+          <div className="max-w-6xl mx-auto">
+            <NumberedSteps 
+              steps={stepDescriptions}
+              layout="horizontal"
+              animated={true}
+              className=""
+            />
+          </div>
         </div>
       )}
 
       {/* Benefits Section */}
       {showBenefits && benefits.length > 0 && (
-        <div className="mt-8">
-          <BenefitsList 
-            benefits={benefits}
-            title={benefitsTitle}
-            layout="double"
-            checkmarkColor={accentColor}
-            animated={true}
-          />
+        <div className="py-16 px-4 bg-white">
+          <div className="max-w-6xl mx-auto">
+            <BenefitsList 
+              benefits={benefits}
+              title={benefitsTitle}
+              layout="grid"
+              checkmarkColor={accentColor}
+              animated={true}
+              imageUrl={benefitsImageUrl}
+            />
+            
+            {/* CTA Button */}
+            <div className="text-center mt-12">
+              <Button
+                size="lg"
+                className="px-8 py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+                style={{
+                  backgroundColor: buttonColor,
+                  color: '#FFFFFF'
+                }}
+              >
+                {buttonText}
+              </Button>
+              <p className="mt-4 text-sm text-gray-600">
+                🔒 100% Secure and SPAM Free
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
