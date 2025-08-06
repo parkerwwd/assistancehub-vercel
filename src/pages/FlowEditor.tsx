@@ -85,6 +85,12 @@ export default function FlowEditor() {
           step.fields?.sort((a: any, b: any) => a.field_order - b.field_order);
         });
         
+        console.log('Loaded flow:', {
+          id: flowData.id,
+          name: flowData.name,
+          stepsCount: flowData.steps.length
+        });
+        
         setFlow(flowData as FlowData);
       }
     } catch (error) {
@@ -131,6 +137,15 @@ export default function FlowEditor() {
     
     try {
       let flowId = flow.id;
+      
+      // Debug logging
+      console.log('Saving flow:', {
+        isNew,
+        flowId,
+        flowName: flow.name,
+        stepsCount: flow.steps.length,
+        steps: flow.steps
+      });
 
       // Save or update flow
       if (isNew) {
@@ -168,16 +183,27 @@ export default function FlowEditor() {
       }
 
       // Delete existing steps if updating
-      if (!isNew) {
+      if (!isNew && flowId) {
+        console.log('Deleting existing steps for flow:', flowId);
         const { error: deleteError } = await supabase
           .from('flow_steps')
           .delete()
           .eq('flow_id', flowId);
 
-        if (deleteError) throw deleteError;
+        if (deleteError) {
+          console.error('Error deleting steps:', deleteError);
+          throw deleteError;
+        }
+        console.log('Successfully deleted old steps');
+      }
+
+      // Ensure we have a valid flow ID
+      if (!flowId) {
+        throw new Error('Flow ID is missing. Cannot save steps.');
       }
 
       // Save steps and fields
+      console.log(`Saving ${flow.steps.length} steps for flow:`, flowId);
       for (let i = 0; i < flow.steps.length; i++) {
         const step = flow.steps[i];
         const { data: savedStep, error: stepError } = await supabase
@@ -201,7 +227,12 @@ export default function FlowEditor() {
           .select()
           .single();
 
-        if (stepError) throw stepError;
+        if (stepError) {
+          console.error('Error saving step:', stepError);
+          throw stepError;
+        }
+        
+        console.log(`Saved step ${i + 1}:`, savedStep.id, step.step_type);
 
         // Save fields for this step
         if (step.fields && step.fields.length > 0) {
@@ -227,6 +258,19 @@ export default function FlowEditor() {
           if (fieldsError) throw fieldsError;
         }
       }
+      
+      // Verify steps were saved (for debugging)
+      console.log('Verifying saved steps...');
+      const { data: verifySteps, error: verifyError } = await supabase
+        .from('flow_steps')
+        .select('id, step_type, step_order')
+        .eq('flow_id', flowId);
+      
+      console.log('Verification result:', {
+        savedStepsCount: verifySteps?.length || 0,
+        steps: verifySteps,
+        error: verifyError
+      });
 
       toast({
         title: "Success",
