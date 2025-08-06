@@ -198,6 +198,11 @@ export default function SinglePageLandingStep({
   // Default centered layout
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Main Form Card - Moved to top for better conversion */}
+      <div className="bg-white rounded-lg shadow-xl p-8 mb-8">
+        {formContent}
+      </div>
+
       {/* Logo */}
       {logo && (
         <div className="text-center mb-8">
@@ -211,11 +216,6 @@ export default function SinglePageLandingStep({
           <img src={heroImage} alt="Hero" className="w-full h-auto" />
         </div>
       )}
-
-      {/* Main Form Card */}
-      <div className="bg-white rounded-lg shadow-xl p-8">
-        {formContent}
-      </div>
 
       {/* Progress Steps */}
       {showProgressSteps && stepDescriptions.length > 0 && (
