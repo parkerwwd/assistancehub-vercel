@@ -211,23 +211,21 @@ export default function SinglePageLandingStep({
       <div className="min-h-screen bg-gray-50">
         {/* Header with Logo */}
         {logo && (
-          <div className="bg-white py-4 px-4 shadow-sm">
-            <div className="max-w-7xl mx-auto">
-              <img src={logo} alt="Logo" className="h-16" />
-            </div>
+          <div className="bg-white py-4 px-4 sm:px-6 lg:px-12 xl:px-20 shadow-sm">
+            <img src={logo} alt="Logo" className="h-16" />
           </div>
         )}
         
         {/* Hero Section - Form Left, Image Right */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
-          <div className="max-w-[1400px] mx-auto">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-8 lg:py-16">
+          <div className="w-full">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-20 items-start">
             {/* Left Column - Form */}
             <div>
-              <h1 className="text-4xl font-bold text-blue-900 mb-2 uppercase">
+              <h1 className="text-3xl lg:text-5xl font-bold text-blue-900 mb-3 uppercase">
                 {step.title || 'APPLY HERE FOR:'}
               </h1>
-              <h2 className="text-2xl text-gray-700 mb-4">
+              <h2 className="text-xl lg:text-2xl text-gray-700 mb-6">
                 {step.subtitle || 'SECTION 8 VOUCHERS GOVERNMENT HOUSING RENTAL ASSISTANCE AND MORE'}
               </h2>
               {step.content && (
@@ -241,30 +239,30 @@ export default function SinglePageLandingStep({
             </div>
             
             {/* Right Column - Image with Steps Overlay */}
-            <div className="relative">
+            <div className="relative min-h-[500px] lg:min-h-[600px]">
               {heroImage && (
                 <img 
                   src={heroImage} 
                   alt="Happy family" 
-                  className="rounded-lg w-full h-full object-cover"
+                  className="rounded-lg w-full h-full object-cover absolute inset-0"
                 />
               )}
               
               {/* Steps Overlay */}
               {showProgressSteps && stepDescriptions.length > 0 && (
-                <div className="lg:absolute lg:top-1/2 lg:-translate-y-1/2 lg:right-0 lg:-mr-16 xl:-mr-24 space-y-4 mt-8 lg:mt-0">
+                <div className="lg:absolute lg:top-1/2 lg:-translate-y-1/2 lg:-right-20 xl:-right-32 space-y-4 mt-8 lg:mt-0">
                   {stepDescriptions.map((step, index) => (
                     <div 
                       key={index}
-                      className="flex items-start gap-4 bg-white/95 backdrop-blur rounded-lg p-4 lg:p-5 shadow-xl max-w-md lg:max-w-lg"
+                      className="flex items-start gap-4 bg-white/95 backdrop-blur rounded-lg p-4 lg:p-6 shadow-xl w-full max-w-[500px]"
                     >
                       <div 
-                        className="w-16 h-16 flex items-center justify-center text-white text-3xl font-bold rounded flex-shrink-0"
+                        className="w-20 h-20 flex items-center justify-center text-white text-4xl font-bold rounded-lg flex-shrink-0"
                         style={{ backgroundColor: step.color }}
                       >
                         {step.number}
                       </div>
-                      <p className="text-gray-700 text-sm leading-relaxed">
+                      <p className="text-gray-700 text-base lg:text-lg leading-relaxed">
                         {step.description}
                       </p>
                     </div>
@@ -278,8 +276,8 @@ export default function SinglePageLandingStep({
         
         {/* Benefits Section */}
         {showBenefits && benefits.length > 0 && (
-          <div className="bg-white py-12 lg:py-20 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-5xl mx-auto">
+          <div className="bg-white py-12 lg:py-20 px-4 sm:px-6 lg:px-12 xl:px-20">
+            <div className="max-w-6xl mx-auto">
               <h2 className="text-2xl lg:text-3xl font-bold text-blue-900 mb-8 lg:mb-12 text-center">
                 {benefitsTitle}
               </h2>
@@ -319,8 +317,8 @@ export default function SinglePageLandingStep({
         )}
         
         {/* Footer */}
-        <div className="bg-gray-100 py-8 lg:py-12 px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-xs lg:text-sm text-gray-500 max-w-6xl mx-auto leading-relaxed">
+        <div className="bg-gray-100 py-8 lg:py-12 px-4 sm:px-6 lg:px-12 xl:px-20 text-center">
+          <p className="text-xs lg:text-sm text-gray-500 max-w-7xl mx-auto leading-relaxed">
             Finding Low Income Housing can be an overwhelming task for many. With so many options to choose from its difficult to decide which option is best for you and your family. Is it Section 8 Housing, Choice Housing Vouchers, Low Income Housing, Public Housing or Subsidized Housing programs? Each of these HUD Section 811 or Section 202 Housing options is catered specifically for the Affordable Housing Program applicants and different options and have the best program for you and your financial needs and provides you with a road map on how to qualify for these programs and what eligibility requirements are going to be necessary in order to get approved for one of these programs.
           </p>
         </div>
