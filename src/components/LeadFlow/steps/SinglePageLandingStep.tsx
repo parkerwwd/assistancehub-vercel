@@ -91,6 +91,12 @@ export default function SinglePageLandingStep({
         animate={{ opacity: 1, y: 0 }}
         className={formLayout === 'grid' ? 'col-span-1' : ''}
       >
+        {field.label && field.label !== field.placeholder && (
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {field.label}
+            {field.is_required && <span className="text-red-500 ml-1">*</span>}
+          </label>
+        )}
         <Input
           type={field.field_type}
           placeholder={field.placeholder || field.label}
@@ -102,14 +108,18 @@ export default function SinglePageLandingStep({
             }
           }}
           className={`
-            w-full border-2 rounded-lg
-            ${error ? 'border-red-500' : 'border-gray-300'}
-            focus:border-blue-500 focus:outline-none
-            transition-colors
-            ${config.layoutType === 'formLeft' ? 'px-5 py-4 text-lg' : 'px-4 py-3 text-base'}
+            w-full rounded-lg
+            ${error ? 'border-red-500' : 'border-gray-200'}
+            ${error ? 'bg-red-50' : 'bg-gray-50'}
+            hover:bg-white
+            focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20
+            transition-all duration-200
+            ${config.layoutType === 'formLeft' ? 'px-6 py-5 text-lg' : 'px-5 py-4 text-base'}
+            placeholder:text-gray-400
+            shadow-sm hover:shadow-md
           `}
           style={{
-            borderColor: error ? undefined : styleConfig?.primaryColor
+            borderColor: error ? undefined : styleConfig?.primaryColor || '#3B82F6'
           }}
         />
         {error && (
@@ -155,12 +165,13 @@ export default function SinglePageLandingStep({
       {step.fields && step.fields.length > 0 && (
         <Button
           type="submit"
-          className={`w-full font-bold shadow-lg hover:shadow-xl transition-all ${
-            config.layoutType === 'formLeft' ? 'py-5 text-xl' : 'py-4 text-lg'
-          }`}
+          className={`w-full font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 ${
+            config.layoutType === 'formLeft' ? 'py-6 text-xl' : 'py-5 text-lg'
+          } rounded-lg`}
           style={{
             backgroundColor: buttonColor,
-            color: '#FFFFFF'
+            color: '#FFFFFF',
+            background: `linear-gradient(180deg, ${buttonColor || '#3B82F6'} 0%, ${buttonColor ? buttonColor + 'dd' : '#2563EB'} 100%)`
           }}
         >
           {buttonText}
@@ -169,12 +180,15 @@ export default function SinglePageLandingStep({
 
       {/* Trust Badges */}
       {trustBadges.length > 0 && (
-        <div className="mt-4">
-          <TrustBadges 
-            badges={trustBadges} 
-            layout="horizontal"
-            size="sm"
-          />
+        <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-600 font-medium">
+          <div className="flex items-center gap-2">
+            <span className="text-green-500 text-lg">🔒</span>
+            <span>100% Secure</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-blue-500 text-lg">✓</span>
+            <span>SPAM Free</span>
+          </div>
         </div>
       )}
 
@@ -241,7 +255,7 @@ export default function SinglePageLandingStep({
                 )}
                 
                 {/* Form Container */}
-                <div className="bg-white shadow-xl rounded-xl p-8 lg:p-10 xl:p-12 border border-gray-100">
+                <div className="bg-white shadow-2xl rounded-2xl p-8 lg:p-10 xl:p-12 border border-gray-100 backdrop-blur-sm bg-white/95">
                   {formContent}
                 </div>
               </div>
