@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Plus, Trash2, GripVertical, Save, Eye, ArrowLeft, Settings, Copy, Link, Monitor, PanelRightClose, PanelRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,7 @@ interface FlowData extends Omit<Flow, 'id' | 'created_at' | 'updated_at'> {
 
 export default function FlowEditor() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isNew = id === 'new';
   
@@ -64,6 +65,13 @@ export default function FlowEditor() {
       loadFlow(id);
     }
   }, [id, isNew]);
+
+  // Auto-open Quick Edit when ?quick=1 is present
+  useEffect(() => {
+    if (!isNew && searchParams.get('quick') === '1') {
+      setShowQuickEdit(true);
+    }
+  }, [isNew, searchParams]);
 
   const loadFlow = async (flowId: string) => {
     try {
@@ -733,6 +741,22 @@ export default function FlowEditor() {
                 </p>
               </CardContent>
             </Card>
+
+            {/* Quick Edit wizard entry */}
+            {!isNew && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Edit (Wizard)</CardTitle>
+                  <CardDescription>Update landing layout, fields, theme, and redirect fast.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full" onClick={() => setShowQuickEdit(true)}>
+                    <Settings className="w-4 h-4 mr-2" />
+                    Open Quick Edit
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader>
