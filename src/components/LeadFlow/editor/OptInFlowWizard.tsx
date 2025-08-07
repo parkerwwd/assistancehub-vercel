@@ -10,6 +10,9 @@ import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { FlowStatus } from '@/types/leadFlow';
 import AssetManagerDialog from './AssetManagerDialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SinglePageLandingStep from '@/components/LeadFlow/steps/SinglePageLandingStep';
+import type { FlowStepWithFields, FieldValues, FieldType } from '@/types/leadFlow';
 
 type OptInFlowWizardProps = {
   open: boolean;
@@ -43,6 +46,8 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
     target: 'hero' | 'logo' | null;
     open: boolean;
   }>({ target: null, open: false });
+  const [previewValues, setPreviewValues] = useState<FieldValues>({});
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
 
   const generatedSlug = useMemo(() => {
     const base = name
@@ -496,15 +501,79 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                 <CardTitle>Preview</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <div><span className="font-medium">Layout:</span> {layoutType}</div>
-                  <div><span className="font-medium">Fields:</span> {buildFields().map(f => f.label).join(', ') || 'None'}</div>
-                  <div><span className="font-medium">Redirect:</span> {redirectUrl || 'None'}{redirectUrl ? ` (in ${redirectDelay}s)` : ''}</div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="font-medium">Primary:</span>
-                    <span className="inline-block w-4 h-4 rounded" style={{ backgroundColor: primaryColor }} />
-                  </div>
-                </div>
+                <Tabs defaultValue="live">
+                  <TabsList className="mb-3">
+                    <TabsTrigger value="live">Live</TabsTrigger>
+                    <TabsTrigger value="summary">Summary</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="summary">
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <div><span className="font-medium">Layout:</span> {layoutType}</div>
+                      <div><span className="font-medium">Image Mode:</span> {imagePlacement}</div>
+                      <div><span className="font-medium">Fields:</span> {buildFields().map(f => f.label).join(', ') || 'None'}</div>
+                      <div><span className="font-medium">Redirect:</span> {redirectUrl || 'None'}{redirectUrl ? ` (in ${redirectDelay}s)` : ''}</div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="font-medium">Primary:</span>
+                        <span className="inline-block w-4 h-4 rounded" style={{ backgroundColor: primaryColor }} />
+                      </div>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="live">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex gap-2">
+                        <Button type="button" variant={previewDevice === 'desktop' ? 'default' : 'outline'} size="sm" onClick={() => setPreviewDevice('desktop')}>Desktop</Button>
+                        <Button type="button" variant={previewDevice === 'mobile' ? 'default' : 'outline'} size="sm" onClick={() => setPreviewDevice('mobile')}>Mobile</Button>
+                      </div>
+                    </div>
+                    <div className={`border rounded-lg overflow-hidden ${previewDevice === 'mobile' ? 'max-w-[420px]' : 'w-full'} mx-auto`}>
+                      {(() => {
+                        const fields = buildFields();
+                        const settings: any = {
+                          layoutType,
+                          heroImage,
+                          logo: logoUrl,
+                          buttonText: ctaText,
+                          buttonColor,
+                          usePageBackground: imagePlacement === 'page',
+                          imageMode: imagePlacement,
+                          primaryColor
+                        };
+                        const step: FlowStepWithFields = {
+                          id: 'preview',
+                          flow_id: 'preview',
+                          step_order: 1,
+                          step_type: 'single_page_landing',
+                          title: 'Apply for Section 8 Housing',
+                          subtitle: 'Get your free application guide and next steps',
+                          content: '',
+                          button_text: ctaText,
+                          button_back_text: null as any,
+                          is_required: true as any,
+                          skip_logic: null as any,
+                          navigation_logic: null as any,
+                          validation_rules: null as any,
+                          redirect_url: null as any,
+                          redirect_delay: null as any,
+                          settings,
+                          created_at: '' as any,
+                          updated_at: '' as any,
+                          fields: fields as any
+                        };
+                        return (
+                          <div className="bg-white">
+                            <SinglePageLandingStep
+                              step={step}
+                              onChange={(name, value) => setPreviewValues(prev => ({ ...prev, [name]: value }))}
+                              values={previewValues}
+                              onComplete={() => {}}
+                              styleConfig={{ primaryColor }}
+                            />
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
 
