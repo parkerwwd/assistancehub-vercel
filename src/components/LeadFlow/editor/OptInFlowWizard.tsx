@@ -48,6 +48,13 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
   }>({ target: null, open: false });
   const [previewValues, setPreviewValues] = useState<FieldValues>({});
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [currentStep, setCurrentStep] = useState<0 | 1 | 2>(0); // 0 Basic, 1 Content, 2 Review
+  const [includeUTMs, setIncludeUTMs] = useState(true);
+  const themePresets = [
+    { id: 'teal', name: 'Teal', primary: '#00B8A9', button: '#00B8A9', hero: 'https://images.unsplash.com/photo-1523217582562-09d0def993a6?q=80&w=1200&auto=format&fit=crop' },
+    { id: 'blue', name: 'Blue', primary: '#3B82F6', button: '#3B82F6', hero: defaultHero },
+    { id: 'neutral', name: 'Neutral', primary: '#334155', button: '#111827', hero: 'https://images.unsplash.com/photo-1502005229762-cf1b2da7c4f3?q=80&w=1200&auto=format&fit=crop' }
+  ];
 
   const generatedSlug = useMemo(() => {
     const base = name
@@ -76,7 +83,28 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
     if (includeEmail) fields.push({ field_order: order++, field_type: 'email', field_name: 'email', label: 'Email', placeholder: 'you@example.com', is_required: true, validation_rules: { type: 'email' } });
     if (includeZip) fields.push({ field_order: order++, field_type: 'zip', field_name: 'zipCode', label: 'ZIP Code', placeholder: '12345', is_required: true });
     if (includeConsent) fields.push({ field_order: order++, field_type: 'checkbox', field_name: 'consent', label: 'I agree to receive updates about housing assistance', placeholder: '', is_required: true, options: [{ label: 'Yes, keep me updated', value: 'yes' }] });
+    if (includeUTMs) {
+      fields.push({ field_order: order++, field_type: 'hidden', field_name: 'utm_source', label: 'utm_source', is_required: false });
+      fields.push({ field_order: order++, field_type: 'hidden', field_name: 'utm_medium', label: 'utm_medium', is_required: false });
+      fields.push({ field_order: order++, field_type: 'hidden', field_name: 'utm_campaign', label: 'utm_campaign', is_required: false });
+    }
     return fields;
+  };
+
+  const applyBundle = (bundle: 'minimal' | 'leadgen') => {
+    if (bundle === 'minimal') {
+      setIncludeFirstName(true); setIncludeLastName(false); setIncludeEmail(true); setIncludeZip(true); setIncludeConsent(true);
+    } else {
+      setIncludeFirstName(true); setIncludeLastName(true); setIncludeEmail(true); setIncludeZip(true); setIncludeConsent(true);
+    }
+  };
+
+  const applyTheme = (id: string) => {
+    const t = themePresets.find(p => p.id === id);
+    if (!t) return;
+    setPrimaryColor(t.primary);
+    setButtonColor(t.button);
+    setHeroImage(t.hero);
   };
 
   const handleCreate = async () => {
@@ -87,12 +115,18 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
 
     setSaving(true);
     try {
+      // Ensure slug is unique
+      const { data: existing } = await supabase.from('flows').select('id').eq('slug', slug).maybeSingle();
+      let finalSlug = slug;
+      if (existing) {
+        finalSlug = `${slug}-${Date.now().toString().slice(-5)}`;
+      }
       // Create flow
       const { data: flow, error: flowError } = await supabase
         .from('flows')
         .insert({
           name,
-          slug,
+          slug: finalSlug,
           description: 'Quick opt-in landing flow',
           status: FlowStatus.DRAFT,
           style_config: {
@@ -375,94 +409,161 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
           {/* Left: Basics */}
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Basics</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Quick Flow</CardTitle>
+                <div className="flex gap-2 text-sm">
+                  <Button type="button" variant={currentStep===0? 'default':'outline'} size="sm" onClick={()=>setCurrentStep(0)}>1. Basic</Button>
+                  <Button type="button" variant={currentStep===1? 'default':'outline'} size="sm" onClick={()=>setCurrentStep(1)}>2. Content</Button>
+                  <Button type="button" variant={currentStep===2? 'default':'outline'} size="sm" onClick={()=>setCurrentStep(2)}>3. Review</Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="name">Flow Name</Label>
-                <Input id="name" value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="e.g., Housing Application Guide" />
-              </div>
-              <div>
-                <Label htmlFor="slug">URL Slug</Label>
-                <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder={generatedSlug} />
-                <p className="text-xs text-gray-500 mt-1">URL: /flow/{slug || generatedSlug}</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {currentStep === 0 && (
+              <>
                 <div>
-                  <Label>Layout</Label>
-                  <Select value={layoutType} onValueChange={(v: any) => setLayoutType(v)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="centered">Centered (hero + form card)</SelectItem>
-                      <SelectItem value="heroSplit">Hero Split (content + form)</SelectItem>
-                      <SelectItem value="formLeft">Form Left (competitor style)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="name">Flow Name</Label>
+                  <Input id="name" value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="e.g., Housing Application Guide" />
                 </div>
                 <div>
-                  <Label>Primary Color</Label>
-                  <Input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
+                  <Label htmlFor="slug">URL Slug</Label>
+                  <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder={generatedSlug} />
+                  <p className="text-xs text-gray-500 mt-1">URL: /flow/{slug || generatedSlug}</p>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Hero Image URL</Label>
-                  <div className="flex gap-2">
-                    <Input value={heroImage} onChange={(e) => setHeroImage(e.target.value)} placeholder="https://..." />
-                    <Button type="button" variant="outline" onClick={() => setAssetOpen({ target: 'hero', open: true })}>Browse</Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Layout</Label>
+                    <Select value={layoutType} onValueChange={(v: any) => setLayoutType(v)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="centered">Centered (hero + form card)</SelectItem>
+                        <SelectItem value="heroSplit">Hero Split (content + form)</SelectItem>
+                        <SelectItem value="formLeft">Form Left (competitor style)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Primary Color</Label>
+                    <Input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
                   </div>
                 </div>
+
                 <div>
-                  <Label>Logo URL</Label>
-                  <div className="flex gap-2">
-                    <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
-                    <Button type="button" variant="outline" onClick={() => setAssetOpen({ target: 'logo', open: true })}>Browse</Button>
+                  <Label>Theme Presets</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {themePresets.map(p => (
+                      <Button key={p.id} type="button" variant="outline" size="sm" onClick={()=>applyTheme(p.id)}>{p.name}</Button>
+                    ))}
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Image Placement</Label>
-                  <Select value={imagePlacement} onValueChange={(v: any) => setImagePlacement(v)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hero">Hero (section background)</SelectItem>
-                      <SelectItem value="page">Full Page Background</SelectItem>
-                      <SelectItem value="heroTop">Hero Top (white page)</SelectItem>
-                      <SelectItem value="heroRight">Hero Right (white page)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Hero Image URL</Label>
+                    <div className="flex gap-2">
+                      <Input value={heroImage} onChange={(e) => setHeroImage(e.target.value)} placeholder="https://..." />
+                      <Button type="button" variant="outline" onClick={() => setAssetOpen({ target: 'hero', open: true })}>Browse</Button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Logo URL</Label>
+                    <div className="flex gap-2">
+                      <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
+                      <Button type="button" variant="outline" onClick={() => setAssetOpen({ target: 'logo', open: true })}>Browse</Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>CTA Button Text</Label>
-                  <Input value={ctaText} onChange={(e) => setCtaText(e.target.value)} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Image Placement</Label>
+                    <Select value={imagePlacement} onValueChange={(v: any) => setImagePlacement(v)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hero">Hero (section background)</SelectItem>
+                        <SelectItem value="page">Full Page Background</SelectItem>
+                        <SelectItem value="heroTop">Hero Top (white page)</SelectItem>
+                        <SelectItem value="heroRight">Hero Right (white page)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div>
-                  <Label>Button Color</Label>
-                  <Input type="color" value={buttonColor} onChange={(e) => setButtonColor(e.target.value)} />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Redirect URL (after submit)</Label>
-                  <Input value={redirectUrl} onChange={(e) => setRedirectUrl(e.target.value)} placeholder="/section8 or https://..." />
+                <div className="flex justify-end gap-2">
+                  <Button type="button" onClick={()=>setCurrentStep(1)}>Next</Button>
                 </div>
-                <div>
-                  <Label>Redirect Delay (seconds)</Label>
-                  <Input type="number" min={0} max={60} value={redirectDelay} onChange={(e) => setRedirectDelay(parseInt(e.target.value || '0', 10))} />
-                </div>
-              </div>
+              </>
+              )}
+
+              {currentStep === 1 && (
+                <>
+                  <div className="space-y-3">
+                    <Label>Field Bundles</Label>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" size="sm" onClick={()=>applyBundle('minimal')}>Minimal</Button>
+                      <Button type="button" variant="outline" size="sm" onClick={()=>applyBundle('leadgen')}>Lead Gen</Button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <Label>CTA Button Text</Label>
+                      <Input value={ctaText} onChange={(e) => setCtaText(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label>Button Color</Label>
+                      <Input type="color" value={buttonColor} onChange={(e) => setButtonColor(e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Redirect URL (after submit)</Label>
+                      <Input value={redirectUrl} onChange={(e) => setRedirectUrl(e.target.value)} placeholder="/section8 or https://..." />
+                    </div>
+                    <div>
+                      <Label>Redirect Delay (seconds)</Label>
+                      <Input type="number" min={0} max={60} value={redirectDelay} onChange={(e) => setRedirectDelay(parseInt(e.target.value || '0', 10))} />
+                    </div>
+                  </div>
+
+                  <div className="mt-2">
+                    <label className="flex items-center gap-2 text-sm">
+                      <Checkbox checked={includeUTMs} onCheckedChange={(v)=>setIncludeUTMs(!!v)} />
+                      Capture UTM fields (adds hidden fields; also recorded on leads)
+                    </label>
+                  </div>
+
+                  <div className="flex justify-between gap-2 mt-4">
+                    <Button type="button" variant="outline" onClick={()=>setCurrentStep(0)}>Back</Button>
+                    <Button type="button" onClick={()=>setCurrentStep(2)}>Next</Button>
+                  </div>
+                </>
+              )}
+
+              {currentStep === 2 && (
+                <>
+                  <div className="text-sm text-gray-600">
+                    Review your selections on the right. When ready, create your flow.
+                  </div>
+                  <div className="flex justify-between gap-2 mt-4">
+                    <Button type="button" variant="outline" onClick={()=>setCurrentStep(1)}>Back</Button>
+                    <div className="flex gap-2">
+                      {isEdit ? (
+                        <Button onClick={handleSaveEdit} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>
+                      ) : (
+                        <Button onClick={handleCreate} disabled={saving}>{saving ? 'Creating...' : 'Create Flow'}</Button>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+
             </CardContent>
           </Card>
 
