@@ -201,13 +201,27 @@ export default function FormStep({ step, onChange, values, existingValues }: For
           </RadioGroup>
         )}
 
-        {/* Checkbox group */}
+        {/* Checkbox group - made more prominent for opt-in fields */}
         {field.field_type === FieldType.CHECKBOX && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {field.options?.map((option: any) => {
               const isChecked = Array.isArray(value) ? value.includes(option.value) : false;
+              const isOptInField = field.field_name.toLowerCase().includes('opt') || 
+                                 field.field_name.toLowerCase().includes('consent') ||
+                                 field.field_name.toLowerCase().includes('agree') ||
+                                 option.label.toLowerCase().includes('sms') ||
+                                 option.label.toLowerCase().includes('text') ||
+                                 option.label.toLowerCase().includes('email updates');
+              
               return (
-                <div key={option.value} className="flex items-center space-x-2">
+                <div 
+                  key={option.value} 
+                  className={isOptInField ? `
+                    flex items-start space-x-3 p-4 rounded-lg
+                    bg-blue-50 border border-blue-200
+                    hover:bg-blue-100 transition-all duration-200
+                  ` : "flex items-center space-x-2"}
+                >
                   <Checkbox
                     id={`${field.field_name}-${option.value}`}
                     checked={isChecked}
@@ -218,12 +232,15 @@ export default function FormStep({ step, onChange, values, existingValues }: For
                         : currentValues.filter(v => v !== option.value);
                       onChange(field.field_name, newValues);
                     }}
+                    className={isOptInField ? "mt-0.5 h-5 w-5 border-2" : ""}
                   />
                   <Label 
                     htmlFor={`${field.field_name}-${option.value}`}
-                    className="cursor-pointer font-normal"
+                    className={`cursor-pointer ${isOptInField ? 'flex-1' : 'font-normal'}`}
                   >
-                    {option.label}
+                    <span className={isOptInField ? "text-base font-medium text-gray-800 leading-relaxed" : ""}>
+                      {option.label}
+                    </span>
                   </Label>
                 </div>
               );

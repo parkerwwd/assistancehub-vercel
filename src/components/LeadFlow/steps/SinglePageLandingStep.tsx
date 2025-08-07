@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FlowStepWithFields, FieldValues } from '@/types/leadFlow';
+import { FlowStepWithFields, FieldValues, FieldType } from '@/types/leadFlow';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Shield, Check } from 'lucide-react';
 import HeroSplitLayout from '../layouts/HeroSplitLayout';
 import NumberedSteps, { presetSteps } from '../components/NumberedSteps';
@@ -84,6 +85,57 @@ export default function SinglePageLandingStep({
   const renderField = (field: any) => {
     const error = errors[field.field_name];
     
+    // Handle checkbox fields with more prominent styling
+    if (field.field_type === FieldType.CHECKBOX) {
+      return (
+        <motion.div
+          key={field.id || field.tempId}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="col-span-full"
+        >
+          <div className={`
+            flex items-start space-x-3 p-4 rounded-lg 
+            ${error ? 'bg-red-50 border border-red-200' : 'bg-blue-50 border border-blue-200'}
+            hover:bg-blue-100 transition-all duration-200
+          `}>
+            <Checkbox
+              id={field.field_name}
+              checked={values[field.field_name] || false}
+              onCheckedChange={(checked) => {
+                onChange(field.field_name, checked);
+                if (errors[field.field_name]) {
+                  setErrors(prev => ({ ...prev, [field.field_name]: '' }));
+                }
+              }}
+              className="mt-1 h-5 w-5 border-2"
+              style={{
+                borderColor: styleConfig?.primaryColor || '#3B82F6'
+              }}
+            />
+            <label 
+              htmlFor={field.field_name} 
+              className="flex-1 cursor-pointer"
+            >
+              <span className="text-base font-medium text-gray-800 leading-relaxed">
+                {field.label || field.placeholder}
+                {field.is_required && <span className="text-red-500 ml-1">*</span>}
+              </span>
+              {field.help_text && (
+                <span className="block text-sm text-gray-600 mt-1">
+                  {field.help_text}
+                </span>
+              )}
+            </label>
+          </div>
+          {error && (
+            <p className="text-red-500 text-sm mt-2">{error}</p>
+          )}
+        </motion.div>
+      );
+    }
+    
+    // Handle regular input fields
     return (
       <motion.div
         key={field.id || field.tempId}
