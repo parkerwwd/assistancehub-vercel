@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, FileText, Star, UserPlus, Home, DollarSign, Heart, Briefcase, GraduationCap, ShoppingCart } from 'lucide-react';
+import { Sparkles, FileText, Star, UserPlus, DollarSign, Briefcase, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,164 +21,172 @@ interface FlowTemplate {
 
 const templates: FlowTemplate[] = [
   {
-    id: 'housing-assistance',
-    name: 'Housing Assistance Application',
-    description: 'Capture leads for Section 8 and affordable housing programs',
-    category: 'Housing',
-    icon: <Home className="w-6 h-6" />,
+    id: 'full-contact',
+    name: 'Full Contact Form',
+    description: 'Capture name, email, and phone number',
+    category: 'Basic',
+    icon: <UserPlus className="w-6 h-6" />,
     color: 'bg-blue-500',
-    estimatedTime: '2-3 min',
-    conversionRate: '45%',
+    estimatedTime: '30 sec',
+    conversionRate: '42%',
     steps: [
       {
-        step_type: StepType.QUIZ,
-        title: 'What type of housing assistance are you looking for?',
-        subtitle: 'Select the option that best fits your needs',
-        fields: [{
-          field_type: FieldType.RADIO,
-          field_name: 'assistance_type',
-          label: 'Assistance Type',
-          is_required: true,
-          options: [
-            { label: 'Section 8 Voucher', value: 'section8', icon: 'home' },
-            { label: 'Public Housing', value: 'public', icon: 'building' },
-            { label: 'Emergency Housing', value: 'emergency', icon: 'zap' },
-            { label: 'Senior Housing', value: 'senior', icon: 'users' }
-          ]
-        }]
-      },
-      {
         step_type: StepType.FORM,
-        title: 'Tell us about your household',
-        fields: [
-          {
-            field_type: FieldType.NUMBER,
-            field_name: 'household_size',
-            label: 'How many people are in your household?',
-            is_required: true,
-            validation_rules: { min: 1, max: 20 }
-          },
-          {
-            field_type: FieldType.ZIP,
-            field_name: 'zip_code',
-            label: 'ZIP Code',
-            placeholder: '12345',
-            is_required: true
-          }
-        ]
-      },
-      {
-        step_type: StepType.FORM,
-        title: 'How can we reach you?',
-        subtitle: 'We\'ll send you available housing options',
+        title: 'Get Your Free Guide',
+        subtitle: 'Enter your information below',
         fields: [
           {
             field_type: FieldType.TEXT,
-            field_name: 'first_name',
-            label: 'First Name',
+            field_name: 'full_name',
+            label: 'Full Name',
+            placeholder: 'John Smith',
             is_required: true
           },
           {
             field_type: FieldType.EMAIL,
             field_name: 'email',
             label: 'Email Address',
+            placeholder: 'john@example.com',
             is_required: true
           },
           {
             field_type: FieldType.PHONE,
             field_name: 'phone',
             label: 'Phone Number',
-            is_required: false
+            placeholder: '(555) 555-5555',
+            is_required: true
           }
         ]
       },
       {
         step_type: StepType.THANK_YOU,
-        title: 'Thank you for your application!',
-        content: '<p>We\'ve received your housing assistance request. You\'ll receive an email within 24 hours with:</p><ul><li>Available housing options in your area</li><li>Application requirements</li><li>Next steps to apply</li></ul>'
+        title: 'Thank You!',
+        content: '<p>We\'ve received your information and will be in touch soon.</p>'
       }
     ]
   },
   {
-    id: 'real-estate-buyer',
-    name: 'Home Buyer Lead Capture',
-    description: 'Qualify and capture real estate buyer leads',
-    category: 'Real Estate',
-    icon: <Home className="w-6 h-6" />,
+    id: 'email-only',
+    name: 'Email Only',
+    description: 'Simple email capture form',
+    category: 'Basic',
+    icon: <FileText className="w-6 h-6" />,
     color: 'bg-green-500',
-    estimatedTime: '1-2 min',
-    conversionRate: '38%',
+    estimatedTime: '15 sec',
+    conversionRate: '58%',
     steps: [
       {
         step_type: StepType.FORM,
-        title: 'Find Your Dream Home',
-        subtitle: 'Tell us what you\'re looking for',
+        title: 'Stay Updated',
+        subtitle: 'Get the latest updates delivered to your inbox',
         fields: [
           {
-            field_type: FieldType.ZIP,
-            field_name: 'search_area',
-            label: 'Where are you looking to buy?',
-            placeholder: 'Enter ZIP code',
+            field_type: FieldType.EMAIL,
+            field_name: 'email',
+            label: 'Email Address',
+            placeholder: 'your@email.com',
             is_required: true
           }
         ]
       },
       {
-        step_type: StepType.QUIZ,
-        title: 'What\'s your timeline?',
-        fields: [{
-          field_type: FieldType.RADIO,
-          field_name: 'timeline',
-          label: 'When are you looking to buy?',
-          is_required: true,
-          options: [
-            { label: 'ASAP', value: 'asap' },
-            { label: '1-3 months', value: '1-3months' },
-            { label: '3-6 months', value: '3-6months' },
-            { label: 'Just browsing', value: 'browsing' }
-          ]
-        }]
-      },
+        step_type: StepType.THANK_YOU,
+        title: 'You\'re all set!',
+        content: '<p>Check your email for a confirmation message.</p>'
+      }
+    ]
+  },
+  {
+    id: 'phone-only',
+    name: 'Phone Only',
+    description: 'Capture phone number for SMS updates',
+    category: 'Basic',
+    icon: <DollarSign className="w-6 h-6" />,
+    color: 'bg-purple-500',
+    estimatedTime: '15 sec',
+    conversionRate: '35%',
+    steps: [
       {
         step_type: StepType.FORM,
-        title: 'Get personalized home matches',
+        title: 'Get SMS Updates',
+        subtitle: 'Receive instant notifications on your phone',
+        fields: [
+          {
+            field_type: FieldType.PHONE,
+            field_name: 'phone',
+            label: 'Phone Number',
+            placeholder: '(555) 555-5555',
+            is_required: true,
+            help_text: 'We\'ll only text you important updates'
+          }
+        ]
+      },
+      {
+        step_type: StepType.THANK_YOU,
+        title: 'Thank You!',
+        content: '<p>You\'ll receive a confirmation text shortly.</p>'
+      }
+    ]
+  },
+  {
+    id: 'name-email',
+    name: 'Name & Email',
+    description: 'Capture name and email without phone',
+    category: 'Basic',
+    icon: <Star className="w-6 h-6" />,
+    color: 'bg-yellow-500',
+    estimatedTime: '20 sec',
+    conversionRate: '52%',
+    steps: [
+      {
+        step_type: StepType.FORM,
+        title: 'Join Our Community',
+        subtitle: 'Let\'s get to know you',
         fields: [
           {
             field_type: FieldType.TEXT,
-            field_name: 'full_name',
-            label: 'Full Name',
+            field_name: 'first_name',
+            label: 'First Name',
+            placeholder: 'John',
+            is_required: true
+          },
+          {
+            field_type: FieldType.TEXT,
+            field_name: 'last_name',
+            label: 'Last Name',
+            placeholder: 'Smith',
             is_required: true
           },
           {
             field_type: FieldType.EMAIL,
             field_name: 'email',
-            label: 'Email',
+            label: 'Email Address',
+            placeholder: 'john@example.com',
             is_required: true
-          },
-          {
-            field_type: FieldType.PHONE,
-            field_name: 'phone',
-            label: 'Phone (for urgent listings)',
-            is_required: false
           }
         ]
+      },
+      {
+        step_type: StepType.THANK_YOU,
+        title: 'Welcome!',
+        content: '<p>Thanks for joining! Check your email for next steps.</p>'
       }
     ]
   },
   {
-    id: 'newsletter-signup',
-    name: 'Newsletter Signup',
-    description: 'Simple email capture for newsletters',
-    category: 'Marketing',
-    icon: <FileText className="w-6 h-6" />,
-    color: 'bg-purple-500',
-    estimatedTime: '30 sec',
-    conversionRate: '52%',
+    id: 'email-phone',
+    name: 'Email & Phone',
+    description: 'Capture email and phone without name',
+    category: 'Basic',
+    icon: <Briefcase className="w-6 h-6" />,
+    color: 'bg-orange-500',
+    estimatedTime: '20 sec',
+    conversionRate: '45%',
     steps: [
       {
         step_type: StepType.FORM,
-        title: 'Stay in the loop',
-        subtitle: 'Get weekly tips and exclusive content',
+        title: 'Get In Touch',
+        subtitle: 'How can we reach you?',
         fields: [
           {
             field_type: FieldType.EMAIL,
@@ -188,186 +196,85 @@ const templates: FlowTemplate[] = [
             is_required: true
           },
           {
-            field_type: FieldType.CHECKBOX,
-            field_name: 'preferences',
-            label: 'I\'m interested in:',
-            options: [
-              { label: 'Weekly Newsletter', value: 'newsletter' },
-              { label: 'Product Updates', value: 'products' },
-              { label: 'Special Offers', value: 'offers' }
-            ]
+            field_type: FieldType.PHONE,
+            field_name: 'phone',
+            label: 'Phone Number',
+            placeholder: '(555) 555-5555',
+            is_required: true
           }
         ]
+      },
+      {
+        step_type: StepType.THANK_YOU,
+        title: 'Got it!',
+        content: '<p>We\'ll be in touch within 24 hours.</p>'
       }
     ]
   },
   {
-    id: 'webinar-registration',
-    name: 'Webinar Registration',
-    description: 'Capture registrations for online events',
-    category: 'Events',
-    icon: <GraduationCap className="w-6 h-6" />,
+    id: 'progressive-capture',
+    name: 'Progressive Capture',
+    description: 'Multi-step form for better conversion',
+    category: 'Advanced',
+    icon: <Zap className="w-6 h-6" />,
     color: 'bg-indigo-500',
-    estimatedTime: '1-2 min',
-    conversionRate: '42%',
+    estimatedTime: '45 sec',
+    conversionRate: '55%',
     steps: [
       {
-        step_type: StepType.CONTENT,
-        title: 'Free Webinar: Master Your Finances',
-        content: '<div class="text-center"><p class="text-lg mb-4">Join us for an exclusive 1-hour webinar where you\'ll learn:</p><ul class="text-left max-w-md mx-auto space-y-2"><li>✓ How to create a budget that works</li><li>✓ Investment strategies for beginners</li><li>✓ Tax-saving tips</li><li>✓ Q&A with financial experts</li></ul><p class="mt-6 text-sm text-gray-600">Thursday, March 28th at 2:00 PM EST</p></div>'
-      },
-      {
         step_type: StepType.FORM,
-        title: 'Reserve Your Spot',
-        subtitle: 'Limited seats available',
+        title: 'Step 1: Email',
+        subtitle: 'Let\'s start with your email',
         fields: [
-          {
-            field_type: FieldType.TEXT,
-            field_name: 'full_name',
-            label: 'Full Name',
-            is_required: true
-          },
           {
             field_type: FieldType.EMAIL,
             field_name: 'email',
             label: 'Email Address',
+            placeholder: 'your@email.com',
             is_required: true
-          },
-          {
-            field_type: FieldType.TEXT,
-            field_name: 'company',
-            label: 'Company (Optional)',
-            is_required: false
           }
         ]
       },
       {
-        step_type: StepType.THANK_YOU,
-        title: 'You\'re registered!',
-        content: '<p>Check your email for:</p><ul><li>Calendar invite</li><li>Webinar link</li><li>Pre-webinar resources</li></ul><p class="mt-4">See you Thursday!</p>'
-      }
-    ]
-  },
-  {
-    id: 'customer-feedback',
-    name: 'Customer Feedback Survey',
-    description: 'Collect ratings and feedback from customers',
-    category: 'Feedback',
-    icon: <Star className="w-6 h-6" />,
-    color: 'bg-yellow-500',
-    estimatedTime: '1 min',
-    conversionRate: '65%',
-    steps: [
-      {
-        step_type: StepType.RATING,
-        title: 'How was your experience?',
-        content: '<p class="text-center">Your feedback helps us improve</p>',
-        fields: [{
-          field_type: FieldType.NUMBER,
-          field_name: 'rating',
-          label: 'Rating',
-          is_required: true,
-          validation_rules: { max: 5 },
-          options: [
-            { value: 'stars' },
-            { value: 'true' } // show labels
-          ]
-        }]
-      },
-      {
         step_type: StepType.FORM,
-        title: 'Tell us more',
-        fields: [
-          {
-            field_type: FieldType.TEXTAREA,
-            field_name: 'feedback',
-            label: 'What can we improve?',
-            placeholder: 'Your feedback...',
-            is_required: false
-          },
-          {
-            field_type: FieldType.EMAIL,
-            field_name: 'email',
-            label: 'Email (if you\'d like a response)',
-            is_required: false
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'job-application',
-    name: 'Job Application Form',
-    description: 'Streamlined job application with file upload',
-    category: 'HR',
-    icon: <Briefcase className="w-6 h-6" />,
-    color: 'bg-orange-500',
-    estimatedTime: '3-5 min',
-    conversionRate: '28%',
-    steps: [
-      {
-        step_type: StepType.FORM,
-        title: 'Apply for Software Engineer',
-        subtitle: 'Join our growing team',
+        title: 'Step 2: Name',
+        subtitle: 'What should we call you?',
         fields: [
           {
             field_type: FieldType.TEXT,
-            field_name: 'full_name',
-            label: 'Full Name',
+            field_name: 'first_name',
+            label: 'First Name',
+            placeholder: 'John',
             is_required: true
           },
           {
-            field_type: FieldType.EMAIL,
-            field_name: 'email',
-            label: 'Email',
+            field_type: FieldType.TEXT,
+            field_name: 'last_name',
+            label: 'Last Name',
+            placeholder: 'Smith',
             is_required: true
-          },
+          }
+        ]
+      },
+      {
+        step_type: StepType.FORM,
+        title: 'Step 3: Phone (Optional)',
+        subtitle: 'Want faster responses?',
+        fields: [
           {
             field_type: FieldType.PHONE,
             field_name: 'phone',
             label: 'Phone Number',
-            is_required: true
-          }
-        ]
-      },
-      {
-        step_type: StepType.FILE_UPLOAD,
-        title: 'Upload Your Resume',
-        subtitle: 'PDF or Word format preferred',
-        fields: [{
-          field_type: FieldType.TEXT,
-          field_name: 'resume',
-          label: 'Resume',
-          is_required: true,
-          validation_rules: {
-            acceptedTypes: '.pdf,.doc,.docx',
-            maxSize: 5242880, // 5MB
-            maxFiles: 1
-          }
-        }]
-      },
-      {
-        step_type: StepType.QUIZ,
-        title: 'Quick Questions',
-        fields: [
-          {
-            field_type: FieldType.RADIO,
-            field_name: 'experience',
-            label: 'Years of experience?',
-            is_required: true,
-            options: [
-              { label: '0-2 years', value: '0-2' },
-              { label: '3-5 years', value: '3-5' },
-              { label: '5-10 years', value: '5-10' },
-              { label: '10+ years', value: '10+' }
-            ]
+            placeholder: '(555) 555-5555',
+            is_required: false,
+            help_text: 'Optional - for urgent updates only'
           }
         ]
       },
       {
         step_type: StepType.THANK_YOU,
-        title: 'Application Received!',
-        content: '<p>Thank you for applying! Our team will review your application and get back to you within 3-5 business days.</p>'
+        title: 'All Done!',
+        content: '<p>Thanks for completing the form. We\'ll be in touch soon!</p>'
       }
     ]
   }
@@ -381,7 +288,7 @@ export default function FlowTemplateGallery({ onSelectTemplate }: FlowTemplateGa
   const [selectedTemplate, setSelectedTemplate] = useState<FlowTemplate | null>(null);
   const [filter, setFilter] = useState<string>('all');
 
-  const categories = ['all', ...Array.from(new Set(templates.map(t => t.category)))];
+  const categories = ['all', 'Basic', 'Advanced'];
   const filteredTemplates = filter === 'all' 
     ? templates 
     : templates.filter(t => t.category === filter);
