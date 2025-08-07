@@ -35,6 +35,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import FlowTemplateGallery from '@/components/LeadFlow/editor/FlowTemplateGallery';
+import OptInFlowWizard from '@/components/LeadFlow/editor/OptInFlowWizard';
 
 export default function FlowBuilder() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ export default function FlowBuilder() {
   const [loading, setLoading] = useState(true);
   const [showHowTo, setShowHowTo] = useState(false);
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
 
   useEffect(() => {
     loadFlows();
@@ -70,6 +72,10 @@ export default function FlowBuilder() {
 
   const handleCreateFlow = () => {
     setShowTemplateGallery(true);
+  };
+
+  const handleCreateQuickOptIn = () => {
+    setShowWizard(true);
   };
 
   const handleSelectTemplate = async (template: any) => {
@@ -340,6 +346,14 @@ export default function FlowBuilder() {
               <HelpCircle className="w-4 h-4" />
               How to Create a Flow
               {showHowTo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </Button>
+            <Button 
+              variant="secondary" 
+              onClick={handleCreateQuickOptIn}
+              className="flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Quick Opt-In Flow
             </Button>
             <Button onClick={handleCreateFlow} className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
@@ -723,6 +737,13 @@ export default function FlowBuilder() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Quick Opt-In Wizard */}
+      <OptInFlowWizard
+        open={showWizard}
+        onOpenChange={setShowWizard}
+        onCreated={(flowId) => navigate(`/admin/flows/${flowId}/edit`)}
+      />
     </div>
   );
 }
