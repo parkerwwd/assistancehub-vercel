@@ -671,9 +671,8 @@ export default function FlowRenderer() {
         </div>
       )}
       
-      {/* Special handling for single page landing layouts */}
-      {currentStep?.step_type === 'single_page_landing' && 
-       (currentStep?.settings?.layoutType === 'formLeft' || currentStep?.settings?.layoutType === 'centered') ? (
+      {/* Special handling for single page landing layouts - render without width constraints */}
+      {currentStep?.step_type === 'single_page_landing' ? (
         <StepRenderer
           step={currentStep}
           onComplete={handleStepComplete}

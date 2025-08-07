@@ -420,12 +420,12 @@ export default function SinglePageLandingStep({
     );
   }
 
-  // Default centered layout (competitor style)
+  // Default centered layout (competitor style) - use full width hero container
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full">
       {/* Hero Section with Form Overlay */}
       <div 
-        className="relative min-h-[600px] flex items-center justify-center py-12 px-4"
+        className="relative min-h-[600px] flex items-center justify-center py-12 px-4 w-full"
         style={{
           backgroundImage: heroImage ? `url(${heroImage})` : 'linear-gradient(135deg, #0891b2 0%, #065f46 100%)',
           backgroundSize: 'cover',
@@ -437,7 +437,7 @@ export default function SinglePageLandingStep({
         <div className="absolute inset-0 bg-black/40"></div>
         
         {/* Content Container */}
-        <div className="relative z-10 max-w-6xl mx-auto w-full">
+          <div className="relative z-10 max-w-7xl mx-auto w-full">
           {/* Logo at top */}
           {logo && (
             <div className="text-center mb-8">
@@ -461,7 +461,7 @@ export default function SinglePageLandingStep({
           </div>
           
           {/* Form Card */}
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             <div className="bg-white rounded-lg shadow-2xl p-8">
               {formContent}
             </div>
@@ -471,8 +471,8 @@ export default function SinglePageLandingStep({
 
       {/* Progress Steps Section */}
       {showProgressSteps && stepDescriptions.length > 0 && (
-        <div className="py-16 px-4 bg-gray-100">
-          <div className="max-w-6xl mx-auto">
+        <div className="py-16 px-4 bg-gray-100 w-full">
+          <div className="max-w-7xl mx-auto">
             <NumberedSteps 
               steps={stepDescriptions}
               layout="horizontal"
@@ -485,8 +485,8 @@ export default function SinglePageLandingStep({
 
       {/* Benefits Section */}
       {showBenefits && benefits.length > 0 && (
-        <div className="py-16 px-4 bg-white">
-          <div className="max-w-6xl mx-auto">
+        <div className="py-16 px-4 bg-white w-full">
+          <div className="max-w-7xl mx-auto">
             <BenefitsList 
               benefits={benefits}
               title={benefitsTitle}
