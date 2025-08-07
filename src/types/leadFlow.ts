@@ -22,7 +22,13 @@ export enum StepType {
   SURVEY = 'survey',
   CONDITIONAL = 'conditional',
   THANK_YOU = 'thank_you',
-  SINGLE_PAGE_LANDING = 'single_page_landing'
+  SINGLE_PAGE_LANDING = 'single_page_landing',
+  IMAGE_GALLERY = 'image_gallery',
+  VIDEO = 'video',
+  FILE_UPLOAD = 'file_upload',
+  RATING = 'rating',
+  TESTIMONIAL = 'testimonial',
+  COUNTDOWN = 'countdown'
 }
 
 export enum FieldType {

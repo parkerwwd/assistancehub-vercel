@@ -17,6 +17,7 @@ import Header from '@/components/Header';
 import StepEditor from '@/components/LeadFlow/editor/StepEditor';
 import FlowSettings from '@/components/LeadFlow/editor/FlowSettings';
 import FlowPreview from '@/components/LeadFlow/editor/FlowPreview';
+import EnhancedDragDrop from '@/components/LeadFlow/editor/EnhancedDragDrop';
 
 interface FlowData extends Omit<Flow, 'id' | 'created_at' | 'updated_at'> {
   id?: string;
@@ -370,18 +371,7 @@ export default function FlowEditor() {
     }));
   };
 
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return;
 
-    const items = Array.from(flow.steps);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    setFlow(prev => ({
-      ...prev,
-      steps: items
-    }));
-  };
 
   const generateSlug = (name: string) => {
     const baseSlug = name
@@ -591,51 +581,35 @@ export default function FlowEditor() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <DragDropContext onDragEnd={handleDragEnd}>
-                      <Droppable droppableId="steps">
-                        {(provided) => (
-                          <div
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                            className="space-y-4"
-                          >
-                            {flow.steps.map((step, index) => (
-                              <Draggable
-                                key={step.id || step.tempId}
-                                draggableId={step.id || step.tempId || index.toString()}
-                                index={index}
-                              >
-                                {(provided, snapshot) => (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    className={`${
-                                      snapshot.isDragging ? 'shadow-lg' : ''
-                                    }`}
-                                  >
-                                    <StepEditor
-                                      step={step}
-                                      index={index}
-                                      onUpdate={(updates) => updateStep(index, updates)}
-                                      onDelete={() => deleteStep(index)}
-                                      onDuplicate={() => duplicateStep(index)}
-                                      dragHandleProps={provided.dragHandleProps}
-                                    />
-                                  </div>
-                                )}
-                              </Draggable>
-                            ))}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    </DragDropContext>
-
-                    {flow.steps.length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
-                        No steps yet. Add your first step below.
-                      </div>
-                    )}
+                    <EnhancedDragDrop
+                      items={flow.steps}
+                      onReorder={(reorderedSteps) => {
+                        const updatedSteps = reorderedSteps.map((step, index) => ({
+                          ...step,
+                          step_order: index
+                        }));
+                        setFlow(prev => ({ ...prev, steps: updatedSteps }));
+                        if (showPreview) {
+                          triggerAutoSave();
+                        }
+                      }}
+                      renderItem={(step, index, dragHandleProps) => (
+                        <StepEditor
+                          step={step}
+                          index={index}
+                          onUpdate={(updates) => updateStep(index, updates)}
+                          onDelete={() => deleteStep(index)}
+                          onDuplicate={() => duplicateStep(index)}
+                          dragHandleProps={dragHandleProps}
+                        />
+                      )}
+                      className="space-y-4"
+                      emptyState={
+                        <div className="text-center py-8 text-gray-500">
+                          No steps yet. Add your first step below.
+                        </div>
+                      }
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -675,47 +649,76 @@ export default function FlowEditor() {
                   Choose a step type to add to your flow
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => addStep(StepType.FORM)}
-                  className="justify-start"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Form
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => addStep(StepType.QUIZ)}
-                  className="justify-start"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Quiz
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => addStep(StepType.CONTENT)}
-                  className="justify-start"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Content
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => addStep(StepType.THANK_YOU)}
-                  className="justify-start"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Thank You
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => addStep(StepType.SINGLE_PAGE_LANDING)}
-                  className="justify-start col-span-2"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Single Page Landing
-                </Button>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => addStep(StepType.FORM)}
+                    className="justify-start"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Form
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => addStep(StepType.QUIZ)}
+                    className="justify-start"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Quiz
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => addStep(StepType.CONTENT)}
+                    className="justify-start"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Content
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => addStep(StepType.RATING)}
+                    className="justify-start"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Rating
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => addStep(StepType.VIDEO)}
+                    className="justify-start"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Video
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => addStep(StepType.FILE_UPLOAD)}
+                    className="justify-start"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    File Upload
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => addStep(StepType.THANK_YOU)}
+                    className="justify-start"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Thank You
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => addStep(StepType.SINGLE_PAGE_LANDING)}
+                    className="justify-start"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Landing Page
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 text-center">
+                  Click any button to add a new step to your flow
+                </p>
               </CardContent>
             </Card>
 

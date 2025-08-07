@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Eye, Copy, BarChart, Settings, Database, Users, Megaphone, Link, HelpCircle, ChevronDown, ChevronUp, Play, CheckCircle, Zap } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Copy, BarChart, Settings, Database, Users, Megaphone, Link, HelpCircle, ChevronDown, ChevronUp, Play, CheckCircle, Zap, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,12 +27,21 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import FlowTemplateGallery from '@/components/LeadFlow/editor/FlowTemplateGallery';
 
 export default function FlowBuilder() {
   const navigate = useNavigate();
   const [flows, setFlows] = useState<Flow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showHowTo, setShowHowTo] = useState(false);
+  const [showTemplateGallery, setShowTemplateGallery] = useState(false);
 
   useEffect(() => {
     loadFlows();
@@ -60,7 +69,102 @@ export default function FlowBuilder() {
   };
 
   const handleCreateFlow = () => {
-    navigate('/admin/flows/new/edit');
+    setShowTemplateGallery(true);
+  };
+
+  const handleSelectTemplate = async (template: any) => {
+    // Create new flow with template data
+    if (template.id === 'blank') {
+      navigate('/admin/flows/new/edit');
+    } else {
+      // Create flow with template steps
+      try {
+        const { data: newFlow, error: flowError } = await supabase
+          .from('flows')
+          .insert({
+            name: template.name,
+            slug: `${template.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+            description: template.description,
+            status: 'draft' as FlowStatus,
+            settings: {},
+            google_ads_config: {},
+            style_config: {
+              primaryColor: '#3B82F6',
+              backgroundColor: '#F8FAFC',
+              buttonStyle: 'rounded',
+              layout: 'centered'
+            }
+          })
+          .select()
+          .single();
+
+        if (flowError) throw flowError;
+
+        // Add template steps
+        if (template.steps && template.steps.length > 0) {
+          for (let stepIndex = 0; stepIndex < template.steps.length; stepIndex++) {
+            const templateStep = template.steps[stepIndex];
+            const { data: newStep, error: stepError } = await supabase
+              .from('flow_steps')
+              .insert({
+                flow_id: newFlow.id,
+                step_order: stepIndex,
+                step_type: templateStep.step_type,
+                title: templateStep.title,
+                subtitle: templateStep.subtitle,
+                content: templateStep.content,
+                button_text: templateStep.button_text || 'Next',
+                is_required: true,
+                settings: templateStep.settings || {},
+                redirect_url: templateStep.redirect_url,
+                redirect_delay: templateStep.redirect_delay
+              })
+              .select()
+              .single();
+
+            if (stepError) throw stepError;
+
+            // Add fields for the step
+            if (templateStep.fields && templateStep.fields.length > 0) {
+              for (let fieldIndex = 0; fieldIndex < templateStep.fields.length; fieldIndex++) {
+                const templateField = templateStep.fields[fieldIndex];
+                await supabase
+                  .from('flow_fields')
+                  .insert({
+                    step_id: newStep.id,
+                    field_order: fieldIndex,
+                    field_type: templateField.field_type,
+                    field_name: templateField.field_name,
+                    label: templateField.label,
+                    placeholder: templateField.placeholder,
+                    help_text: templateField.help_text,
+                    is_required: templateField.is_required,
+                    validation_rules: templateField.validation_rules || {},
+                    options: templateField.options || [],
+                    default_value: templateField.default_value || ''
+                  });
+              }
+            }
+          }
+        }
+
+        toast({
+          title: "Success",
+          description: "Flow created from template successfully!",
+        });
+
+        // Navigate to edit the new flow
+        navigate(`/admin/flows/${newFlow.id}/edit`);
+      } catch (error) {
+        console.error('Error creating flow from template:', error);
+        toast({
+          title: "Error",
+          description: "Could not create flow from template. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+    setShowTemplateGallery(false);
   };
 
   const handleEditFlow = (flowId: string) => {
@@ -604,6 +708,21 @@ export default function FlowBuilder() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Template Gallery Dialog */}
+      <Dialog open={showTemplateGallery} onOpenChange={setShowTemplateGallery}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Choose a Template</DialogTitle>
+            <DialogDescription>
+              Start with a pre-built template or create your own from scratch
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-6">
+            <FlowTemplateGallery onSelectTemplate={handleSelectTemplate} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

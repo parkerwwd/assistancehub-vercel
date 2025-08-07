@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FieldType } from '@/types/leadFlow';
+import ValidationRuleBuilder from './ValidationRuleBuilder';
 
 interface FieldEditorProps {
   field: any;
@@ -154,14 +156,6 @@ export default function FieldEditor({
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <Label>Required Field</Label>
-            <Switch
-              checked={field.is_required}
-              onCheckedChange={(checked) => onUpdate({ is_required: checked })}
-            />
-          </div>
-
           {/* Options for select/radio/checkbox */}
           {needsOptions && (
             <div className="space-y-3">
@@ -218,39 +212,44 @@ export default function FieldEditor({
             </div>
           )}
 
-          {/* Validation Rules */}
-          {field.field_type === FieldType.TEXT && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Min Length</Label>
-                <Input
-                  type="number"
-                  value={field.validation_rules?.minLength || ''}
-                  onChange={(e) => onUpdate({
-                    validation_rules: {
-                      ...field.validation_rules,
-                      minLength: e.target.value ? parseInt(e.target.value) : undefined
-                    }
-                  })}
-                  placeholder="0"
+          {/* Advanced Field Settings with Tabs */}
+          <div className="mt-4">
+            <Tabs defaultValue="validation" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="validation">Validation</TabsTrigger>
+                <TabsTrigger value="advanced">Advanced</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="validation" className="mt-4">
+                <ValidationRuleBuilder
+                  fieldType={field.field_type}
+                  rules={field.validation_rules || {}}
+                  onUpdate={(rules) => onUpdate({ validation_rules: rules })}
+                  isRequired={field.is_required || false}
+                  onRequiredChange={(required) => onUpdate({ is_required: required })}
                 />
-              </div>
-              <div>
-                <Label>Max Length</Label>
-                <Input
-                  type="number"
-                  value={field.validation_rules?.maxLength || ''}
-                  onChange={(e) => onUpdate({
-                    validation_rules: {
-                      ...field.validation_rules,
-                      maxLength: e.target.value ? parseInt(e.target.value) : undefined
-                    }
-                  })}
-                  placeholder="100"
-                />
-              </div>
-            </div>
-          )}
+              </TabsContent>
+              
+              <TabsContent value="advanced" className="mt-4 space-y-4">
+                <div>
+                  <Label>Default Value</Label>
+                  <Input
+                    value={field.default_value || ''}
+                    onChange={(e) => onUpdate({ default_value: e.target.value })}
+                    placeholder="Leave empty for no default"
+                  />
+                </div>
+                
+                {field.field_type === FieldType.HIDDEN && (
+                  <div className="p-3 bg-yellow-50 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      Hidden fields are not visible to users. Use them to capture URL parameters or internal values.
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -8,9 +8,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StepType, FieldType } from '@/types/leadFlow';
 import FieldEditor from './FieldEditor';
 import SinglePageLandingEditor from './SinglePageLandingEditor';
+import ConditionalLogicBuilder from './ConditionalLogicBuilder';
 
 interface StepEditorProps {
   step: any;
@@ -43,6 +45,18 @@ export default function StepEditor({
         return 'Thank You Step';
       case StepType.SINGLE_PAGE_LANDING:
         return 'Single Page Landing';
+      case StepType.RATING:
+        return 'Rating Step';
+      case StepType.VIDEO:
+        return 'Video Step';
+      case StepType.FILE_UPLOAD:
+        return 'File Upload Step';
+      case StepType.IMAGE_GALLERY:
+        return 'Image Gallery';
+      case StepType.TESTIMONIAL:
+        return 'Testimonial';
+      case StepType.COUNTDOWN:
+        return 'Countdown Timer';
       default:
         return 'Step';
     }
@@ -282,6 +296,116 @@ export default function StepEditor({
                     No fields yet. Click "Add Field" to start.
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Conditional Logic - for all step types except single page landing */}
+            {step.step_type !== StepType.SINGLE_PAGE_LANDING && (
+              <div className="pt-4 border-t">
+                <ConditionalLogicBuilder
+                  logic={step.skip_logic?.conditions || []}
+                  onUpdate={(conditions) => 
+                    onUpdate({ skip_logic: { conditions } })
+                  }
+                  availableFields={
+                    // Get all fields from all previous steps (this would need to be passed from parent)
+                    step.fields?.map((f: any) => ({
+                      name: f.field_name,
+                      label: f.label,
+                      type: f.field_type
+                    })) || []
+                  }
+                  availableSteps={
+                    // This would need to be passed from parent for full functionality
+                    [{ order: index, title: step.title || `Step ${index + 1}` }]
+                  }
+                />
+              </div>
+            )}
+
+            {/* Step Settings for specific types */}
+            {step.step_type === StepType.VIDEO && (
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-sm">Video Settings</h4>
+                <div>
+                  <Label>Video URL</Label>
+                  <Input
+                    value={step.settings?.videoUrl || ''}
+                    onChange={(e) => onUpdate({ 
+                      settings: { ...step.settings, videoUrl: e.target.value } 
+                    })}
+                    placeholder="YouTube ID, Vimeo ID, or direct video URL"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Provider</Label>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={step.settings?.provider || 'direct'}
+                      onChange={(e) => onUpdate({ 
+                        settings: { ...step.settings, provider: e.target.value } 
+                      })}
+                    >
+                      <option value="direct">Direct Video</option>
+                      <option value="youtube">YouTube</option>
+                      <option value="vimeo">Vimeo</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label>Autoplay</Label>
+                    <Switch
+                      checked={step.settings?.autoplay || false}
+                      onCheckedChange={(checked) => onUpdate({ 
+                        settings: { ...step.settings, autoplay: checked } 
+                      })}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Rating Step Configuration */}
+            {step.step_type === StepType.RATING && step.fields?.[0] && (
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-sm">Rating Configuration</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Rating Style</Label>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={step.fields[0].options?.[0]?.value || 'stars'}
+                      onChange={(e) => {
+                        const field = step.fields[0];
+                        updateField(0, {
+                          options: [{ value: e.target.value }, ...(field.options?.slice(1) || [])]
+                        });
+                      }}
+                    >
+                      <option value="stars">Stars</option>
+                      <option value="hearts">Hearts</option>
+                      <option value="thumbs">Thumbs</option>
+                      <option value="numeric">Numbers</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label>Max Rating</Label>
+                    <Input
+                      type="number"
+                      min="3"
+                      max="10"
+                      value={step.fields[0].validation_rules?.max || 5}
+                      onChange={(e) => {
+                        updateField(0, {
+                          validation_rules: { 
+                            ...step.fields[0].validation_rules, 
+                            max: parseInt(e.target.value) || 5 
+                          }
+                        });
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>

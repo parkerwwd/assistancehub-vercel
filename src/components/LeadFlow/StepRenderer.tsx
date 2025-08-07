@@ -8,6 +8,9 @@ import QuizStep from './steps/QuizStep';
 import ThankYouStep from './steps/ThankYouStep';
 import InteractiveLocationPicker from './steps/InteractiveLocationPicker';
 import SinglePageLandingStep from './steps/SinglePageLandingStep';
+import RatingStep from './steps/RatingStep';
+import VideoStep from './steps/VideoStep';
+import FileUploadStep from './steps/FileUploadStep';
 
 interface StepRendererProps {
   step: FlowStepWithFields;
@@ -113,6 +116,33 @@ export default function StepRenderer({
             values={stepValues}
             onComplete={handleSubmit}
             styleConfig={styleConfig}
+          />
+        );
+      
+      case StepType.RATING:
+        return (
+          <RatingStep
+            step={step}
+            onChange={handleFieldChange}
+            values={stepValues}
+            onComplete={handleSubmit}
+          />
+        );
+      
+      case StepType.VIDEO:
+        return (
+          <VideoStep
+            step={step}
+            styleConfig={styleConfig}
+          />
+        );
+      
+      case StepType.FILE_UPLOAD:
+        return (
+          <FileUploadStep
+            step={step}
+            onChange={handleFieldChange}
+            values={stepValues}
           />
         );
       
