@@ -32,6 +32,7 @@ export default function SinglePageLandingStep({
   const {
     heroImage,
     logo,
+    usePageBackground = false,
     trustBadgePreset = 'standard',
     customTrustBadges = [],
     benefitPreset = 'section8',
@@ -422,16 +423,21 @@ export default function SinglePageLandingStep({
 
   // Default centered layout (competitor style) - use full width hero container
   return (
-    <div className="min-h-screen w-full">
+    <div className="min-h-screen w-full" style={usePageBackground && heroImage ? {
+      backgroundImage: `url(${heroImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    } : undefined}>
       {/* Hero Section with Form Overlay */}
-      <div 
+      <div
         className="relative min-h-[600px] flex items-center justify-center py-12 px-4 w-full"
-        style={{
+        style={!usePageBackground ? {
           backgroundImage: heroImage ? `url(${heroImage})` : 'linear-gradient(135deg, #0891b2 0%, #065f46 100%)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
+          backgroundRepeat: 'no-repeat'
+        } : undefined}
       >
         {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-black/40"></div>

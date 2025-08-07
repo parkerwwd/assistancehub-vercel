@@ -31,6 +31,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
   const [buttonColor, setButtonColor] = useState('#3B82F6');
   const [redirectUrl, setRedirectUrl] = useState('/section8');
   const [redirectDelay, setRedirectDelay] = useState(5);
+  const [imagePlacement, setImagePlacement] = useState<'hero' | 'page'>('hero');
   const [includeFirstName, setIncludeFirstName] = useState(true);
   const [includeLastName, setIncludeLastName] = useState(true);
   const [includeEmail, setIncludeEmail] = useState(true);
@@ -111,6 +112,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
         logo: logoUrl,
         buttonText: ctaText,
         buttonColor,
+        usePageBackground: imagePlacement === 'page',
         trustBadgePreset: 'standard',
         benefitPreset: 'section8',
         stepsPreset: 'section8Housing',
@@ -203,6 +205,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
           if (cfg.logo) setLogoUrl(cfg.logo);
           if (cfg.buttonText) setCtaText(cfg.buttonText);
           if (cfg.buttonColor) setButtonColor(cfg.buttonColor);
+          setImagePlacement(cfg.usePageBackground ? 'page' : 'hero');
           // fields toggles
           const fns = (landing.fields || []).map((f: any) => f.field_name);
           setIncludeFirstName(fns.includes('firstName'));
@@ -266,6 +269,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
         logo: logoUrl,
         buttonText: ctaText,
         buttonColor,
+        usePageBackground: imagePlacement === 'page',
         trustBadgePreset: 'standard',
         benefitPreset: 'section8',
         stepsPreset: 'section8Housing',
@@ -411,6 +415,21 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                     <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
                     <Button type="button" variant="outline" onClick={() => setAssetOpen({ target: 'logo', open: true })}>Browse</Button>
                   </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Image Placement</Label>
+                  <Select value={imagePlacement} onValueChange={(v: any) => setImagePlacement(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hero">Hero (section background)</SelectItem>
+                      <SelectItem value="page">Full Page Background</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
