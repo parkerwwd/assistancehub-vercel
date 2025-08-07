@@ -31,7 +31,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
   const [buttonColor, setButtonColor] = useState('#3B82F6');
   const [redirectUrl, setRedirectUrl] = useState('/section8');
   const [redirectDelay, setRedirectDelay] = useState(5);
-  const [imagePlacement, setImagePlacement] = useState<'hero' | 'page'>('hero');
+  const [imagePlacement, setImagePlacement] = useState<'hero' | 'page' | 'heroTop' | 'heroRight'>('hero');
   const [includeFirstName, setIncludeFirstName] = useState(true);
   const [includeLastName, setIncludeLastName] = useState(true);
   const [includeEmail, setIncludeEmail] = useState(true);
@@ -113,6 +113,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
         buttonText: ctaText,
         buttonColor,
         usePageBackground: imagePlacement === 'page',
+        imageMode: imagePlacement,
         trustBadgePreset: 'standard',
         benefitPreset: 'section8',
         stepsPreset: 'section8Housing',
@@ -205,7 +206,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
           if (cfg.logo) setLogoUrl(cfg.logo);
           if (cfg.buttonText) setCtaText(cfg.buttonText);
           if (cfg.buttonColor) setButtonColor(cfg.buttonColor);
-          setImagePlacement(cfg.usePageBackground ? 'page' : 'hero');
+          setImagePlacement(cfg.imageMode || (cfg.usePageBackground ? 'page' : 'hero'));
           // fields toggles
           const fns = (landing.fields || []).map((f: any) => f.field_name);
           setIncludeFirstName(fns.includes('firstName'));
@@ -270,6 +271,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
         buttonText: ctaText,
         buttonColor,
         usePageBackground: imagePlacement === 'page',
+        imageMode: imagePlacement,
         trustBadgePreset: 'standard',
         benefitPreset: 'section8',
         stepsPreset: 'section8Housing',
@@ -428,6 +430,8 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                     <SelectContent>
                       <SelectItem value="hero">Hero (section background)</SelectItem>
                       <SelectItem value="page">Full Page Background</SelectItem>
+                      <SelectItem value="heroTop">Hero Top (white page)</SelectItem>
+                      <SelectItem value="heroRight">Hero Right (white page)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

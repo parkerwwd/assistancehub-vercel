@@ -33,6 +33,7 @@ export default function SinglePageLandingStep({
     heroImage,
     logo,
     usePageBackground = false,
+    imageMode,
     trustBadgePreset = 'standard',
     customTrustBadges = [],
     benefitPreset = 'section8',
@@ -422,6 +423,9 @@ export default function SinglePageLandingStep({
   }
 
   // Default centered layout (competitor style) - use full width hero container
+  const isHeroTop = imageMode === 'heroTop';
+  const isHeroRight = imageMode === 'heroRight';
+
   return (
     <div className="min-h-screen w-full" style={usePageBackground && heroImage ? {
       backgroundImage: `url(${heroImage})`,
@@ -429,10 +433,14 @@ export default function SinglePageLandingStep({
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
     } : undefined}>
-      {/* Hero Section with Form Overlay */}
+      {/* Hero Section */}
       <div
-        className="relative min-h-[600px] flex items-center justify-center py-12 px-4 w-full"
-        style={!usePageBackground ? {
+        className={
+          isHeroRight
+            ? 'relative w-full py-12 px-4'
+            : 'relative min-h-[600px] flex items-center justify-center py-12 px-4 w-full'
+        }
+        style={(!usePageBackground && !isHeroTop && !isHeroRight) ? {
           backgroundImage: heroImage ? `url(${heroImage})` : 'linear-gradient(135deg, #0891b2 0%, #065f46 100%)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -440,39 +448,68 @@ export default function SinglePageLandingStep({
         } : undefined}
       >
         {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/40"></div>
+        {!isHeroRight && !isHeroTop && <div className="absolute inset-0 bg-black/40"></div>}
         
         {/* Content Container */}
+        {isHeroTop ? (
           <div className="relative z-10 max-w-7xl mx-auto w-full">
-          {/* Logo at top */}
-          {logo && (
-            <div className="text-center mb-8">
-              <img src={logo} alt="Logo" className="h-20 mx-auto filter brightness-0 invert" />
-            </div>
-          )}
-          
-          {/* Hero Content */}
-          <div className="text-center text-white mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {step.title || 'Apply Here For:'}
-            </h1>
-            <p className="text-xl md:text-2xl max-w-3xl mx-auto">
-              {step.subtitle || 'Section 8 Vouchers Government Housing Rental Assistance and more'}
-            </p>
-            {step.content && (
-              <p className="text-lg mt-4 max-w-2xl mx-auto">
-                {step.content}
-              </p>
+            {/* Top hero image with white background */}
+            {heroImage && (
+              <img src={heroImage} alt="Hero" className="w-full h-64 md:h-80 object-cover rounded-xl mb-8" />
             )}
-          </div>
-          
-          {/* Form Card */}
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-white rounded-lg shadow-2xl p-8">
-              {formContent}
+            <div className="text-center text-gray-900 mb-8">
+              {logo && (
+                <div className="mb-6">
+                  <img src={logo} alt="Logo" className="h-16 mx-auto" />
+                </div>
+              )}
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">{step.title || 'Apply Here For:'}</h1>
+              <p className="text-xl md:text-2xl max-w-3xl mx-auto">{step.subtitle || 'Section 8 Vouchers Government Housing Rental Assistance and more'}</p>
+            </div>
+            <div className="max-w-3xl mx-auto">
+              <div className="bg-white rounded-lg shadow-2xl p-8">
+                {formContent}
+              </div>
             </div>
           </div>
-        </div>
+        ) : isHeroRight ? (
+          <div className="relative z-10 max-w-7xl mx-auto w-full">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                {logo && <img src={logo} alt="Logo" className="h-14 mb-6" />}
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{step.title || 'Apply Here For:'}</h1>
+                <p className="text-xl text-gray-700 mb-8">{step.subtitle || 'Section 8 Vouchers Government Housing Rental Assistance and more'}</p>
+                <div className="bg-white rounded-lg shadow-2xl p-8">
+                  {formContent}
+                </div>
+              </div>
+              <div className="hidden md:block">
+                {heroImage && (
+                  <img src={heroImage} alt="Hero" className="w-full rounded-xl shadow-xl" />
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="relative z-10 max-w-7xl mx-auto w-full">
+            {/* Logo at top */}
+            {logo && (
+              <div className="text-center mb-8">
+                <img src={logo} alt="Logo" className="h-20 mx-auto filter brightness-0 invert" />
+              </div>
+            )}
+            {/* Hero Content */}
+            <div className="text-center text-white mb-8">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">{step.title || 'Apply Here For:'}</h1>
+              <p className="text-xl md:text-2xl max-w-3xl mx-auto">{step.subtitle || 'Section 8 Vouchers Government Housing Rental Assistance and more'}</p>
+              {step.content && (<p className="text-lg mt-4 max-w-2xl mx-auto">{step.content}</p>)}
+            </div>
+            {/* Form Card */}
+            <div className="max-w-3xl mx-auto">
+              <div className="bg-white rounded-lg shadow-2xl p-8">{formContent}</div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Progress Steps Section */}
