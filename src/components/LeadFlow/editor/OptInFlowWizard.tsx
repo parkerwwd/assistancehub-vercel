@@ -13,12 +13,13 @@ import { FlowStatus } from '@/types/leadFlow';
 type OptInFlowWizardProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: (flowId: string) => void;
+  onCompleted: (flowId: string) => void;
+  flowId?: string; // if provided, acts as Quick Edit
 };
 
 const defaultHero = 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1200&auto=format&fit=crop';
 
-export default function OptInFlowWizard({ open, onOpenChange, onCreated }: OptInFlowWizardProps) {
+export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowId }: OptInFlowWizardProps) {
   const [name, setName] = useState('Housing Application Guide');
   const [slug, setSlug] = useState('housing-application-guide');
   const [primaryColor, setPrimaryColor] = useState('#3B82F6');
@@ -35,6 +36,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCreated }: OptIn
   const [includeZip, setIncludeZip] = useState(true);
   const [includeConsent, setIncludeConsent] = useState(true);
   const [saving, setSaving] = useState(false);
+  const isEdit = !!flowId;
 
   const generatedSlug = useMemo(() => {
     const base = name
@@ -157,11 +159,189 @@ export default function OptInFlowWizard({ open, onOpenChange, onCreated }: OptIn
       if (thankError) throw thankError;
 
       toast({ title: 'Flow created', description: 'Your opt-in flow is ready for editing.' });
-      onCreated(flow.id);
+      onCompleted(flow.id);
       onOpenChange(false);
     } catch (e: any) {
       console.error('Error creating opt-in flow:', e);
       toast({ title: 'Error', description: e?.message || 'Failed to create flow', variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Load existing flow for quick edit
+  React.useEffect(() => {
+    const load = async () => {
+      if (!open || !isEdit || !flowId) return;
+      try {
+        const { data: flow, error } = await supabase
+          .from('flows')
+          .select(`*, steps:flow_steps(*, fields:flow_fields(*))`)
+          .eq('id', flowId)
+          .single();
+        if (error || !flow) throw error || new Error('Flow not found');
+
+        // Basics
+        setName(flow.name || '');
+        setSlug(flow.slug || '');
+        const sc: any = flow.style_config || {};
+        if (sc.primaryColor) setPrimaryColor(sc.primaryColor);
+        if (sc.heroImageUrl && !heroImage) setHeroImage(sc.heroImageUrl);
+        if (sc.logoUrl) setLogoUrl(sc.logoUrl);
+
+        // Find landing step
+        const landing = (flow as any).steps?.find((s: any) => s.step_type === 'single_page_landing');
+        if (landing) {
+          const cfg = landing.settings || {};
+          setLayoutType((cfg.layoutType as any) || 'centered');
+          if (cfg.heroImage) setHeroImage(cfg.heroImage);
+          if (cfg.logo) setLogoUrl(cfg.logo);
+          if (cfg.buttonText) setCtaText(cfg.buttonText);
+          if (cfg.buttonColor) setButtonColor(cfg.buttonColor);
+          // fields toggles
+          const fns = (landing.fields || []).map((f: any) => f.field_name);
+          setIncludeFirstName(fns.includes('firstName'));
+          setIncludeLastName(fns.includes('lastName'));
+          setIncludeEmail(fns.includes('email'));
+          setIncludeZip(fns.includes('zipCode') || fns.includes('zip'));
+          setIncludeConsent(fns.includes('consent'));
+        }
+
+        // Find thank you for redirect
+        const thank = (flow as any).steps?.find((s: any) => s.step_type === 'thank_you');
+        if (thank) {
+          if (thank.redirect_url) setRedirectUrl(thank.redirect_url);
+          if (typeof thank.redirect_delay === 'number') setRedirectDelay(thank.redirect_delay);
+        }
+      } catch (e) {
+        console.error('Failed to load flow for quick edit:', e);
+      }
+    };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, flowId]);
+
+  const handleSaveEdit = async () => {
+    if (!flowId) return;
+    setSaving(true);
+    try {
+      // Update flow basics
+      const { error: flowError } = await supabase
+        .from('flows')
+        .update({
+          name,
+          slug,
+          style_config: {
+            primaryColor,
+            backgroundColor: '#F8FAFC',
+            heroImageUrl: heroImage,
+            logoUrl,
+            layout: 'centered',
+            buttonStyle: 'rounded'
+          }
+        })
+        .eq('id', flowId);
+      if (flowError) throw flowError;
+
+      // Fetch steps to locate landing and thank-you
+      const { data: stepsData, error: stepsError } = await supabase
+        .from('flow_steps')
+        .select('*, fields:flow_fields(*)')
+        .eq('flow_id', flowId)
+        .order('step_order', { ascending: true });
+      if (stepsError) throw stepsError;
+
+      const landing = (stepsData as any[])?.find(s => s.step_type === 'single_page_landing');
+      const thank = (stepsData as any[])?.find(s => s.step_type === 'thank_you');
+
+      // Update or create landing
+      const settings: any = {
+        layoutType,
+        heroImage,
+        logo: logoUrl,
+        buttonText: ctaText,
+        buttonColor,
+        trustBadgePreset: 'standard',
+        benefitPreset: 'section8',
+        stepsPreset: 'section8Housing',
+        showProgressSteps: layoutType !== 'formLeft',
+        showBenefits: true,
+        primaryColor,
+      };
+
+      let landingStepId: string | null = null;
+      if (landing) {
+        const { error: upErr } = await supabase
+          .from('flow_steps')
+          .update({
+            title: 'Apply for Section 8 Housing',
+            subtitle: 'Get your free application guide and next steps',
+            button_text: ctaText,
+            settings
+          })
+          .eq('id', landing.id);
+        if (upErr) throw upErr;
+        landingStepId = landing.id;
+      } else {
+        const { data: ins, error: insErr } = await supabase
+          .from('flow_steps')
+          .insert({
+            flow_id: flowId,
+            step_order: (stepsData?.length || 0) + 1,
+            step_type: 'single_page_landing',
+            title: 'Apply for Section 8 Housing',
+            subtitle: 'Get your free application guide and next steps',
+            button_text: ctaText,
+            is_required: true,
+            settings,
+          })
+          .select()
+          .single();
+        if (insErr || !ins) throw insErr || new Error('Failed to create landing step');
+        landingStepId = ins.id as string;
+      }
+
+      // Replace landing fields with current selections
+      if (landingStepId) {
+        const { error: delErr } = await supabase.from('flow_fields').delete().eq('step_id', landingStepId);
+        if (delErr) throw delErr;
+        const fields = buildFields();
+        if (fields.length > 0) {
+          const insertFields = fields.map((f) => ({ ...f, step_id: landingStepId }));
+          const { error: fieldsError } = await supabase.from('flow_fields').insert(insertFields);
+          if (fieldsError) throw fieldsError;
+        }
+      }
+
+      // Update or create thank-you for redirect
+      if (thank) {
+        const { error: tErr } = await supabase
+          .from('flow_steps')
+          .update({ redirect_url: redirectUrl || null, redirect_delay: redirectUrl ? redirectDelay : null })
+          .eq('id', thank.id);
+        if (tErr) throw tErr;
+      } else {
+        const { error: tInsErr } = await supabase
+          .from('flow_steps')
+          .insert({
+            flow_id: flowId,
+            step_order: (stepsData?.length || 0) + 2,
+            step_type: 'thank_you',
+            title: 'You’re all set! 🎉',
+            subtitle: 'We’ll email your guide shortly',
+            redirect_url: redirectUrl || null,
+            redirect_delay: redirectUrl ? redirectDelay : null,
+            is_required: false,
+          });
+        if (tInsErr) throw tInsErr;
+      }
+
+      toast({ title: 'Changes saved', description: 'Your flow was updated.' });
+      onCompleted(flowId);
+      onOpenChange(false);
+    } catch (e: any) {
+      console.error('Quick edit failed:', e);
+      toast({ title: 'Error', description: e?.message || 'Failed to save changes', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -296,9 +476,15 @@ export default function OptInFlowWizard({ open, onOpenChange, onCreated }: OptIn
 
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
-              <Button onClick={handleCreate} disabled={saving}>
-                {saving ? 'Creating...' : 'Create Flow'}
-              </Button>
+              {isEdit ? (
+                <Button onClick={handleSaveEdit} disabled={saving}>
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              ) : (
+                <Button onClick={handleCreate} disabled={saving}>
+                  {saving ? 'Creating...' : 'Create Flow'}
+                </Button>
+              )}
             </div>
           </div>
         </div>

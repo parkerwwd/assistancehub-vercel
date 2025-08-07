@@ -18,6 +18,7 @@ import StepEditor from '@/components/LeadFlow/editor/StepEditor';
 import FlowSettings from '@/components/LeadFlow/editor/FlowSettings';
 import FlowPreview from '@/components/LeadFlow/editor/FlowPreview';
 import EnhancedDragDrop from '@/components/LeadFlow/editor/EnhancedDragDrop';
+import OptInFlowWizard from '@/components/LeadFlow/editor/OptInFlowWizard';
 
 interface FlowData extends Omit<Flow, 'id' | 'created_at' | 'updated_at'> {
   id?: string;
@@ -56,6 +57,7 @@ export default function FlowEditor() {
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [showQuickEdit, setShowQuickEdit] = useState(false);
 
   useEffect(() => {
     if (!isNew && id) {
@@ -454,6 +456,16 @@ export default function FlowEditor() {
               {showPreview ? 'Hide Preview' : 'Show Preview'}
             </Button>
             {!isNew && (
+              <Button
+                variant="outline"
+                onClick={() => setShowQuickEdit(true)}
+                className="flex items-center gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                Quick Edit
+              </Button>
+            )}
+            {!isNew && (
               <>
                 <Button
                   variant="outline"
@@ -748,6 +760,16 @@ export default function FlowEditor() {
           </div>
         </div>
       </div>
+
+      {/* Quick Edit Wizard */}
+      <OptInFlowWizard
+        open={showQuickEdit}
+        onOpenChange={setShowQuickEdit}
+        onCompleted={() => {
+          if (id) loadFlow(id);
+        }}
+        flowId={id}
+      />
     </div>
   );
 }

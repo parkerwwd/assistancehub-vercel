@@ -742,7 +742,7 @@ export default function FlowBuilder() {
       <OptInFlowWizard
         open={showWizard}
         onOpenChange={setShowWizard}
-        onCreated={(flowId) => navigate(`/admin/flows/${flowId}/edit`)}
+        onCompleted={(flowId) => navigate(`/admin/flows/${flowId}/edit`)}
       />
     </div>
   );
