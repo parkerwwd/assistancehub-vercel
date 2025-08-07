@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { FlowStatus } from '@/types/leadFlow';
+import AssetManagerDialog from './AssetManagerDialog';
 
 type OptInFlowWizardProps = {
   open: boolean;
@@ -37,6 +38,10 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
   const [includeConsent, setIncludeConsent] = useState(true);
   const [saving, setSaving] = useState(false);
   const isEdit = !!flowId;
+  const [assetOpen, setAssetOpen] = useState<{
+    target: 'hero' | 'logo' | null;
+    open: boolean;
+  }>({ target: null, open: false });
 
   const generatedSlug = useMemo(() => {
     const base = name
@@ -395,11 +400,17 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Hero Image URL</Label>
-                  <Input value={heroImage} onChange={(e) => setHeroImage(e.target.value)} placeholder="https://..." />
+                  <div className="flex gap-2">
+                    <Input value={heroImage} onChange={(e) => setHeroImage(e.target.value)} placeholder="https://..." />
+                    <Button type="button" variant="outline" onClick={() => setAssetOpen({ target: 'hero', open: true })}>Browse</Button>
+                  </div>
                 </div>
                 <div>
                   <Label>Logo URL</Label>
-                  <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
+                  <div className="flex gap-2">
+                    <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
+                    <Button type="button" variant="outline" onClick={() => setAssetOpen({ target: 'logo', open: true })}>Browse</Button>
+                  </div>
                 </div>
               </div>
 
@@ -489,6 +500,15 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
           </div>
         </div>
       </DialogContent>
+      <AssetManagerDialog
+        open={assetOpen.open}
+        onOpenChange={(o) => setAssetOpen(prev => ({ ...prev, open: o, target: o ? prev.target : null }))}
+        onSelect={(url) => {
+          if (assetOpen.target === 'hero') setHeroImage(url);
+          if (assetOpen.target === 'logo') setLogoUrl(url);
+          setAssetOpen({ target: null, open: false });
+        }}
+      />
     </Dialog>
   );
 }
