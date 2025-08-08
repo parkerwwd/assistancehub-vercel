@@ -22,6 +22,8 @@ import FlowPreview from '@/components/LeadFlow/editor/FlowPreview';
 import EnhancedDragDrop from '@/components/LeadFlow/editor/EnhancedDragDrop';
 import OptInFlowWizard from '@/components/LeadFlow/editor/OptInFlowWizard';
 import LogicBuilder from '@/components/LeadFlow/editor/LogicBuilder';
+import FlowTemplateGallery from '@/components/LeadFlow/editor/FlowTemplateGallery';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface FlowData extends Omit<Flow, 'id' | 'created_at' | 'updated_at'> {
   id?: string;
@@ -62,6 +64,7 @@ export default function FlowEditor() {
   const [showPreview, setShowPreview] = useState(false);
   const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [showQuickEdit, setShowQuickEdit] = useState(false);
+  const [showTemplateGallery, setShowTemplateGallery] = useState(false);
 
   useEffect(() => {
     if (!isNew && id) {
@@ -487,8 +490,6 @@ export default function FlowEditor() {
               <TabsList>
                 <TabsTrigger value="steps">Steps</TabsTrigger>
                 <TabsTrigger value="logic">Logic</TabsTrigger>
-                <TabsTrigger value="design">Design</TabsTrigger>
-                <TabsTrigger value="integrations">Integrations</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
                 <TabsTrigger value="publish">Publish</TabsTrigger>
               </TabsList>
@@ -496,8 +497,13 @@ export default function FlowEditor() {
               <TabsContent value="steps" className="space-y-4">
                 {/* Basic Info */}
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <CardTitle>Basic Information</CardTitle>
+                    <div className="mt-3 sm:mt-0">
+                      <Button variant="outline" onClick={() => setShowTemplateGallery(true)} className="gap-2">
+                        Use Template
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
@@ -626,29 +632,7 @@ export default function FlowEditor() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="design">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Design</CardTitle>
-                    <CardDescription>Brand colors, typography, and layout.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-gray-600">Use Settings for now. Dedicated design tab will consolidate style configuration.</div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="integrations">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Integrations</CardTitle>
-                    <CardDescription>Google Ads, webhooks, and exports.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-gray-600">Configuration surfaces will appear here.</div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+              
 
               <TabsContent value="settings">
                 <FlowSettings
@@ -827,6 +811,57 @@ export default function FlowEditor() {
         }}
         flowId={id}
       />
+
+      {/* Template Gallery */}
+      <Dialog open={showTemplateGallery} onOpenChange={setShowTemplateGallery}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Templates</DialogTitle>
+            <DialogDescription>Start from a proven template. Your current draft will be replaced.</DialogDescription>
+          </DialogHeader>
+          <FlowTemplateGallery
+            onSelectTemplate={(template) => {
+              if (template.id === 'blank') {
+                setFlow(prev => ({ ...prev, steps: [] }));
+                setShowTemplateGallery(false);
+                return;
+              }
+              const templatedSteps = (template.steps || []).map((s: any, idx: number) => ({
+                tempId: `${Date.now()}-${idx}`,
+                step_order: idx + 1,
+                step_type: s.step_type,
+                title: s.title || '',
+                subtitle: s.subtitle || '',
+                content: s.content || '',
+                button_text: s.button_text || 'Next',
+                is_required: s.is_required ?? true,
+                skip_logic: s.skip_logic || {},
+                navigation_logic: s.navigation_logic || {},
+                validation_rules: s.validation_rules || {},
+                settings: s.settings || {},
+                redirect_url: s.redirect_url,
+                redirect_delay: s.redirect_delay,
+                fields: (s.fields || []).map((f: any, fidx: number) => ({
+                  tempId: `${Date.now()}-${idx}-${fidx}`,
+                  field_order: fidx + 1,
+                  field_type: f.field_type,
+                  field_name: f.field_name,
+                  label: f.label,
+                  placeholder: f.placeholder,
+                  help_text: f.help_text,
+                  is_required: f.is_required,
+                  validation_rules: f.validation_rules || {},
+                  options: f.options || [],
+                  default_value: f.default_value || '',
+                  conditional_logic: f.conditional_logic || {},
+                }))
+              }));
+              setFlow(prev => ({ ...prev, steps: templatedSteps }));
+              setShowTemplateGallery(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
