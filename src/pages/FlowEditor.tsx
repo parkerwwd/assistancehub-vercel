@@ -325,6 +325,24 @@ export default function FlowEditor() {
         toast({ title: 'Error', description: 'Name and slug are required', variant: 'destructive' });
         return;
       }
+      // Basic pre-publish validation
+      const errors: string[] = [];
+      if (!flow.steps || flow.steps.length === 0) {
+        errors.push('Add at least one step.');
+      }
+      // Require thank you step or redirect on last step
+      if (flow.steps && flow.steps.length > 0) {
+        const last = flow.steps[flow.steps.length - 1];
+        const hasThankYou = flow.steps.some(s => s.step_type === StepType.THANK_YOU);
+        const hasRedirect = !!last.redirect_url;
+        if (!hasThankYou && !hasRedirect) {
+          errors.push('Add a Thank You step or a redirect URL on the final step.');
+        }
+      }
+      if (errors.length) {
+        toast({ title: 'Fix before publishing', description: errors.join(' '), variant: 'destructive' });
+        return;
+      }
       // Build versioned payload from current editor state
       const payload: FlowPayload = {
         id: flow.id,
