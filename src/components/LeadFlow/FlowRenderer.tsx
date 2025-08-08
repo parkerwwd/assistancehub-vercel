@@ -324,7 +324,7 @@ export default function FlowRenderer() {
     
     try {
       console.log(`Loading flow: ${slug} on ${isMobile ? 'MOBILE' : 'DESKTOP'} (attempt ${retryCount + 1})`);
-      // 1) Try versioned payload first
+      // 1) Load versioned payload (no legacy fallback)
       const versioned = await FlowService.getPublishedBySlug(slug);
       if (versioned && versioned.payload) {
         console.log('Loaded versioned flow payload');
@@ -338,41 +338,7 @@ export default function FlowRenderer() {
         setLoading(false);
         return;
       }
-      
-      // Fetch flow with steps and fields
-      // Add timestamp to bypass any caching
-      const timestamp = new Date().getTime();
-      const { data: flowData, error: flowError } = await supabase
-        .from('flows')
-        .select(`
-          *,
-          steps:flow_steps(
-            *,
-            fields:flow_fields(*)
-          )
-        `)
-        .eq('slug', slug)
-        .single()
-        .throwOnError();
-      
-      // Log the raw response
-      console.log('Raw Supabase response:', {
-        hasData: !!flowData,
-        hasError: !!flowError,
-        flowId: flowData?.id,
-        flowName: flowData?.name,
-        flowSlug: flowData?.slug,
-        stepsInResponse: flowData?.steps,
-        stepsCount: flowData?.steps?.length,
-        errorDetails: flowError,
-        device: isMobile ? 'MOBILE' : 'DESKTOP',
-        requestedSlug: slug
-      });
-
-      if (flowError) {
-        hasError = true;
-        throw flowError;
-      }
+      throw new Error('No published version found for this flow.');
 
       // Sort steps and fields by order
       if (flowData) {

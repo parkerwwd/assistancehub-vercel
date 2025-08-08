@@ -138,183 +138,61 @@ export default function FlowEditor() {
   };
 
   const handleSave = async () => {
-    console.log('handleSave function called!');
-    console.log('Current flow:', flow);
-    
+    console.log('handleSave called (versioned)');
     if (!flow.name || !flow.slug) {
-      console.log('Missing name or slug:', { name: flow.name, slug: flow.slug });
-      toast({
-        title: "Error",
-        description: "Please provide a name and slug for the flow.",
-        variant: "destructive",
-      });
+      toast({ title: 'Error', description: 'Please provide a name and slug for the flow.', variant: 'destructive' });
       return;
     }
-
     setSaving(true);
-    
     try {
-      let flowId = flow.id;
-      
-      // Debug logging
-      console.log('Saving flow:', {
-        isNew,
-        flowId,
-        flowName: flow.name,
-        stepsCount: flow.steps.length,
-        steps: flow.steps
-      });
-
-      // Save or update flow (legacy tables remain for compatibility)
-      if (isNew) {
-        const { data: newFlow, error } = await supabase
-          .from('flows')
-          .insert({
-            name: flow.name,
-            slug: flow.slug,
-            description: flow.description,
-            status: flow.status,
-            settings: flow.settings,
-            google_ads_config: flow.google_ads_config,
-            style_config: flow.style_config,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        flowId = newFlow.id;
-      } else {
-        const { error } = await supabase
-          .from('flows')
-          .update({
-            name: flow.name,
-            slug: flow.slug,
-            description: flow.description,
-            status: flow.status,
-            settings: flow.settings,
-            google_ads_config: flow.google_ads_config,
-            style_config: flow.style_config,
-          })
-          .eq('id', flowId);
-
-        if (error) throw error;
-      }
-
-      // Delete existing steps if updating
-      if (!isNew && flowId) {
-        console.log('Deleting existing steps for flow:', flowId);
-        const { error: deleteError } = await supabase
-          .from('flow_steps')
-          .delete()
-          .eq('flow_id', flowId);
-
-        if (deleteError) {
-          console.error('Error deleting steps:', deleteError);
-          throw deleteError;
-        }
-        console.log('Successfully deleted old steps');
-      }
-
-      // Ensure we have a valid flow ID
-      if (!flowId) {
-        throw new Error('Flow ID is missing. Cannot save steps.');
-      }
-
-      // Save steps and fields
-      console.log(`Saving ${flow.steps.length} steps for flow:`, flowId);
-      for (let i = 0; i < flow.steps.length; i++) {
-        const step = flow.steps[i];
-        const { data: savedStep, error: stepError } = await supabase
-          .from('flow_steps')
-          .insert({
-            flow_id: flowId,
-            step_order: i + 1,
-            step_type: step.step_type,
-            title: step.title,
-            subtitle: step.subtitle,
-            content: step.content,
-            button_text: step.button_text,
-            is_required: step.is_required,
-            skip_logic: step.skip_logic,
-            navigation_logic: step.navigation_logic,
-            validation_rules: step.validation_rules,
-            settings: step.settings || {},
-            redirect_url: step.redirect_url,
-            redirect_delay: step.redirect_delay,
-          })
-          .select()
-          .single();
-
-        if (stepError) {
-          console.error('Error saving step:', stepError);
-          throw stepError;
-        }
-        
-        console.log(`Saved step ${i + 1}:`, savedStep.id, step.step_type);
-
-        // Save fields for this step
-        if (step.fields && step.fields.length > 0) {
-          const fieldsToInsert = step.fields.map((field, index) => ({
-            step_id: savedStep.id,
-            field_order: index + 1,
-            field_type: field.field_type,
-            field_name: field.field_name,
-            label: field.label,
-            placeholder: field.placeholder,
-            help_text: field.help_text,
-            is_required: field.is_required,
-            validation_rules: field.validation_rules,
-            options: field.options,
-            default_value: field.default_value,
-            conditional_logic: field.conditional_logic,
-          }));
-
-          const { error: fieldsError } = await supabase
-            .from('flow_fields')
-            .insert(fieldsToInsert);
-
-          if (fieldsError) throw fieldsError;
-        }
-      }
-      
-      // Verify steps were saved (for debugging)
-      console.log('Verifying saved steps...');
-      const { data: verifySteps, error: verifyError } = await supabase
-        .from('flow_steps')
-        .select('id, step_type, step_order')
-        .eq('flow_id', flowId);
-      
-      console.log('Verification result:', {
-        savedStepsCount: verifySteps?.length || 0,
-        steps: verifySteps,
-        error: verifyError
-      });
-
-      toast({
-        title: "Success",
-        description: isNew ? "Flow created successfully!" : "Flow updated successfully!",
-      });
-
-      if (isNew) {
-        navigate(`/admin/flows/${flowId}/edit`);
-      }
-    } catch (error: any) {
-      console.error('Error saving flow:', error);
-      
-      let errorMessage = "Could not save flow. Please try again.";
-      
-      // Check for duplicate slug error
-      if (error?.code === '23505' || error?.message?.includes('duplicate') || error?.message?.includes('unique')) {
-        errorMessage = "A flow with this slug already exists. Please choose a different slug.";
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      const payload: FlowPayload = {
+        id: flow.id,
+        name: flow.name,
+        slug: flow.slug,
+        description: flow.description,
+        status: flow.status,
+        settings: flow.settings as any,
+        google_ads_config: (flow as any).google_ads_config || {},
+        style_config: (flow as any).style_config || {},
+        steps: (flow.steps || []).map((s, idx) => ({
+          id: s.id || s.tempId || `${idx}`,
+          step_order: s.step_order ?? idx + 1,
+          step_type: s.step_type as any,
+          title: s.title,
+          subtitle: s.subtitle,
+          content: s.content,
+          button_text: s.button_text,
+          is_required: s.is_required,
+          skip_logic: s.skip_logic as any,
+          navigation_logic: s.navigation_logic as any,
+          validation_rules: s.validation_rules as any,
+          settings: s.settings as any,
+          redirect_url: s.redirect_url as any,
+          redirect_delay: s.redirect_delay as any,
+          fields: (s.fields || []).map((f, fidx) => ({
+            id: f.id || f.tempId || `${idx}-${fidx}`,
+            field_type: f.field_type as any,
+            field_name: f.field_name,
+            label: f.label as any,
+            placeholder: f.placeholder as any,
+            help_text: f.help_text as any,
+            is_required: f.is_required as any,
+            validation_rules: f.validation_rules as any,
+            options: f.options as any,
+            default_value: f.default_value as any,
+            conditional_logic: f.conditional_logic as any,
+          })),
+        })),
+        logic: ((flow as any).logic || []) as any,
+        metadata: (flow as any).metadata || {},
+      };
+      const saved = await FlowService.saveDraft(flow.id || null, payload);
+      setFlow(prev => ({ ...prev, id: saved.flowId } as any));
+      if (isNew) navigate(`/admin/flows/${saved.flowId}/edit`);
+      toast({ title: 'Saved', description: `Draft version ${saved.version} saved.` });
+    } catch (e: any) {
+      console.error('Save failed', e);
+      toast({ title: 'Error', description: e?.message || 'Could not save draft', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
