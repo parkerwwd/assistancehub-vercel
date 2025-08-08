@@ -465,6 +465,35 @@ export default function FlowRenderer() {
     const currentStep = flow.steps[session.currentStep];
     const isLastStep = session.currentStep >= flow.steps.length - 1;
 
+    // Guide gating: if quiz step has correctness flag, enforce pass threshold
+    const passThreshold = (flow.metadata as any)?.passThreshold || 70;
+    if (currentStep?.step_type === 'quiz') {
+      // Compute score for single-question quiz: 100 if correct, 0 otherwise
+      const correctnessFlags = Object.entries(stepData).filter(([k]) => k.endsWith('__correct'));
+      let score = 0;
+      if (correctnessFlags.length > 0) {
+        const anyCorrect = correctnessFlags.some(([, v]) => v === true || v === 'true');
+        score = anyCorrect ? 100 : 0;
+      }
+      const anonId = localStorage.getItem('anon_id') || (() => { const v = crypto.randomUUID(); localStorage.setItem('anon_id', v); return v; })();
+      try {
+        await supabase.from('guide_progress').upsert({
+          flow_id: flow.id,
+          anon_id: anonId,
+          module: currentStep.settings?.module || session.currentStep,
+          score,
+          passed: score >= passThreshold
+        }, { onConflict: 'flow_id,anon_id,module' });
+      } catch (e) {
+        console.warn('guide_progress upsert failed', e);
+      }
+      if (score < passThreshold) {
+        // Do not advance; require retake
+        toast({ title: 'Keep going!', description: `Score ${score}%. You need ${passThreshold}% to pass. Try again.`, });
+        return;
+      }
+    }
+
     if (isLastStep || currentStep?.step_type === 'thank_you') {
       // Submit lead
       await submitLead(updatedSession);
