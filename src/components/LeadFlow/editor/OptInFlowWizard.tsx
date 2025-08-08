@@ -142,6 +142,10 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
       toast({ title: 'Missing info', description: 'Please provide a name and slug.', variant: 'destructive' });
       return;
     }
+    if (!/^[-a-z0-9]+$/.test(slug)) {
+      toast({ title: 'Invalid slug', description: 'Use lowercase letters, numbers, and dashes only.', variant: 'destructive' });
+      return;
+    }
 
     setSaving(true);
     try {
