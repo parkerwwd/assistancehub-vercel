@@ -78,6 +78,10 @@ export default function FlowBuilder() {
     setShowWizard(true);
   };
 
+  const handleCreateGuide = () => {
+    setShowWizard(true);
+  };
+
   const handleSelectTemplate = async (template: any) => {
     // Create new flow with template data
     if (template.id === 'blank') {
@@ -354,6 +358,14 @@ export default function FlowBuilder() {
             >
               <Sparkles className="w-4 h-4" />
               Quick Opt-In Flow
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleCreateGuide}
+              className="flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Create Guide
             </Button>
             <Button onClick={handleCreateFlow} className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
@@ -743,6 +755,7 @@ export default function FlowBuilder() {
         open={showWizard}
         onOpenChange={setShowWizard}
         onCompleted={(flowId) => navigate(`/admin/flows/${flowId}/edit`)}
+        defaultMode={showWizard ? undefined : undefined}
       />
     </div>
   );

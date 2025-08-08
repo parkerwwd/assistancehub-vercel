@@ -19,11 +19,12 @@ type OptInFlowWizardProps = {
   onOpenChange: (open: boolean) => void;
   onCompleted: (flowId: string) => void;
   flowId?: string; // if provided, acts as Quick Edit
+  defaultMode?: 'flow' | 'guide';
 };
 
 const defaultHero = 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1200&auto=format&fit=crop';
 
-export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowId }: OptInFlowWizardProps) {
+export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowId, defaultMode = 'flow' }: OptInFlowWizardProps) {
   const [name, setName] = useState('Housing Application Guide');
   const [slug, setSlug] = useState('housing-application-guide');
   const [primaryColor, setPrimaryColor] = useState('#3B82F6');
@@ -50,7 +51,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
   const [currentStep, setCurrentStep] = useState<0 | 1 | 2>(0); // 0 Basic, 1 Content, 2 Review
   const [includeUTMs, setIncludeUTMs] = useState(true);
-  const [isGuide, setIsGuide] = useState(false);
+  const [isGuide, setIsGuide] = useState(defaultMode === 'guide');
   // Editable content for steps/benefits
   const [stepsPreset, setStepsPreset] = useState<'section8Housing' | 'generalApplication'>('section8Housing');
   const [useCustomSteps, setUseCustomSteps] = useState(false);
