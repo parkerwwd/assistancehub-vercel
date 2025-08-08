@@ -71,6 +71,20 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
     { id: 'blue', name: 'Blue', primary: '#3B82F6', button: '#3B82F6', hero: defaultHero },
     { id: 'neutral', name: 'Neutral', primary: '#334155', button: '#111827', hero: 'https://images.unsplash.com/photo-1502005229762-cf1b2da7c4f3?q=80&w=1200&auto=format&fit=crop' }
   ];
+  const [dbThemes, setDbThemes] = useState<any[]>([]);
+  const [dbBundles, setDbBundles] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    const loadPresets = async () => {
+      try {
+        const { data: themes } = await supabase.from('flow_presets').select('*').eq('kind','theme').eq('is_active', true);
+        const { data: bundles } = await supabase.from('flow_presets').select('*').eq('kind','field_bundle').eq('is_active', true);
+        setDbThemes(themes || []);
+        setDbBundles(bundles || []);
+      } catch (_) {}
+    };
+    loadPresets();
+  }, []);
 
   const generatedSlug = useMemo(() => {
     const base = name
@@ -637,7 +651,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                 <div>
                   <Label>Theme Presets</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {themePresets.map(p => (
+                    {[...themePresets, ...dbThemes.map(t=>({ id: t.slug, name: t.name, primary: t.data?.primaryColor || '#3B82F6', button: t.data?.buttonColor || '#3B82F6', hero: heroImage }))].map(p => (
                       <Button key={p.id} type="button" variant="outline" size="sm" onClick={()=>applyTheme(p.id)}>{p.name}</Button>
                     ))}
                   </div>
@@ -690,6 +704,16 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                     <div className="flex gap-2">
                       <Button type="button" variant="outline" size="sm" onClick={()=>applyBundle('minimal')}>Minimal</Button>
                       <Button type="button" variant="outline" size="sm" onClick={()=>applyBundle('leadgen')}>Lead Gen</Button>
+                      {dbBundles.map(b => (
+                        <Button key={b.slug} type="button" variant="outline" size="sm" onClick={()=>{
+                          const fields: string[] = b.data?.fields || [];
+                          setIncludeFirstName(fields.includes('firstName'));
+                          setIncludeLastName(fields.includes('lastName'));
+                          setIncludeEmail(fields.includes('email'));
+                          setIncludeZip(fields.includes('zipCode') || fields.includes('zip'));
+                          setIncludeConsent(fields.includes('consent'));
+                        }}>{b.name}</Button>
+                      ))}
                     </div>
                   </div>
 
