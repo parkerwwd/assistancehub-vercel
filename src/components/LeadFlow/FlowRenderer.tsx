@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FlowWithSteps, LeadSession, FieldValues } from '@/types/leadFlow';
+import { FlowService } from '@/services/flowService';
+import { FlowPayload } from '@/types/flowSchema';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import StepRenderer from './StepRenderer';
@@ -204,6 +206,7 @@ export default function FlowRenderer() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const [flow, setFlow] = useState<FlowWithSteps | null>(null);
+  const [versionedPayload, setVersionedPayload] = useState<FlowPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<LeadSession | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -321,6 +324,20 @@ export default function FlowRenderer() {
     
     try {
       console.log(`Loading flow: ${slug} on ${isMobile ? 'MOBILE' : 'DESKTOP'} (attempt ${retryCount + 1})`);
+      // 1) Try versioned payload first
+      const versioned = await FlowService.getPublishedBySlug(slug);
+      if (versioned && versioned.payload) {
+        console.log('Loaded versioned flow payload');
+        setVersionedPayload(versioned.payload);
+        // Construct minimal compatible FlowWithSteps shape for renderer expectations
+        setFlow({
+          ...(versioned.payload as any),
+          id: versioned.flowId,
+          steps: (versioned.payload.steps as any) || [],
+        } as unknown as FlowWithSteps);
+        setLoading(false);
+        return;
+      }
       
       // Fetch flow with steps and fields
       // Add timestamp to bypass any caching

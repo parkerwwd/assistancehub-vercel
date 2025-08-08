@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Flow, FlowStep, FlowField, StepType, FieldType, FlowStatus } from '@/types/leadFlow';
+import { FlowService } from '@/services/flowService';
+import { FlowPayload } from '@/types/flowSchema';
 import Header from '@/components/Header';
 import StepEditor from '@/components/LeadFlow/editor/StepEditor';
 import FlowSettings from '@/components/LeadFlow/editor/FlowSettings';
@@ -162,7 +164,7 @@ export default function FlowEditor() {
         steps: flow.steps
       });
 
-      // Save or update flow
+      // Save or update flow (legacy tables remain for compatibility)
       if (isNew) {
         const { data: newFlow, error } = await supabase
           .from('flows')
@@ -314,6 +316,64 @@ export default function FlowEditor() {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    try {
+      if (!flow.name || !flow.slug) {
+        toast({ title: 'Error', description: 'Name and slug are required', variant: 'destructive' });
+        return;
+      }
+      // Build versioned payload from current editor state
+      const payload: FlowPayload = {
+        id: flow.id,
+        name: flow.name,
+        slug: flow.slug,
+        description: flow.description,
+        status: flow.status,
+        settings: flow.settings as any,
+        google_ads_config: (flow as any).google_ads_config || {},
+        style_config: (flow as any).style_config || {},
+        steps: (flow.steps || []).map((s, idx) => ({
+          id: s.id || s.tempId || `${idx}`,
+          step_order: s.step_order ?? idx + 1,
+          step_type: s.step_type as any,
+          title: s.title,
+          subtitle: s.subtitle,
+          content: s.content,
+          button_text: s.button_text,
+          is_required: s.is_required,
+          skip_logic: s.skip_logic as any,
+          navigation_logic: s.navigation_logic as any,
+          validation_rules: s.validation_rules as any,
+          settings: s.settings as any,
+          redirect_url: s.redirect_url as any,
+          redirect_delay: s.redirect_delay as any,
+          fields: (s.fields || []).map((f, fidx) => ({
+            id: f.id || f.tempId || `${idx}-${fidx}`,
+            field_type: f.field_type as any,
+            field_name: f.field_name,
+            label: f.label as any,
+            placeholder: f.placeholder as any,
+            help_text: f.help_text as any,
+            is_required: f.is_required as any,
+            validation_rules: f.validation_rules as any,
+            options: f.options as any,
+            default_value: f.default_value as any,
+            conditional_logic: f.conditional_logic as any,
+          })),
+        })),
+        logic: [],
+        metadata: (flow as any).metadata || {},
+      };
+
+      const saved = await FlowService.saveDraft(flow.id || null, payload);
+      const pub = await FlowService.publish(saved.flowId);
+      toast({ title: 'Published', description: `Version ${pub.version} is now live.` });
+    } catch (e: any) {
+      console.error('Publish failed', e);
+      toast({ title: 'Publish failed', description: e?.message || 'Unknown error', variant: 'destructive' });
     }
   };
 
@@ -517,6 +577,9 @@ export default function FlowEditor() {
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : 'Save Flow'}
             </Button>
+            <Button variant="secondary" onClick={handlePublish} className="flex items-center gap-2">
+              Publish
+            </Button>
           </div>
         </div>
 
@@ -526,7 +589,11 @@ export default function FlowEditor() {
             <Tabs defaultValue="steps" className="space-y-4">
               <TabsList>
                 <TabsTrigger value="steps">Steps</TabsTrigger>
+                <TabsTrigger value="logic">Logic</TabsTrigger>
+                <TabsTrigger value="design">Design</TabsTrigger>
+                <TabsTrigger value="integrations">Integrations</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
+                <TabsTrigger value="publish">Publish</TabsTrigger>
               </TabsList>
 
               <TabsContent value="steps" className="space-y-4">
@@ -646,6 +713,42 @@ export default function FlowEditor() {
                 </Card>
               </TabsContent>
 
+              <TabsContent value="logic">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Conditional Logic</CardTitle>
+                    <CardDescription>Define when steps/fields show using simple rules.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm text-gray-600">Visual logic builder coming soon.</div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="design">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Design</CardTitle>
+                    <CardDescription>Brand colors, typography, and layout.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm text-gray-600">Use Settings for now. Dedicated design tab will consolidate style configuration.</div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="integrations">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Integrations</CardTitle>
+                    <CardDescription>Google Ads, webhooks, and exports.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm text-gray-600">Configuration surfaces will appear here.</div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
               <TabsContent value="settings">
                 <FlowSettings
                   flow={flow}
@@ -656,6 +759,23 @@ export default function FlowEditor() {
                     }
                   }}
                 />
+              </TabsContent>
+
+              <TabsContent value="publish">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Publish</CardTitle>
+                    <CardDescription>Validate and publish to make your flow live.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <ul className="list-disc list-inside text-sm text-gray-700">
+                      <li>Name and slug are set</li>
+                      <li>At least one step</li>
+                      <li>Thank you step or redirect configured</li>
+                    </ul>
+                    <Button onClick={handlePublish}>Run Checks & Publish</Button>
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
           </div>
