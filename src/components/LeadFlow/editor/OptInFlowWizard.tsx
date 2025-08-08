@@ -50,6 +50,16 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
   const [currentStep, setCurrentStep] = useState<0 | 1 | 2>(0); // 0 Basic, 1 Content, 2 Review
   const [includeUTMs, setIncludeUTMs] = useState(true);
+  // Editable content for steps/benefits
+  const [stepsPreset, setStepsPreset] = useState<'section8Housing' | 'generalApplication'>('section8Housing');
+  const [useCustomSteps, setUseCustomSteps] = useState(false);
+  const [step1Text, setStep1Text] = useState('');
+  const [step2Text, setStep2Text] = useState('');
+  const [step3Text, setStep3Text] = useState('');
+  const [benefitPreset, setBenefitPreset] = useState<'section8' | 'general' | 'premium'>('section8');
+  const [useCustomBenefits, setUseCustomBenefits] = useState(false);
+  const [benefitsTitle, setBenefitsTitle] = useState('What Do I Get When Signing Up?');
+  const [benefitsMultiline, setBenefitsMultiline] = useState('');
   const themePresets = [
     { id: 'teal', name: 'Teal', primary: '#00B8A9', button: '#00B8A9', hero: 'https://images.unsplash.com/photo-1523217582562-09d0def993a6?q=80&w=1200&auto=format&fit=crop' },
     { id: 'blue', name: 'Blue', primary: '#3B82F6', button: '#3B82F6', hero: defaultHero },
@@ -153,9 +163,16 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
         buttonColor,
         usePageBackground: imagePlacement === 'page',
         imageMode: imagePlacement,
+        stepsPreset,
+        customSteps: useCustomSteps ? [
+          { number: 1, description: step1Text, color: '#10B981' },
+          { number: 2, description: step2Text, color: '#F59E0B' },
+          { number: 3, description: step3Text, color: '#3B82F6' },
+        ] : [],
+        benefitPreset,
+        benefitsTitle,
+        customBenefits: useCustomBenefits ? benefitsMultiline.split('\n').map(s => s.trim()).filter(Boolean) : [],
         trustBadgePreset: 'standard',
-        benefitPreset: 'section8',
-        stepsPreset: 'section8Housing',
         showProgressSteps: layoutType !== 'formLeft',
         showBenefits: true,
         primaryColor,
@@ -246,6 +263,19 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
           if (cfg.buttonText) setCtaText(cfg.buttonText);
           if (cfg.buttonColor) setButtonColor(cfg.buttonColor);
           setImagePlacement(cfg.imageMode || (cfg.usePageBackground ? 'page' : 'hero'));
+          if (cfg.stepsPreset) setStepsPreset(cfg.stepsPreset);
+          if (Array.isArray(cfg.customSteps) && cfg.customSteps.length >= 3) {
+            setUseCustomSteps(true);
+            setStep1Text(cfg.customSteps[0]?.description || '');
+            setStep2Text(cfg.customSteps[1]?.description || '');
+            setStep3Text(cfg.customSteps[2]?.description || '');
+          }
+          if (cfg.benefitPreset) setBenefitPreset(cfg.benefitPreset);
+          if (typeof cfg.benefitsTitle === 'string') setBenefitsTitle(cfg.benefitsTitle);
+          if (Array.isArray(cfg.customBenefits) && cfg.customBenefits.length > 0) {
+            setUseCustomBenefits(true);
+            setBenefitsMultiline(cfg.customBenefits.join('\n'));
+          }
           // fields toggles
           const fns = (landing.fields || []).map((f: any) => f.field_name);
           setIncludeFirstName(fns.includes('firstName'));
@@ -311,9 +341,16 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
         buttonColor,
         usePageBackground: imagePlacement === 'page',
         imageMode: imagePlacement,
+        stepsPreset,
+        customSteps: useCustomSteps ? [
+          { number: 1, description: step1Text, color: '#10B981' },
+          { number: 2, description: step2Text, color: '#F59E0B' },
+          { number: 3, description: step3Text, color: '#3B82F6' },
+        ] : [],
+        benefitPreset,
+        benefitsTitle,
+        customBenefits: useCustomBenefits ? benefitsMultiline.split('\n').map(s => s.trim()).filter(Boolean) : [],
         trustBadgePreset: 'standard',
-        benefitPreset: 'section8',
-        stepsPreset: 'section8Housing',
         showProgressSteps: layoutType !== 'formLeft',
         showBenefits: true,
         primaryColor,
@@ -405,9 +442,9 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
           <DialogDescription>Set layout, fields, branding, and redirect in one step.</DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
           {/* Left: Basics */}
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-5">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Quick Flow</CardTitle>
@@ -510,6 +547,70 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <div>
+                      <Label>Steps Preset</Label>
+                      <Select value={stepsPreset} onValueChange={(v:any)=>setStepsPreset(v)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="section8Housing">Section 8 Housing</SelectItem>
+                          <SelectItem value="generalApplication">General Application</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Benefits Preset</Label>
+                      <Select value={benefitPreset} onValueChange={(v:any)=>setBenefitPreset(v)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="section8">Section 8</SelectItem>
+                          <SelectItem value="general">General</SelectItem>
+                          <SelectItem value="premium">Premium</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="mt-2">
+                    <label className="flex items-center gap-2 text-sm">
+                      <Checkbox checked={useCustomSteps} onCheckedChange={(v)=>setUseCustomSteps(!!v)} />
+                      Customize steps text
+                    </label>
+                    {useCustomSteps && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+                        <div>
+                          <Label>Step 1</Label>
+                          <Input value={step1Text} onChange={(e)=>setStep1Text(e.target.value)} placeholder="Describe step 1" />
+                        </div>
+                        <div>
+                          <Label>Step 2</Label>
+                          <Input value={step2Text} onChange={(e)=>setStep2Text(e.target.value)} placeholder="Describe step 2" />
+                        </div>
+                        <div>
+                          <Label>Step 3</Label>
+                          <Input value={step3Text} onChange={(e)=>setStep3Text(e.target.value)} placeholder="Describe step 3" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="flex items-center gap-2 text-sm">
+                      <Checkbox checked={useCustomBenefits} onCheckedChange={(v)=>setUseCustomBenefits(!!v)} />
+                      Customize benefits list
+                    </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                      <div>
+                        <Label>Benefits Title</Label>
+                        <Input value={benefitsTitle} onChange={(e)=>setBenefitsTitle(e.target.value)} />
+                      </div>
+                      <div>
+                        <Label>Benefits (one per line)</Label>
+                        <textarea className="w-full h-28 border rounded-md p-2 text-sm" value={benefitsMultiline} onChange={(e)=>setBenefitsMultiline(e.target.value)} placeholder="Item one\nItem two\nItem three" />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     <div>
                       <Label>CTA Button Text</Label>
@@ -568,7 +669,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
           </Card>
 
           {/* Right: Fields and Preview */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:col-span-7">
             <Card>
               <CardHeader>
                 <CardTitle>Form Fields</CardTitle>
@@ -626,7 +727,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                         <Button type="button" variant={previewDevice === 'mobile' ? 'default' : 'outline'} size="sm" onClick={() => setPreviewDevice('mobile')}>Mobile</Button>
                       </div>
                     </div>
-                    <div className={`border rounded-lg overflow-hidden ${previewDevice === 'mobile' ? 'max-w-[420px]' : 'w-full'} mx-auto`}>
+                    <div className={`border rounded-lg overflow-hidden ${previewDevice === 'mobile' ? 'max-w-[420px]' : 'max-w-[1200px]'} mx-auto`}>
                       {(() => {
                         const fields = buildFields();
                         const settings: any = {
@@ -637,6 +738,15 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                           buttonColor,
                           usePageBackground: imagePlacement === 'page',
                           imageMode: imagePlacement,
+                          stepsPreset,
+                          customSteps: useCustomSteps ? [
+                            { number: 1, description: step1Text, color: '#10B981' },
+                            { number: 2, description: step2Text, color: '#F59E0B' },
+                            { number: 3, description: step3Text, color: '#3B82F6' },
+                          ] : [],
+                          benefitPreset,
+                          benefitsTitle,
+                          customBenefits: useCustomBenefits ? benefitsMultiline.split('\n').map(s => s.trim()).filter(Boolean) : [],
                           primaryColor
                         };
                         const step: FlowStepWithFields = {
