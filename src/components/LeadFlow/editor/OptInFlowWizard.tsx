@@ -52,6 +52,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
   const [currentStep, setCurrentStep] = useState<0 | 1 | 2>(0); // 0 Basic, 1 Content, 2 Review
   const [includeUTMs, setIncludeUTMs] = useState(true);
   const [isGuide, setIsGuide] = useState(defaultMode === 'guide');
+  const [loadedSteps, setLoadedSteps] = useState<any[]>([]);
   // Editable content for steps/benefits
   const [stepsPreset, setStepsPreset] = useState<'section8Housing' | 'generalApplication'>('section8Housing');
   const [useCustomSteps, setUseCustomSteps] = useState(false);
@@ -305,6 +306,9 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
         if (sc.heroImageUrl && !heroImage) setHeroImage(sc.heroImageUrl);
         if (sc.logoUrl) setLogoUrl(sc.logoUrl);
 
+        // Keep steps for quick operations
+        setLoadedSteps((flow as any).steps || []);
+
         // Find landing step
         const landing = (flow as any).steps?.find((s: any) => s.step_type === 'single_page_landing');
         if (landing) {
@@ -350,6 +354,93 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, flowId]);
+
+  // Quick Add Module (for existing guide flows)
+  const handleAddModule = async () => {
+    if (!isEdit || !flowId) return;
+    try {
+      // Fetch current steps fresh
+      const { data: steps } = await supabase
+        .from('flow_steps')
+        .select('*')
+        .eq('flow_id', flowId)
+        .order('step_order', { ascending: true });
+      const stepsArr = steps || [];
+      const thank = stepsArr.find(s => s.step_type === 'thank_you');
+      const maxOrder = stepsArr.reduce((m, s) => Math.max(m, s.step_order || 0), 0);
+      const modules = stepsArr
+        .filter(s => s.settings && typeof (s as any).settings.module === 'number')
+        .map(s => (s as any).settings.module as number);
+      const nextModule = (modules.length > 0 ? Math.max(...modules) : 0) + 1;
+
+      // Determine insert orders (before thank_you if it exists)
+      let insertOrder = maxOrder + 1;
+      if (thank) {
+        insertOrder = (thank.step_order || maxOrder + 1);
+      }
+      const contentOrder = insertOrder;
+      const quizOrder = insertOrder + 1;
+
+      // Shift thank_you to end if present
+      if (thank) {
+        await supabase
+          .from('flow_steps')
+          .update({ step_order: quizOrder + 1 })
+          .eq('id', thank.id);
+      }
+
+      // Insert content step
+      const { error: contentErr } = await supabase
+        .from('flow_steps')
+        .insert({
+          flow_id: flowId,
+          step_order: contentOrder,
+          step_type: 'content',
+          title: `Module ${nextModule}: Lesson`,
+          subtitle: 'Read this short lesson before taking the quiz',
+          content: `<p>This is the lesson content for Module ${nextModule}. You can edit this text in the editor.</p>`,
+          is_required: true,
+          settings: { module: nextModule }
+        });
+      if (contentErr) throw contentErr;
+
+      // Insert quiz step
+      const { data: quizStep, error: quizErr } = await supabase
+        .from('flow_steps')
+        .insert({
+          flow_id: flowId,
+          step_order: quizOrder,
+          step_type: 'quiz',
+          title: `Module ${nextModule} Quiz`,
+          subtitle: 'Answer to continue',
+          is_required: true,
+          settings: { module: nextModule, allowRetake: true }
+        })
+        .select()
+        .single();
+      if (quizErr || !quizStep) throw quizErr || new Error('Failed to create quiz step');
+
+      const { error: fieldErr } = await supabase.from('flow_fields').insert({
+        step_id: quizStep.id,
+        field_order: 1,
+        field_type: 'radio',
+        field_name: `module${nextModule}_q1`,
+        label: `Module ${nextModule} sample question`,
+        is_required: true,
+        options: [
+          { value: 'a', label: 'Correct answer', correct: true },
+          { value: 'b', label: 'Wrong answer' },
+          { value: 'c', label: 'Wrong answer' },
+        ]
+      });
+      if (fieldErr) throw fieldErr;
+
+      toast({ title: 'Module added', description: `Module ${nextModule} (lesson + quiz) created.` });
+    } catch (e: any) {
+      console.error('Add module failed', e);
+      toast({ title: 'Error', description: e?.message || 'Could not add module', variant: 'destructive' });
+    }
+  };
 
   const handleSaveEdit = async () => {
     if (!flowId) return;

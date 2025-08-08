@@ -468,9 +468,21 @@ export default function FlowEditor() {
                 variant="outline"
                 onClick={() => setShowQuickEdit(true)}
                 className="flex items-center gap-2"
+                title="Quick Edit"
               >
                 <Settings className="w-4 h-4" />
                 Quick Edit
+              </Button>
+            )}
+            {!isNew && (
+              <Button
+                variant="outline"
+                onClick={() => setShowQuickEdit(true)}
+                className="flex items-center gap-2"
+                title="Add Module (use Quick Edit to confirm)"
+              >
+                <Plus className="w-4 h-4" />
+                Add Module
               </Button>
             )}
             {!isNew && (
