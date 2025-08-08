@@ -57,9 +57,11 @@ export default function FlowProgress({ current, total, percentage, stepsMeta }: 
             })}
           </div>
           <div className="flex justify-between text-xs text-gray-500 mt-1">
-            {moduleBar.map((mod, i) => (
-              <span key={i}>Module {mod.module || i + 1}</span>
-            ))}
+            {moduleBar.map((mod, i) => {
+              const firstIndex = mod.indices[0];
+              const label = stepsMeta?.[firstIndex]?.label || `Module ${mod.module || i + 1}`;
+              return <span key={i}>{label}</span>;
+            })}
           </div>
         </div>
       )}

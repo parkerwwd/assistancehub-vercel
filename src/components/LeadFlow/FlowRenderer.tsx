@@ -209,6 +209,7 @@ export default function FlowRenderer() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mobileLoadDelay, setMobileLoadDelay] = useState(true);
   const [forceRefresh, setForceRefresh] = useState(0);
+  const [resumeInfo, setResumeInfo] = useState<{ enabled: boolean; module?: number } | null>(null);
   
   // Log initial mount and add mobile delay
   useEffect(() => {
@@ -261,6 +262,9 @@ export default function FlowRenderer() {
             // Find first step having this module or fallback to first quiz/thank you
             const idx = flow.steps.findIndex(s => (s.settings as any)?.module === nextModule);
             if (idx >= 0) startIndex = idx;
+            setResumeInfo({ enabled: true, module: nextModule });
+          } else {
+            setResumeInfo({ enabled: false });
           }
         }
       } catch (e) {
@@ -713,6 +717,18 @@ export default function FlowRenderer() {
   const currentStep = flow.steps[session.currentStep];
   const progress = ((session.currentStep + 1) / flow.steps.length) * 100;
   const styleConfig = flow.style_config as any || {};
+  const isGuide = (flow.metadata as any)?.guideMode === true || typeof (flow.steps || []).find?.(s => s.settings?.module) !== 'undefined';
+  const moduleLabelsMap: Record<number, string> = {};
+  if (isGuide) {
+    // Use the title of the first step in each module as the module label
+    for (let i = 0; i < flow.steps.length; i++) {
+      const s = flow.steps[i] as any;
+      const mod = typeof s.settings?.module === 'number' ? s.settings.module : undefined;
+      if (typeof mod === 'number' && moduleLabelsMap[mod] === undefined) {
+        moduleLabelsMap[mod] = typeof s.title === 'string' && s.title.trim() !== '' ? s.title : `Module ${mod}`;
+      }
+    }
+  }
 
   return (
     <div 
@@ -764,16 +780,29 @@ export default function FlowRenderer() {
             </div>
           )}
 
-          {/* Progress bar with optional module segmentation */}
+          {/* Progress bar with optional module segmentation and labels */}
           <FlowProgress 
             current={session.currentStep + 1} 
             total={flow.steps.length}
             percentage={progress}
-            stepsMeta={flow.steps.map(s => ({ type: s.step_type, module: (s.settings as any)?.module }))}
+            stepsMeta={flow.steps.map(s => ({ type: s.step_type, module: (s.settings as any)?.module, label: (s.settings as any)?.module ? moduleLabelsMap[(s.settings as any)?.module] : undefined }))}
           />
 
           {/* Main content */}
           <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 mt-8 max-w-3xl mx-auto">
+            {isGuide && resumeInfo?.enabled && (
+              <div className="mb-4 p-3 rounded bg-blue-50 text-blue-800 text-sm flex items-center justify-between">
+                <span>
+                  Resumed your guide {typeof resumeInfo.module === 'number' ? `(Module ${resumeInfo.module})` : ''}.
+                </span>
+                <button
+                  className="px-3 py-1 rounded bg-white border border-blue-200 text-blue-700 hover:bg-blue-100"
+                  onClick={() => setSession({ ...session, currentStep: 0 })}
+                >
+                  Restart
+                </button>
+              </div>
+            )}
             <AnimatePresence mode="wait">
               <motion.div
                 key={session.currentStep}
