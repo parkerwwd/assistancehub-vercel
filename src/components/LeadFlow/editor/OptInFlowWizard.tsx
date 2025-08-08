@@ -848,6 +848,22 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
               </CardContent>
             </Card>
 
+            {isEdit && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Guide Modules</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      Add a new module (lesson + quiz). It will be inserted before the Thank You step.
+                    </div>
+                    <Button type="button" variant="outline" onClick={handleAddModule}>Add Module</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle>Preview</CardTitle>

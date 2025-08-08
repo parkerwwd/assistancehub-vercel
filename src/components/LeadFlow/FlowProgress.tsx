@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
@@ -6,9 +6,22 @@ interface FlowProgressProps {
   current: number;
   total: number;
   percentage: number;
+  stepsMeta?: Array<{ label?: string; module?: number; type?: string }>; // optional metadata for richer UI
 }
 
-export default function FlowProgress({ current, total, percentage }: FlowProgressProps) {
+export default function FlowProgress({ current, total, percentage, stepsMeta }: FlowProgressProps) {
+  const moduleBar = useMemo(() => {
+    if (!stepsMeta || stepsMeta.length === 0) return null;
+    const modules: Array<{ module: number; indices: number[] }> = [];
+    stepsMeta.forEach((m, idx) => {
+      const moduleNumber = typeof m.module === 'number' ? m.module : 0;
+      const existing = modules.find(x => x.module === moduleNumber);
+      if (existing) existing.indices.push(idx); else modules.push({ module: moduleNumber, indices: [idx] });
+    });
+    modules.sort((a, b) => a.module - b.module);
+    return modules;
+  }, [stepsMeta]);
+
   return (
     <div className="space-y-4">
       {/* Step counter */}
@@ -30,6 +43,26 @@ export default function FlowProgress({ current, total, percentage }: FlowProgres
           transition={{ duration: 0.5, ease: "easeOut" }}
         />
       </div>
+
+      {moduleBar && moduleBar.length > 0 && (
+        <div className="mt-3">
+          <div className="flex gap-1">
+            {moduleBar.map((mod, i) => {
+              const start = mod.indices[0];
+              const end = mod.indices[mod.indices.length - 1];
+              const isCurrent = current - 1 >= start && current - 1 <= end;
+              return (
+                <div key={i} className={`flex-1 h-2 rounded ${isCurrent ? 'bg-primary' : 'bg-gray-300'}`} />
+              );
+            })}
+          </div>
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            {moduleBar.map((mod, i) => (
+              <span key={i}>Module {mod.module || i + 1}</span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Step indicators (for 5 or fewer steps) */}
       {total <= 5 && (

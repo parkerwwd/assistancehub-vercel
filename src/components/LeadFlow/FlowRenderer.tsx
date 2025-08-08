@@ -234,13 +234,42 @@ export default function FlowRenderer() {
     }
   }, []);
 
-  // Initialize session with UTM parameters
+  // Initialize session with UTM parameters and resume module progress for guides
   useEffect(() => {
-    if (flow && flow.steps && flow.steps.length > 0) {
+    const init = async () => {
+      if (!(flow && flow.steps && flow.steps.length > 0)) return;
       console.log('Initializing session for flow:', flow.name, 'with', flow.steps.length, 'steps');
+
+      // Default to step 0
+      let startIndex = 0;
+
+      // Resume for guides: find highest passed module and jump to next module's lesson or quiz
+      try {
+        const isGuide = (flow.metadata as any)?.guideMode === true || typeof (flow.steps || []).find?.(s => s.settings?.module) !== 'undefined';
+        if (isGuide) {
+          const anonId = localStorage.getItem('anon_id') || (() => { const v = crypto.randomUUID(); localStorage.setItem('anon_id', v); return v; })();
+          const { data: progressRows, error: gpErr } = await supabase
+            .from('guide_progress')
+            .select('module, passed, score')
+            .eq('flow_id', flow.id)
+            .eq('anon_id', anonId)
+            .order('module', { ascending: true });
+          if (!gpErr && progressRows && progressRows.length > 0) {
+            const highestPassed = Math.max(0, ...progressRows.filter(r => r.passed).map(r => r.module));
+            // Next module number to attempt
+            const nextModule = highestPassed + 1;
+            // Find first step having this module or fallback to first quiz/thank you
+            const idx = flow.steps.findIndex(s => (s.settings as any)?.module === nextModule);
+            if (idx >= 0) startIndex = idx;
+          }
+        }
+      } catch (e) {
+        console.warn('Resume progress check failed', e);
+      }
+
       const newSession: LeadSession = {
         flowId: flow.id,
-        currentStep: 0,
+        currentStep: startIndex,
         responses: {},
         startedAt: new Date(),
         utmParams: {
@@ -253,15 +282,16 @@ export default function FlowRenderer() {
         gclid: searchParams.get('gclid') || undefined,
       };
       setSession(newSession);
-      
+
       // Track flow view
       trackFlowView(flow.id, flow.status);
-      
+
       // Show preview banner for non-active flows
       if (flow.status !== 'active') {
         console.log('🔍 Previewing', flow.status, 'flow:', flow.name);
       }
-    }
+    };
+    init();
   }, [flow, searchParams]);
 
   // Load flow data
@@ -734,11 +764,12 @@ export default function FlowRenderer() {
             </div>
           )}
 
-          {/* Progress bar */}
+          {/* Progress bar with optional module segmentation */}
           <FlowProgress 
             current={session.currentStep + 1} 
             total={flow.steps.length}
             percentage={progress}
+            stepsMeta={flow.steps.map(s => ({ type: s.step_type, module: (s.settings as any)?.module }))}
           />
 
           {/* Main content */}
