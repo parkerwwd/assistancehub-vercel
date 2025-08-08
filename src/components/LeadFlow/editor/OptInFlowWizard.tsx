@@ -63,6 +63,9 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
   const [useCustomBenefits, setUseCustomBenefits] = useState(false);
   const [benefitsTitle, setBenefitsTitle] = useState('What Do I Get When Signing Up?');
   const [benefitsMultiline, setBenefitsMultiline] = useState('');
+  const [qbOpen, setQbOpen] = useState(false);
+  const [qbItems, setQbItems] = useState<Array<{ id: string; question_text: string; options: any; correct_values: any }>>([]);
+  const [qbLoading, setQbLoading] = useState(false);
   const themePresets = [
     { id: 'teal', name: 'Teal', primary: '#00B8A9', button: '#00B8A9', hero: 'https://images.unsplash.com/photo-1523217582562-09d0def993a6?q=80&w=1200&auto=format&fit=crop' },
     { id: 'blue', name: 'Blue', primary: '#3B82F6', button: '#3B82F6', hero: defaultHero },
@@ -861,6 +864,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                     <div className="flex items-center gap-2">
                       <Button type="button" variant="outline" onClick={handleAddModule}>Add Module</Button>
                       <Button type="button" variant="ghost" onClick={async()=>{ await handleAddModule(); await handleAddModule(); }}>Add 2 Modules</Button>
+                    <Button type="button" variant="secondary" onClick={()=>setQbOpen(true)}>Question Bank</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -981,6 +985,63 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
           setAssetOpen({ target: null, open: false });
         }}
       />
+      {/* Simple Question Bank Dialog */}
+      <Dialog open={qbOpen} onOpenChange={setQbOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Question Bank</DialogTitle>
+            <DialogDescription>Insert pre-made quiz questions into the selected module.</DialogDescription>
+          </DialogHeader>
+          <div className="mb-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={async()=>{
+                setQbLoading(true);
+                const { data, error } = await supabase.from('question_bank').select('*').limit(100);
+                if (!error) setQbItems(data as any);
+                setQbLoading(false);
+              }}
+            >
+              {qbLoading ? 'Loading…' : 'Load Questions'}
+            </Button>
+          </div>
+          <div className="space-y-2 max-h-80 overflow-auto">
+            {qbItems.map(q => (
+              <div key={q.id} className="border rounded p-3">
+                <div className="font-medium mb-2">{q.question_text}</div>
+                <div className="text-xs text-gray-600 mb-2">{Array.isArray(q.options) ? `${q.options.length} options` : ''}</div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async()=>{
+                    if (!flowId) return;
+                    // Find latest module quiz step
+                    const { data: steps } = await supabase.from('flow_steps').select('id, settings').eq('flow_id', flowId).order('step_order');
+                    const lastQuiz = (steps||[]).reverse().find(s => (s as any).settings?.module);
+                    if (!lastQuiz) return;
+                    await supabase.from('flow_fields').insert({
+                      step_id: (lastQuiz as any).id,
+                      field_order: 99,
+                      field_type: 'radio',
+                      field_name: `qb_${Date.now()}`,
+                      label: q.question_text,
+                      is_required: true,
+                      options: q.options
+                    });
+                    toast({ title: 'Added question', description: 'Inserted into the latest module quiz.' });
+                  }}
+                >
+                  Insert into latest module
+                </Button>
+              </div>
+            ))}
+            {qbItems.length === 0 && !qbLoading && (
+              <div className="text-sm text-gray-600">No questions loaded yet. Click "Load Questions".</div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
