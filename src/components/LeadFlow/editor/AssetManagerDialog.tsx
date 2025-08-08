@@ -23,29 +23,32 @@ type Asset = {
 };
 
 const DEFAULT_BUCKET = 'flow-assets';
-const FOLDER = 'images';
+const DEFAULT_FOLDER = 'images';
 
 export default function AssetManagerDialog({ open, onOpenChange, onSelect, bucket = DEFAULT_BUCKET }: AssetManagerDialogProps) {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [folder, setFolder] = useState<string>(DEFAULT_FOLDER);
+  const [query, setQuery] = useState<string>('');
 
   const storage = useMemo(() => supabase.storage.from(bucket), [bucket]);
 
   const refresh = async () => {
     try {
       setLoading(true);
-      const { data, error } = await storage.list(FOLDER, { sortBy: { column: 'created_at', order: 'desc' }, limit: 1000 });
+      const { data, error } = await storage.list(folder, { sortBy: { column: 'created_at', order: 'desc' }, limit: 1000 });
       if (error) throw error;
       const mapped: Asset[] = (data || [])
         .filter((f: any) => !f.name.endsWith('/'))
         .map((f: any) => {
-          const path = `${FOLDER}/${f.name}`;
+          const path = `${folder}/${f.name}`;
           const url = storage.getPublicUrl(path).data.publicUrl;
           return { id: path, name: f.name, url, createdAt: (f as any).created_at };
         });
-      setAssets(mapped);
+      const filtered = query ? mapped.filter(a => a.name.toLowerCase().includes(query.toLowerCase())) : mapped;
+      setAssets(filtered);
     } catch (e: any) {
       console.error('List assets failed:', e);
       toast({ title: 'Storage error', description: e?.message || 'Could not load assets', variant: 'destructive' });
@@ -57,12 +60,12 @@ export default function AssetManagerDialog({ open, onOpenChange, onSelect, bucke
   useEffect(() => {
     if (open) refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, bucket]);
+  }, [open, bucket, folder, query]);
 
   const handleUpload = async (file: File) => {
     const ext = file.name.split('.').pop() || 'png';
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-').toLowerCase();
-    const path = `${FOLDER}/${Date.now()}-${safeName}`;
+    const path = `${folder}/${Date.now()}-${safeName}`;
     setUploading(true);
     try {
       const { error } = await storage.upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type });
@@ -105,6 +108,21 @@ export default function AssetManagerDialog({ open, onOpenChange, onSelect, bucke
                 <CardTitle>Upload Image</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <Label>Folder</Label>
+                    <select className="w-full border rounded p-2" value={folder} onChange={(e)=>setFolder(e.target.value)}>
+                      <option value="images">images</option>
+                      <option value="heroes">heroes</option>
+                      <option value="logos">logos</option>
+                      <option value="backgrounds">backgrounds</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label>Search</Label>
+                    <Input value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Filter by filename" />
+                  </div>
+                </div>
                 <Input ref={fileInputRef} type="file" accept="image/*" onChange={onFileChange} disabled={uploading} />
                 <p className="text-xs text-gray-500">Recommended: JPG/PNG/WebP. Large images will affect load speed.</p>
               </CardContent>
@@ -112,7 +130,16 @@ export default function AssetManagerDialog({ open, onOpenChange, onSelect, bucke
           </TabsContent>
 
           <TabsContent value="library" className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <select className="border rounded p-2 text-sm" value={folder} onChange={(e)=>setFolder(e.target.value)}>
+                  <option value="images">images</option>
+                  <option value="heroes">heroes</option>
+                  <option value="logos">logos</option>
+                  <option value="backgrounds">backgrounds</option>
+                </select>
+                <Input className="w-48" value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search" />
+              </div>
               <div className="text-sm text-gray-600">{loading ? 'Loading…' : `${assets.length} file(s)`}</div>
               <Button variant="outline" size="sm" onClick={refresh}>Refresh</Button>
             </div>

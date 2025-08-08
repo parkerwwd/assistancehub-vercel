@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Eye, Copy, BarChart, Settings, Database, Users, Megaphone, Link, HelpCircle, ChevronDown, ChevronUp, Play, CheckCircle, Zap, Sparkles } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Copy, BarChart, Settings, Database, Users, Megaphone, Link, HelpCircle, ChevronDown, ChevronUp, Play, CheckCircle, Zap, Sparkles, Download, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -269,6 +269,98 @@ export default function FlowBuilder() {
     }
   };
 
+  const handleExportFlow = async (flow: Flow) => {
+    try {
+      const { data: steps } = await supabase
+        .from('flow_steps')
+        .select('*, fields:flow_fields(*)')
+        .eq('flow_id', flow.id)
+        .order('step_order', { ascending: true });
+      const blob = new Blob([JSON.stringify({ flow, steps }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${flow.slug}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      toast({ title: 'Error', description: 'Failed to export flow', variant: 'destructive' });
+    }
+  };
+
+  const handleImportFlow = async (file: File) => {
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const base = parsed.flow as Flow;
+      const steps = parsed.steps as any[];
+      // Create flow
+      const { data: newFlow, error: flowError } = await supabase
+        .from('flows')
+        .insert({
+          name: `${base.name} (Imported)` ,
+          slug: `${base.slug}-import-${Date.now()}`,
+          description: base.description,
+          status: 'draft' as FlowStatus,
+          style_config: base.style_config,
+          google_ads_config: base.google_ads_config,
+          metadata: base.metadata
+        })
+        .select()
+        .single();
+      if (flowError) throw flowError;
+      // Insert steps
+      for (const s of steps) {
+        const { data: newStep, error: stepError } = await supabase
+          .from('flow_steps')
+          .insert({
+            flow_id: newFlow.id,
+            step_order: s.step_order,
+            step_type: s.step_type,
+            title: s.title,
+            subtitle: s.subtitle,
+            content: s.content,
+            button_text: s.button_text,
+            is_required: s.is_required,
+            skip_logic: s.skip_logic,
+            navigation_logic: s.navigation_logic,
+            validation_rules: s.validation_rules,
+            redirect_url: s.redirect_url,
+            redirect_delay: s.redirect_delay,
+            settings: s.settings
+          })
+          .select()
+          .single();
+        if (stepError) throw stepError;
+        if (s.fields && s.fields.length > 0) {
+          const fieldsToInsert = s.fields.map((f: any) => ({
+            step_id: newStep.id,
+            field_order: f.field_order,
+            field_type: f.field_type,
+            field_name: f.field_name,
+            label: f.label,
+            placeholder: f.placeholder,
+            help_text: f.help_text,
+            is_required: f.is_required,
+            validation_rules: f.validation_rules,
+            options: f.options,
+            default_value: f.default_value,
+            conditional_logic: f.conditional_logic,
+          }));
+          const { error: fieldsError } = await supabase.from('flow_fields').insert(fieldsToInsert);
+          if (fieldsError) throw fieldsError;
+        }
+      }
+      toast({ title: 'Imported', description: 'Flow imported successfully' });
+      loadFlows();
+    } catch (e: any) {
+      console.error('Import failed', e);
+      toast({ title: 'Error', description: e?.message || 'Failed to import', variant: 'destructive' });
+    }
+  };
+
   const handleDeleteFlow = async (flowId: string) => {
     if (!confirm('Are you sure you want to delete this flow? This action cannot be undone.')) {
       return;
@@ -371,6 +463,12 @@ export default function FlowBuilder() {
               <Plus className="w-4 h-4" />
               Create New Flow
             </Button>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="file" accept="application/json" className="hidden" onChange={(e)=>{ if (e.target.files?.[0]) handleImportFlow(e.target.files[0]); e.currentTarget.value=''; }} />
+              <span className="inline-flex items-center gap-2 px-4 py-2 border rounded bg-white hover:bg-gray-50 text-sm">
+                <Upload className="w-4 h-4" /> Import JSON
+              </span>
+            </label>
           </div>
         </div>
 
@@ -715,6 +813,10 @@ export default function FlowBuilder() {
                             <DropdownMenuItem onClick={() => handleDuplicateFlow(flow)}>
                               <Copy className="w-4 h-4 mr-2" />
                               Duplicate
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleExportFlow(flow)}>
+                              <Download className="w-4 h-4 mr-2" />
+                              Export JSON
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleDeleteFlow(flow.id)}
