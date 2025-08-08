@@ -21,6 +21,7 @@ import FlowSettings from '@/components/LeadFlow/editor/FlowSettings';
 import FlowPreview from '@/components/LeadFlow/editor/FlowPreview';
 import EnhancedDragDrop from '@/components/LeadFlow/editor/EnhancedDragDrop';
 import OptInFlowWizard from '@/components/LeadFlow/editor/OptInFlowWizard';
+import LogicBuilder from '@/components/LeadFlow/editor/LogicBuilder';
 
 interface FlowData extends Omit<Flow, 'id' | 'created_at' | 'updated_at'> {
   id?: string;
@@ -738,7 +739,11 @@ export default function FlowEditor() {
                     <CardDescription>Define when steps/fields show using simple rules.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-sm text-gray-600">Visual logic builder coming soon.</div>
+                    <LogicBuilder
+                      value={(flow as any).logic || []}
+                      onChange={(rules) => setFlow(prev => ({ ...(prev as any), logic: rules }))}
+                      steps={flow.steps as any}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
