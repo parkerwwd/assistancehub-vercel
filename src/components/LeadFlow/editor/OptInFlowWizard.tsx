@@ -50,6 +50,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
   const [currentStep, setCurrentStep] = useState<0 | 1 | 2>(0); // 0 Basic, 1 Content, 2 Review
   const [includeUTMs, setIncludeUTMs] = useState(true);
+  const [isGuide, setIsGuide] = useState(false);
   // Editable content for steps/benefits
   const [stepsPreset, setStepsPreset] = useState<'section8Housing' | 'generalApplication'>('section8Housing');
   const [useCustomSteps, setUseCustomSteps] = useState(false);
@@ -148,6 +149,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
             buttonStyle: 'rounded'
           },
           google_ads_config: {},
+          metadata: isGuide ? { guideMode: true, passThreshold: 70, allowRetake: true } : {}
         })
         .select()
         .single();
@@ -204,12 +206,61 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
         if (fieldsError) throw fieldsError;
       }
 
+      // Optional guide Module 1 (Content + Quiz)
+      let thankYouOrder = 2;
+      if (isGuide) {
+        thankYouOrder = 4;
+        const { error: mod1ContentErr } = await supabase
+          .from('flow_steps')
+          .insert({
+            flow_id: flow.id,
+            step_order: 2,
+            step_type: 'content',
+            title: 'Module 1: Introduction',
+            subtitle: 'Learn the basics before taking a short quiz',
+            content: '<p>Welcome to Module 1. This brief lesson introduces core concepts about Section 8 and affordable housing.</p>',
+            is_required: true,
+            settings: { module: 1 }
+          });
+        if (mod1ContentErr) throw mod1ContentErr;
+
+        const { data: mod1Quiz, error: mod1QuizErr } = await supabase
+          .from('flow_steps')
+          .insert({
+            flow_id: flow.id,
+            step_order: 3,
+            step_type: 'quiz',
+            title: 'Module 1 Quiz',
+            subtitle: 'Answer to continue',
+            is_required: true,
+            settings: { module: 1, allowRetake: true }
+          })
+          .select()
+          .single();
+        if (mod1QuizErr || !mod1Quiz) throw mod1QuizErr || new Error('Failed to create Module 1 quiz');
+
+        const { error: mod1FieldErr } = await supabase.from('flow_fields').insert({
+          step_id: mod1Quiz.id,
+          field_order: 1,
+          field_type: 'radio',
+          field_name: 'module1_q1',
+          label: 'What is Section 8 also known as?',
+          is_required: true,
+          options: [
+            { value: 'hcv', label: 'Housing Choice Voucher Program', correct: true },
+            { value: 'lifeline', label: 'Housing Lifeline Program' },
+            { value: 'public', label: 'Public Rental Support' },
+          ]
+        });
+        if (mod1FieldErr) throw mod1FieldErr;
+      }
+
       // Thank you step with optional redirect
       const { error: thankError } = await supabase
         .from('flow_steps')
         .insert({
           flow_id: flow.id,
-          step_order: 2,
+          step_order: thankYouOrder,
           step_type: 'thank_you',
           title: 'You’re all set! 🎉',
           subtitle: 'We’ll email your guide shortly',
@@ -611,7 +662,7 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     <div>
                       <Label>CTA Button Text</Label>
                       <Input value={ctaText} onChange={(e) => setCtaText(e.target.value)} />
@@ -637,6 +688,13 @@ export default function OptInFlowWizard({ open, onOpenChange, onCompleted, flowI
                     <label className="flex items-center gap-2 text-sm">
                       <Checkbox checked={includeUTMs} onCheckedChange={(v)=>setIncludeUTMs(!!v)} />
                       Capture UTM fields (adds hidden fields; also recorded on leads)
+                    </label>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="flex items-center gap-2 text-sm">
+                      <Checkbox checked={isGuide} onCheckedChange={(v)=>setIsGuide(!!v)} />
+                      Create as Guide (adds Module 1 lesson + quiz, 70% pass threshold)
                     </label>
                   </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FlowStepWithFields, FieldValues } from '@/types/leadFlow';
 import { Button } from '@/components/ui/button';
@@ -23,18 +23,34 @@ const iconMap: { [key: string]: any } = {
 
 export default function QuizStep({ step, onChange, values, onComplete }: QuizStepProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const field = step.fields?.[0]; // Quiz typically has one field with multiple options
+  const allowRetake = step.settings?.allowRetake !== false; // default true
+  const correctValue: string | undefined = useMemo(() => {
+    if (!field?.options) return undefined;
+    const found = (field.options as any[]).find(opt => opt.correct === true);
+    return found?.value;
+  }, [field]);
 
-  const handleSelect = (value: string) => {
-    setSelectedOption(value);
-    if (field) {
-      onChange(field.field_name, value);
+  const handleSubmit = () => {
+    if (!field || !selectedOption) return;
+    const correct = correctValue !== undefined ? selectedOption === correctValue : null;
+    setIsCorrect(correct === null ? null : correct);
+    setSubmitted(true);
+    // Persist answer + correctness
+    onChange(field.field_name, selectedOption);
+    onChange(`${field.field_name}__correct`, correct);
+    // If correct or no correctness configured, continue
+    if (correct === null || correct === true) {
+      setTimeout(() => onComplete(), 300);
     }
-    
-    // Auto-advance after selection with a brief delay for feedback
-    setTimeout(() => {
-      onComplete();
-    }, 300);
+  };
+
+  const handleRetake = () => {
+    setSubmitted(false);
+    setIsCorrect(null);
+    setSelectedOption(null);
   };
 
   if (!field || !field.options) {
@@ -63,22 +79,17 @@ export default function QuizStep({ step, onChange, values, onComplete }: QuizSte
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ delay: index * 0.1 }}
-              onClick={() => handleSelect(option.value)}
+              onClick={() => !submitted && setSelectedOption(option.value)}
               className={`
                 relative group p-6 rounded-xl border-2 transition-all duration-200
-                ${isSelected 
-                  ? 'border-primary bg-primary/5 shadow-lg' 
-                  : 'border-gray-200 hover:border-primary/50 hover:shadow-md bg-white'
-                }
+                ${isSelected ? 'border-primary bg-primary/5 shadow-lg' : 'border-gray-200 hover:border-primary/50 hover:shadow-md bg-white'}
+                ${submitted && option.correct ? 'ring-2 ring-green-500' : ''}
               `}
             >
               <div className="flex flex-col items-center space-y-3">
                 <div className={`
                   w-16 h-16 rounded-full flex items-center justify-center transition-colors
-                  ${isSelected 
-                    ? 'bg-primary text-white' 
-                    : 'bg-gray-100 text-gray-600 group-hover:bg-primary/10 group-hover:text-primary'
-                  }
+                  ${isSelected ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 group-hover:bg-primary/10 group-hover:text-primary'}
                 `}>
                   <Icon className="w-8 h-8" />
                 </div>
@@ -95,7 +106,7 @@ export default function QuizStep({ step, onChange, values, onComplete }: QuizSte
               </div>
 
               {/* Selection indicator */}
-              {isSelected && (
+              {isSelected && !submitted && (
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -111,16 +122,21 @@ export default function QuizStep({ step, onChange, values, onComplete }: QuizSte
         })}
       </div>
 
-      {/* Optional skip button if step is not required */}
-      {!step.is_required && (
-        <div className="text-center mt-6">
-          <Button
-            variant="ghost"
-            onClick={onComplete}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            Skip this question
-          </Button>
+      <div className="text-center mt-6 space-x-2">
+        {!submitted && (
+          <Button disabled={!selectedOption} onClick={handleSubmit}>Submit</Button>
+        )}
+        {submitted && isCorrect === false && allowRetake && (
+          <Button variant="outline" onClick={handleRetake}>Try again</Button>
+        )}
+        {!step.is_required && !submitted && (
+          <Button variant="ghost" onClick={onComplete} className="text-gray-500 hover:text-gray-700">Skip</Button>
+        )}
+      </div>
+
+      {submitted && isCorrect !== null && (
+        <div className={`text-center text-sm ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+          {isCorrect ? 'Correct! Great job.' : 'Not quite right. Please try again.'}
         </div>
       )}
     </div>
