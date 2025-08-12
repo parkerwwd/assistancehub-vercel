@@ -19,6 +19,7 @@ import LeadFlowPage from "./pages/LeadFlow";
 import FlowBuilder from "./pages/FlowBuilder";
 import FlowEditor from "./pages/FlowEditor";
 import LeadsManager from "./pages/LeadsManager";
+import FlowCreateWizard from "./pages/FlowCreateWizard";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,11 @@ const App = () => (
           <Route path="/admin/flows" element={
             <ProtectedRoute>
               <FlowBuilder />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/flows/new" element={
+            <ProtectedRoute>
+              <FlowCreateWizard />
             </ProtectedRoute>
           } />
           <Route path="/admin/flows/:id/edit" element={

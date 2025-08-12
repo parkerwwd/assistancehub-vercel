@@ -434,41 +434,10 @@ export default function FlowBuilder() {
             <p className="text-gray-600 mt-2">Create and manage your lead capture flows</p>
           </div>
           <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowHowTo(!showHowTo)}
-              className="flex items-center gap-2"
-            >
-              <HelpCircle className="w-4 h-4" />
-              How to Create a Flow
-              {showHowTo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </Button>
-            <Button 
-              variant="secondary" 
-              onClick={handleCreateQuickOptIn}
-              className="flex items-center gap-2"
-            >
-              <Sparkles className="w-4 h-4" />
-              Quick Opt-In Flow
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleCreateGuide}
-              className="flex items-center gap-2"
-            >
-              <Sparkles className="w-4 h-4" />
-              Create Guide
-            </Button>
-            <Button onClick={handleCreateFlow} className="flex items-center gap-2">
+            <Button onClick={() => navigate('/admin/flows/new')} className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
-              Create New Flow
+              Create New
             </Button>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="file" accept="application/json" className="hidden" onChange={(e)=>{ if (e.target.files?.[0]) handleImportFlow(e.target.files[0]); e.currentTarget.value=''; }} />
-              <span className="inline-flex items-center gap-2 px-4 py-2 border rounded bg-white hover:bg-gray-50 text-sm">
-                <Upload className="w-4 h-4" /> Import JSON
-              </span>
-            </label>
           </div>
         </div>
 
@@ -837,28 +806,7 @@ export default function FlowBuilder() {
         </Card>
       </div>
 
-      {/* Template Gallery Dialog */}
-      <Dialog open={showTemplateGallery} onOpenChange={setShowTemplateGallery}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Choose a Template</DialogTitle>
-            <DialogDescription>
-              Start with a pre-built template or create your own from scratch
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-6">
-            <FlowTemplateGallery onSelectTemplate={handleSelectTemplate} />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Quick Opt-In Wizard */}
-      <OptInFlowWizard
-        open={showWizard}
-        onOpenChange={setShowWizard}
-        onCompleted={(flowId) => navigate(`/admin/flows/${flowId}/edit`)}
-        defaultMode={showWizard ? undefined : undefined}
-      />
+      {/* Simplified: legacy creation modals removed */}
     </div>
   );
 }
