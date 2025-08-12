@@ -40,6 +40,12 @@ export default function FlowCreateWizard() {
   const [legalText, setLegalText] = useState('');
   const [layoutStyle, setLayoutStyle] = useState<'backgroundCentered' | 'heroTop' | 'formLeft'>('backgroundCentered');
   const [formLayout, setFormLayout] = useState<'grid' | 'stacked'>('grid');
+  const [multiStep, setMultiStep] = useState(false);
+  const [phoneOnSecondPage, setPhoneOnSecondPage] = useState(true);
+  const [secondStepTitle, setSecondStepTitle] = useState('One last step');
+  const [secondStepSubtitle, setSecondStepSubtitle] = useState('Confirm your phone number to receive helpful alerts');
+  const [secondStepButtonText, setSecondStepButtonText] = useState('Continue');
+  const [phoneConsentText, setPhoneConsentText] = useState('By providing your number you agree to receive messages; Msg & data rates may apply. Reply STOP to opt out.');
   const [addRedirect, setAddRedirect] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('');
   const [redirectDelay, setRedirectDelay] = useState(3);
@@ -59,9 +65,11 @@ export default function FlowCreateWizard() {
       .replace(/(^-|-$)+/g, '');
 
   const fieldList = useMemo(() => defaultFields.filter(f => selectedFields[f.key]), [selectedFields]);
+  const firstPageFieldDefs = useMemo(() => fieldList.filter(f => !(multiStep && phoneOnSecondPage && f.key === 'phone')), [fieldList, multiStep, phoneOnSecondPage]);
+  const secondPageFieldDefs = useMemo(() => (multiStep && phoneOnSecondPage && selectedFields.phone ? defaultFields.filter(f => f.key === 'phone') : []), [multiStep, phoneOnSecondPage, selectedFields]);
 
-  const buildFields = (stepIndex: number): FlowPayloadField[] => {
-    return fieldList.map((f, idx) => ({
+  const buildFieldsFromDefs = (defs: typeof defaultFields, stepIndex: number): FlowPayloadField[] => {
+    return defs.map((f, idx) => ({
       id: `${stepIndex}-${idx}`,
       field_type: f.type,
       field_name: f.key,
@@ -81,7 +89,7 @@ export default function FlowCreateWizard() {
         subtitle: 'Section 8 Vouchers Government Housing Rental Assistance and more',
         content: legalText || 'By clicking "Download Application Guide", I represent that I am 18+ years of age; I understand that this site is and is not endorsed or supported by any government agency...',
         button_text: buttonText,
-        fields: buildFields(0),
+        fields: buildFieldsFromDefs(firstPageFieldDefs, 0),
         settings: {
           layout: 'full',
           module: 1,
@@ -101,9 +109,24 @@ export default function FlowCreateWizard() {
         },
       } as any;
 
+      const steps: FlowPayloadStep[] = [landing];
+
+      if (multiStep && secondPageFieldDefs.length > 0) {
+        steps.push({
+          id: 'phone-2',
+          step_order: 2,
+          step_type: 'form',
+          title: secondStepTitle,
+          subtitle: secondStepSubtitle,
+          button_text: secondStepButtonText,
+          content: phoneConsentText,
+          fields: buildFieldsFromDefs(secondPageFieldDefs, 1),
+        } as any);
+      }
+
       const thankyou: FlowPayloadStep = {
-        id: 'thanks-2',
-        step_order: 2,
+        id: 'thanks-final',
+        step_order: steps.length + 1,
         step_type: 'thank_you',
         title: 'Thank you! Your guide is ready',
         subtitle: 'Check your email for next steps',
@@ -112,7 +135,8 @@ export default function FlowCreateWizard() {
           : {}),
       } as any;
 
-      return [landing, thankyou];
+      steps.push(thankyou);
+      return steps;
     }
 
     // simple_form
@@ -131,12 +155,27 @@ export default function FlowCreateWizard() {
       step_type: 'form',
       title: 'Your details',
       button_text: 'Submit',
-      fields: buildFields(1),
+      fields: buildFieldsFromDefs(firstPageFieldDefs, 1),
     } as any;
 
+    const steps: FlowPayloadStep[] = [intro, form];
+
+    if (multiStep && secondPageFieldDefs.length > 0) {
+      steps.push({
+        id: 'phone-3',
+        step_order: 3,
+        step_type: 'form',
+        title: secondStepTitle,
+        subtitle: secondStepSubtitle,
+        button_text: secondStepButtonText,
+        content: phoneConsentText,
+        fields: buildFieldsFromDefs(secondPageFieldDefs, 2),
+      } as any);
+    }
+
     const thankyou: FlowPayloadStep = {
-      id: 'thanks-3',
-      step_order: 3,
+      id: 'thanks-final',
+      step_order: steps.length + 1,
       step_type: 'thank_you',
       title: 'Thanks! We received your info',
       ...(addRedirect && redirectUrl
@@ -144,7 +183,8 @@ export default function FlowCreateWizard() {
         : {}),
     } as any;
 
-    return [intro, form, thankyou];
+    steps.push(thankyou);
+    return steps;
   };
 
   const handleCreate = async () => {
@@ -309,6 +349,32 @@ export default function FlowCreateWizard() {
                 <div className="md:col-span-2">
                   <Label>Legal/Consent Text (small print)</Label>
                   <Input placeholder="Legal text below the form" value={legalText} onChange={(e)=>setLegalText(e.target.value)} />
+                </div>
+                <div className="md:col-span-2 pt-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Make it multi-step (phone on page 2)</Label>
+                    <Switch checked={multiStep} onCheckedChange={(c)=>setMultiStep(Boolean(c))} />
+                  </div>
+                  {multiStep && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                      <div>
+                        <Label>Second Step Title</Label>
+                        <Input value={secondStepTitle} onChange={(e)=>setSecondStepTitle(e.target.value)} />
+                      </div>
+                      <div>
+                        <Label>Second Step Subtitle</Label>
+                        <Input value={secondStepSubtitle} onChange={(e)=>setSecondStepSubtitle(e.target.value)} />
+                      </div>
+                      <div>
+                        <Label>Second Step Button</Label>
+                        <Input value={secondStepButtonText} onChange={(e)=>setSecondStepButtonText(e.target.value)} />
+                      </div>
+                      <div className="md:col-span-2">
+                        <Label>Phone Consent Text</Label>
+                        <Input value={phoneConsentText} onChange={(e)=>setPhoneConsentText(e.target.value)} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
