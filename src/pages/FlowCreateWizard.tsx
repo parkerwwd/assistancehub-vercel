@@ -30,6 +30,16 @@ export default function FlowCreateWizard() {
   const [slug, setSlug] = useState('housing-application-guide');
   const [flowType, setFlowType] = useState<FlowType>('guide_landing');
   const [primaryColor, setPrimaryColor] = useState('#3B82F6');
+  const [buttonText, setButtonText] = useState('Download Application Guide');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [heroImageUrl, setHeroImageUrl] = useState('');
+  const [benefitsImageUrl, setBenefitsImageUrl] = useState('');
+  const [benefitsTitle, setBenefitsTitle] = useState('What Do I Get When Signing Up?');
+  const [showSteps, setShowSteps] = useState(true);
+  const [showBenefits, setShowBenefits] = useState(true);
+  const [legalText, setLegalText] = useState('');
+  const [layoutStyle, setLayoutStyle] = useState<'backgroundCentered' | 'heroTop' | 'formLeft'>('backgroundCentered');
+  const [formLayout, setFormLayout] = useState<'grid' | 'stacked'>('grid');
   const [addRedirect, setAddRedirect] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('');
   const [redirectDelay, setRedirectDelay] = useState(3);
@@ -67,15 +77,27 @@ export default function FlowCreateWizard() {
         id: 'landing-1',
         step_order: 1,
         step_type: 'single_page_landing',
-        title: 'Apply for Housing Assistance',
-        subtitle: 'Fast, simple guide to get started',
-        content: 'By submitting this form you agree to receive helpful information. You can unsubscribe anytime.',
-        button_text: 'Get My Guide',
+        title: 'Apply Here For:',
+        subtitle: 'Section 8 Vouchers Government Housing Rental Assistance and more',
+        content: legalText || 'By clicking "Download Application Guide", I represent that I am 18+ years of age; I understand that this site is and is not endorsed or supported by any government agency...',
+        button_text: buttonText,
         fields: buildFields(0),
         settings: {
           layout: 'full',
           module: 1,
-          layoutType: 'formLeft',
+          layoutType: layoutStyle === 'formLeft' ? 'formLeft' : 'centered',
+          usePageBackground: layoutStyle === 'backgroundCentered',
+          imageMode: layoutStyle === 'heroTop' ? 'heroTop' : layoutStyle === 'formLeft' ? undefined : undefined,
+          formLayout,
+          logo: logoUrl || undefined,
+          heroImage: heroImageUrl || undefined,
+          benefitsImageUrl: benefitsImageUrl || undefined,
+          showProgressSteps: showSteps,
+          showBenefits: showBenefits,
+          benefitsTitle,
+          trustBadgePreset: 'standard',
+          stepsPreset: 'section8Housing',
+          benefitPreset: 'section8'
         },
       } as any;
 
@@ -151,6 +173,8 @@ export default function FlowCreateWizard() {
         backgroundColor: '#F8FAFC',
         buttonStyle: 'rounded',
         layout: flowType === 'guide_landing' ? 'full' : 'centered',
+        logoUrl: logoUrl || undefined,
+        heroImageUrl: heroImageUrl || undefined,
       },
       steps: buildSteps(),
       logic: [],
@@ -226,6 +250,68 @@ export default function FlowCreateWizard() {
                 <Input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
               </div>
             </div>
+
+            {flowType === 'guide_landing' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Logo URL</Label>
+                  <Input placeholder="https://...logo.png" value={logoUrl} onChange={(e)=>setLogoUrl(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Hero Image URL</Label>
+                  <Input placeholder="https://...hero.jpg" value={heroImageUrl} onChange={(e)=>setHeroImageUrl(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Benefits Image URL</Label>
+                  <Input placeholder="https://...benefits.jpg" value={benefitsImageUrl} onChange={(e)=>setBenefitsImageUrl(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Button Text</Label>
+                  <Input value={buttonText} onChange={(e)=>setButtonText(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Layout</Label>
+                  <Select value={layoutStyle} onValueChange={(v: any)=>setLayoutStyle(v)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="backgroundCentered">Background Centered (overlay)</SelectItem>
+                      <SelectItem value="heroTop">Hero Top (white background)</SelectItem>
+                      <SelectItem value="formLeft">Form Left (image right)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Form Layout</Label>
+                  <Select value={formLayout} onValueChange={(v:any)=>setFormLayout(v)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="grid">2x2 Grid (First, Last, Email, Zip)</SelectItem>
+                      <SelectItem value="stacked">Stacked</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <Label>Show Steps Section</Label>
+                  <Switch checked={showSteps} onCheckedChange={(c)=>setShowSteps(Boolean(c))} />
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <Label>Show Benefits Section</Label>
+                  <Switch checked={showBenefits} onCheckedChange={(c)=>setShowBenefits(Boolean(c))} />
+                </div>
+                <div className="md:col-span-2">
+                  <Label>Benefits Title</Label>
+                  <Input value={benefitsTitle} onChange={(e)=>setBenefitsTitle(e.target.value)} />
+                </div>
+                <div className="md:col-span-2">
+                  <Label>Legal/Consent Text (small print)</Label>
+                  <Input placeholder="Legal text below the form" value={legalText} onChange={(e)=>setLegalText(e.target.value)} />
+                </div>
+              </div>
+            )}
 
             <div>
               <Label>Collect These Fields</Label>
