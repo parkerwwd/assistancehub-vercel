@@ -4,17 +4,24 @@ import * as SwitchPrimitives from "@radix-ui/react-switch"
 import { cn } from "@/lib/utils"
 
 type BaseProps = React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
-type SwitchProps = BaseProps & { size?: 'sm' | 'md' }
+type SwitchProps = BaseProps & { size?: 'xs' | 'sm' | 'md' }
 
 const Switch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,
   SwitchProps
 >(({ className, size = 'md', ...props }, ref) => {
   const track =
-    size === 'sm'
+    size === 'xs'
+      ? 'h-3.5 w-7 min-w-[28px] p-0.5'
+      : size === 'sm'
       ? 'h-4 w-8 min-w-[32px] p-0.5'
       : 'h-5 w-9 min-w-[36px] p-0.5'
-  const thumb = size === 'sm' ? 'h-3.5 w-3.5 data-[state=checked]:translate-x-4' : 'h-4 w-4 data-[state=checked]:translate-x-4'
+  const thumb =
+    size === 'xs'
+      ? 'h-3 w-3 data-[state=checked]:translate-x-3.5'
+      : size === 'sm'
+      ? 'h-3.5 w-3.5 data-[state=checked]:translate-x-4'
+      : 'h-4 w-4 data-[state=checked]:translate-x-4'
   return (
     <SwitchPrimitives.Root
       className={cn(
