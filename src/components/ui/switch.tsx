@@ -12,13 +12,13 @@ const Switch = React.forwardRef<
 >(({ className, size = 'md', ...props }, ref) => {
   const track =
     size === 'xs'
-      ? 'h-3.5 w-7 min-w-[28px]'
+      ? 'h-3 w-6 min-w-[24px]'
       : size === 'sm'
       ? 'h-4 w-8 min-w-[32px]'
       : 'h-5 w-9 min-w-[36px]'
   const thumb =
     size === 'xs'
-      ? 'h-3 w-3 data-[state=checked]:translate-x-3.5'
+      ? 'h-2.5 w-2.5 data-[state=checked]:translate-x-3.5'
       : size === 'sm'
       ? 'h-3.5 w-3.5 data-[state=checked]:translate-x-4'
       : 'h-4 w-4 data-[state=checked]:translate-x-4'
