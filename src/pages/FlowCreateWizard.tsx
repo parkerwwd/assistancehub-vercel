@@ -337,11 +337,11 @@ export default function FlowCreateWizard() {
                 </div>
                 <div className="flex items-center justify-between mt-2">
                   <Label>Show Steps Section</Label>
-                  <Switch size="sm" checked={showSteps} onCheckedChange={(c)=>setShowSteps(Boolean(c))} />
+                  <Switch size="xs" checked={showSteps} onCheckedChange={(c)=>setShowSteps(Boolean(c))} />
                 </div>
                 <div className="flex items-center justify-between mt-2">
                   <Label>Show Benefits Section</Label>
-                  <Switch size="sm" checked={showBenefits} onCheckedChange={(c)=>setShowBenefits(Boolean(c))} />
+                  <Switch size="xs" checked={showBenefits} onCheckedChange={(c)=>setShowBenefits(Boolean(c))} />
                 </div>
                 <div className="md:col-span-2">
                   <Label>Benefits Title</Label>
@@ -354,7 +354,7 @@ export default function FlowCreateWizard() {
                 <div className="md:col-span-2 pt-2">
                   <div className="flex items-center justify-between">
                     <Label>Make it multi-step (phone on page 2)</Label>
-                    <Switch size="sm" checked={multiStep} onCheckedChange={(c)=>setMultiStep(Boolean(c))} />
+                    <Switch size="xs" checked={multiStep} onCheckedChange={(c)=>setMultiStep(Boolean(c))} />
                   </div>
                   {multiStep && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
@@ -398,7 +398,7 @@ export default function FlowCreateWizard() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Redirect after completion</Label>
-                <Switch size="sm" checked={addRedirect} onCheckedChange={(c) => setAddRedirect(Boolean(c))} />
+                <Switch size="xs" checked={addRedirect} onCheckedChange={(c) => setAddRedirect(Boolean(c))} />
               </div>
               {addRedirect && (
                 <div className="grid grid-cols-1 md:grid-cols-[1fr,120px] gap-3">
