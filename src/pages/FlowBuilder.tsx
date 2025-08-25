@@ -224,10 +224,6 @@ export default function FlowBuilder() {
     setShowTemplateGallery(false);
   };
 
-  const handleEditFlow = (flowId: string) => {
-    navigate(`/admin/flows/${flowId}/edit`);
-  };
-
   const handleDuplicateFlow = async (flow: Flow) => {
     try {
       const { data: newFlow, error: flowError } = await supabase
@@ -469,6 +465,31 @@ export default function FlowBuilder() {
         return 'bg-gray-500';
     }
   };
+
+  // Show unified flow builder when editing or creating
+  if (editingFlowId) {
+    return (
+      <UnifiedFlowBuilder
+        flowId={editingFlowId === 'new' ? undefined : editingFlowId}
+        onSaved={(flowId) => {
+          handleFlowSaved(flowId);
+          handleBackToList();
+        }}
+        onPublished={(flowId) => {
+          handleFlowPublished(flowId);
+          handleBackToList();
+        }}
+      />
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
