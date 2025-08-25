@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { Flow, FlowStatus } from '@/types/leadFlow';
 import { toast } from '@/components/ui/use-toast';
-import Header from '@/components/Header';
 import {
   Table,
   TableBody,
@@ -38,6 +37,7 @@ import FlowTemplateGallery from '@/components/LeadFlow/editor/FlowTemplateGaller
 import OptInFlowWizard from '@/components/LeadFlow/editor/OptInFlowWizard';
 import UnifiedFlowBuilder from '@/components/LeadFlow/UnifiedFlowBuilder';
 import { MigrationService } from '@/services/migrationService';
+import AdminLayout from '@/components/AdminLayout';
 
 export default function FlowBuilder() {
   const navigate = useNavigate();
@@ -492,52 +492,18 @@ export default function FlowBuilder() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Lead Flows</h1>
-            <p className="text-gray-600 mt-2">Create and manage your lead capture flows</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button onClick={handleCreateFlow} className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Create New
-            </Button>
-          </div>
-        </div>
+    <AdminLayout 
+      title="Lead Flows" 
+      description="Create and manage your lead capture flows"
+    >
+      <div className="flex justify-end items-center mb-6">
+        <Button onClick={handleCreateFlow} className="flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Create New
+        </Button>
+      </div>
 
-        {/* Admin Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 justify-center">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/data-admin')}
-            className="flex items-center gap-2"
-          >
-            <Database className="w-4 h-4" />
-            Data Import
-          </Button>
-          <Button
-            variant="default"
-            className="flex items-center gap-2"
-            disabled
-          >
-            <Megaphone className="w-4 h-4" />
-            Lead Flows
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/admin/leads')}
-            className="flex items-center gap-2"
-          >
-            <Users className="w-4 h-4" />
-            Leads
-          </Button>
-        </div>
-
-        {/* How To Guide */}
+      {/* How To Guide */}
         <Collapsible open={showHowTo} onOpenChange={setShowHowTo}>
           <CollapsibleContent>
             <Card className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
@@ -875,6 +841,6 @@ export default function FlowBuilder() {
       </div>
 
       {/* Simplified: legacy creation modals removed */}
-    </div>
+    </AdminLayout>
   );
 }
