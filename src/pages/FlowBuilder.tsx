@@ -502,7 +502,7 @@ export default function FlowBuilder() {
             <p className="text-gray-600 mt-2">Create and manage your lead capture flows</p>
           </div>
           <div className="flex items-center gap-3">
-            <Button onClick={() => navigate('/admin/flows/new')} className="flex items-center gap-2">
+            <Button onClick={handleCreateFlow} className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
               Create New
             </Button>

@@ -21,6 +21,12 @@ import FlowBuilder from "./pages/FlowBuilder";
 import FlowEditor from "./pages/FlowEditor";
 import LeadsManager from "./pages/LeadsManager";
 import FlowCreateWizard from "./pages/FlowCreateWizard";
+import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminABTesting from "./pages/AdminABTesting";
+import AdminTeam from "./pages/AdminTeam";
+import AdminIntegrations from "./pages/AdminIntegrations";
+import AdminLogicBuilder from "./pages/AdminLogicBuilder";
+import AdminAIOptimization from "./pages/AdminAIOptimization";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +80,51 @@ const App = () => (
           <Route path="/admin/leads" element={
             <ProtectedRoute>
               <LeadsManager />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/analytics" element={
+            <ProtectedRoute>
+              <AdminAnalytics />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/analytics/:flowId" element={
+            <ProtectedRoute>
+              <AdminAnalytics />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/ab-testing" element={
+            <ProtectedRoute>
+              <AdminABTesting />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/team" element={
+            <ProtectedRoute>
+              <AdminTeam />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/integrations" element={
+            <ProtectedRoute>
+              <AdminIntegrations />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/logic-builder" element={
+            <ProtectedRoute>
+              <AdminLogicBuilder />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/logic-builder/:flowId" element={
+            <ProtectedRoute>
+              <AdminLogicBuilder />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/ai-optimization" element={
+            <ProtectedRoute>
+              <AdminAIOptimization />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/ai-optimization/:flowId" element={
+            <ProtectedRoute>
+              <AdminAIOptimization />
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
