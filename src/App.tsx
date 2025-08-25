@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { SearchMapProvider } from "./contexts/SearchMapContext";
 import LeadFlowPage from "./pages/LeadFlow";
+import EnhancedFlowRenderer from "./components/LeadFlow/EnhancedFlowRenderer";
 import FlowBuilder from "./pages/FlowBuilder";
 import FlowEditor from "./pages/FlowEditor";
 import LeadsManager from "./pages/LeadsManager";
@@ -54,7 +55,7 @@ const App = () => (
             </ProtectedRoute>
           } />
           <Route path="/about" element={<About />} />
-          <Route path="/flow/:slug" element={<LeadFlowPage />} />
+          <Route path="/flow/:slug" element={<EnhancedFlowRenderer />} />
           <Route path="/admin/flows" element={
             <ProtectedRoute>
               <FlowBuilder />

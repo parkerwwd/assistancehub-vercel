@@ -36,6 +36,8 @@ import {
 } from "@/components/ui/dialog";
 import FlowTemplateGallery from '@/components/LeadFlow/editor/FlowTemplateGallery';
 import OptInFlowWizard from '@/components/LeadFlow/editor/OptInFlowWizard';
+import UnifiedFlowBuilder from '@/components/LeadFlow/UnifiedFlowBuilder';
+import { MigrationService } from '@/services/migrationService';
 
 export default function FlowBuilder() {
   const navigate = useNavigate();
@@ -44,10 +46,30 @@ export default function FlowBuilder() {
   const [showHowTo, setShowHowTo] = useState(false);
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [editingFlowId, setEditingFlowId] = useState<string | null>(null);
+  const [migrationStatus, setMigrationStatus] = useState<{
+    total: number;
+    migrated: number;
+    needingMigration: number;
+  } | null>(null);
 
   useEffect(() => {
     loadFlows();
+    checkMigrationStatus();
   }, []);
+
+  const checkMigrationStatus = async () => {
+    try {
+      const status = await MigrationService.getMigrationStatus();
+      setMigrationStatus({
+        total: status.totalFlows,
+        migrated: status.migratedFlows,
+        needingMigration: status.needingMigration
+      });
+    } catch (error) {
+      console.error('Failed to check migration status:', error);
+    }
+  };
 
   const loadFlows = async () => {
     try {
@@ -71,7 +93,32 @@ export default function FlowBuilder() {
   };
 
   const handleCreateFlow = () => {
-    setShowTemplateGallery(true);
+    setEditingFlowId(null);
+    setEditingFlowId('new'); // This will trigger the unified builder
+  };
+
+  const handleEditFlow = (flowId: string) => {
+    setEditingFlowId(flowId);
+  };
+
+  const handleBackToList = () => {
+    setEditingFlowId(null);
+  };
+
+  const handleFlowSaved = (flowId: string) => {
+    loadFlows(); // Refresh the list
+    toast({
+      title: "Flow Saved",
+      description: "Your flow has been saved as draft."
+    });
+  };
+
+  const handleFlowPublished = (flowId: string) => {
+    loadFlows(); // Refresh the list
+    toast({
+      title: "Flow Published!",
+      description: "Your flow is now live and available to users."
+    });
   };
 
   const handleCreateQuickOptIn = () => {
