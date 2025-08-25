@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Plus, Eye, Save, Publish, Trash, Copy, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Plus, Eye, Save, Upload, Trash, Copy, ArrowLeft, ArrowRight } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -301,7 +301,7 @@ export default function UnifiedFlowBuilder({
             disabled={publishing || !isValid}
             className="flex items-center gap-2"
           >
-            <Publish className="w-4 h-4" />
+            <Upload className="w-4 h-4" />
             {publishing ? 'Publishing...' : 'Publish'}
           </Button>
         </div>
