@@ -838,7 +838,6 @@ export default function FlowBuilder() {
             )}
           </CardContent>
         </Card>
-      </div>
 
       {/* Simplified: legacy creation modals removed */}
     </AdminLayout>
